@@ -1,9 +1,16 @@
+using System.ComponentModel.DataAnnotations;
+
 namespace dotnet_rest_api.DTOs;
 
 // Authentication DTOs
 public class LoginRequest
 {
+    [Required(ErrorMessage = "Username is required")]
+    [StringLength(50, MinimumLength = 3, ErrorMessage = "Username must be between 3 and 50 characters")]
     public string Username { get; set; } = string.Empty;
+
+    [Required(ErrorMessage = "Password is required")]
+    [StringLength(100, MinimumLength = 6, ErrorMessage = "Password must be between 6 and 100 characters")]
     public string Password { get; set; } = string.Empty;
 }
 
@@ -16,10 +23,28 @@ public class LoginResponse
 
 public class RegisterRequest
 {
+    [Required(ErrorMessage = "Username is required")]
+    [StringLength(50, MinimumLength = 3, ErrorMessage = "Username must be between 3 and 50 characters")]
+    [RegularExpression(@"^[a-zA-Z0-9_]+$", ErrorMessage = "Username can only contain letters, numbers, and underscores")]
     public string Username { get; set; } = string.Empty;
+
+    [Required(ErrorMessage = "Email is required")]
+    [EmailAddress(ErrorMessage = "Please provide a valid email address")]
+    [StringLength(255, ErrorMessage = "Email cannot exceed 255 characters")]
     public string Email { get; set; } = string.Empty;
+
+    [Required(ErrorMessage = "Password is required")]
+    [StringLength(100, MinimumLength = 8, ErrorMessage = "Password must be between 8 and 100 characters")]
+    [RegularExpression(@"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]+$", 
+        ErrorMessage = "Password must contain at least one uppercase letter, one lowercase letter, one digit, and one special character")]
     public string Password { get; set; } = string.Empty;
+
+    [Required(ErrorMessage = "Full name is required")]
+    [StringLength(100, MinimumLength = 2, ErrorMessage = "Full name must be between 2 and 100 characters")]
     public string FullName { get; set; } = string.Empty;
+
+    [Required(ErrorMessage = "Role ID is required")]
+    [Range(1, int.MaxValue, ErrorMessage = "Role ID must be a positive number")]
     public int RoleId { get; set; }
 }
 
@@ -36,10 +61,28 @@ public class UserDto
 
 public class CreateUserRequest
 {
+    [Required(ErrorMessage = "Username is required")]
+    [StringLength(50, MinimumLength = 3, ErrorMessage = "Username must be between 3 and 50 characters")]
+    [RegularExpression(@"^[a-zA-Z0-9_]+$", ErrorMessage = "Username can only contain letters, numbers, and underscores")]
     public string Username { get; set; } = string.Empty;
+
+    [Required(ErrorMessage = "Email is required")]
+    [EmailAddress(ErrorMessage = "Please provide a valid email address")]
+    [StringLength(255, ErrorMessage = "Email cannot exceed 255 characters")]
     public string Email { get; set; } = string.Empty;
+
+    [Required(ErrorMessage = "Password is required")]
+    [StringLength(100, MinimumLength = 8, ErrorMessage = "Password must be between 8 and 100 characters")]
+    [RegularExpression(@"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]+$", 
+        ErrorMessage = "Password must contain at least one uppercase letter, one lowercase letter, one digit, and one special character")]
     public string Password { get; set; } = string.Empty;
+
+    [Required(ErrorMessage = "Full name is required")]
+    [StringLength(100, MinimumLength = 2, ErrorMessage = "Full name must be between 2 and 100 characters")]
     public string FullName { get; set; } = string.Empty;
+
+    [Required(ErrorMessage = "Role ID is required")]
+    [Range(1, int.MaxValue, ErrorMessage = "Role ID must be a positive number")]
     public int RoleId { get; set; }
 }
 
@@ -61,23 +104,51 @@ public class ProjectDto
 
 public class CreateProjectRequest
 {
+    [Required(ErrorMessage = "Project name is required")]
+    [StringLength(200, MinimumLength = 3, ErrorMessage = "Project name must be between 3 and 200 characters")]
     public string ProjectName { get; set; } = string.Empty;
+
+    [Required(ErrorMessage = "Address is required")]
+    [StringLength(500, MinimumLength = 5, ErrorMessage = "Address must be between 5 and 500 characters")]
     public string Address { get; set; } = string.Empty;
+
+    [StringLength(1000, ErrorMessage = "Client info cannot exceed 1000 characters")]
     public string ClientInfo { get; set; } = string.Empty;
+
+    [Required(ErrorMessage = "Start date is required")]
     public DateTime StartDate { get; set; }
+
     public DateTime? EstimatedEndDate { get; set; }
+
+    [Required(ErrorMessage = "Project manager ID is required")]
     public Guid ProjectManagerId { get; set; }
 }
 
 public class UpdateProjectRequest
 {
+    [Required(ErrorMessage = "Project name is required")]
+    [StringLength(200, MinimumLength = 3, ErrorMessage = "Project name must be between 3 and 200 characters")]
     public string ProjectName { get; set; } = string.Empty;
+
+    [Required(ErrorMessage = "Address is required")]
+    [StringLength(500, MinimumLength = 5, ErrorMessage = "Address must be between 5 and 500 characters")]
     public string Address { get; set; } = string.Empty;
+
+    [StringLength(1000, ErrorMessage = "Client info cannot exceed 1000 characters")]
     public string ClientInfo { get; set; } = string.Empty;
+
+    [Required(ErrorMessage = "Status is required")]
+    [RegularExpression(@"^(Active|Completed|On Hold|Cancelled)$", ErrorMessage = "Status must be one of: Active, Completed, On Hold, Cancelled")]
     public string Status { get; set; } = string.Empty;
+
+    [Required(ErrorMessage = "Start date is required")]
     public DateTime StartDate { get; set; }
+
     public DateTime? EstimatedEndDate { get; set; }
+
     public DateTime? ActualEndDate { get; set; }
+
+    [Required(ErrorMessage = "Project manager ID is required")]
     public Guid ProjectManagerId { get; set; }
 }
 
@@ -98,18 +169,33 @@ public class TaskDto
 
 public class CreateTaskRequest
 {
+    [Required(ErrorMessage = "Task title is required")]
+    [StringLength(200, MinimumLength = 3, ErrorMessage = "Task title must be between 3 and 200 characters")]
     public string Title { get; set; } = string.Empty;
+
+    [StringLength(2000, ErrorMessage = "Task description cannot exceed 2000 characters")]
     public string Description { get; set; } = string.Empty;
+
     public DateTime? DueDate { get; set; }
+
     public Guid? AssignedTechnicianId { get; set; }
 }
 
 public class UpdateTaskRequest
 {
+    [Required(ErrorMessage = "Task title is required")]
+    [StringLength(200, MinimumLength = 3, ErrorMessage = "Task title must be between 3 and 200 characters")]
     public string Title { get; set; } = string.Empty;
+
+    [StringLength(2000, ErrorMessage = "Task description cannot exceed 2000 characters")]
     public string Description { get; set; } = string.Empty;
+
+    [Required(ErrorMessage = "Status is required")]
+    [RegularExpression(@"^(Pending|In Progress|Completed|Cancelled)$", ErrorMessage = "Status must be one of: Pending, In Progress, Completed, Cancelled")]
     public string Status { get; set; } = string.Empty;
+
     public DateTime? DueDate { get; set; }
+
     public Guid? AssignedTechnicianId { get; set; }
 }
 
@@ -142,6 +228,38 @@ public class ImageUploadRequest
     public string? EXIFData { get; set; }
 }
 
+// Error Response DTOs
+public class ValidationError
+{
+    public string Field { get; set; } = string.Empty;
+    public string Code { get; set; } = string.Empty;
+    public string Message { get; set; } = string.Empty;
+    public object? AttemptedValue { get; set; }
+    public Dictionary<string, object> AdditionalInfo { get; set; } = new();
+}
+
+public class ErrorDetail
+{
+    public string Code { get; set; } = string.Empty;
+    public string Message { get; set; } = string.Empty;
+    public string? Target { get; set; }
+    public List<ValidationError> Details { get; set; } = new();
+    public Dictionary<string, object> AdditionalInfo { get; set; } = new();
+}
+
+public class ApiError
+{
+    public string Type { get; set; } = string.Empty; // ValidationError, BusinessLogicError, SystemError, etc.
+    public string Title { get; set; } = string.Empty;
+    public int Status { get; set; }
+    public string Detail { get; set; } = string.Empty;
+    public string? Instance { get; set; }
+    public DateTime Timestamp { get; set; } = DateTime.UtcNow;
+    public string? TraceId { get; set; }
+    public List<ErrorDetail> Errors { get; set; } = new();
+    public Dictionary<string, object> Extensions { get; set; } = new();
+}
+
 // Common DTOs
 public class ApiResponse<T>
 {
@@ -149,6 +267,253 @@ public class ApiResponse<T>
     public string Message { get; set; } = string.Empty;
     public T? Data { get; set; }
     public List<string> Errors { get; set; } = new();
+    public ApiError? Error { get; set; }
+
+    // Factory methods for creating consistent responses
+    public static ApiResponse<T> SuccessResponse(T data, string message = "Operation completed successfully")
+    {
+        return new ApiResponse<T>
+        {
+            Success = true,
+            Message = message,
+            Data = data
+        };
+    }
+
+    public static ApiResponse<T> ErrorResponse(string message, List<string>? errors = null)
+    {
+        return new ApiResponse<T>
+        {
+            Success = false,
+            Message = message,
+            Errors = errors ?? new List<string>()
+        };
+    }
+
+    public static ApiResponse<T> ValidationErrorResponse(List<ValidationError> validationErrors, string? instance = null, string? traceId = null)
+    {
+        var errorDetail = new ErrorDetail
+        {
+            Code = "VALIDATION_FAILED",
+            Message = "One or more validation errors occurred.",
+            Details = validationErrors
+        };
+
+        var apiError = new ApiError
+        {
+            Type = "ValidationError",
+            Title = "Validation Failed",
+            Status = 400,
+            Detail = "The request contains invalid data. Please check the errors and try again.",
+            Instance = instance,
+            TraceId = traceId,
+            Errors = new List<ErrorDetail> { errorDetail }
+        };
+
+        return new ApiResponse<T>
+        {
+            Success = false,
+            Message = "Validation failed",
+            Error = apiError,
+            Errors = validationErrors.Select(v => $"{v.Field}: {v.Message}").ToList()
+        };
+    }
+
+    public static ApiResponse<T> BusinessLogicErrorResponse(string code, string message, string? target = null, string? instance = null, string? traceId = null)
+    {
+        var errorDetail = new ErrorDetail
+        {
+            Code = code,
+            Message = message,
+            Target = target
+        };
+
+        var apiError = new ApiError
+        {
+            Type = "BusinessLogicError",
+            Title = "Business Logic Error",
+            Status = 400,
+            Detail = message,
+            Instance = instance,
+            TraceId = traceId,
+            Errors = new List<ErrorDetail> { errorDetail }
+        };
+
+        return new ApiResponse<T>
+        {
+            Success = false,
+            Message = message,
+            Error = apiError,
+            Errors = new List<string> { message }
+        };
+    }
+
+    public static ApiResponse<T> NotFoundErrorResponse(string resource, string identifier, string? instance = null, string? traceId = null)
+    {
+        var message = $"{resource} with identifier '{identifier}' was not found.";
+        
+        var errorDetail = new ErrorDetail
+        {
+            Code = "RESOURCE_NOT_FOUND",
+            Message = message,
+            Target = resource
+        };
+
+        var apiError = new ApiError
+        {
+            Type = "NotFoundError",
+            Title = "Resource Not Found",
+            Status = 404,
+            Detail = message,
+            Instance = instance,
+            TraceId = traceId,
+            Errors = new List<ErrorDetail> { errorDetail }
+        };
+
+        return new ApiResponse<T>
+        {
+            Success = false,
+            Message = message,
+            Error = apiError,
+            Errors = new List<string> { message }
+        };
+    }
+
+    public static ApiResponse<T> UnauthorizedErrorResponse(string? instance = null, string? traceId = null)
+    {
+        var message = "Authentication is required to access this resource.";
+        
+        var errorDetail = new ErrorDetail
+        {
+            Code = "UNAUTHORIZED",
+            Message = message
+        };
+
+        var apiError = new ApiError
+        {
+            Type = "AuthenticationError",
+            Title = "Unauthorized",
+            Status = 401,
+            Detail = message,
+            Instance = instance,
+            TraceId = traceId,
+            Errors = new List<ErrorDetail> { errorDetail }
+        };
+
+        return new ApiResponse<T>
+        {
+            Success = false,
+            Message = message,
+            Error = apiError,
+            Errors = new List<string> { message }
+        };
+    }
+
+    public static ApiResponse<T> ForbiddenErrorResponse(string? instance = null, string? traceId = null)
+    {
+        var message = "You do not have permission to access this resource.";
+        
+        var errorDetail = new ErrorDetail
+        {
+            Code = "FORBIDDEN",
+            Message = message
+        };
+
+        var apiError = new ApiError
+        {
+            Type = "AuthorizationError",
+            Title = "Forbidden",
+            Status = 403,
+            Detail = message,
+            Instance = instance,
+            TraceId = traceId,
+            Errors = new List<ErrorDetail> { errorDetail }
+        };
+
+        return new ApiResponse<T>
+        {
+            Success = false,
+            Message = message,
+            Error = apiError,
+            Errors = new List<string> { message }
+        };
+    }
+
+    public static ApiResponse<T> ServerErrorResponse(string? instance = null, string? traceId = null)
+    {
+        var message = "An internal server error occurred. Please try again later.";
+        
+        var errorDetail = new ErrorDetail
+        {
+            Code = "INTERNAL_SERVER_ERROR",
+            Message = message
+        };
+
+        var apiError = new ApiError
+        {
+            Type = "SystemError",
+            Title = "Internal Server Error",
+            Status = 500,
+            Detail = message,
+            Instance = instance,
+            TraceId = traceId,
+            Errors = new List<ErrorDetail> { errorDetail }
+        };
+
+        return new ApiResponse<T>
+        {
+            Success = false,
+            Message = message,
+            Error = apiError,
+            Errors = new List<string> { message }
+        };
+    }
+
+    public static ApiResponse<T> CreateRateLimitErrorResponse(int limit, DateTime resetTime, TimeSpan retryAfter, string? instance = null, string? traceId = null)
+    {
+        var message = $"Too many requests. You have exceeded the rate limit of {limit} requests. Please try again later.";
+        
+        var errorDetail = new ErrorDetail
+        {
+            Code = "RATE_LIMIT_EXCEEDED",
+            Message = message,
+            AdditionalInfo = new Dictionary<string, object>
+            {
+                { "limit", limit },
+                { "resetTime", resetTime },
+                { "retryAfterSeconds", (int)retryAfter.TotalSeconds }
+            }
+        };
+
+        var apiError = new ApiError
+        {
+            Type = "RateLimitError",
+            Title = "Too Many Requests",
+            Status = 429,
+            Detail = message,
+            Instance = instance,
+            TraceId = traceId,
+            Errors = new List<ErrorDetail> { errorDetail },
+            Extensions = new Dictionary<string, object>
+            {
+                { "rateLimit", new
+                    {
+                        limit = limit,
+                        resetTime = resetTime,
+                        retryAfterSeconds = (int)retryAfter.TotalSeconds
+                    }
+                }
+            }
+        };
+
+        return new ApiResponse<T>
+        {
+            Success = false,
+            Message = message,
+            Error = apiError,
+            Errors = new List<string> { message }
+        };
+    }
 }
 
 // HATEOAS-style pagination links

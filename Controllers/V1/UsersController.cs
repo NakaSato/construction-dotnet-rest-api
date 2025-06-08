@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using dotnet_rest_api.DTOs;
 using dotnet_rest_api.Services;
+using dotnet_rest_api.Attributes;
 using Asp.Versioning;
 
 namespace dotnet_rest_api.Controllers.V1;
@@ -34,6 +35,7 @@ public class UsersController : ControllerBase
     /// <param name="role">Filter by role name</param>
     /// <returns>Paginated list of users</returns>
     [HttpGet]
+    [MediumCache] // 15 minute cache for user lists
     public async Task<ActionResult<PagedResult<UserDto>>> GetUsers(
         [FromQuery] int pageNumber = 1,
         [FromQuery] int pageSize = 10,
@@ -64,6 +66,7 @@ public class UsersController : ControllerBase
     /// <param name="id">User ID</param>
     /// <returns>User details</returns>
     [HttpGet("{id:guid}")]
+    [LongCache] // 1 hour cache for individual user details
     public async Task<ActionResult<UserDto>> GetUser(Guid id)
     {
         try
@@ -87,6 +90,7 @@ public class UsersController : ControllerBase
     /// <param name="username">Username</param>
     /// <returns>User details</returns>
     [HttpGet("username/{username}")]
+    [LongCache] // 1 hour cache for user lookups by username
     public async Task<ActionResult<UserDto>> GetUserByUsername(string username)
     {
         try
@@ -115,6 +119,7 @@ public class UsersController : ControllerBase
     /// <returns>Created user</returns>
     [HttpPost]
     [Authorize(Roles = "Admin")]
+    [NoCache] // No caching for write operations
     public async Task<ActionResult<UserDto>> CreateUser([FromBody] CreateUserRequest createUserRequest)
     {
         try
@@ -143,6 +148,7 @@ public class UsersController : ControllerBase
     /// <returns>Updated user</returns>
     [HttpPut("{id:guid}")]
     [Authorize(Roles = "Admin")]
+    [NoCache] // No caching for write operations
     public async Task<ActionResult<UserDto>> UpdateUser(Guid id, [FromBody] CreateUserRequest updateUserRequest)
     {
         try
@@ -170,6 +176,7 @@ public class UsersController : ControllerBase
     /// <returns>Updated user</returns>
     [HttpPatch("{id:guid}/activate")]
     [Authorize(Roles = "Admin")]
+    [NoCache] // No caching for write operations
     public async Task<ActionResult<bool>> ActivateUser(Guid id)
     {
         try
@@ -194,6 +201,7 @@ public class UsersController : ControllerBase
     /// <returns>Updated user</returns>
     [HttpPatch("{id:guid}/deactivate")]
     [Authorize(Roles = "Admin")]
+    [NoCache] // No caching for write operations
     public async Task<ActionResult<bool>> DeactivateUser(Guid id)
     {
         try
@@ -218,6 +226,7 @@ public class UsersController : ControllerBase
     /// <returns>No content if successful</returns>
     [HttpDelete("{id:guid}")]
     [Authorize(Roles = "Admin")]
+    [NoCache] // No caching for write operations
     public async Task<IActionResult> DeleteUser(Guid id)
     {
         try
@@ -241,6 +250,7 @@ public class UsersController : ControllerBase
     /// <param name="parameters">Advanced query parameters</param>
     /// <returns>Enhanced paginated list of users with metadata</returns>
     [HttpGet("advanced")]
+    [ShortCache] // 5 minute cache for advanced user queries
     public async Task<ActionResult<EnhancedPagedResult<UserDto>>> GetUsersAdvanced([FromQuery] UserQueryParameters parameters)
     {
         try
@@ -275,6 +285,7 @@ public class UsersController : ControllerBase
     /// Gets all users with rich HATEOAS pagination and enhanced metadata
     /// </summary>
     [HttpGet("rich")]
+    [ShortCache] // 5 minute cache for rich user pagination
     public async Task<ActionResult<ApiResponseWithPagination<UserDto>>> GetUsersWithRichPagination(
         [FromQuery] int page = 1,
         [FromQuery] int pageSize = 10,

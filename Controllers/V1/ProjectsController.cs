@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 using dotnet_rest_api.DTOs;
 using dotnet_rest_api.Services;
+using dotnet_rest_api.Attributes;
 using Asp.Versioning;
 
 namespace dotnet_rest_api.Controllers.V1;
@@ -26,6 +27,7 @@ public class ProjectsController : ControllerBase
     /// Get all projects with advanced filtering, sorting, and field selection
     /// </summary>
     [HttpGet]
+    [MediumCache] // 15 minute cache for project lists
     public async Task<ActionResult<ApiResponse<EnhancedPagedResult<ProjectDto>>>> GetProjects([FromQuery] ProjectQueryParameters parameters)
     {
         // Parse dynamic filters from query string if provided
@@ -43,6 +45,7 @@ public class ProjectsController : ControllerBase
     /// Get all projects with pagination (legacy endpoint for backward compatibility)
     /// </summary>
     [HttpGet("legacy")]
+    [MediumCache] // 15 minute cache for legacy project lists
     public async Task<ActionResult<ApiResponse<PagedResult<ProjectDto>>>> GetProjectsLegacy(
         [FromQuery] int pageNumber = 1,
         [FromQuery] int pageSize = 10,
@@ -56,6 +59,7 @@ public class ProjectsController : ControllerBase
     /// Get project by ID
     /// </summary>
     [HttpGet("{id:guid}")]
+    [LongCache] // 1 hour cache for individual project details
     public async Task<ActionResult<ApiResponse<ProjectDto>>> GetProject(Guid id)
     {
         var result = await _projectService.GetProjectByIdAsync(id);
@@ -73,6 +77,7 @@ public class ProjectsController : ControllerBase
     /// </summary>
     [HttpPost]
     [Authorize(Roles = "Administrator,ProjectManager")]
+    [NoCache] // No caching for write operations
     public async Task<ActionResult<ApiResponse<ProjectDto>>> CreateProject([FromBody] CreateProjectRequest request)
     {
         if (!ModelState.IsValid)
@@ -100,6 +105,7 @@ public class ProjectsController : ControllerBase
     /// </summary>
     [HttpPut("{id:guid}")]
     [Authorize(Roles = "Administrator,ProjectManager")]
+    [NoCache] // No caching for write operations
     public async Task<ActionResult<ApiResponse<ProjectDto>>> UpdateProject(Guid id, [FromBody] UpdateProjectRequest request)
     {
         if (!ModelState.IsValid)
@@ -127,6 +133,7 @@ public class ProjectsController : ControllerBase
     /// </summary>
     [HttpDelete("{id:guid}")]
     [Authorize(Roles = "Administrator")]
+    [NoCache] // No caching for write operations
     public async Task<ActionResult<ApiResponse<bool>>> DeleteProject(Guid id)
     {
         var result = await _projectService.DeleteProjectAsync(id);
@@ -143,6 +150,7 @@ public class ProjectsController : ControllerBase
     /// Get projects for the current user
     /// </summary>
     [HttpGet("me")]
+    [ShortCache] // 5 minute cache for user-specific projects
     public async Task<ActionResult<ApiResponse<PagedResult<ProjectDto>>>> GetMyProjects(
         [FromQuery] int pageNumber = 1,
         [FromQuery] int pageSize = 10)
@@ -165,6 +173,7 @@ public class ProjectsController : ControllerBase
     /// Get all projects with rich HATEOAS pagination and enhanced metadata
     /// </summary>
     [HttpGet("rich")]
+    [MediumCache] // 15 minute cache for rich project pagination
     public async Task<ActionResult<ApiResponseWithPagination<ProjectDto>>> GetProjectsWithRichPagination(
         [FromQuery] int page = 1,
         [FromQuery] int pageSize = 10,

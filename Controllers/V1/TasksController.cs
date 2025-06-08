@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using dotnet_rest_api.DTOs;
 using dotnet_rest_api.Services;
+using dotnet_rest_api.Attributes;
 using Asp.Versioning;
 
 namespace dotnet_rest_api.Controllers.V1;
@@ -35,6 +36,7 @@ public class TasksController : ControllerBase
     /// <param name="assigneeId">Filter by assignee ID</param>
     /// <returns>Paginated list of tasks</returns>
     [HttpGet]
+    [ShortCache] // 5 minute cache for task lists
     public async Task<ActionResult<PagedResult<TaskDto>>> GetTasks(
         [FromQuery] int pageNumber = 1,
         [FromQuery] int pageSize = 10,
@@ -66,6 +68,7 @@ public class TasksController : ControllerBase
     /// <param name="id">Task ID</param>
     /// <returns>Task details</returns>
     [HttpGet("{id:guid}")]
+    [MediumCache] // 15 minute cache for individual task details
     public async Task<ActionResult<TaskDto>> GetTask(Guid id)
     {
         try
@@ -89,6 +92,7 @@ public class TasksController : ControllerBase
     /// <param name="projectId">Project ID</param>
     /// <returns>List of project tasks</returns>
     [HttpGet("project/{projectId:guid}")]
+    [MediumCache] // 15 minute cache for project tasks
     public async Task<ActionResult<IEnumerable<TaskDto>>> GetProjectTasks(Guid projectId)
     {
         try
@@ -113,6 +117,7 @@ public class TasksController : ControllerBase
     /// <param name="createTaskRequest">Task creation data</param>
     /// <returns>Created task</returns>
     [HttpPost("project/{projectId:guid}")]
+    [NoCache] // No caching for write operations
     public async Task<ActionResult<TaskDto>> CreateTask(Guid projectId, [FromBody] CreateTaskRequest createTaskRequest)
     {
         try
@@ -140,6 +145,7 @@ public class TasksController : ControllerBase
     /// <param name="updateTaskRequest">Task update data</param>
     /// <returns>Updated task</returns>
     [HttpPut("{id:guid}")]
+    [NoCache] // No caching for write operations
     public async Task<ActionResult<TaskDto>> UpdateTask(Guid id, [FromBody] UpdateTaskRequest updateTaskRequest)
     {
         try
@@ -167,6 +173,7 @@ public class TasksController : ControllerBase
     /// <param name="status">New task status</param>
     /// <returns>Updated task</returns>
     [HttpPatch("{id:guid}/status")]
+    [NoCache] // No caching for write operations
     public async Task<ActionResult<bool>> UpdateTaskStatus(Guid id, [FromBody] string status)
     {
         try
@@ -199,6 +206,7 @@ public class TasksController : ControllerBase
     /// <param name="id">Task ID</param>
     /// <returns>No content if successful</returns>
     [HttpDelete("{id:guid}")]
+    [NoCache] // No caching for write operations
     public async Task<IActionResult> DeleteTask(Guid id)
     {
         try
@@ -222,6 +230,7 @@ public class TasksController : ControllerBase
     /// <param name="parameters">Advanced query parameters</param>
     /// <returns>Enhanced paginated list of tasks with metadata</returns>
     [HttpGet("advanced")]
+    [ShortCache] // 5 minute cache for advanced task queries
     public async Task<ActionResult<EnhancedPagedResult<TaskDto>>> GetTasksAdvanced([FromQuery] TaskQueryParameters parameters)
     {
         try
@@ -287,6 +296,7 @@ public class TasksController : ControllerBase
     /// Gets all tasks with rich HATEOAS pagination and enhanced metadata
     /// </summary>
     [HttpGet("rich")]
+    [ShortCache] // 5 minute cache for rich task pagination
     public async Task<ActionResult<ApiResponseWithPagination<TaskDto>>> GetTasksWithRichPagination(
         [FromQuery] int page = 1,
         [FromQuery] int pageSize = 10,

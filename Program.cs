@@ -6,6 +6,7 @@ using System.Text;
 using System.Reflection;
 using dotnet_rest_api.Data;
 using dotnet_rest_api.Services;
+using dotnet_rest_api.Middleware;
 using Microsoft.Extensions.FileProviders;
 using Asp.Versioning;
 
@@ -127,14 +128,65 @@ builder.Services.AddApiVersioning(options =>
     options.SubstituteApiVersionInUrl = true;
 });
 
+// Add caching services
+builder.Services.AddMemoryCache();
+
+// Configure Redis distributed cache (optional - will fallback to memory cache if not available)
+var redisConnection = builder.Configuration.GetConnectionString("Redis");
+if (!string.IsNullOrEmpty(redisConnection))
+{
+    builder.Services.AddStackExchangeRedisCache(options =>
+    {
+        options.Configuration = redisConnection;
+        options.InstanceName = "SolarProjectsAPI";
+    });
+}
+else
+{
+    // Fallback to distributed memory cache when Redis is not available
+    builder.Services.AddDistributedMemoryCache();
+}
+
+// Register caching services
+builder.Services.Configure<CacheOptions>(builder.Configuration.GetSection("Caching"));
+builder.Services.AddSingleton<ICacheService, CacheService>();
+
 // Register application services
 builder.Services.AddScoped<IAuthService, AuthService>();
-builder.Services.AddScoped<IProjectService, ProjectService>();
-builder.Services.AddScoped<ITaskService, TaskService>();
-builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<IQueryService, QueryService>();
+
+// Use cached versions of services for better performance
+builder.Services.AddScoped<IProjectService>(provider =>
+{
+    var context = provider.GetRequiredService<ApplicationDbContext>();
+    var queryService = provider.GetRequiredService<IQueryService>();
+    var cacheService = provider.GetRequiredService<ICacheService>();
+    var logger = provider.GetRequiredService<ILogger<CachedProjectService>>();
+    return new CachedProjectService(context, queryService, cacheService, logger);
+});
+
+builder.Services.AddScoped<IUserService>(provider =>
+{
+    var context = provider.GetRequiredService<ApplicationDbContext>();
+    var queryService = provider.GetRequiredService<IQueryService>();
+    var cacheService = provider.GetRequiredService<ICacheService>();
+    var logger = provider.GetRequiredService<ILogger<CachedUserService>>();
+    return new CachedUserService(context, queryService, cacheService, logger);
+});
+
+builder.Services.AddScoped<ITaskService>(provider =>
+{
+    var context = provider.GetRequiredService<ApplicationDbContext>();
+    var queryService = provider.GetRequiredService<IQueryService>();
+    var cacheService = provider.GetRequiredService<ICacheService>();
+    var logger = provider.GetRequiredService<ILogger<CachedTaskService>>();
+    return new CachedTaskService(context, queryService, cacheService, logger);
+});
 builder.Services.AddScoped<IImageService, ImageService>();
 builder.Services.AddScoped<ICloudStorageService, CloudStorageService>();
-builder.Services.AddScoped<IQueryService, QueryService>();
+
+// Add rate limiting services
+builder.Services.AddRateLimit(builder.Configuration);
 
 // Configure CORS
 builder.Services.AddCors(options =>
@@ -168,6 +220,12 @@ if (!app.Environment.IsDevelopment() ||
 }
 
 app.UseCors();
+
+// Add HTTP caching middleware for ETag and Cache-Control headers
+app.UseMiddleware<HttpCacheMiddleware>();
+
+// Add rate limiting middleware (before authentication)
+app.UseRateLimit();
 
 // Serve static files for uploaded images
 app.UseStaticFiles(new StaticFileOptions
