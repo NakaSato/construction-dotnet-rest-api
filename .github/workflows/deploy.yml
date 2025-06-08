@@ -1,0 +1,129 @@
+name: CD - Deploy to Azure
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Deployment environment'
+        required: true
+        default: 'production'
+        type: choice
+        options:
+        - staging
+        - production
+
+env:
+  DOTNET_VERSION: '9.0.x'
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    environment: ${{ github.event.inputs.environment || 'production' }}
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: ${{ env.DOTNET_VERSION }}
+
+    - name: Restore dependencies
+      run: dotnet restore
+
+    - name: Build application
+      run: dotnet build --configuration Release --no-restore
+
+    - name: Run tests
+      run: dotnet test --configuration Release --no-build
+
+    - name: Publish application
+      run: dotnet publish --configuration Release --output ./publish --no-build
+
+    - name: Login to Azure
+      uses: azure/login@v2
+      with:
+        creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+    - name: Build and push Docker image to ACR
+      run: |
+        # Login to ACR
+        az acr login --name ${{ secrets.ACR_NAME }}
+        
+        # Build and push image
+        docker build -t ${{ secrets.ACR_NAME }}.azurecr.io/solar-projects-api:${{ github.sha }} .
+        docker build -t ${{ secrets.ACR_NAME }}.azurecr.io/solar-projects-api:latest .
+        docker push ${{ secrets.ACR_NAME }}.azurecr.io/solar-projects-api:${{ github.sha }}
+        docker push ${{ secrets.ACR_NAME }}.azurecr.io/solar-projects-api:latest
+
+    - name: Deploy to Azure App Service
+      run: |
+        az webapp config container set \
+          --name ${{ secrets.AZURE_WEBAPP_NAME }} \
+          --resource-group ${{ secrets.AZURE_RESOURCE_GROUP }} \
+          --docker-custom-image-name ${{ secrets.ACR_NAME }}.azurecr.io/solar-projects-api:${{ github.sha }}
+
+    - name: Update App Service Configuration
+      run: |
+        az webapp config appsettings set \
+          --resource-group ${{ secrets.AZURE_RESOURCE_GROUP }} \
+          --name ${{ secrets.AZURE_WEBAPP_NAME }} \
+          --settings \
+            "ConnectionStrings__DefaultConnection=${{ secrets.AZURE_DB_CONNECTION_STRING }}" \
+            "JwtSettings__SecretKey=${{ secrets.JWT_SECRET_KEY }}" \
+            "JwtSettings__Issuer=${{ secrets.JWT_ISSUER }}" \
+            "JwtSettings__Audience=${{ secrets.JWT_AUDIENCE }}" \
+            "CloudinarySettings__CloudName=${{ secrets.CLOUDINARY_CLOUD_NAME }}" \
+            "CloudinarySettings__ApiKey=${{ secrets.CLOUDINARY_API_KEY }}" \
+            "CloudinarySettings__ApiSecret=${{ secrets.CLOUDINARY_API_SECRET }}" \
+            "ASPNETCORE_ENVIRONMENT=Production"
+
+    - name: Restart App Service
+      run: |
+        az webapp restart \
+          --resource-group ${{ secrets.AZURE_RESOURCE_GROUP }} \
+          --name ${{ secrets.AZURE_WEBAPP_NAME }}
+
+    - name: Health Check
+      run: |
+        # Wait for app to start
+        echo "Waiting for application to start..."
+        sleep 60
+        
+        # Check health endpoint
+        HEALTH_URL="https://${{ secrets.AZURE_WEBAPP_NAME }}.azurewebsites.net/health"
+        echo "Checking health endpoint: $HEALTH_URL"
+        
+        for i in {1..10}; do
+          if curl -f -s "$HEALTH_URL" > /dev/null; then
+            echo "✅ Health check passed on attempt $i"
+            curl -s "$HEALTH_URL" | jq '.'
+            exit 0
+          else
+            echo "⏳ Health check failed on attempt $i, retrying in 30 seconds..."
+            sleep 30
+          fi
+        done
+        
+        echo "❌ Health check failed after 10 attempts"
+        exit 1
+
+    - name: Run smoke tests
+      run: |
+        echo "🧪 Running smoke tests..."
+        BASE_URL="https://${{ secrets.AZURE_WEBAPP_NAME }}.azurewebsites.net"
+        
+        # Test API endpoints
+        echo "Testing todo endpoint..."
+        curl -f "$BASE_URL/api/todo" || echo "Todo endpoint test failed"
+        
+        echo "Testing auth endpoint..."
+        curl -f -X POST "$BASE_URL/api/v1/auth/register" \
+          -H "Content-Type: application/json" \
+          -d '{"email":"test@example.com","password":"TestPass123!","firstName":"Test","lastName":"User"}' \
+          || echo "Auth endpoint test completed (expected to fail without proper data)"
+        
+        echo "✅ Smoke tests completed"

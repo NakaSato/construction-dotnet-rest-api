@@ -1,0 +1,81 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15-alpine
+    container_name: solar-projects-db
+    environment:
+      POSTGRES_DB: SolarProjectsDb
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      PGDATA: /var/lib/postgresql/data/pgdata
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./scripts/init-db.sql:/docker-entrypoint-initdb.d/init-db.sql
+    networks:
+      - solar-projects-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d SolarProjectsDb"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # .NET REST API
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: solar-projects-api
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:5000
+      - ConnectionStrings__DefaultConnection=Host=postgres;Database=SolarProjectsDb;Username=postgres;Password=postgres;Port=5432
+      - Jwt__Key=ThisIsASecretKeyForJWTTokenGenerationAndShouldBeChangedInProduction
+      - Jwt__Issuer=SolarProjectsAPI
+      - Jwt__Audience=SolarProjectsClient
+      - Jwt__ExpiryInHours=24
+      - AWS__Region=us-east-1
+      - AWS__S3BucketName=solar-projects-images
+      - Upload__MaxFileSizeInMB=10
+      - Upload__TempStoragePath=temp/
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./uploads:/app/uploads
+      - ./temp:/app/temp
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - solar-projects-network
+    restart: unless-stopped
+
+  # PgAdmin for database management (optional)
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: solar-projects-pgadmin
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@solarprojects.com
+      PGADMIN_DEFAULT_PASSWORD: admin
+      PGADMIN_CONFIG_SERVER_MODE: 'False'
+    ports:
+      - "8080:80"
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
+    depends_on:
+      - postgres
+    networks:
+      - solar-projects-network
+    profiles:
+      - admin
+
+networks:
+  solar-projects-network:
+    driver: bridge
+
+volumes:
+  postgres_data:
+  pgadmin_data:

@@ -1,0 +1,66 @@
+name: Security Scan
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+  schedule:
+    # Run security scan weekly on Sundays at 2 AM UTC
+    - cron: '0 2 * * 0'
+
+jobs:
+  security-scan:
+    runs-on: ubuntu-latest
+    
+    permissions:
+      actions: read
+      contents: read
+      security-events: write
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: '9.0.x'
+
+    - name: Restore dependencies
+      run: dotnet restore
+
+    - name: Initialize CodeQL
+      uses: github/codeql-action/init@v3
+      with:
+        languages: csharp
+
+    - name: Build application
+      run: dotnet build --configuration Release --no-restore
+
+    - name: Perform CodeQL Analysis
+      uses: github/codeql-action/analyze@v3
+
+    - name: Run .NET Security Analyzer
+      run: |
+        dotnet list package --vulnerable --include-transitive 2>&1 | tee security-report.txt
+        if grep -q "vulnerable" security-report.txt; then
+          echo "⚠️ Vulnerable packages found!"
+          cat security-report.txt
+          exit 1
+        else
+          echo "✅ No vulnerable packages found"
+        fi
+
+    - name: Docker Security Scan
+      uses: aquasecurity/trivy-action@master
+      with:
+        image-ref: 'docker.io/library/dotnet:9.0-aspnet'
+        format: 'sarif'
+        output: 'trivy-results.sarif'
+
+    - name: Upload Trivy scan results to GitHub Security tab
+      uses: github/codeql-action/upload-sarif@v3
+      if: always()
+      with:
+        sarif_file: 'trivy-results.sarif'

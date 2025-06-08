@@ -1,0 +1,62 @@
+version: '3.8'
+
+services:
+  postgres-dev:
+    image: postgres:15-alpine
+    container_name: solar-projects-db-dev
+    environment:
+      POSTGRES_DB: SolarProjectsDb
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      PGDATA: /var/lib/postgresql/data/pgdata
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_dev_data:/var/lib/postgresql/data
+      - ./scripts/init-db.sql:/docker-entrypoint-initdb.d/init-db.sql
+    networks:
+      - solar-projects-dev
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d SolarProjectsDb"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  pgadmin-dev:
+    image: dpage/pgadmin4:latest
+    container_name: solar-projects-pgadmin-dev
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@solarprojects.com
+      PGADMIN_DEFAULT_PASSWORD: admin
+      PGADMIN_CONFIG_SERVER_MODE: 'False'
+    ports:
+      - "8080:80"
+    volumes:
+      - pgadmin_dev_data:/var/lib/pgadmin
+    depends_on:
+      - postgres-dev
+    networks:
+      - solar-projects-dev
+
+  api-dev:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: solar-projects-api-dev
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Docker
+    ports:
+      - "5001:5000"
+    depends_on:
+      postgres-dev:
+        condition: service_healthy
+    networks:
+      - solar-projects-dev
+
+networks:
+  solar-projects-dev:
+    driver: bridge
+
+volumes:
+  postgres_dev_data:
+  pgadmin_dev_data:
