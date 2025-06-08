@@ -1,12 +1,5 @@
 using System.ComponentModel.DataAnnotations;
-using System.Compo    public DateTime? DueDate { get; set; }
-    
-    public DateTime? StartedAt { get; set; }
-    
-    public DateTime? CompletedDate { get; set; }
-    
-    [MaxLength(1000)]
-    public string? Resolution { get; set; } = string.Empty;l.DataAnnotations.Schema;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace dotnet_rest_api.Models;
 
@@ -153,13 +146,13 @@ public class WorkRequestTask
 public class WorkRequestComment
 {
     [Key]
-    public Guid CommentId { get; set; }
+    public Guid WorkRequestCommentId { get; set; }
     
     [ForeignKey("WorkRequest")]
-    public Guid RequestId { get; set; }
+    public Guid WorkRequestId { get; set; }
     
-    [ForeignKey("User")]
-    public Guid UserId { get; set; }
+    [ForeignKey("Author")]
+    public Guid AuthorId { get; set; }
     
     [Required]
     [MaxLength(2000)]
@@ -169,5 +162,5 @@ public class WorkRequestComment
     
     // Navigation properties
     public virtual WorkRequest WorkRequest { get; set; } = null!;
-    public virtual User User { get; set; } = null!;
+    public virtual User Author { get; set; } = null!;
 }

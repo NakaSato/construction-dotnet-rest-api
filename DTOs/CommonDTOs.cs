@@ -652,21 +652,32 @@ public class QueryMetadata
 // Daily Reports DTOs
 public class DailyReportDto
 {
-    public Guid ReportId { get; set; }
+    public Guid DailyReportId { get; set; }
     public Guid ProjectId { get; set; }
     public string ProjectName { get; set; } = string.Empty;
     public DateTime ReportDate { get; set; }
     public string Status { get; set; } = string.Empty;
-    public UserDto CreatedBy { get; set; } = null!;
+    public Guid ReporterId { get; set; }
+    public string ReporterName { get; set; } = string.Empty;
     public UserDto? SubmittedBy { get; set; }
     public DateTime? SubmittedAt { get; set; }
+    public DateTime? ApprovedAt { get; set; }
+    public string? RejectionReason { get; set; } = string.Empty;
     public string? GeneralNotes { get; set; } = string.Empty;
     
     // Weather Information
     public string? WeatherCondition { get; set; }
+    public double? TemperatureHigh { get; set; }
+    public double? TemperatureLow { get; set; }
     public double? Temperature { get; set; }
     public int? Humidity { get; set; }
     public double? WindSpeed { get; set; }
+    
+    // Summary Information
+    public string? Summary { get; set; } = string.Empty;
+    public string? WorkAccomplished { get; set; } = string.Empty;
+    public string? WorkPlanned { get; set; } = string.Empty;
+    public string? Issues { get; set; } = string.Empty;
     
     // Work Progress Summary
     public int TotalWorkHours { get; set; }
@@ -683,6 +694,7 @@ public class DailyReportDto
     public List<MaterialUsageDto> MaterialUsages { get; set; } = new();
     public List<EquipmentLogDto> EquipmentLogs { get; set; } = new();
     public List<ImageMetadataDto> Images { get; set; } = new();
+    public int ImageCount { get; set; }
 }
 
 public class CreateDailyReportRequest
@@ -703,11 +715,29 @@ public class CreateDailyReportRequest
     [Range(-40, 50, ErrorMessage = "Temperature must be between -40 and 50 degrees")]
     public double? Temperature { get; set; }
 
+    [Range(-40, 50, ErrorMessage = "Temperature high must be between -40 and 50 degrees")]
+    public double? TemperatureHigh { get; set; }
+
+    [Range(-40, 50, ErrorMessage = "Temperature low must be between -40 and 50 degrees")]
+    public double? TemperatureLow { get; set; }
+
     [Range(0, 100, ErrorMessage = "Humidity must be between 0 and 100 percent")]
     public int? Humidity { get; set; }
 
     [Range(0, 200, ErrorMessage = "Wind speed must be between 0 and 200 km/h")]
     public double? WindSpeed { get; set; }
+
+    [StringLength(2000, ErrorMessage = "Summary cannot exceed 2000 characters")]
+    public string? Summary { get; set; } = string.Empty;
+
+    [StringLength(2000, ErrorMessage = "Work accomplished cannot exceed 2000 characters")]
+    public string? WorkAccomplished { get; set; } = string.Empty;
+
+    [StringLength(2000, ErrorMessage = "Work planned cannot exceed 2000 characters")]
+    public string? WorkPlanned { get; set; } = string.Empty;
+
+    [StringLength(2000, ErrorMessage = "Issues cannot exceed 2000 characters")]
+    public string? Issues { get; set; } = string.Empty;
 
     [Range(0, int.MaxValue, ErrorMessage = "Total work hours must be non-negative")]
     public int TotalWorkHours { get; set; }
@@ -734,11 +764,29 @@ public class UpdateDailyReportRequest
     [Range(-40, 50, ErrorMessage = "Temperature must be between -40 and 50 degrees")]
     public double? Temperature { get; set; }
 
+    [Range(-40, 50, ErrorMessage = "Temperature high must be between -40 and 50 degrees")]
+    public double? TemperatureHigh { get; set; }
+
+    [Range(-40, 50, ErrorMessage = "Temperature low must be between -40 and 50 degrees")]
+    public double? TemperatureLow { get; set; }
+
     [Range(0, 100, ErrorMessage = "Humidity must be between 0 and 100 percent")]
     public int? Humidity { get; set; }
 
     [Range(0, 200, ErrorMessage = "Wind speed must be between 0 and 200 km/h")]
     public double? WindSpeed { get; set; }
+
+    [StringLength(2000, ErrorMessage = "Summary cannot exceed 2000 characters")]
+    public string? Summary { get; set; } = string.Empty;
+
+    [StringLength(2000, ErrorMessage = "Work accomplished cannot exceed 2000 characters")]
+    public string? WorkAccomplished { get; set; } = string.Empty;
+
+    [StringLength(2000, ErrorMessage = "Work planned cannot exceed 2000 characters")]
+    public string? WorkPlanned { get; set; } = string.Empty;
+
+    [StringLength(2000, ErrorMessage = "Issues cannot exceed 2000 characters")]
+    public string? Issues { get; set; } = string.Empty;
 
     [Range(0, int.MaxValue, ErrorMessage = "Total work hours must be non-negative")]
     public int TotalWorkHours { get; set; }
@@ -755,14 +803,16 @@ public class UpdateDailyReportRequest
 
 public class WorkProgressItemDto
 {
-    public Guid WorkProgressId { get; set; }
+    public Guid WorkProgressItemId { get; set; }
     public Guid ReportId { get; set; }
     public Guid? TaskId { get; set; }
     public string? TaskTitle { get; set; }
     public string Activity { get; set; } = string.Empty;
     public string Description { get; set; } = string.Empty;
     public double HoursWorked { get; set; }
-    public int PercentComplete { get; set; }
+    public int PercentageComplete { get; set; }
+    public int WorkersAssigned { get; set; }
+    public string? Notes { get; set; } = string.Empty;
     public string? Issues { get; set; } = string.Empty;
     public string? NextSteps { get; set; } = string.Empty;
     public DateTime CreatedAt { get; set; }
@@ -786,7 +836,13 @@ public class CreateWorkProgressItemRequest
     public double HoursWorked { get; set; }
 
     [Range(0, 100, ErrorMessage = "Percent complete must be between 0 and 100")]
-    public int PercentComplete { get; set; }
+    public int PercentageComplete { get; set; }
+
+    [Range(0, int.MaxValue, ErrorMessage = "Workers assigned must be non-negative")]
+    public int WorkersAssigned { get; set; }
+
+    [StringLength(1000, ErrorMessage = "Notes cannot exceed 1000 characters")]
+    public string? Notes { get; set; } = string.Empty;
 
     [StringLength(500, ErrorMessage = "Issues cannot exceed 500 characters")]
     public string? Issues { get; set; } = string.Empty;
@@ -799,9 +855,11 @@ public class PersonnelLogDto
 {
     public Guid PersonnelLogId { get; set; }
     public Guid ReportId { get; set; }
+    public Guid UserId { get; set; }
+    public string UserName { get; set; } = string.Empty;
     public UserDto User { get; set; } = null!;
     public double HoursWorked { get; set; }
-    public string? Role { get; set; } = string.Empty;
+    public string? Position { get; set; } = string.Empty;
     public string? Notes { get; set; } = string.Empty;
     public DateTime CreatedAt { get; set; }
 }
@@ -813,6 +871,8 @@ public class MaterialUsageDto
     public string MaterialName { get; set; } = string.Empty;
     public double QuantityUsed { get; set; }
     public string Unit { get; set; } = string.Empty;
+    public decimal? Cost { get; set; }
+    public string? Supplier { get; set; } = string.Empty;
     public string? Notes { get; set; } = string.Empty;
     public DateTime CreatedAt { get; set; }
 }
@@ -823,7 +883,11 @@ public class EquipmentLogDto
     public Guid ReportId { get; set; }
     public string EquipmentName { get; set; } = string.Empty;
     public double HoursUsed { get; set; }
+    public string? OperatorName { get; set; } = string.Empty;
+    public bool MaintenanceRequired { get; set; }
+    public string? MaintenanceNotes { get; set; } = string.Empty;
     public string? Purpose { get; set; } = string.Empty;
+    public string? Notes { get; set; } = string.Empty;
     public string? Issues { get; set; } = string.Empty;
     public DateTime CreatedAt { get; set; }
 }

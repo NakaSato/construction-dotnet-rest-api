@@ -245,7 +245,7 @@ public class ApplicationDbContext : DbContext
         // Configure DailyReport entity
         modelBuilder.Entity<DailyReport>(entity =>
         {
-            entity.HasKey(dr => dr.ReportId);
+            entity.HasKey(dr => dr.DailyReportId);
             
             entity.Property(dr => dr.ReportDate)
                 .IsRequired();
@@ -266,9 +266,9 @@ public class ApplicationDbContext : DbContext
                 .HasForeignKey(dr => dr.ProjectId)
                 .OnDelete(DeleteBehavior.Cascade);
 
-            entity.HasOne(dr => dr.CreatedByUser)
+            entity.HasOne(dr => dr.Reporter)
                 .WithMany() // No back navigation from User
-                .HasForeignKey(dr => dr.CreatedByUserId)
+                .HasForeignKey(dr => dr.ReporterId)
                 .OnDelete(DeleteBehavior.Restrict);
 
             entity.HasOne(dr => dr.SubmittedByUser)

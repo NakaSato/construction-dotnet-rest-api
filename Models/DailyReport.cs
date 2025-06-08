@@ -109,10 +109,10 @@ public class DailyReport
 public class WorkProgressItem
 {
     [Key]
-    public Guid WorkProgressId { get; set; }
+    public Guid WorkProgressItemId { get; set; }
     
     [ForeignKey("DailyReport")]
-    public Guid ReportId { get; set; }
+    public Guid DailyReportId { get; set; }
     
     [ForeignKey("Task")]
     public Guid? TaskId { get; set; }
@@ -128,7 +128,13 @@ public class WorkProgressItem
     public double HoursWorked { get; set; }
     
     [Range(0, 100)]
-    public int PercentComplete { get; set; }
+    public int PercentageComplete { get; set; }
+    
+    [Range(0, int.MaxValue)]
+    public int WorkersAssigned { get; set; }
+    
+    [MaxLength(1000)]
+    public string? Notes { get; set; } = string.Empty;
     
     [MaxLength(500)]
     public string? Issues { get; set; } = string.Empty;
@@ -149,7 +155,7 @@ public class PersonnelLog
     public Guid PersonnelLogId { get; set; }
     
     [ForeignKey("DailyReport")]
-    public Guid ReportId { get; set; }
+    public Guid DailyReportId { get; set; }
     
     [ForeignKey("User")]
     public Guid UserId { get; set; }
@@ -158,7 +164,7 @@ public class PersonnelLog
     public double HoursWorked { get; set; }
     
     [MaxLength(200)]
-    public string? Role { get; set; } = string.Empty;
+    public string? Position { get; set; } = string.Empty;
     
     [MaxLength(500)]
     public string? Notes { get; set; } = string.Empty;
@@ -176,7 +182,7 @@ public class MaterialUsage
     public Guid MaterialUsageId { get; set; }
     
     [ForeignKey("DailyReport")]
-    public Guid ReportId { get; set; }
+    public Guid DailyReportId { get; set; }
     
     [Required]
     [MaxLength(200)]
@@ -188,6 +194,12 @@ public class MaterialUsage
     [Required]
     [MaxLength(50)]
     public string Unit { get; set; } = string.Empty;
+    
+    [Range(0, double.MaxValue)]
+    public decimal? Cost { get; set; }
+    
+    [MaxLength(200)]
+    public string? Supplier { get; set; } = string.Empty;
     
     [MaxLength(500)]
     public string? Notes { get; set; } = string.Empty;
