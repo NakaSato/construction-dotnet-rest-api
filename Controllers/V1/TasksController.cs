@@ -16,11 +16,13 @@ namespace dotnet_rest_api.Controllers.V1;
 public class TasksController : ControllerBase
 {
     private readonly ITaskService _taskService;
+    private readonly IQueryService _queryService;
     private readonly ILogger<TasksController> _logger;
 
-    public TasksController(ITaskService taskService, ILogger<TasksController> logger)
+    public TasksController(ITaskService taskService, IQueryService queryService, ILogger<TasksController> logger)
     {
         _taskService = taskService;
+        _queryService = queryService;
         _logger = logger;
     }
 
@@ -211,6 +213,147 @@ public class TasksController : ControllerBase
         {
             _logger.LogError(ex, "Error deleting task {TaskId}", id);
             return StatusCode(500, "An error occurred while deleting the task.");
+        }
+    }
+
+    /// <summary>
+    /// Gets all tasks with advanced querying capabilities including filtering, sorting, and field selection
+    /// </summary>
+    /// <param name="parameters">Advanced query parameters</param>
+    /// <returns>Enhanced paginated list of tasks with metadata</returns>
+    [HttpGet("advanced")]
+    public async Task<ActionResult<EnhancedPagedResult<TaskDto>>> GetTasksAdvanced([FromQuery] TaskQueryParameters parameters)
+    {
+        try
+        {
+            // Validate pagination parameters
+            if (parameters.PageNumber < 1)
+                return BadRequest("Page number must be greater than 0.");
+
+            if (parameters.PageSize < 1 || parameters.PageSize > 100)
+                return BadRequest("Page size must be between 1 and 100.");
+
+            // Parse filters from query string if not already populated
+            if (!parameters.Filters.Any() && Request.Query.Any())
+            {
+                parameters.Filters = ParseFiltersFromQuery(Request.Query);
+            }
+
+            var result = await _taskService.GetTasksAsync(parameters);
+            if (!result.Success)
+                return BadRequest(result.Message);
+
+            return Ok(result.Data);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error retrieving tasks with advanced query");
+            return StatusCode(500, "An error occurred while retrieving tasks.");
+        }
+    }
+
+    private List<FilterParameter> ParseFiltersFromQuery(IQueryCollection query)
+    {
+        var filters = new List<FilterParameter>();
+        
+        foreach (var kvp in query)
+        {
+            if (kvp.Key.StartsWith("filter."))
+            {
+                var parts = kvp.Key.Split('.');
+                if (parts.Length >= 3)
+                {
+                    var field = parts[1];
+                    var op = parts[2];
+                    var value = kvp.Value.FirstOrDefault();
+                    
+                    if (!string.IsNullOrEmpty(value))
+                    {
+                        filters.Add(new FilterParameter
+                        {
+                            Field = field,
+                            Operator = op,
+                            Value = value
+                        });
+                    }
+                }
+            }
+        }
+        
+        return filters;
+    }
+
+    /// <summary>
+    /// Gets all tasks with rich HATEOAS pagination and enhanced metadata
+    /// </summary>
+    [HttpGet("rich")]
+    public async Task<ActionResult<ApiResponseWithPagination<TaskDto>>> GetTasksWithRichPagination(
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 10,
+        [FromQuery] Guid? projectId = null,
+        [FromQuery] Guid? assigneeId = null,
+        [FromQuery] string? status = null,
+        [FromQuery] string? sortBy = null,
+        [FromQuery] string? sortOrder = "asc")
+    {
+        try
+        {
+            // Validate pagination parameters
+            if (page < 1)
+                return BadRequest("Page number must be greater than 0.");
+
+            if (pageSize < 1 || pageSize > 100)
+                return BadRequest("Page size must be between 1 and 100.");
+
+            // Create query parameters
+            var parameters = new TaskQueryParameters
+            {
+                PageNumber = page,
+                PageSize = pageSize,
+                ProjectId = projectId,
+                AssigneeId = assigneeId,
+                Status = status,
+                SortBy = sortBy,
+                SortOrder = sortOrder
+            };
+
+            // Get data using existing service
+            var serviceResult = await _taskService.GetTasksAsync(parameters);
+            if (!serviceResult.Success)
+                return BadRequest(serviceResult.Message);
+
+            // Build base URL for HATEOAS links
+            var baseUrl = $"{Request.Scheme}://{Request.Host}{Request.Path}";
+            
+            // Build query parameters for HATEOAS links
+            var queryParams = new Dictionary<string, string>();
+            if (projectId.HasValue) queryParams.Add("projectId", projectId.Value.ToString());
+            if (assigneeId.HasValue) queryParams.Add("assigneeId", assigneeId.Value.ToString());
+            if (!string.IsNullOrEmpty(status)) queryParams.Add("status", status);
+            if (!string.IsNullOrEmpty(sortBy)) queryParams.Add("sortBy", sortBy);
+            if (!string.IsNullOrEmpty(sortOrder)) queryParams.Add("sortOrder", sortOrder);
+
+            // Create rich paginated response using QueryService
+            var response = _queryService.CreateRichPaginatedResponse(
+                serviceResult.Data!.Items,
+                serviceResult.Data.TotalCount,
+                page,
+                pageSize,
+                baseUrl,
+                queryParams,
+                "Tasks retrieved successfully"
+            );
+
+            return Ok(response);
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, new ApiResponseWithPagination<TaskDto>
+            {
+                Success = false,
+                Message = "An error occurred while retrieving tasks",
+                Errors = new List<string> { ex.Message }
+            });
         }
     }
 }

@@ -8,10 +8,12 @@ namespace dotnet_rest_api.Services;
 public class TaskService : ITaskService
 {
     private readonly ApplicationDbContext _context;
+    private readonly IQueryService _queryService;
 
-    public TaskService(ApplicationDbContext context)
+    public TaskService(ApplicationDbContext context, IQueryService queryService)
     {
         _context = context;
+        _queryService = queryService;
     }
 
     public async Task<ApiResponse<TaskDto>> GetTaskByIdAsync(Guid taskId)
@@ -401,5 +403,152 @@ public class TaskService : ITaskService
                 Message = $"Error updating task status: {ex.Message}"
             };
         }
+    }
+    
+    // Advanced querying methods
+    public async Task<ApiResponse<EnhancedPagedResult<TaskDto>>> GetTasksAsync(TaskQueryParameters parameters)
+    {
+        try
+        {
+            var baseQuery = _context.Tasks
+                .Include(t => t.AssignedTechnician)
+                .ThenInclude(u => u!.Role)
+                .Include(t => t.Project)
+                .AsQueryable();
+
+            // Apply entity-specific filters first
+            var filteredQuery = ApplyTaskFilters(baseQuery, parameters);
+
+            // Use the generic query service for advanced filtering, sorting, and pagination
+            var result = await _queryService.ExecuteQueryAsync(filteredQuery, parameters);
+
+            // Convert entities to DTOs
+            var dtoItems = result.Items.Select(MapToDto).ToList();
+            
+            // Apply field selection if requested
+            var finalItems = string.IsNullOrEmpty(parameters.Fields) 
+                ? dtoItems.Cast<object>().ToList()
+                : _queryService.ApplyFieldSelection(dtoItems, parameters.Fields);
+
+            var enhancedResult = new EnhancedPagedResult<TaskDto>
+            {
+                Items = string.IsNullOrEmpty(parameters.Fields) 
+                    ? dtoItems 
+                    : finalItems.Cast<TaskDto>().ToList(),
+                TotalCount = result.TotalCount,
+                PageNumber = result.PageNumber,
+                PageSize = result.PageSize,
+                SortBy = parameters.SortBy,
+                SortOrder = parameters.SortOrder,
+                RequestedFields = string.IsNullOrEmpty(parameters.Fields) 
+                    ? new List<string>() 
+                    : parameters.Fields.Split(',').Select(f => f.Trim()).ToList(),
+                Metadata = result.Metadata
+            };
+
+            return new ApiResponse<EnhancedPagedResult<TaskDto>>
+            {
+                Success = true,
+                Data = enhancedResult
+            };
+        }
+        catch (Exception ex)
+        {
+            return new ApiResponse<EnhancedPagedResult<TaskDto>>
+            {
+                Success = false,
+                Message = "An error occurred while retrieving tasks",
+                Errors = new List<string> { ex.Message }
+            };
+        }
+    }
+
+    public async Task<ApiResponse<PagedResult<TaskDto>>> GetTasksLegacyAsync(int pageNumber = 1, int pageSize = 10, Guid? projectId = null, Guid? assignedTechnicianId = null)
+    {
+        // This method maintains backward compatibility with the original API
+        return await GetTasksAsync(pageNumber, pageSize, projectId, assignedTechnicianId);
+    }
+    
+    private IQueryable<TaskItem> ApplyTaskFilters(IQueryable<TaskItem> query, TaskQueryParameters parameters)
+    {
+        if (!string.IsNullOrEmpty(parameters.Title))
+        {
+            query = query.Where(t => t.Title.Contains(parameters.Title));
+        }
+        
+        if (!string.IsNullOrEmpty(parameters.Status))
+        {
+            if (Enum.TryParse<Models.TaskStatus>(parameters.Status, true, out var status))
+            {
+                query = query.Where(t => t.Status == status);
+            }
+        }
+        
+        if (parameters.ProjectId.HasValue)
+        {
+            query = query.Where(t => t.ProjectId == parameters.ProjectId.Value);
+        }
+        
+        if (parameters.AssigneeId.HasValue)
+        {
+            query = query.Where(t => t.AssignedTechnicianId == parameters.AssigneeId.Value);
+        }
+        
+        if (parameters.DueDateAfter.HasValue)
+        {
+            query = query.Where(t => t.DueDate >= parameters.DueDateAfter.Value);
+        }
+        
+        if (parameters.DueDateBefore.HasValue)
+        {
+            query = query.Where(t => t.DueDate <= parameters.DueDateBefore.Value);
+        }
+        
+        if (parameters.CreatedAfter.HasValue)
+        {
+            query = query.Where(t => t.CreatedAt >= parameters.CreatedAfter.Value);
+        }
+        
+        if (parameters.CreatedBefore.HasValue)
+        {
+            query = query.Where(t => t.CreatedAt <= parameters.CreatedBefore.Value);
+        }
+        
+        if (parameters.CompletedAfter.HasValue)
+        {
+            query = query.Where(t => t.CompletionDate >= parameters.CompletedAfter.Value);
+        }
+        
+        if (parameters.CompletedBefore.HasValue)
+        {
+            query = query.Where(t => t.CompletionDate <= parameters.CompletedBefore.Value);
+        }
+        
+        return query;
+    }
+
+    private TaskDto MapToDto(TaskItem task)
+    {
+        return new TaskDto
+        {
+            TaskId = task.TaskId,
+            ProjectId = task.ProjectId,
+            ProjectName = task.Project.ProjectName,
+            Title = task.Title,
+            Description = task.Description,
+            Status = task.Status.ToString(),
+            DueDate = task.DueDate,
+            AssignedTechnician = task.AssignedTechnician != null ? new UserDto
+            {
+                UserId = task.AssignedTechnician.UserId,
+                Username = task.AssignedTechnician.Username,
+                Email = task.AssignedTechnician.Email,
+                FullName = task.AssignedTechnician.FullName,
+                RoleName = task.AssignedTechnician.Role.RoleName,
+                IsActive = task.AssignedTechnician.IsActive
+            } : null,
+            CompletionDate = task.CompletionDate,
+            CreatedAt = task.CreatedAt
+        };
     }
 }

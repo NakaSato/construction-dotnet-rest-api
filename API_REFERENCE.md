@@ -9,6 +9,7 @@
 ## 📋 Table of Contents
 
 - [Authentication](#authentication)
+- [Advanced Querying](#advanced-querying)
 - [Health Monitoring](#health-monitoring)
 - [Todo Management (Legacy)](#todo-management-legacy)
 - [Debug Information](#debug-information)
@@ -859,6 +860,140 @@ curl -X POST http://localhost:5001/api/v1/images/upload \
   "errors": ["Please try again later or contact support"]
 }
 ```
+
+---
+
+## 🔍 Advanced Querying
+
+All collection endpoints support advanced querying capabilities including filtering, sorting, and field selection. These features are available through dedicated "advanced" endpoints for enhanced flexibility and performance.
+
+### Advanced Query Endpoints
+
+Advanced querying is available on the following endpoints:
+- **GET** `/api/v1/users/advanced` - Advanced user querying
+- **GET** `/api/v1/projects/advanced` - Advanced project querying  
+- **GET** `/api/v1/tasks/advanced` - Advanced task querying
+- **GET** `/api/v1/images/project/{projectId}/advanced` - Advanced image querying
+
+### Common Query Parameters
+
+All advanced endpoints support these base parameters:
+
+| Parameter | Type | Description | Default |
+|-----------|------|-------------|---------|
+| `pageNumber` | integer | Page number (1-based) | 1 |
+| `pageSize` | integer | Items per page (1-100) | 10 |
+| `sortBy` | string | Field name to sort by | - |
+| `sortOrder` | string | Sort direction: "asc" or "desc" | "asc" |
+| `fields` | string | Comma-separated field list for sparse fieldsets | - |
+
+### Filtering
+
+#### Method 1: Query String Filters
+Use the format `filter.{field}.{operator}={value}`:
+
+```
+GET /api/v1/users/advanced?filter.fullName.contains=John&filter.isActive.eq=true
+```
+
+#### Method 2: Entity-Specific Parameters
+Each entity has specific filter parameters:
+
+**Users**: `username`, `email`, `fullName`, `role`, `isActive`
+**Projects**: `projectName`, `status`, `clientInfo`, `address`, `managerId`, `startDateAfter`, `startDateBefore`
+**Tasks**: `title`, `status`, `projectId`, `assigneeId`, `dueDateAfter`, `dueDateBefore`
+**Images**: `taskId`, `uploadedById`, `contentType`, `deviceModel`, `minFileSize`, `maxFileSize`
+
+#### Supported Operators
+
+| Operator | Description | Example |
+|----------|-------------|---------|
+| `eq` | Equal to | `filter.status.eq=Active` |
+| `ne` | Not equal to | `filter.status.ne=Completed` |
+| `gt` | Greater than | `filter.startDate.gt=2024-01-01` |
+| `gte` | Greater than or equal | `filter.startDate.gte=2024-01-01` |
+| `lt` | Less than | `filter.endDate.lt=2024-12-31` |
+| `lte` | Less than or equal | `filter.endDate.lte=2024-12-31` |
+| `contains` | String contains | `filter.name.contains=Solar` |
+| `startswith` | String starts with | `filter.name.startswith=Project` |
+| `endswith` | String ends with | `filter.name.endswith=2024` |
+| `in` | Value in list | `filter.status.in=Active,Planning` |
+
+### Sorting
+
+Sort results by any field using `sortBy` and `sortOrder`:
+
+```
+GET /api/v1/projects/advanced?sortBy=createdAt&sortOrder=desc
+```
+
+### Field Selection (Sparse Fieldsets)
+
+Request only specific fields to reduce payload size:
+
+```
+GET /api/v1/users/advanced?fields=userId,username,email
+```
+
+### Example Advanced Queries
+
+#### Complex Project Query
+```
+GET /api/v1/projects/advanced?
+    filter.status.eq=InProgress&
+    filter.startDate.gte=2024-01-01&
+    sortBy=createdAt&
+    sortOrder=desc&
+    fields=projectId,projectName,status,startDate&
+    pageSize=20
+```
+
+#### User Search with Pagination
+```
+GET /api/v1/users/advanced?
+    filter.fullName.contains=John&
+    filter.isActive.eq=true&
+    sortBy=fullName&
+    pageNumber=2&
+    pageSize=10
+```
+
+### Enhanced Response Format
+
+Advanced queries return enhanced results with metadata:
+
+```json
+{
+  "success": true,
+  "data": {
+    "items": [...],
+    "totalCount": 25,
+    "pageNumber": 1,
+    "pageSize": 10,
+    "totalPages": 3,
+    "hasNextPage": true,
+    "hasPreviousPage": false,
+    "sortBy": "createdAt",
+    "sortOrder": "desc",
+    "requestedFields": ["projectId", "projectName", "status"],
+    "metadata": {
+      "executionTime": "00:00:00.1234567",
+      "filtersApplied": 2,
+      "queryComplexity": "Medium",
+      "queryExecutedAt": "2024-06-08T10:30:00Z",
+      "cacheStatus": "Miss"
+    }
+  }
+}
+```
+
+### Performance Tips
+
+1. **Use field selection** to request only needed fields
+2. **Add indexes** for frequently filtered/sorted fields
+3. **Limit page size** to reasonable values (≤50 for complex queries)
+4. **Use specific filters** rather than broad text searches when possible
+5. **Consider caching** for repeated identical queries
 
 ---
 

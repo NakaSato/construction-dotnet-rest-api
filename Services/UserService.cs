@@ -9,10 +9,12 @@ namespace dotnet_rest_api.Services;
 public class UserService : IUserService
 {
     private readonly ApplicationDbContext _context;
+    private readonly IQueryService _queryService;
 
-    public UserService(ApplicationDbContext context)
+    public UserService(ApplicationDbContext context, IQueryService queryService)
     {
         _context = context;
+        _queryService = queryService;
     }
 
     public async Task<ApiResponse<UserDto>> GetUserByIdAsync(Guid userId)
@@ -393,5 +395,110 @@ public class UserService : IUserService
                 Message = $"Error updating user status: {ex.Message}"
             };
         }
+    }
+    
+    // Advanced querying methods
+    public async Task<ApiResponse<EnhancedPagedResult<UserDto>>> GetUsersAsync(UserQueryParameters parameters)
+    {
+        try
+        {
+            var baseQuery = _context.Users
+                .Include(u => u.Role)
+                .AsQueryable();
+
+            // Apply entity-specific filters first
+            var filteredQuery = ApplyUserFilters(baseQuery, parameters);
+
+            // Use the generic query service for advanced filtering, sorting, and pagination
+            var result = await _queryService.ExecuteQueryAsync(filteredQuery, parameters);
+
+            // Convert entities to DTOs
+            var dtoItems = result.Items.Select(MapToDto).ToList();
+            
+            // Apply field selection if requested
+            var finalItems = string.IsNullOrEmpty(parameters.Fields) 
+                ? dtoItems.Cast<object>().ToList()
+                : _queryService.ApplyFieldSelection(dtoItems, parameters.Fields);
+
+            var enhancedResult = new EnhancedPagedResult<UserDto>
+            {
+                Items = string.IsNullOrEmpty(parameters.Fields) 
+                    ? dtoItems 
+                    : finalItems.Cast<UserDto>().ToList(),
+                TotalCount = result.TotalCount,
+                PageNumber = result.PageNumber,
+                PageSize = result.PageSize,
+                SortBy = parameters.SortBy,
+                SortOrder = parameters.SortOrder,
+                RequestedFields = string.IsNullOrEmpty(parameters.Fields) 
+                    ? new List<string>() 
+                    : parameters.Fields.Split(',').Select(f => f.Trim()).ToList(),
+                Metadata = result.Metadata
+            };
+
+            return new ApiResponse<EnhancedPagedResult<UserDto>>
+            {
+                Success = true,
+                Data = enhancedResult
+            };
+        }
+        catch (Exception ex)
+        {
+            return new ApiResponse<EnhancedPagedResult<UserDto>>
+            {
+                Success = false,
+                Message = "An error occurred while retrieving users",
+                Errors = new List<string> { ex.Message }
+            };
+        }
+    }
+
+    public async Task<ApiResponse<PagedResult<UserDto>>> GetUsersLegacyAsync(int pageNumber = 1, int pageSize = 10, string? role = null)
+    {
+        // This method maintains backward compatibility with the original API
+        return await GetUsersAsync(pageNumber, pageSize, role);
+    }
+    
+    private IQueryable<User> ApplyUserFilters(IQueryable<User> query, UserQueryParameters parameters)
+    {
+        if (!string.IsNullOrEmpty(parameters.Username))
+        {
+            query = query.Where(u => u.Username.Contains(parameters.Username));
+        }
+        
+        if (!string.IsNullOrEmpty(parameters.Email))
+        {
+            query = query.Where(u => u.Email.Contains(parameters.Email));
+        }
+        
+        if (!string.IsNullOrEmpty(parameters.FullName))
+        {
+            query = query.Where(u => u.FullName.Contains(parameters.FullName));
+        }
+        
+        if (!string.IsNullOrEmpty(parameters.Role))
+        {
+            query = query.Where(u => u.Role.RoleName.ToLower() == parameters.Role.ToLower());
+        }
+        
+        if (parameters.IsActive.HasValue)
+        {
+            query = query.Where(u => u.IsActive == parameters.IsActive.Value);
+        }
+        
+        return query;
+    }
+
+    private UserDto MapToDto(User user)
+    {
+        return new UserDto
+        {
+            UserId = user.UserId,
+            Username = user.Username,
+            Email = user.Email,
+            FullName = user.FullName,
+            RoleName = user.Role.RoleName,
+            IsActive = user.IsActive
+        };
     }
 }

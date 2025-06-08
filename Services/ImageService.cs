@@ -10,6 +10,7 @@ public class ImageService : IImageService
 {
     private readonly ApplicationDbContext _context;
     private readonly ICloudStorageService _cloudStorageService;
+    private readonly IQueryService _queryService;
     private readonly ILogger<ImageService> _logger;
     private readonly long _maxFileSize = 10 * 1024 * 1024; // 10MB
     private readonly string[] _allowedExtensions = { ".jpg", ".jpeg", ".png", ".bmp", ".gif", ".webp" };
@@ -17,10 +18,12 @@ public class ImageService : IImageService
     public ImageService(
         ApplicationDbContext context, 
         ICloudStorageService cloudStorageService,
+        IQueryService queryService,
         ILogger<ImageService> logger)
     {
         _context = context;
         _cloudStorageService = cloudStorageService;
+        _queryService = queryService;
         _logger = logger;
     }
 
@@ -347,6 +350,125 @@ public class ImageService : IImageService
                 Message = "An error occurred while deleting the image"
             };
         }
+    }
+
+    // Advanced querying method
+    public async Task<ApiResponse<EnhancedPagedResult<ImageMetadataDto>>> GetProjectImagesAsync(Guid projectId, ImageQueryParameters parameters)
+    {
+        try
+        {
+            var baseQuery = _context.ImageMetadata
+                .Include(i => i.UploadedByUser)
+                .ThenInclude(u => u.Role)
+                .Include(i => i.Project)
+                .Include(i => i.Task)
+                .Where(i => i.ProjectId == projectId)
+                .AsQueryable();
+
+            // Apply entity-specific filters first
+            var filteredQuery = ApplyImageFilters(baseQuery, parameters);
+
+            // Use the generic query service for advanced filtering, sorting, and pagination
+            var result = await _queryService.ExecuteQueryAsync(filteredQuery, parameters);
+
+            // Convert entities to DTOs
+            var dtoItems = new List<ImageMetadataDto>();
+            foreach (var item in result.Items)
+            {
+                dtoItems.Add(await MapToImageMetadataDto(item));
+            }
+            
+            // Apply field selection if requested
+            var finalItems = string.IsNullOrEmpty(parameters.Fields) 
+                ? dtoItems.Cast<object>().ToList()
+                : _queryService.ApplyFieldSelection(dtoItems, parameters.Fields);
+
+            var enhancedResult = new EnhancedPagedResult<ImageMetadataDto>
+            {
+                Items = string.IsNullOrEmpty(parameters.Fields) 
+                    ? dtoItems 
+                    : finalItems.Cast<ImageMetadataDto>().ToList(),
+                TotalCount = result.TotalCount,
+                PageNumber = result.PageNumber,
+                PageSize = result.PageSize,
+                SortBy = parameters.SortBy,
+                SortOrder = parameters.SortOrder,
+                RequestedFields = string.IsNullOrEmpty(parameters.Fields) 
+                    ? new List<string>() 
+                    : parameters.Fields.Split(',').Select(f => f.Trim()).ToList(),
+                Metadata = result.Metadata
+            };
+
+            return new ApiResponse<EnhancedPagedResult<ImageMetadataDto>>
+            {
+                Success = true,
+                Data = enhancedResult
+            };
+        }
+        catch (Exception ex)
+        {
+            return new ApiResponse<EnhancedPagedResult<ImageMetadataDto>>
+            {
+                Success = false,
+                Message = "An error occurred while retrieving images",
+                Errors = new List<string> { ex.Message }
+            };
+        }
+    }
+    
+    private IQueryable<ImageMetadata> ApplyImageFilters(IQueryable<ImageMetadata> query, ImageQueryParameters parameters)
+    {
+        if (parameters.TaskId.HasValue)
+        {
+            query = query.Where(i => i.TaskId == parameters.TaskId.Value);
+        }
+        
+        if (parameters.UploadedById.HasValue)
+        {
+            query = query.Where(i => i.UploadedByUserId == parameters.UploadedById.Value);
+        }
+        
+        if (parameters.UploadedAfter.HasValue)
+        {
+            query = query.Where(i => i.UploadTimestamp >= parameters.UploadedAfter.Value);
+        }
+        
+        if (parameters.UploadedBefore.HasValue)
+        {
+            query = query.Where(i => i.UploadTimestamp <= parameters.UploadedBefore.Value);
+        }
+        
+        if (parameters.CapturedAfter.HasValue)
+        {
+            query = query.Where(i => i.CaptureTimestamp >= parameters.CapturedAfter.Value);
+        }
+        
+        if (parameters.CapturedBefore.HasValue)
+        {
+            query = query.Where(i => i.CaptureTimestamp <= parameters.CapturedBefore.Value);
+        }
+        
+        if (!string.IsNullOrEmpty(parameters.ContentType))
+        {
+            query = query.Where(i => i.ContentType.Contains(parameters.ContentType));
+        }
+        
+        if (!string.IsNullOrEmpty(parameters.DeviceModel))
+        {
+            query = query.Where(i => i.DeviceModel != null && i.DeviceModel.Contains(parameters.DeviceModel));
+        }
+        
+        if (parameters.MinFileSize.HasValue)
+        {
+            query = query.Where(i => i.FileSizeInBytes >= parameters.MinFileSize.Value);
+        }
+        
+        if (parameters.MaxFileSize.HasValue)
+        {
+            query = query.Where(i => i.FileSizeInBytes <= parameters.MaxFileSize.Value);
+        }
+        
+        return query;
     }
 
     private async Task<ImageMetadataDto> MapToImageMetadataDto(ImageMetadata image)

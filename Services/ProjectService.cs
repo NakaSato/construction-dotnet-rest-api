@@ -8,10 +8,12 @@ namespace dotnet_rest_api.Services;
 public class ProjectService : IProjectService
 {
     private readonly ApplicationDbContext _context;
+    private readonly IQueryService _queryService;
 
-    public ProjectService(ApplicationDbContext context)
+    public ProjectService(ApplicationDbContext context, IQueryService queryService)
     {
         _context = context;
+        _queryService = queryService;
     }
 
     public async Task<ApiResponse<ProjectDto>> GetProjectByIdAsync(Guid projectId)
@@ -319,6 +321,99 @@ public class ProjectService : IProjectService
                 Errors = new List<string> { ex.Message }
             };
         }
+    }
+
+    public async Task<ApiResponse<EnhancedPagedResult<ProjectDto>>> GetProjectsAsync(ProjectQueryParameters parameters)
+    {
+        try
+        {
+            var query = _context.Projects
+                .Include(p => p.ProjectManager)
+                .ThenInclude(pm => pm.Role)
+                .Include(p => p.Tasks)
+                .AsQueryable();
+
+            // Apply specific filters based on query parameters
+            query = ApplyProjectFilters(query, parameters);
+            
+            // Use the generic query service for advanced querying
+            var result = await _queryService.ExecuteQueryAsync(query.Select(p => MapToDto(p)), parameters);
+            
+            return new ApiResponse<EnhancedPagedResult<ProjectDto>>
+            {
+                Success = true,
+                Message = "Projects retrieved successfully",
+                Data = result
+            };
+        }
+        catch (Exception ex)
+        {
+            return new ApiResponse<EnhancedPagedResult<ProjectDto>>
+            {
+                Success = false,
+                Message = "An error occurred while retrieving projects",
+                Errors = new List<string> { ex.Message }
+            };
+        }
+    }
+
+    public async Task<ApiResponse<PagedResult<ProjectDto>>> GetProjectsLegacyAsync(int pageNumber = 1, int pageSize = 10, Guid? managerId = null)
+    {
+        // This method maintains backward compatibility with the original API
+        return await GetProjectsAsync(pageNumber, pageSize, managerId);
+    }
+    
+    private IQueryable<Project> ApplyProjectFilters(IQueryable<Project> query, ProjectQueryParameters parameters)
+    {
+        if (!string.IsNullOrEmpty(parameters.ProjectName))
+        {
+            query = query.Where(p => p.ProjectName.Contains(parameters.ProjectName));
+        }
+        
+        if (!string.IsNullOrEmpty(parameters.Status))
+        {
+            if (Enum.TryParse<ProjectStatus>(parameters.Status, true, out var status))
+            {
+                query = query.Where(p => p.Status == status);
+            }
+        }
+        
+        if (!string.IsNullOrEmpty(parameters.ClientInfo))
+        {
+            query = query.Where(p => p.ClientInfo.Contains(parameters.ClientInfo));
+        }
+        
+        if (!string.IsNullOrEmpty(parameters.Address))
+        {
+            query = query.Where(p => p.Address.Contains(parameters.Address));
+        }
+        
+        if (parameters.ManagerId.HasValue)
+        {
+            query = query.Where(p => p.ProjectManagerId == parameters.ManagerId.Value);
+        }
+        
+        if (parameters.StartDateAfter.HasValue)
+        {
+            query = query.Where(p => p.StartDate >= parameters.StartDateAfter.Value);
+        }
+        
+        if (parameters.StartDateBefore.HasValue)
+        {
+            query = query.Where(p => p.StartDate <= parameters.StartDateBefore.Value);
+        }
+        
+        if (parameters.EstimatedEndDateAfter.HasValue)
+        {
+            query = query.Where(p => p.EstimatedEndDate >= parameters.EstimatedEndDateAfter.Value);
+        }
+        
+        if (parameters.EstimatedEndDateBefore.HasValue)
+        {
+            query = query.Where(p => p.EstimatedEndDate <= parameters.EstimatedEndDateBefore.Value);
+        }
+        
+        return query;
     }
 
     private ProjectDto MapToDto(Project project)

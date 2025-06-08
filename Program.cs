@@ -138,6 +138,7 @@ builder.Services.AddScoped<ITaskService, TaskService>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IImageService, ImageService>();
 builder.Services.AddScoped<ICloudStorageService, CloudStorageService>();
+builder.Services.AddScoped<IQueryService, QueryService>();
 
 // Legacy service for backwards compatibility
 builder.Services.AddScoped<ITodoService, TodoService>();

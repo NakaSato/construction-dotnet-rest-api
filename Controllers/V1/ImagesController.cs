@@ -17,11 +17,13 @@ namespace dotnet_rest_api.Controllers.V1;
 public class ImagesController : ControllerBase
 {
     private readonly IImageService _imageService;
+    private readonly IQueryService _queryService;
     private readonly ILogger<ImagesController> _logger;
 
-    public ImagesController(IImageService imageService, ILogger<ImagesController> logger)
+    public ImagesController(IImageService imageService, IQueryService queryService, ILogger<ImagesController> logger)
     {
         _imageService = imageService;
+        _queryService = queryService;
         _logger = logger;
     }
 
@@ -319,5 +321,156 @@ public class ImagesController : ControllerBase
             _logger.LogError(ex, "Error in bulk upload");
             return StatusCode(500, "An error occurred during bulk upload");
         }
+    }
+
+    /// <summary>
+    /// Gets all images for a specific project with advanced querying capabilities
+    /// </summary>
+    /// <param name="projectId">Project ID</param>
+    /// <param name="parameters">Advanced query parameters</param>
+    /// <returns>Enhanced paginated list of project images with metadata</returns>
+    [HttpGet("project/{projectId:guid}/advanced")]
+    public async Task<ActionResult<EnhancedPagedResult<ImageMetadataDto>>> GetProjectImagesAdvanced(
+        Guid projectId,
+        [FromQuery] ImageQueryParameters parameters)
+    {
+        try
+        {
+            // Validate pagination parameters
+            if (parameters.PageNumber < 1)
+                return BadRequest("Page number must be greater than 0");
+
+            if (parameters.PageSize < 1 || parameters.PageSize > 100)
+                return BadRequest("Page size must be between 1 and 100");
+
+            // Set the project ID in parameters
+            parameters.ProjectId = projectId;
+
+            // Parse filters from query string if not already populated
+            if (!parameters.Filters.Any() && Request.Query.Any())
+            {
+                parameters.Filters = ParseFiltersFromQuery(Request.Query);
+            }
+
+            var result = await _imageService.GetProjectImagesAsync(projectId, parameters);
+
+            if (!result.Success)
+                return BadRequest(result.Message);
+
+            return Ok(result.Data);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error retrieving project images with advanced query {ProjectId}", projectId);
+            return StatusCode(500, "An error occurred while retrieving project images");
+        }
+    }
+
+    /// <summary>
+    /// Gets project images with rich HATEOAS pagination and enhanced metadata
+    /// </summary>
+    [HttpGet("project/{projectId:guid}/rich")]
+    public async Task<ActionResult<ApiResponseWithPagination<ImageMetadataDto>>> GetProjectImagesWithRichPagination(
+        Guid projectId,
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 10,
+        [FromQuery] Guid? taskId = null,
+        [FromQuery] string? contentType = null,
+        [FromQuery] string? deviceModel = null,
+        [FromQuery] string? sortBy = null,
+        [FromQuery] string? sortOrder = "desc")
+    {
+        try
+        {
+            // Validate pagination parameters
+            if (page < 1)
+                return BadRequest("Page number must be greater than 0.");
+
+            if (pageSize < 1 || pageSize > 100)
+                return BadRequest("Page size must be between 1 and 100.");
+
+            // Create query parameters
+            var parameters = new ImageQueryParameters
+            {
+                PageNumber = page,
+                PageSize = pageSize,
+                ProjectId = projectId,
+                TaskId = taskId,
+                ContentType = contentType,
+                DeviceModel = deviceModel,
+                SortBy = sortBy,
+                SortOrder = sortOrder
+            };
+
+            // Get data using existing service
+            var serviceResult = await _imageService.GetProjectImagesAsync(projectId, parameters);
+            if (!serviceResult.Success)
+                return BadRequest(serviceResult.Message);
+
+            // Build base URL for HATEOAS links
+            var baseUrl = $"{Request.Scheme}://{Request.Host}{Request.Path}";
+            
+            // Build query parameters for HATEOAS links
+            var queryParams = new Dictionary<string, string>();
+            if (taskId.HasValue) queryParams.Add("taskId", taskId.Value.ToString());
+            if (!string.IsNullOrEmpty(contentType)) queryParams.Add("contentType", contentType);
+            if (!string.IsNullOrEmpty(deviceModel)) queryParams.Add("deviceModel", deviceModel);
+            if (!string.IsNullOrEmpty(sortBy)) queryParams.Add("sortBy", sortBy);
+            if (!string.IsNullOrEmpty(sortOrder)) queryParams.Add("sortOrder", sortOrder);
+
+            // Create rich paginated response using QueryService
+            var response = _queryService.CreateRichPaginatedResponse(
+                serviceResult.Data!.Items,
+                serviceResult.Data.TotalCount,
+                page,
+                pageSize,
+                baseUrl,
+                queryParams,
+                "Project images retrieved successfully"
+            );
+
+            return Ok(response);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error retrieving project images with rich pagination for project {ProjectId}", projectId);
+            return StatusCode(500, new ApiResponseWithPagination<ImageMetadataDto>
+            {
+                Success = false,
+                Message = "An error occurred while retrieving project images",
+                Errors = new List<string> { ex.Message }
+            });
+        }
+    }
+
+    private List<FilterParameter> ParseFiltersFromQuery(IQueryCollection query)
+    {
+        var filters = new List<FilterParameter>();
+        
+        foreach (var kvp in query)
+        {
+            if (kvp.Key.StartsWith("filter."))
+            {
+                var parts = kvp.Key.Split('.');
+                if (parts.Length >= 3)
+                {
+                    var field = parts[1];
+                    var op = parts[2];
+                    var value = kvp.Value.FirstOrDefault();
+                    
+                    if (!string.IsNullOrEmpty(value))
+                    {
+                        filters.Add(new FilterParameter
+                        {
+                            Field = field,
+                            Operator = op,
+                            Value = value
+                        });
+                    }
+                }
+            }
+        }
+        
+        return filters;
     }
 }
