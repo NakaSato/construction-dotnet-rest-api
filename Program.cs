@@ -167,7 +167,13 @@ if (app.Environment.IsDevelopment())
     });
 }
 
-app.UseHttpsRedirection();
+// Configure HTTPS redirection based on environment and configuration
+if (!app.Environment.IsDevelopment() || 
+    builder.Configuration.GetValue<bool>("ForceHttpsRedirection", false))
+{
+    app.UseHttpsRedirection();
+}
+
 app.UseCors();
 
 // Serve static files for uploaded images
