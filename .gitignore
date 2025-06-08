@@ -387,3 +387,7 @@ secrets.json
 cloudinary.json
 aws-config.json
 azure-config.json
+
+# Azure deployment sensitive files
+azure-resources-info.txt
+scripts/setup-github-secrets-with-values.sh

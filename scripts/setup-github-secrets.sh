@@ -1,50 +1,67 @@
-# GitHub Actions Secrets Setup Script
-# Run this script to set up all required GitHub secrets for Azure deployment
+#!/bin/bash
 
-# Azure Service Principal (run this first)
-echo "Creating Azure Service Principal..."
-az ad sp create-for-rbac \
-  --name "github-actions-solar-projects" \
-  --role contributor \
-  --scopes /subscriptions/YOUR_SUBSCRIPTION_ID \
-  --sdk-auth
+# Setup GitHub Secrets for Solar Projects API
+# This script shows you what secrets need to be set in your GitHub repository
+# IMPORTANT: The actual secret values are stored securely and not included in this repository
 
+echo "🔐 GitHub Secrets Setup for Solar Projects API"
+echo "=============================================="
 echo ""
-echo "📋 GitHub Secrets to Configure:"
-echo "================================"
-
+echo "Please set the following secrets in your GitHub repository:"
+echo "Go to: Repository Settings > Secrets and variables > Actions"
 echo ""
-echo "🔐 Azure Configuration:"
-echo "AZURE_CREDENTIALS           - Output from the service principal command above"
-echo "AZURE_RESOURCE_GROUP         - rg-solar-projects-production"
-echo "ACR_USERNAME                 - From Azure Container Registry"
-echo "ACR_PASSWORD                 - From Azure Container Registry"
 
+echo "📋 Required GitHub Secrets:"
+echo "=========================="
 echo ""
-echo "🗄️  Database Configuration:"
-echo "AZURE_DB_CONNECTION_STRING   - PostgreSQL connection string"
-echo "DB_ADMIN_PASSWORD            - Strong password for database admin"
 
+echo "1. AZURE_CREDENTIALS"
+echo "   Description: Service Principal JSON for Azure authentication"
+echo "   Note: Get actual value from local setup script or Azure administrator"
 echo ""
-echo "🔑 JWT Configuration:"
-echo "JWT_SECRET_KEY               - $(openssl rand -base64 64)"
-echo "JWT_ISSUER                   - SolarProjectsAPI"
-echo "JWT_AUDIENCE                 - SolarProjectsClients"
 
+echo "2. AZURE_SUBSCRIPTION_ID"
+echo "   Value: ea02bfff-4d3f-4d0c-ac62-613e82d307b7"
 echo ""
-echo "☁️  Cloudinary Configuration:"
-echo "CLOUDINARY_CLOUD_NAME        - Your Cloudinary cloud name"
-echo "CLOUDINARY_API_KEY           - Your Cloudinary API key"
-echo "CLOUDINARY_API_SECRET        - Your Cloudinary API secret"
 
+echo "3. AZURE_RESOURCE_GROUP"
+echo "   Value: rg-solar-projects-dev"
 echo ""
-echo "🎯 Example Commands to Set Secrets:"
-echo "gh secret set AZURE_CREDENTIALS --body 'SERVICE_PRINCIPAL_JSON'"
-echo "gh secret set JWT_SECRET_KEY --body '$(openssl rand -base64 64)'"
-echo "gh secret set AZURE_RESOURCE_GROUP --body 'rg-solar-projects-production'"
 
+echo "4. AZURE_APP_NAME"
+echo "   Value: solar-projects-api-dev"
 echo ""
-echo "⚠️  Remember to:"
-echo "1. Replace YOUR_SUBSCRIPTION_ID with your actual Azure subscription ID"
-echo "2. Create the secrets in your GitHub repository settings"
-echo "3. Test the deployment in staging environment first"
+
+echo "5. ACR_LOGIN_SERVER"
+echo "   Value: solarprojacr1749359812.azurecr.io"
+echo ""
+
+echo "6. ACR_USERNAME"
+echo "   Value: solarprojacr1749359812"
+echo ""
+
+echo "7. ACR_PASSWORD"
+echo "   Description: Azure Container Registry password"
+echo "   Note: Get from Azure Portal > Container Registry > Access keys"
+echo ""
+
+echo "8. DATABASE_CONNECTION_STRING"
+echo "   Description: PostgreSQL connection string"
+echo "   Format: Server=solar-db-1749364020.postgres.database.azure.com;Database=SolarProjectsDb;User Id=solaradmin;Password=YOUR_PASSWORD;Port=5432;SSL Mode=Require;"
+echo ""
+
+echo "9. APPLICATIONINSIGHTS_CONNECTION_STRING"
+echo "   Value: InstrumentationKey=6694e2bb-efd8-4b50-9d2b-ad9a80177827;IngestionEndpoint=https://eastus-8.in.applicationinsights.azure.com/;LiveEndpoint=https://eastus.livediagnostics.monitor.azure.com/;ApplicationId=bf1318a1-dacb-45ff-9ffc-18d70800e36a"
+echo ""
+
+echo "🔗 Quick Setup URLs:"
+echo "   GitHub Secrets: https://github.com/YOUR-USERNAME/YOUR-REPO/settings/secrets/actions"
+echo "   Azure Portal: https://portal.azure.com/#@/resource/subscriptions/ea02bfff-4d3f-4d0c-ac62-613e82d307b7/resourceGroups/rg-solar-projects-dev"
+echo ""
+
+echo "⚠️  SECURITY NOTE:"
+echo "   The actual secret values are stored securely and not included in this repository."
+echo "   Contact the Azure administrator or check local setup files for actual values."
+echo ""
+
+echo "✅ After setting all secrets, push to main branch to trigger deployment!"
