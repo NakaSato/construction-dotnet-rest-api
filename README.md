@@ -1,49 +1,102 @@
-# dotnet REST API
+# Solar Projects REST API
 
-This project is a simple REST API built using .NET that manages Todo items. It provides a set of endpoints to perform CRUD (Create, Read, Update, Delete) operations on Todo items.
+This project is a comprehensive REST API built using .NET 9.0 for managing solar projects, tasks, and todo items. It provides complete CRUD operations with modern features including JWT authentication, file uploads, database integration, and Azure deployment capabilities.
 
-## Project Structure
+## 🚀 Quick Start
 
-- **Controllers**
-  - `TodoController.cs`: Manages HTTP requests related to Todo items.
+### **Option 1: Local Development (Recommended)**
+```bash
+# Clone and navigate to the project
+git clone <repository-url>
+cd dotnet-rest-api
+
+# Restore dependencies
+dotnet restore
+
+# Run the application
+dotnet run --urls "http://localhost:5001"
+
+# Visit http://localhost:5001 for Swagger documentation
+```
+
+### **Option 2: Docker Development**
+```bash
+# Start with Docker Compose (includes PostgreSQL)
+docker-compose -f docker-compose.dev.yml up -d
+
+# Application will be available at http://localhost:5001
+```
+
+## 📱 Current Status
+
+✅ **Application Running**: http://localhost:5001  
+✅ **Swagger UI**: http://localhost:5001 (Interactive API documentation)  
+✅ **Health Check**: http://localhost:5001/health  
+✅ **Todo API**: Full CRUD operations working  
+✅ **PostgreSQL**: Available via Docker on port 5432  
+✅ **Azure Deployment**: Infrastructure ready (see `DEPLOYMENT_READY.md`)  
+
+## 🏗️ Project Structure
+
+- **Controllers/**
+  - `TodoController.cs`: Legacy Todo item management
+  - `HealthController.cs`: Application health monitoring
+  - `V1/`: Versioned API controllers (Auth, Projects, Tasks, Users, Images)
   
-- **Models**
-  - `TodoItem.cs`: Defines the data structure of a Todo item.
+- **Models/**
+  - `TodoItem.cs`: Todo data structure
+  - Domain models for solar project management
   
-- **Services**
-  - `ITodoService.cs`: Declares the contract for Todo services.
+- **Services/**
+  - `TodoService.cs`: Todo business logic
+  - Project, Task, User, Auth, and Image services
   
-- **Data**
-  - `TodoContext.cs`: Manages the database connection and access to Todo items.
+- **Data/**
+  - `TodoContext.cs`: Database contexts (In-Memory + PostgreSQL)
   
-- **Program.cs**: Entry point of the application, sets up the web host and middleware.
-  
-- **appsettings.json**: Contains configuration settings for the application.
-  
-- **appsettings.Development.json**: Contains development-specific configuration settings.
-  
-- **dotnet-rest-api.csproj**: Project file defining dependencies and build settings.
+- **Migrations/**
+  - Entity Framework Core database migrations
 
-## Setup Instructions
+## 🔧 Development Commands
 
-1. **Clone the repository**:
-   ```
-   git clone <repository-url>
-   cd dotnet-rest-api
-   ```
+### **Running the Application**
+```bash
+# Standard run
+dotnet run --urls "http://localhost:5001"
 
-2. **Restore dependencies**:
-   ```
-   dotnet restore
-   ```
+# Watch mode (auto-reload on changes)
+dotnet watch run --urls "http://localhost:5001"
 
-3. **Run the application**:
-   ```
-   dotnet run
-   ```
+# Build project
+dotnet build
 
-4. **Access the API**:
-   The API will be available at `http://localhost:5000` (or the configured port).
+# Run tests
+dotnet test
+```
+
+### **Database Management**
+```bash
+# Create migration
+dotnet ef migrations add YourMigrationName --context ApplicationDbContext
+
+# Update database
+dotnet ef database update --context ApplicationDbContext
+
+# Drop database
+dotnet ef database drop --context ApplicationDbContext
+```
+
+### **Docker Commands**
+```bash
+# Start development environment
+docker-compose -f docker-compose.dev.yml up -d
+
+# View logs
+docker-compose -f docker-compose.dev.yml logs -f
+
+# Stop services
+docker-compose -f docker-compose.dev.yml down
+```
 
 ## Usage
 

@@ -1,7 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.OpenApi.Models;
 using System.Text;
 using System.Reflection;
@@ -191,20 +190,20 @@ using (var scope = app.Services.CreateScope())
     
     try
     {
-        // Apply migrations for PostgreSQL (ApplicationDbContext)
-        var context = services.GetRequiredService<ApplicationDbContext>();
+        // Apply migrations for PostgreSQL (ApplicationDbContext) - Temporarily disabled for local dev
+        // var context = services.GetRequiredService<ApplicationDbContext>();
         
-        if (app.Environment.IsDevelopment() || Environment.GetEnvironmentVariable("APPLY_MIGRATIONS") == "true")
-        {
-            logger.LogInformation("Applying database migrations...");
-            context.Database.Migrate();
-            logger.LogInformation("Database migrations applied successfully.");
-        }
-        else
-        {
-            // In production, ensure database exists but don't auto-migrate
-            context.Database.EnsureCreated();
-        }
+        // if (app.Environment.IsDevelopment() || Environment.GetEnvironmentVariable("APPLY_MIGRATIONS") == "true")
+        // {
+        //     logger.LogInformation("Applying database migrations...");
+        //     context.Database.Migrate();
+        //     logger.LogInformation("Database migrations applied successfully.");
+        // }
+        // else
+        // {
+        //     // In production, ensure database exists but don't auto-migrate
+        //     context.Database.EnsureCreated();
+        // }
         
         // Legacy context (in-memory)
         var todoContext = services.GetRequiredService<TodoContext>();
