@@ -170,6 +170,35 @@ public class UsersController : ControllerBase
     }
 
     /// <summary>
+    /// Partially updates an existing user
+    /// </summary>
+    /// <param name="id">User ID</param>
+    /// <param name="patchUserRequest">User partial update data</param>
+    /// <returns>Updated user</returns>
+    [HttpPatch("{id:guid}")]
+    [Authorize(Roles = "Admin")]
+    [NoCache] // No caching for write operations
+    public async Task<ActionResult<UserDto>> PatchUser(Guid id, [FromBody] PatchUserRequest patchUserRequest)
+    {
+        try
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            var result = await _userService.PatchUserAsync(id, patchUserRequest);
+            if (!result.Success)
+                return NotFound(result.Message);
+            
+            return Ok(result.Data);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error patching user {UserId}", id);
+            return StatusCode(500, "An error occurred while updating the user.");
+        }
+    }
+
+    /// <summary>
     /// Activates a user account
     /// </summary>
     /// <param name="id">User ID</param>

@@ -478,6 +478,144 @@ public class CachedTaskService : ITaskService
         }
     }
 
+    public async Task<ApiResponse<TaskDto>> PatchTaskAsync(Guid taskId, PatchTaskRequest request)
+    {
+        try
+        {
+            var task = await _context.ProjectTasks.FindAsync(taskId);
+            if (task == null)
+            {
+                return new ApiResponse<TaskDto>
+                {
+                    Success = false,
+                    Message = "Task not found"
+                };
+            }
+
+            // Store original values for cache invalidation
+            var originalProjectId = task.ProjectId;
+            var originalAssigneeId = task.AssignedTechnicianId;
+            bool hasChanges = false;
+
+            // Only update provided fields
+            if (!string.IsNullOrEmpty(request.Title))
+            {
+                task.Title = request.Title;
+                hasChanges = true;
+            }
+
+            if (!string.IsNullOrEmpty(request.Description))
+            {
+                task.Description = request.Description;
+                hasChanges = true;
+            }
+
+            if (!string.IsNullOrEmpty(request.Status))
+            {
+                if (!Enum.TryParse<Models.TaskStatus>(request.Status, true, out var taskStatus))
+                {
+                    return new ApiResponse<TaskDto>
+                    {
+                        Success = false,
+                        Message = "Invalid task status"
+                    };
+                }
+                
+                task.Status = taskStatus;
+                if (taskStatus == Models.TaskStatus.Completed)
+                {
+                    task.CompletionDate = DateTime.UtcNow;
+                }
+                hasChanges = true;
+            }
+
+            if (request.DueDate.HasValue)
+            {
+                task.DueDate = request.DueDate.Value;
+                hasChanges = true;
+            }
+
+            if (request.AssignedTechnicianId.HasValue)
+            {
+                // Verify assigned technician exists
+                var userExists = await _context.Users.AnyAsync(u => u.UserId == request.AssignedTechnicianId.Value);
+                if (!userExists)
+                {
+                    return new ApiResponse<TaskDto>
+                    {
+                        Success = false,
+                        Message = "Assigned technician not found"
+                    };
+                }
+                task.AssignedTechnicianId = request.AssignedTechnicianId.Value;
+                hasChanges = true;
+            }
+
+            if (hasChanges)
+            {
+                await _context.SaveChangesAsync();
+
+                // Load the task with related data
+                var updatedTask = await _context.ProjectTasks
+                    .Include(t => t.AssignedTechnician)
+                    .ThenInclude(u => u!.Role)
+                    .Include(t => t.Project)
+                    .FirstAsync(t => t.TaskId == task.TaskId);
+
+                var taskDto = MapToDto(updatedTask);
+
+                // Update cache with new data
+                var taskCacheKey = $"task:id:{taskId}";
+                await _cacheService.SetAsync(taskCacheKey, taskDto, TaskDetailsCacheDuration);
+
+                // Invalidate related caches (both old and new assignee/project if changed)
+                await InvalidateTaskListCaches(originalProjectId, originalAssigneeId);
+                if (originalProjectId != task.ProjectId)
+                {
+                    await InvalidateTaskListCaches(task.ProjectId, null);
+                }
+                if (originalAssigneeId != task.AssignedTechnicianId)
+                {
+                    await InvalidateTaskListCaches(null, task.AssignedTechnicianId);
+                }
+
+                _logger.LogInformation("Patched task {TaskId}", taskId);
+
+                return new ApiResponse<TaskDto>
+                {
+                    Success = true,
+                    Data = taskDto,
+                    Message = "Task updated successfully"
+                };
+            }
+            else
+            {
+                // No changes made, return current task
+                var currentTask = await _context.ProjectTasks
+                    .Include(t => t.AssignedTechnician)
+                    .ThenInclude(u => u!.Role)
+                    .Include(t => t.Project)
+                    .FirstAsync(t => t.TaskId == task.TaskId);
+
+                return new ApiResponse<TaskDto>
+                {
+                    Success = true,
+                    Data = MapToDto(currentTask),
+                    Message = "No changes were made to the task"
+                };
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error patching task: {TaskId}", taskId);
+            return new ApiResponse<TaskDto>
+            {
+                Success = false,
+                Message = $"Error updating task: {ex.Message}"
+            };
+        }
+    }
+
     public async Task<ApiResponse<bool>> UpdateTaskStatusAsync(Guid taskId, Models.TaskStatus status)
     {
         try

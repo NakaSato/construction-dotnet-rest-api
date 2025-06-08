@@ -167,6 +167,34 @@ public class TasksController : ControllerBase
     }
 
     /// <summary>
+    /// Partially updates an existing task
+    /// </summary>
+    /// <param name="id">Task ID</param>
+    /// <param name="patchTaskRequest">Task partial update data</param>
+    /// <returns>Updated task</returns>
+    [HttpPatch("{id:guid}")]
+    [NoCache] // No caching for write operations
+    public async Task<ActionResult<TaskDto>> PatchTask(Guid id, [FromBody] PatchTaskRequest patchTaskRequest)
+    {
+        try
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            var result = await _taskService.PatchTaskAsync(id, patchTaskRequest);
+            if (!result.Success)
+                return NotFound(result.Message);
+            
+            return Ok(result.Data);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error patching task {TaskId}", id);
+            return StatusCode(500, "An error occurred while updating the task.");
+        }
+    }
+
+    /// <summary>
     /// Updates only the status of a task
     /// </summary>
     /// <param name="id">Task ID</param>

@@ -76,7 +76,7 @@ public class ProjectsController : ControllerBase
     /// Create a new project
     /// </summary>
     [HttpPost]
-    [Authorize(Roles = "Administrator,ProjectManager")]
+    [Authorize(Roles = "Admin,Manager")]
     [NoCache] // No caching for write operations
     public async Task<ActionResult<ApiResponse<ProjectDto>>> CreateProject([FromBody] CreateProjectRequest request)
     {
@@ -104,7 +104,7 @@ public class ProjectsController : ControllerBase
     /// Update an existing project
     /// </summary>
     [HttpPut("{id:guid}")]
-    [Authorize(Roles = "Administrator,ProjectManager")]
+    [Authorize(Roles = "Admin,Manager")]
     [NoCache] // No caching for write operations
     public async Task<ActionResult<ApiResponse<ProjectDto>>> UpdateProject(Guid id, [FromBody] UpdateProjectRequest request)
     {
@@ -129,10 +129,38 @@ public class ProjectsController : ControllerBase
     }
 
     /// <summary>
+    /// Partially update a project
+    /// </summary>
+    [HttpPatch("{id:guid}")]
+    [Authorize(Roles = "Admin,Manager")]
+    [NoCache] // No caching for write operations
+    public async Task<ActionResult<ApiResponse<ProjectDto>>> PatchProject(Guid id, [FromBody] PatchProjectRequest request)
+    {
+        if (!ModelState.IsValid)
+        {
+            return BadRequest(new ApiResponse<ProjectDto>
+            {
+                Success = false,
+                Message = "Invalid request data",
+                Errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage).ToList()
+            });
+        }
+
+        var result = await _projectService.PatchProjectAsync(id, request);
+        
+        if (!result.Success)
+        {
+            return NotFound(result);
+        }
+
+        return Ok(result);
+    }
+
+    /// <summary>
     /// Delete a project
     /// </summary>
     [HttpDelete("{id:guid}")]
-    [Authorize(Roles = "Administrator")]
+    [Authorize(Roles = "Admin")]
     [NoCache] // No caching for write operations
     public async Task<ActionResult<ApiResponse<bool>>> DeleteProject(Guid id)
     {

@@ -308,6 +308,136 @@ public class CachedProjectService : IProjectService
         }
     }
 
+    public async Task<ApiResponse<ProjectDto>> PatchProjectAsync(Guid projectId, PatchProjectRequest request)
+    {
+        try
+        {
+            var project = await _context.Projects
+                .Include(p => p.ProjectManager)
+                .ThenInclude(pm => pm.Role)
+                .Include(p => p.Tasks)
+                .FirstOrDefaultAsync(p => p.ProjectId == projectId);
+
+            if (project == null)
+            {
+                return new ApiResponse<ProjectDto>
+                {
+                    Success = false,
+                    Message = "Project not found"
+                };
+            }
+
+            bool hasChanges = false;
+
+            // Update only provided fields
+            if (request.ProjectName != null)
+            {
+                project.ProjectName = request.ProjectName;
+                hasChanges = true;
+            }
+
+            if (request.Address != null)
+            {
+                project.Address = request.Address;
+                hasChanges = true;
+            }
+
+            if (request.ClientInfo != null)
+            {
+                project.ClientInfo = request.ClientInfo;
+                hasChanges = true;
+            }
+
+            if (request.Status != null)
+            {
+                if (!Enum.TryParse<ProjectStatus>(request.Status, out var status))
+                {
+                    return new ApiResponse<ProjectDto>
+                    {
+                        Success = false,
+                        Message = "Invalid project status"
+                    };
+                }
+                project.Status = status;
+                hasChanges = true;
+            }
+
+            if (request.StartDate.HasValue)
+            {
+                project.StartDate = request.StartDate.Value;
+                hasChanges = true;
+            }
+
+            if (request.EstimatedEndDate.HasValue)
+            {
+                project.EstimatedEndDate = request.EstimatedEndDate.Value;
+                hasChanges = true;
+            }
+
+            if (request.ActualEndDate.HasValue)
+            {
+                project.ActualEndDate = request.ActualEndDate.Value;
+                hasChanges = true;
+            }
+
+            if (request.ProjectManagerId.HasValue)
+            {
+                // Validate project manager exists (with caching)
+                var managerCacheKey = $"user:{request.ProjectManagerId.Value}:profile";
+                var manager = await _cacheService.GetAsync<User>(managerCacheKey);
+                
+                if (manager == null)
+                {
+                    manager = await _context.Users
+                        .FirstOrDefaultAsync(u => u.UserId == request.ProjectManagerId.Value && u.IsActive);
+
+                    if (manager == null)
+                    {
+                        return new ApiResponse<ProjectDto>
+                        {
+                            Success = false,
+                            Message = "Project manager not found or inactive"
+                        };
+                    }
+                    
+                    await _cacheService.SetAsync(managerCacheKey, manager, TimeSpan.FromMinutes(30));
+                }
+
+                project.ProjectManagerId = request.ProjectManagerId.Value;
+                hasChanges = true;
+            }
+
+            if (hasChanges)
+            {
+                await _context.SaveChangesAsync();
+                
+                // Invalidate specific project cache and related caches
+                await _cacheService.InvalidateProjectDataAsync(projectId);
+                await InvalidateProjectCaches();
+                
+                _logger.LogInformation("Patched project {ProjectId}", projectId);
+            }
+
+            var response = new ApiResponse<ProjectDto>
+            {
+                Success = true,
+                Data = MapToDto(project)
+            };
+
+            return response;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error patching project {ProjectId}", projectId);
+            return new ApiResponse<ProjectDto>
+            {
+                Success = false,
+                Message = "An error occurred while updating the project",
+                Errors = new List<string> { ex.Message }
+            };
+        }
+    }
+
     public async Task<ApiResponse<bool>> DeleteProjectAsync(Guid projectId)
     {
         try

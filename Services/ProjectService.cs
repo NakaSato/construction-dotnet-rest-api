@@ -244,6 +244,115 @@ public class ProjectService : IProjectService
         }
     }
 
+    public async Task<ApiResponse<ProjectDto>> PatchProjectAsync(Guid projectId, PatchProjectRequest request)
+    {
+        try
+        {
+            var project = await _context.Projects
+                .Include(p => p.ProjectManager)
+                .ThenInclude(pm => pm.Role)
+                .Include(p => p.Tasks)
+                .FirstOrDefaultAsync(p => p.ProjectId == projectId);
+
+            if (project == null)
+            {
+                return new ApiResponse<ProjectDto>
+                {
+                    Success = false,
+                    Message = "Project not found"
+                };
+            }
+
+            // Only update provided fields
+            if (!string.IsNullOrEmpty(request.ProjectName))
+            {
+                project.ProjectName = request.ProjectName;
+            }
+
+            if (!string.IsNullOrEmpty(request.Address))
+            {
+                project.Address = request.Address;
+            }
+
+            if (!string.IsNullOrEmpty(request.ClientInfo))
+            {
+                project.ClientInfo = request.ClientInfo;
+            }
+
+            if (!string.IsNullOrEmpty(request.Status))
+            {
+                if (!Enum.TryParse<ProjectStatus>(request.Status, out var status))
+                {
+                    return new ApiResponse<ProjectDto>
+                    {
+                        Success = false,
+                        Message = "Invalid project status"
+                    };
+                }
+                project.Status = status;
+            }
+
+            if (request.StartDate.HasValue)
+            {
+                project.StartDate = request.StartDate.Value;
+            }
+
+            if (request.EstimatedEndDate.HasValue)
+            {
+                project.EstimatedEndDate = request.EstimatedEndDate.Value;
+            }
+
+            if (request.ActualEndDate.HasValue)
+            {
+                project.ActualEndDate = request.ActualEndDate.Value;
+            }
+
+            if (request.ProjectManagerId.HasValue)
+            {
+                // Validate project manager exists
+                var manager = await _context.Users
+                    .FirstOrDefaultAsync(u => u.UserId == request.ProjectManagerId.Value && u.IsActive);
+
+                if (manager == null)
+                {
+                    return new ApiResponse<ProjectDto>
+                    {
+                        Success = false,
+                        Message = "Project manager not found or inactive"
+                    };
+                }
+                project.ProjectManagerId = request.ProjectManagerId.Value;
+            }
+
+            await _context.SaveChangesAsync();
+
+            // Reload to get updated manager info
+            project = await _context.Projects
+                .Include(p => p.ProjectManager)
+                .ThenInclude(pm => pm.Role)
+                .Include(p => p.Tasks)
+                .FirstAsync(p => p.ProjectId == projectId);
+
+            var projectDto = MapToDto(project);
+
+            return new ApiResponse<ProjectDto>
+            {
+                Success = true,
+                Message = "Project updated successfully",
+                Data = projectDto
+            };
+        }
+        catch (Exception ex)
+        {
+            return new ApiResponse<ProjectDto>
+            {
+                Success = false,
+                Message = "An error occurred while updating the project",
+                Errors = new List<string> { ex.Message }
+            };
+        }
+    }
+
     public async Task<ApiResponse<bool>> DeleteProjectAsync(Guid projectId)
     {
         try

@@ -20,6 +20,7 @@ public interface IUserService
     Task<ApiResponse<PagedResult<UserDto>>> GetUsersLegacyAsync(int pageNumber = 1, int pageSize = 10, string? role = null);
     Task<ApiResponse<UserDto>> CreateUserAsync(CreateUserRequest request);
     Task<ApiResponse<UserDto>> UpdateUserAsync(Guid userId, CreateUserRequest request);
+    Task<ApiResponse<UserDto>> PatchUserAsync(Guid userId, PatchUserRequest request);
     Task<ApiResponse<bool>> DeleteUserAsync(Guid userId);
     Task<ApiResponse<bool>> ActivateUserAsync(Guid userId, bool isActive);
 }
@@ -32,6 +33,7 @@ public interface IProjectService
     Task<ApiResponse<PagedResult<ProjectDto>>> GetProjectsLegacyAsync(int pageNumber = 1, int pageSize = 10, Guid? managerId = null);
     Task<ApiResponse<ProjectDto>> CreateProjectAsync(CreateProjectRequest request);
     Task<ApiResponse<ProjectDto>> UpdateProjectAsync(Guid projectId, UpdateProjectRequest request);
+    Task<ApiResponse<ProjectDto>> PatchProjectAsync(Guid projectId, PatchProjectRequest request);
     Task<ApiResponse<bool>> DeleteProjectAsync(Guid projectId);
     Task<ApiResponse<PagedResult<ProjectDto>>> GetUserProjectsAsync(Guid userId, int pageNumber = 1, int pageSize = 10);
 }
@@ -45,6 +47,7 @@ public interface ITaskService
     Task<ApiResponse<PagedResult<TaskDto>>> GetProjectTasksAsync(Guid projectId, int pageNumber = 1, int pageSize = 10);
     Task<ApiResponse<TaskDto>> CreateTaskAsync(Guid projectId, CreateTaskRequest request);
     Task<ApiResponse<TaskDto>> UpdateTaskAsync(Guid taskId, UpdateTaskRequest request);
+    Task<ApiResponse<TaskDto>> PatchTaskAsync(Guid taskId, PatchTaskRequest request);
     Task<ApiResponse<bool>> DeleteTaskAsync(Guid taskId);
     Task<ApiResponse<bool>> UpdateTaskStatusAsync(Guid taskId, dotnet_rest_api.Models.TaskStatus status);
 }

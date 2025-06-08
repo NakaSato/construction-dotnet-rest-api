@@ -332,6 +332,97 @@ public class TaskService : ITaskService
         }
     }
 
+    public async Task<ApiResponse<TaskDto>> PatchTaskAsync(Guid taskId, PatchTaskRequest request)
+    {
+        try
+        {
+            var task = await _context.ProjectTasks.FindAsync(taskId);
+            if (task == null)
+            {
+                return new ApiResponse<TaskDto>
+                {
+                    Success = false,
+                    Message = "Task not found"
+                };
+            }
+
+            // Only update provided fields
+            if (!string.IsNullOrEmpty(request.Title))
+            {
+                task.Title = request.Title;
+            }
+
+            if (!string.IsNullOrEmpty(request.Description))
+            {
+                task.Description = request.Description;
+            }
+
+            if (!string.IsNullOrEmpty(request.Status))
+            {
+                if (!Enum.TryParse<Models.TaskStatus>(request.Status, true, out var taskStatus))
+                {
+                    return new ApiResponse<TaskDto>
+                    {
+                        Success = false,
+                        Message = "Invalid task status"
+                    };
+                }
+                
+                task.Status = taskStatus;
+                if (taskStatus == Models.TaskStatus.Completed)
+                {
+                    task.CompletionDate = DateTime.UtcNow;
+                }
+            }
+
+            if (request.DueDate.HasValue)
+            {
+                task.DueDate = request.DueDate.Value;
+            }
+
+            if (request.AssignedTechnicianId.HasValue)
+            {
+                // Verify assigned technician exists
+                var userExists = await _context.Users.AnyAsync(u => u.UserId == request.AssignedTechnicianId.Value);
+                if (!userExists)
+                {
+                    return new ApiResponse<TaskDto>
+                    {
+                        Success = false,
+                        Message = "Assigned technician not found"
+                    };
+                }
+                task.AssignedTechnicianId = request.AssignedTechnicianId.Value;
+            }
+
+            await _context.SaveChangesAsync();
+
+            // Load the task with related data
+            var updatedTask = await _context.ProjectTasks
+                .Include(t => t.AssignedTechnician)
+                .ThenInclude(u => u!.Role)
+                .Include(t => t.Project)
+                .FirstAsync(t => t.TaskId == task.TaskId);
+
+            var taskDto = MapToDto(updatedTask);
+
+            return new ApiResponse<TaskDto>
+            {
+                Success = true,
+                Data = taskDto,
+                Message = "Task updated successfully"
+            };
+        }
+        catch (Exception ex)
+        {
+            return new ApiResponse<TaskDto>
+            {
+                Success = false,
+                Message = $"Error updating task: {ex.Message}"
+            };
+        }
+    }
+
     public async Task<ApiResponse<bool>> DeleteTaskAsync(Guid taskId)
     {
         try

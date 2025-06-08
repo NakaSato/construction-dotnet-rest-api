@@ -505,6 +505,137 @@ public class CachedUserService : IUserService
         }
     }
 
+    public async Task<ApiResponse<UserDto>> PatchUserAsync(Guid userId, PatchUserRequest request)
+    {
+        try
+        {
+            var user = await _context.Users
+                .Include(u => u.Role)
+                .FirstOrDefaultAsync(u => u.UserId == userId);
+
+            if (user == null)
+            {
+                return new ApiResponse<UserDto>
+                {
+                    Success = false,
+                    Message = "User not found"
+                };
+            }
+
+            // Validate unique constraints for fields being updated
+            if (request.Username != null || request.Email != null)
+            {
+                var query = _context.Users.Where(u => u.UserId != userId);
+                
+                if (request.Username != null)
+                    query = query.Where(u => u.Username == request.Username);
+                
+                if (request.Email != null)
+                    query = query.Where(u => u.Email == request.Email);
+
+                var conflictingUser = await query.FirstOrDefaultAsync();
+                if (conflictingUser != null)
+                {
+                    return new ApiResponse<UserDto>
+                    {
+                        Success = false,
+                        Message = "Username or email already exists"
+                    };
+                }
+            }
+
+            var oldUsername = user.Username; // Store for cache invalidation
+
+            // Update only provided fields
+            if (request.Username != null)
+                user.Username = request.Username;
+
+            if (request.Email != null)
+                user.Email = request.Email;
+
+            if (request.Password != null)
+                user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(request.Password);
+
+            if (request.FullName != null)
+                user.FullName = request.FullName;
+
+            if (request.RoleId.HasValue)
+            {
+                // Verify role exists (use cache if available)
+                var roleCacheKey = $"role:id:{request.RoleId.Value}";
+                var cachedRole = await _cacheService.GetAsync<string>(roleCacheKey);
+                
+                if (cachedRole == null)
+                {
+                    var role = await _context.Roles.FindAsync(request.RoleId.Value);
+                    if (role == null)
+                    {
+                        return new ApiResponse<UserDto>
+                        {
+                            Success = false,
+                            Message = "Invalid role specified"
+                        };
+                    }
+                    await _cacheService.SetAsync(roleCacheKey, role.RoleName, RolesCacheDuration);
+                }
+                user.RoleId = request.RoleId.Value;
+            }
+
+            if (request.IsActive.HasValue)
+                user.IsActive = request.IsActive.Value;
+
+            await _context.SaveChangesAsync();
+
+            // Reload user with role data to ensure fresh data
+            var updatedUser = await _context.Users
+                .Include(u => u.Role)
+                .FirstAsync(u => u.UserId == user.UserId);
+
+            var userDto = new UserDto
+            {
+                UserId = updatedUser.UserId,
+                Username = updatedUser.Username,
+                Email = updatedUser.Email,
+                FullName = updatedUser.FullName,
+                RoleName = updatedUser.Role.RoleName,
+                IsActive = updatedUser.IsActive
+            };
+
+            // Update cache with new data
+            var userIdCacheKey = $"user:id:{userId}";
+            var newUsernameCacheKey = $"user:username:{user.Username.ToLower()}";
+            var oldUsernameCacheKey = $"user:username:{oldUsername.ToLower()}";
+
+            await _cacheService.SetAsync(userIdCacheKey, userDto, UserDetailsCacheDuration);
+            await _cacheService.SetAsync(newUsernameCacheKey, userDto, UserDetailsCacheDuration);
+
+            // Remove old username cache if username changed
+            if (!oldUsername.Equals(user.Username, StringComparison.OrdinalIgnoreCase))
+            {
+                await _cacheService.RemoveAsync(oldUsernameCacheKey);
+            }
+
+            // Invalidate user lists cache
+            await InvalidateUserListCache();
+
+            return new ApiResponse<UserDto>
+            {
+                Success = true,
+                Data = userDto,
+                Message = "User updated successfully"
+            };
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error updating user: {UserId}", userId);
+            return new ApiResponse<UserDto>
+            {
+                Success = false,
+                Message = $"Error updating user: {ex.Message}"
+            };
+        }
+    }
+
     public async Task<ApiResponse<bool>> DeleteUserAsync(Guid userId)
     {
         try

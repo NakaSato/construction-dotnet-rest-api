@@ -316,6 +316,110 @@ public class UserService : IUserService
         }
     }
 
+    public async Task<ApiResponse<UserDto>> PatchUserAsync(Guid userId, PatchUserRequest request)
+    {
+        try
+        {
+            var user = await _context.Users
+                .Include(u => u.Role)
+                .FirstOrDefaultAsync(u => u.UserId == userId);
+
+            if (user == null)
+            {
+                return new ApiResponse<UserDto>
+                {
+                    Success = false,
+                    Message = "User not found"
+                };
+            }
+
+            // Validate unique constraints for fields being updated
+            if (request.Username != null || request.Email != null)
+            {
+                var query = _context.Users.Where(u => u.UserId != userId);
+                
+                if (request.Username != null)
+                    query = query.Where(u => u.Username == request.Username);
+                
+                if (request.Email != null)
+                    query = query.Where(u => u.Email == request.Email);
+
+                var conflictingUser = await query.FirstOrDefaultAsync();
+                if (conflictingUser != null)
+                {
+                    return new ApiResponse<UserDto>
+                    {
+                        Success = false,
+                        Message = "Username or email already exists"
+                    };
+                }
+            }
+
+            // Update only provided fields
+            if (request.Username != null)
+                user.Username = request.Username;
+
+            if (request.Email != null)
+                user.Email = request.Email;
+
+            if (request.Password != null)
+                user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(request.Password);
+
+            if (request.FullName != null)
+                user.FullName = request.FullName;
+
+            if (request.RoleId.HasValue)
+            {
+                // Verify role exists
+                var role = await _context.Roles.FindAsync(request.RoleId.Value);
+                if (role == null)
+                {
+                    return new ApiResponse<UserDto>
+                    {
+                        Success = false,
+                        Message = "Invalid role specified"
+                    };
+                }
+                user.RoleId = request.RoleId.Value;
+            }
+
+            if (request.IsActive.HasValue)
+                user.IsActive = request.IsActive.Value;
+
+            await _context.SaveChangesAsync();
+
+            // Reload user with role data to ensure fresh data
+            var updatedUser = await _context.Users
+                .Include(u => u.Role)
+                .FirstAsync(u => u.UserId == user.UserId);
+
+            var userDto = new UserDto
+            {
+                UserId = updatedUser.UserId,
+                Username = updatedUser.Username,
+                Email = updatedUser.Email,
+                FullName = updatedUser.FullName,
+                RoleName = updatedUser.Role.RoleName,
+                IsActive = updatedUser.IsActive
+            };
+
+            return new ApiResponse<UserDto>
+            {
+                Success = true,
+                Data = userDto,
+                Message = "User updated successfully"
+            };
+        }
+        catch (Exception ex)
+        {
+            return new ApiResponse<UserDto>
+            {
+                Success = false,
+                Message = $"Error updating user: {ex.Message}"
+            };
+        }
+    }
+
     public async Task<ApiResponse<bool>> DeleteUserAsync(Guid userId)
     {
         try
