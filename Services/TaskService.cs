@@ -20,7 +20,7 @@ public class TaskService : ITaskService
     {
         try
         {
-            var task = await _context.Tasks
+            var task = await _context.ProjectTasks
                 .Include(t => t.AssignedTechnician)
                 .ThenInclude(u => u!.Role)
                 .Include(t => t.Project)
@@ -77,7 +77,7 @@ public class TaskService : ITaskService
     {
         try
         {
-            var query = _context.Tasks
+            var query = _context.ProjectTasks
                 .Include(t => t.AssignedTechnician)
                 .ThenInclude(u => u!.Role)
                 .Include(t => t.Project)
@@ -181,7 +181,7 @@ public class TaskService : ITaskService
                 }
             }
 
-            var task = new TaskItem
+            var task = new ProjectTask
             {
                 TaskId = Guid.NewGuid(),
                 Title = request.Title,
@@ -189,15 +189,15 @@ public class TaskService : ITaskService
                 ProjectId = projectId,
                 AssignedTechnicianId = request.AssignedTechnicianId,
                 DueDate = request.DueDate,
-                Status = Models.TaskStatus.Pending,
+                Status = Models.TaskStatus.NotStarted,
                 CreatedAt = DateTime.UtcNow
             };
 
-            _context.Tasks.Add(task);
+            _context.ProjectTasks.Add(task);
             await _context.SaveChangesAsync();
 
             // Load the task with related data
-            var createdTask = await _context.Tasks
+            var createdTask = await _context.ProjectTasks
                 .Include(t => t.AssignedTechnician)
                 .ThenInclude(u => u!.Role)
                 .Include(t => t.Project)
@@ -246,7 +246,7 @@ public class TaskService : ITaskService
     {
         try
         {
-            var task = await _context.Tasks.FindAsync(taskId);
+            var task = await _context.ProjectTasks.FindAsync(taskId);
             if (task == null)
             {
                 return new ApiResponse<TaskDto>
@@ -287,7 +287,7 @@ public class TaskService : ITaskService
             await _context.SaveChangesAsync();
 
             // Load the task with related data
-            var updatedTask = await _context.Tasks
+            var updatedTask = await _context.ProjectTasks
                 .Include(t => t.AssignedTechnician)
                 .ThenInclude(u => u!.Role)
                 .Include(t => t.Project)
@@ -336,7 +336,7 @@ public class TaskService : ITaskService
     {
         try
         {
-            var task = await _context.Tasks.FindAsync(taskId);
+            var task = await _context.ProjectTasks.FindAsync(taskId);
             if (task == null)
             {
                 return new ApiResponse<bool>
@@ -346,7 +346,7 @@ public class TaskService : ITaskService
                 };
             }
 
-            _context.Tasks.Remove(task);
+            _context.ProjectTasks.Remove(task);
             await _context.SaveChangesAsync();
 
             return new ApiResponse<bool>
@@ -370,7 +370,7 @@ public class TaskService : ITaskService
     {
         try
         {
-            var task = await _context.Tasks.FindAsync(taskId);
+            var task = await _context.ProjectTasks.FindAsync(taskId);
             if (task == null)
             {
                 return new ApiResponse<bool>
@@ -410,7 +410,7 @@ public class TaskService : ITaskService
     {
         try
         {
-            var baseQuery = _context.Tasks
+            var baseQuery = _context.ProjectTasks
                 .Include(t => t.AssignedTechnician)
                 .ThenInclude(u => u!.Role)
                 .Include(t => t.Project)
@@ -469,7 +469,7 @@ public class TaskService : ITaskService
         return await GetTasksAsync(pageNumber, pageSize, projectId, assignedTechnicianId);
     }
     
-    private IQueryable<TaskItem> ApplyTaskFilters(IQueryable<TaskItem> query, TaskQueryParameters parameters)
+    private IQueryable<ProjectTask> ApplyTaskFilters(IQueryable<ProjectTask> query, TaskQueryParameters parameters)
     {
         if (!string.IsNullOrEmpty(parameters.Title))
         {
@@ -527,7 +527,7 @@ public class TaskService : ITaskService
         return query;
     }
 
-    private TaskDto MapToDto(TaskItem task)
+    private TaskDto MapToDto(ProjectTask task)
     {
         return new TaskDto
         {

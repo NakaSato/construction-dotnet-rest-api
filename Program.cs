@@ -84,10 +84,6 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.EnableSensitiveDataLogging();
 });
 
-// Keep legacy TodoContext for backwards compatibility
-builder.Services.AddDbContext<TodoContext>(options =>
-    options.UseInMemoryDatabase("TodoDb"));
-
 // Configure JWT Authentication
 var jwtKey = builder.Configuration["Jwt:Key"] ?? "DefaultSecretKeyForDevelopmentOnlyNotForProduction";
 var jwtIssuer = builder.Configuration["Jwt:Issuer"] ?? "SolarProjectsAPI";
@@ -139,9 +135,6 @@ builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IImageService, ImageService>();
 builder.Services.AddScoped<ICloudStorageService, CloudStorageService>();
 builder.Services.AddScoped<IQueryService, QueryService>();
-
-// Legacy service for backwards compatibility
-builder.Services.AddScoped<ITodoService, TodoService>();
 
 // Configure CORS
 builder.Services.AddCors(options =>
@@ -211,10 +204,6 @@ using (var scope = app.Services.CreateScope())
         //     // In production, ensure database exists but don't auto-migrate
         //     context.Database.EnsureCreated();
         // }
-        
-        // Legacy context (in-memory)
-        var todoContext = services.GetRequiredService<TodoContext>();
-        todoContext.Database.EnsureCreated();
         
         logger.LogInformation("Database initialization completed.");
     }

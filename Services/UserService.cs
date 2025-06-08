@@ -332,7 +332,7 @@ public class UserService : IUserService
 
             // Check if user has associated projects or tasks
             var hasProjects = await _context.Projects.AnyAsync(p => p.ProjectManagerId == userId);
-            var hasTasks = await _context.Tasks.AnyAsync(t => t.AssignedTechnicianId == userId);
+            var hasTasks = await _context.ProjectTasks.AnyAsync(t => t.AssignedTechnicianId == userId);
 
             if (hasProjects || hasTasks)
             {

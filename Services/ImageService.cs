@@ -77,7 +77,7 @@ public class ImageService : IImageService
             // TaskId is optional
             if (request.TaskId.HasValue)
             {
-                var taskExists = await _context.Tasks.AnyAsync(t => t.TaskId == request.TaskId.Value);
+                var taskExists = await _context.ProjectTasks.AnyAsync(t => t.TaskId == request.TaskId.Value);
                 if (!taskExists)
                 {
                     return new ApiResponse<ImageMetadataDto>
