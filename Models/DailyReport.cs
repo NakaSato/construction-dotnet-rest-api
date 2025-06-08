@@ -216,7 +216,7 @@ public class EquipmentLog
     public Guid EquipmentLogId { get; set; }
     
     [ForeignKey("DailyReport")]
-    public Guid ReportId { get; set; }
+    public Guid DailyReportId { get; set; }
     
     [Required]
     [MaxLength(200)]
@@ -225,11 +225,22 @@ public class EquipmentLog
     [Range(0, 24)]
     public double HoursUsed { get; set; }
     
+    [MaxLength(100)]
+    public string? OperatorName { get; set; } = string.Empty;
+    
+    public bool MaintenanceRequired { get; set; }
+    
+    [MaxLength(500)]
+    public string? MaintenanceNotes { get; set; } = string.Empty;
+    
     [MaxLength(500)]
     public string? Purpose { get; set; } = string.Empty;
     
     [MaxLength(500)]
     public string? Issues { get; set; } = string.Empty;
+    
+    [MaxLength(1000)]
+    public string? Notes { get; set; } = string.Empty;
     
     public DateTime CreatedAt { get; set; }
     

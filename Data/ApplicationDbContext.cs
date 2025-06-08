@@ -280,7 +280,7 @@ public class ApplicationDbContext : DbContext
         // Configure WorkProgressItem entity
         modelBuilder.Entity<WorkProgressItem>(entity =>
         {
-            entity.HasKey(wpi => wpi.WorkProgressId);
+            entity.HasKey(wpi => wpi.WorkProgressItemId);
             
             entity.Property(wpi => wpi.Activity)
                 .IsRequired()
@@ -291,7 +291,7 @@ public class ApplicationDbContext : DbContext
 
             entity.HasOne(wpi => wpi.DailyReport)
                 .WithMany(dr => dr.WorkProgressItems)
-                .HasForeignKey(wpi => wpi.ReportId)
+                .HasForeignKey(wpi => wpi.DailyReportId)
                 .OnDelete(DeleteBehavior.Cascade);
 
             entity.HasOne(wpi => wpi.Task)
@@ -310,7 +310,7 @@ public class ApplicationDbContext : DbContext
 
             entity.HasOne(pl => pl.DailyReport)
                 .WithMany(dr => dr.PersonnelLogs)
-                .HasForeignKey(pl => pl.ReportId)
+                .HasForeignKey(pl => pl.DailyReportId)
                 .OnDelete(DeleteBehavior.Cascade);
 
             entity.HasOne(pl => pl.User)
@@ -337,7 +337,7 @@ public class ApplicationDbContext : DbContext
 
             entity.HasOne(mu => mu.DailyReport)
                 .WithMany(dr => dr.MaterialUsages)
-                .HasForeignKey(mu => mu.ReportId)
+                .HasForeignKey(mu => mu.DailyReportId)
                 .OnDelete(DeleteBehavior.Cascade);
         });
 
@@ -355,14 +355,14 @@ public class ApplicationDbContext : DbContext
 
             entity.HasOne(el => el.DailyReport)
                 .WithMany(dr => dr.EquipmentLogs)
-                .HasForeignKey(el => el.ReportId)
+                .HasForeignKey(el => el.DailyReportId)
                 .OnDelete(DeleteBehavior.Cascade);
         });
 
         // Configure WorkRequest entity
         modelBuilder.Entity<WorkRequest>(entity =>
         {
-            entity.HasKey(wr => wr.RequestId);
+            entity.HasKey(wr => wr.WorkRequestId);
             
             entity.Property(wr => wr.Title)
                 .IsRequired()
@@ -393,21 +393,21 @@ public class ApplicationDbContext : DbContext
                 .HasForeignKey(wr => wr.ProjectId)
                 .OnDelete(DeleteBehavior.Cascade);
 
-            entity.HasOne(wr => wr.RequestedByUser)
+            entity.HasOne(wr => wr.RequestedBy)
                 .WithMany() // No back navigation from User
-                .HasForeignKey(wr => wr.RequestedByUserId)
+                .HasForeignKey(wr => wr.RequestedById)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            entity.HasOne(wr => wr.AssignedToUser)
+            entity.HasOne(wr => wr.AssignedTo)
                 .WithMany() // No back navigation from User
-                .HasForeignKey(wr => wr.AssignedToUserId)
+                .HasForeignKey(wr => wr.AssignedToId)
                 .OnDelete(DeleteBehavior.SetNull);
         });
 
         // Configure WorkRequestTask entity
         modelBuilder.Entity<WorkRequestTask>(entity =>
         {
-            entity.HasKey(wrt => wrt.TaskId);
+            entity.HasKey(wrt => wrt.WorkRequestTaskId);
             
             entity.Property(wrt => wrt.Title)
                 .IsRequired()
@@ -422,19 +422,19 @@ public class ApplicationDbContext : DbContext
 
             entity.HasOne(wrt => wrt.WorkRequest)
                 .WithMany(wr => wr.Tasks)
-                .HasForeignKey(wrt => wrt.RequestId)
+                .HasForeignKey(wrt => wrt.WorkRequestId)
                 .OnDelete(DeleteBehavior.Cascade);
 
             entity.HasOne(wrt => wrt.AssignedToUser)
                 .WithMany() // No back navigation from User
-                .HasForeignKey(wrt => wrt.AssignedToUserId)
+                .HasForeignKey(wrt => wrt.AssignedToId)
                 .OnDelete(DeleteBehavior.SetNull);
         });
 
         // Configure WorkRequestComment entity
         modelBuilder.Entity<WorkRequestComment>(entity =>
         {
-            entity.HasKey(wrc => wrc.CommentId);
+            entity.HasKey(wrc => wrc.WorkRequestCommentId);
             
             entity.Property(wrc => wrc.Comment)
                 .IsRequired()
@@ -445,12 +445,12 @@ public class ApplicationDbContext : DbContext
 
             entity.HasOne(wrc => wrc.WorkRequest)
                 .WithMany(wr => wr.Comments)
-                .HasForeignKey(wrc => wrc.RequestId)
+                .HasForeignKey(wrc => wrc.WorkRequestId)
                 .OnDelete(DeleteBehavior.Cascade);
 
-            entity.HasOne(wrc => wrc.User)
+            entity.HasOne(wrc => wrc.Author)
                 .WithMany() // No back navigation from User
-                .HasForeignKey(wrc => wrc.UserId)
+                .HasForeignKey(wrc => wrc.AuthorId)
                 .OnDelete(DeleteBehavior.Restrict);
         });
     }
