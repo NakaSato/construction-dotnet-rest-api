@@ -20,7 +20,7 @@ builder.Services.AddSwaggerGen(options =>
 {
     options.SwaggerDoc("v1", new OpenApiInfo 
     { 
-        Title = "Solar Project Management API", 
+        Title = "PROJECT_API", 
         Version = "v1",
         Description = "RESTful API for managing solar projects, tasks, and images"
     });
