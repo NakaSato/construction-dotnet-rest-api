@@ -784,7 +784,7 @@ public class CachedTaskService : ITaskService
         return query;
     }
 
-    private TaskDto MapToDto(ProjectTask task)
+    private static TaskDto MapToDto(ProjectTask task)
     {
         return new TaskDto
         {

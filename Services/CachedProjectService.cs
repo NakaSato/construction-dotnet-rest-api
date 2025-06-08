@@ -658,7 +658,7 @@ public class CachedProjectService : IProjectService
         return query;
     }
 
-    private ProjectDto MapToDto(Project project)
+    private static ProjectDto MapToDto(Project project)
     {
         return new ProjectDto
         {
