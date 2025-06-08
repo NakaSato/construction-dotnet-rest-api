@@ -648,3 +648,384 @@ public class QueryMetadata
     public DateTime QueryExecutedAt { get; set; } = DateTime.UtcNow;
     public string CacheStatus { get; set; } = "Miss"; // Hit, Miss, Partial
 }
+
+// Daily Reports DTOs
+public class DailyReportDto
+{
+    public Guid ReportId { get; set; }
+    public Guid ProjectId { get; set; }
+    public string ProjectName { get; set; } = string.Empty;
+    public DateTime ReportDate { get; set; }
+    public string Status { get; set; } = string.Empty;
+    public UserDto CreatedBy { get; set; } = null!;
+    public UserDto? SubmittedBy { get; set; }
+    public DateTime? SubmittedAt { get; set; }
+    public string? GeneralNotes { get; set; } = string.Empty;
+    
+    // Weather Information
+    public string? WeatherCondition { get; set; }
+    public double? Temperature { get; set; }
+    public int? Humidity { get; set; }
+    public double? WindSpeed { get; set; }
+    
+    // Work Progress Summary
+    public int TotalWorkHours { get; set; }
+    public int PersonnelOnSite { get; set; }
+    public string? SafetyIncidents { get; set; } = string.Empty;
+    public string? QualityIssues { get; set; } = string.Empty;
+    
+    public DateTime CreatedAt { get; set; }
+    public DateTime? UpdatedAt { get; set; }
+    
+    // Related data
+    public List<WorkProgressItemDto> WorkProgressItems { get; set; } = new();
+    public List<PersonnelLogDto> PersonnelLogs { get; set; } = new();
+    public List<MaterialUsageDto> MaterialUsages { get; set; } = new();
+    public List<EquipmentLogDto> EquipmentLogs { get; set; } = new();
+    public List<ImageMetadataDto> Images { get; set; } = new();
+}
+
+public class CreateDailyReportRequest
+{
+    [Required(ErrorMessage = "Project ID is required")]
+    public Guid ProjectId { get; set; }
+
+    [Required(ErrorMessage = "Report date is required")]
+    public DateTime ReportDate { get; set; }
+
+    [StringLength(2000, ErrorMessage = "General notes cannot exceed 2000 characters")]
+    public string? GeneralNotes { get; set; } = string.Empty;
+
+    [RegularExpression(@"^(Sunny|PartlyCloudy|Cloudy|Rainy|Stormy|Foggy|Snow|Windy)$", 
+        ErrorMessage = "Weather condition must be one of: Sunny, PartlyCloudy, Cloudy, Rainy, Stormy, Foggy, Snow, Windy")]
+    public string? WeatherCondition { get; set; }
+
+    [Range(-40, 50, ErrorMessage = "Temperature must be between -40 and 50 degrees")]
+    public double? Temperature { get; set; }
+
+    [Range(0, 100, ErrorMessage = "Humidity must be between 0 and 100 percent")]
+    public int? Humidity { get; set; }
+
+    [Range(0, 200, ErrorMessage = "Wind speed must be between 0 and 200 km/h")]
+    public double? WindSpeed { get; set; }
+
+    [Range(0, int.MaxValue, ErrorMessage = "Total work hours must be non-negative")]
+    public int TotalWorkHours { get; set; }
+
+    [Range(0, int.MaxValue, ErrorMessage = "Personnel on site must be non-negative")]
+    public int PersonnelOnSite { get; set; }
+
+    [StringLength(1000, ErrorMessage = "Safety incidents cannot exceed 1000 characters")]
+    public string? SafetyIncidents { get; set; } = string.Empty;
+
+    [StringLength(1000, ErrorMessage = "Quality issues cannot exceed 1000 characters")]
+    public string? QualityIssues { get; set; } = string.Empty;
+}
+
+public class UpdateDailyReportRequest
+{
+    [StringLength(2000, ErrorMessage = "General notes cannot exceed 2000 characters")]
+    public string? GeneralNotes { get; set; } = string.Empty;
+
+    [RegularExpression(@"^(Sunny|PartlyCloudy|Cloudy|Rainy|Stormy|Foggy|Snow|Windy)$", 
+        ErrorMessage = "Weather condition must be one of: Sunny, PartlyCloudy, Cloudy, Rainy, Stormy, Foggy, Snow, Windy")]
+    public string? WeatherCondition { get; set; }
+
+    [Range(-40, 50, ErrorMessage = "Temperature must be between -40 and 50 degrees")]
+    public double? Temperature { get; set; }
+
+    [Range(0, 100, ErrorMessage = "Humidity must be between 0 and 100 percent")]
+    public int? Humidity { get; set; }
+
+    [Range(0, 200, ErrorMessage = "Wind speed must be between 0 and 200 km/h")]
+    public double? WindSpeed { get; set; }
+
+    [Range(0, int.MaxValue, ErrorMessage = "Total work hours must be non-negative")]
+    public int TotalWorkHours { get; set; }
+
+    [Range(0, int.MaxValue, ErrorMessage = "Personnel on site must be non-negative")]
+    public int PersonnelOnSite { get; set; }
+
+    [StringLength(1000, ErrorMessage = "Safety incidents cannot exceed 1000 characters")]
+    public string? SafetyIncidents { get; set; } = string.Empty;
+
+    [StringLength(1000, ErrorMessage = "Quality issues cannot exceed 1000 characters")]
+    public string? QualityIssues { get; set; } = string.Empty;
+}
+
+public class WorkProgressItemDto
+{
+    public Guid WorkProgressId { get; set; }
+    public Guid ReportId { get; set; }
+    public Guid? TaskId { get; set; }
+    public string? TaskTitle { get; set; }
+    public string Activity { get; set; } = string.Empty;
+    public string Description { get; set; } = string.Empty;
+    public double HoursWorked { get; set; }
+    public int PercentComplete { get; set; }
+    public string? Issues { get; set; } = string.Empty;
+    public string? NextSteps { get; set; } = string.Empty;
+    public DateTime CreatedAt { get; set; }
+}
+
+public class CreateWorkProgressItemRequest
+{
+    [Required(ErrorMessage = "Report ID is required")]
+    public Guid ReportId { get; set; }
+
+    public Guid? TaskId { get; set; }
+
+    [Required(ErrorMessage = "Activity is required")]
+    [StringLength(200, MinimumLength = 3, ErrorMessage = "Activity must be between 3 and 200 characters")]
+    public string Activity { get; set; } = string.Empty;
+
+    [StringLength(1000, ErrorMessage = "Description cannot exceed 1000 characters")]
+    public string Description { get; set; } = string.Empty;
+
+    [Range(0, 24, ErrorMessage = "Hours worked must be between 0 and 24")]
+    public double HoursWorked { get; set; }
+
+    [Range(0, 100, ErrorMessage = "Percent complete must be between 0 and 100")]
+    public int PercentComplete { get; set; }
+
+    [StringLength(500, ErrorMessage = "Issues cannot exceed 500 characters")]
+    public string? Issues { get; set; } = string.Empty;
+
+    [StringLength(500, ErrorMessage = "Next steps cannot exceed 500 characters")]
+    public string? NextSteps { get; set; } = string.Empty;
+}
+
+public class PersonnelLogDto
+{
+    public Guid PersonnelLogId { get; set; }
+    public Guid ReportId { get; set; }
+    public UserDto User { get; set; } = null!;
+    public double HoursWorked { get; set; }
+    public string? Role { get; set; } = string.Empty;
+    public string? Notes { get; set; } = string.Empty;
+    public DateTime CreatedAt { get; set; }
+}
+
+public class MaterialUsageDto
+{
+    public Guid MaterialUsageId { get; set; }
+    public Guid ReportId { get; set; }
+    public string MaterialName { get; set; } = string.Empty;
+    public double QuantityUsed { get; set; }
+    public string Unit { get; set; } = string.Empty;
+    public string? Notes { get; set; } = string.Empty;
+    public DateTime CreatedAt { get; set; }
+}
+
+public class EquipmentLogDto
+{
+    public Guid EquipmentLogId { get; set; }
+    public Guid ReportId { get; set; }
+    public string EquipmentName { get; set; } = string.Empty;
+    public double HoursUsed { get; set; }
+    public string? Purpose { get; set; } = string.Empty;
+    public string? Issues { get; set; } = string.Empty;
+    public DateTime CreatedAt { get; set; }
+}
+
+// Work Requests DTOs
+public class WorkRequestDto
+{
+    public Guid RequestId { get; set; }
+    public Guid ProjectId { get; set; }
+    public string ProjectName { get; set; } = string.Empty;
+    public string Title { get; set; } = string.Empty;
+    public string Description { get; set; } = string.Empty;
+    public string Type { get; set; } = string.Empty;
+    public string Priority { get; set; } = string.Empty;
+    public string Status { get; set; } = string.Empty;
+    public UserDto RequestedBy { get; set; } = null!;
+    public UserDto? AssignedTo { get; set; }
+    public DateTime? RequestedDate { get; set; }
+    public DateTime? RequiredByDate { get; set; }
+    public DateTime? StartedAt { get; set; }
+    public DateTime? CompletedAt { get; set; }
+    public string? Resolution { get; set; } = string.Empty;
+    public decimal? EstimatedCost { get; set; }
+    public decimal? ActualCost { get; set; }
+    public double? EstimatedHours { get; set; }
+    public double? ActualHours { get; set; }
+    public string? Location { get; set; } = string.Empty;
+    public string? Notes { get; set; } = string.Empty;
+    public DateTime CreatedAt { get; set; }
+    public DateTime? UpdatedAt { get; set; }
+    
+    // Related data
+    public List<WorkRequestTaskDto> Tasks { get; set; } = new();
+    public List<WorkRequestCommentDto> Comments { get; set; } = new();
+    public List<ImageMetadataDto> Images { get; set; } = new();
+}
+
+public class CreateWorkRequestRequest
+{
+    [Required(ErrorMessage = "Project ID is required")]
+    public Guid ProjectId { get; set; }
+
+    [Required(ErrorMessage = "Title is required")]
+    [StringLength(200, MinimumLength = 3, ErrorMessage = "Title must be between 3 and 200 characters")]
+    public string Title { get; set; } = string.Empty;
+
+    [Required(ErrorMessage = "Description is required")]
+    [StringLength(2000, MinimumLength = 10, ErrorMessage = "Description must be between 10 and 2000 characters")]
+    public string Description { get; set; } = string.Empty;
+
+    [RegularExpression(@"^(Maintenance|Repair|Installation|Inspection|Documentation|Other)$", 
+        ErrorMessage = "Type must be one of: Maintenance, Repair, Installation, Inspection, Documentation, Other")]
+    public string Type { get; set; } = "Other";
+
+    [RegularExpression(@"^(Low|Medium|High|Critical)$", 
+        ErrorMessage = "Priority must be one of: Low, Medium, High, Critical")]
+    public string Priority { get; set; } = "Medium";
+
+    public Guid? AssignedToUserId { get; set; }
+
+    public DateTime? RequiredByDate { get; set; }
+
+    [Range(0, double.MaxValue, ErrorMessage = "Estimated cost must be non-negative")]
+    public decimal? EstimatedCost { get; set; }
+
+    [Range(0, double.MaxValue, ErrorMessage = "Estimated hours must be non-negative")]
+    public double? EstimatedHours { get; set; }
+
+    [StringLength(500, ErrorMessage = "Location cannot exceed 500 characters")]
+    public string? Location { get; set; } = string.Empty;
+
+    [StringLength(1000, ErrorMessage = "Notes cannot exceed 1000 characters")]
+    public string? Notes { get; set; } = string.Empty;
+}
+
+public class UpdateWorkRequestRequest
+{
+    [Required(ErrorMessage = "Title is required")]
+    [StringLength(200, MinimumLength = 3, ErrorMessage = "Title must be between 3 and 200 characters")]
+    public string Title { get; set; } = string.Empty;
+
+    [Required(ErrorMessage = "Description is required")]
+    [StringLength(2000, MinimumLength = 10, ErrorMessage = "Description must be between 10 and 2000 characters")]
+    public string Description { get; set; } = string.Empty;
+
+    [RegularExpression(@"^(Maintenance|Repair|Installation|Inspection|Documentation|Other)$", 
+        ErrorMessage = "Type must be one of: Maintenance, Repair, Installation, Inspection, Documentation, Other")]
+    public string Type { get; set; } = "Other";
+
+    [RegularExpression(@"^(Low|Medium|High|Critical)$", 
+        ErrorMessage = "Priority must be one of: Low, Medium, High, Critical")]
+    public string Priority { get; set; } = "Medium";
+
+    [RegularExpression(@"^(Pending|InProgress|Completed|Cancelled|OnHold)$", 
+        ErrorMessage = "Status must be one of: Pending, InProgress, Completed, Cancelled, OnHold")]
+    public string Status { get; set; } = "Pending";
+
+    public Guid? AssignedToUserId { get; set; }
+
+    public DateTime? RequiredByDate { get; set; }
+
+    [StringLength(1000, ErrorMessage = "Resolution cannot exceed 1000 characters")]
+    public string? Resolution { get; set; } = string.Empty;
+
+    [Range(0, double.MaxValue, ErrorMessage = "Estimated cost must be non-negative")]
+    public decimal? EstimatedCost { get; set; }
+
+    [Range(0, double.MaxValue, ErrorMessage = "Actual cost must be non-negative")]
+    public decimal? ActualCost { get; set; }
+
+    [Range(0, double.MaxValue, ErrorMessage = "Estimated hours must be non-negative")]
+    public double? EstimatedHours { get; set; }
+
+    [Range(0, double.MaxValue, ErrorMessage = "Actual hours must be non-negative")]
+    public double? ActualHours { get; set; }
+
+    [StringLength(500, ErrorMessage = "Location cannot exceed 500 characters")]
+    public string? Location { get; set; } = string.Empty;
+
+    [StringLength(1000, ErrorMessage = "Notes cannot exceed 1000 characters")]
+    public string? Notes { get; set; } = string.Empty;
+}
+
+public class WorkRequestTaskDto
+{
+    public Guid TaskId { get; set; }
+    public Guid RequestId { get; set; }
+    public string Title { get; set; } = string.Empty;
+    public string Description { get; set; } = string.Empty;
+    public string Status { get; set; } = string.Empty;
+    public UserDto? AssignedTo { get; set; }
+    public DateTime? DueDate { get; set; }
+    public DateTime? CompletedAt { get; set; }
+    public double? EstimatedHours { get; set; }
+    public double? ActualHours { get; set; }
+    public string? Notes { get; set; } = string.Empty;
+    public DateTime CreatedAt { get; set; }
+    public DateTime? UpdatedAt { get; set; }
+}
+
+public class CreateWorkRequestTaskRequest
+{
+    [Required(ErrorMessage = "Request ID is required")]
+    public Guid RequestId { get; set; }
+
+    [Required(ErrorMessage = "Title is required")]
+    [StringLength(200, MinimumLength = 3, ErrorMessage = "Title must be between 3 and 200 characters")]
+    public string Title { get; set; } = string.Empty;
+
+    [StringLength(1000, ErrorMessage = "Description cannot exceed 1000 characters")]
+    public string Description { get; set; } = string.Empty;
+
+    public Guid? AssignedToUserId { get; set; }
+
+    public DateTime? DueDate { get; set; }
+
+    [Range(0, double.MaxValue, ErrorMessage = "Estimated hours must be non-negative")]
+    public double? EstimatedHours { get; set; }
+
+    [StringLength(500, ErrorMessage = "Notes cannot exceed 500 characters")]
+    public string? Notes { get; set; } = string.Empty;
+}
+
+public class UpdateWorkRequestTaskRequest
+{
+    [Required(ErrorMessage = "Title is required")]
+    [StringLength(200, MinimumLength = 3, ErrorMessage = "Title must be between 3 and 200 characters")]
+    public string Title { get; set; } = string.Empty;
+
+    [StringLength(1000, ErrorMessage = "Description cannot exceed 1000 characters")]
+    public string Description { get; set; } = string.Empty;
+
+    [RegularExpression(@"^(Pending|InProgress|Completed|Cancelled|OnHold)$", 
+        ErrorMessage = "Status must be one of: Pending, InProgress, Completed, Cancelled, OnHold")]
+    public string Status { get; set; } = "Pending";
+
+    public Guid? AssignedToUserId { get; set; }
+
+    public DateTime? DueDate { get; set; }
+
+    [Range(0, double.MaxValue, ErrorMessage = "Actual hours must be non-negative")]
+    public double? ActualHours { get; set; }
+
+    [StringLength(500, ErrorMessage = "Notes cannot exceed 500 characters")]
+    public string? Notes { get; set; } = string.Empty;
+}
+
+public class WorkRequestCommentDto
+{
+    public Guid CommentId { get; set; }
+    public Guid RequestId { get; set; }
+    public UserDto User { get; set; } = null!;
+    public string Comment { get; set; } = string.Empty;
+    public DateTime CreatedAt { get; set; }
+}
+
+public class CreateWorkRequestCommentRequest
+{
+    [Required(ErrorMessage = "Request ID is required")]
+    public Guid RequestId { get; set; }
+
+    [Required(ErrorMessage = "Comment is required")]
+    [StringLength(2000, MinimumLength = 1, ErrorMessage = "Comment must be between 1 and 2000 characters")]
+    public string Comment { get; set; } = string.Empty;
+}

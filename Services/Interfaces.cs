@@ -63,6 +63,60 @@ public interface IImageService
     Task<ApiResponse<bool>> DeleteImageAsync(Guid imageId);
 }
 
+public interface IDailyReportService
+{
+    Task<ApiResponse<DailyReportDto>> GetDailyReportByIdAsync(Guid reportId);
+    Task<ApiResponse<EnhancedPagedResult<DailyReportDto>>> GetDailyReportsAsync(DailyReportQueryParameters parameters);
+    Task<ApiResponse<PagedResult<DailyReportDto>>> GetProjectDailyReportsAsync(Guid projectId, int pageNumber = 1, int pageSize = 10);
+    Task<ApiResponse<DailyReportDto>> CreateDailyReportAsync(CreateDailyReportRequest request, Guid reporterId);
+    Task<ApiResponse<DailyReportDto>> UpdateDailyReportAsync(Guid reportId, UpdateDailyReportRequest request);
+    Task<ApiResponse<bool>> DeleteDailyReportAsync(Guid reportId);
+    Task<ApiResponse<bool>> SubmitDailyReportAsync(Guid reportId);
+    Task<ApiResponse<bool>> ApproveDailyReportAsync(Guid reportId);
+    Task<ApiResponse<bool>> RejectDailyReportAsync(Guid reportId, string? rejectionReason);
+
+    // Work Progress Items
+    Task<ApiResponse<WorkProgressItemDto>> AddWorkProgressItemAsync(Guid reportId, CreateWorkProgressItemRequest request);
+    Task<ApiResponse<WorkProgressItemDto>> UpdateWorkProgressItemAsync(Guid itemId, CreateWorkProgressItemRequest request);
+    Task<ApiResponse<bool>> DeleteWorkProgressItemAsync(Guid itemId);
+
+    // Personnel Logs
+    Task<ApiResponse<PersonnelLogDto>> AddPersonnelLogAsync(Guid reportId, PersonnelLogDto request);
+    Task<ApiResponse<bool>> DeletePersonnelLogAsync(Guid logId);
+
+    // Material Usage
+    Task<ApiResponse<MaterialUsageDto>> AddMaterialUsageAsync(Guid reportId, MaterialUsageDto request);
+    Task<ApiResponse<bool>> DeleteMaterialUsageAsync(Guid usageId);
+
+    // Equipment Logs
+    Task<ApiResponse<EquipmentLogDto>> AddEquipmentLogAsync(Guid reportId, EquipmentLogDto request);
+    Task<ApiResponse<bool>> DeleteEquipmentLogAsync(Guid logId);
+}
+
+public interface IWorkRequestService
+{
+    Task<ApiResponse<WorkRequestDto>> GetWorkRequestByIdAsync(Guid requestId);
+    Task<ApiResponse<EnhancedPagedResult<WorkRequestDto>>> GetWorkRequestsAsync(WorkRequestQueryParameters parameters);
+    Task<ApiResponse<PagedResult<WorkRequestDto>>> GetProjectWorkRequestsAsync(Guid projectId, int pageNumber = 1, int pageSize = 10);
+    Task<ApiResponse<PagedResult<WorkRequestDto>>> GetUserWorkRequestsAsync(Guid userId, int pageNumber = 1, int pageSize = 10);
+    Task<ApiResponse<WorkRequestDto>> CreateWorkRequestAsync(CreateWorkRequestRequest request, Guid requestedById);
+    Task<ApiResponse<WorkRequestDto>> UpdateWorkRequestAsync(Guid requestId, UpdateWorkRequestRequest request);
+    Task<ApiResponse<bool>> DeleteWorkRequestAsync(Guid requestId);
+    Task<ApiResponse<bool>> AssignWorkRequestAsync(Guid requestId, Guid assignedToId);
+    Task<ApiResponse<bool>> UpdateWorkRequestStatusAsync(Guid requestId, dotnet_rest_api.Models.WorkRequestStatus status);
+    Task<ApiResponse<bool>> UpdateWorkRequestPriorityAsync(Guid requestId, dotnet_rest_api.Models.WorkRequestPriority priority);
+
+    // Work Request Tasks
+    Task<ApiResponse<WorkRequestTaskDto>> AddWorkRequestTaskAsync(Guid requestId, CreateWorkRequestTaskRequest request);
+    Task<ApiResponse<WorkRequestTaskDto>> UpdateWorkRequestTaskAsync(Guid taskId, UpdateWorkRequestTaskRequest request);
+    Task<ApiResponse<bool>> DeleteWorkRequestTaskAsync(Guid taskId);
+    Task<ApiResponse<bool>> UpdateWorkRequestTaskStatusAsync(Guid taskId, dotnet_rest_api.Models.WorkRequestStatus status);
+
+    // Work Request Comments
+    Task<ApiResponse<WorkRequestCommentDto>> AddWorkRequestCommentAsync(Guid requestId, CreateWorkRequestCommentRequest request, Guid authorId);
+    Task<ApiResponse<bool>> DeleteWorkRequestCommentAsync(Guid commentId);
+}
+
 public interface ICloudStorageService
 {
     Task<string> UploadFileAsync(Stream fileStream, string fileName, string contentType);

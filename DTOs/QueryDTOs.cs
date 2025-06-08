@@ -91,6 +91,51 @@ public class ImageQueryParameters : BaseQueryParameters, IFilterableQuery
     public List<FilterParameter> Filters { get; set; } = new();
 }
 
+// Daily Report query parameters
+public class DailyReportQueryParameters : BaseQueryParameters, IFilterableQuery
+{
+    public Guid? ProjectId { get; set; }
+    public Guid? ReporterId { get; set; }
+    public string? Status { get; set; }
+    public DateTime? ReportDateAfter { get; set; }
+    public DateTime? ReportDateBefore { get; set; }
+    public string? WeatherCondition { get; set; }
+    public DateTime? CreatedAfter { get; set; }
+    public DateTime? CreatedBefore { get; set; }
+    public DateTime? UpdatedAfter { get; set; }
+    public DateTime? UpdatedBefore { get; set; }
+    public bool? HasWorkProgress { get; set; }
+    public bool? HasIssues { get; set; }
+    
+    // Generic filtering support
+    public List<FilterParameter> Filters { get; set; } = new();
+}
+
+// Work Request query parameters
+public class WorkRequestQueryParameters : BaseQueryParameters, IFilterableQuery
+{
+    public Guid? ProjectId { get; set; }
+    public Guid? RequestedById { get; set; }
+    public Guid? AssignedToId { get; set; }
+    public string? Status { get; set; }
+    public string? Priority { get; set; }
+    public string? Type { get; set; }
+    public string? Title { get; set; }
+    public DateTime? DueDateAfter { get; set; }
+    public DateTime? DueDateBefore { get; set; }
+    public DateTime? CreatedAfter { get; set; }
+    public DateTime? CreatedBefore { get; set; }
+    public DateTime? UpdatedAfter { get; set; }
+    public DateTime? UpdatedBefore { get; set; }
+    public DateTime? CompletedDateAfter { get; set; }
+    public DateTime? CompletedDateBefore { get; set; }
+    public bool? HasTasks { get; set; }
+    public bool? HasComments { get; set; }
+    
+    // Generic filtering support
+    public List<FilterParameter> Filters { get; set; } = new();
+}
+
 // Query result with metadata
 public class QueryResult<T>
 {

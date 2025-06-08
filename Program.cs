@@ -185,6 +185,10 @@ builder.Services.AddScoped<ITaskService>(provider =>
 builder.Services.AddScoped<IImageService, ImageService>();
 builder.Services.AddScoped<ICloudStorageService, CloudStorageService>();
 
+// Register Daily Report and Work Request services
+builder.Services.AddScoped<IDailyReportService, DailyReportService>();
+builder.Services.AddScoped<IWorkRequestService, WorkRequestService>();
+
 // Add rate limiting services
 builder.Services.AddRateLimit(builder.Configuration);
 

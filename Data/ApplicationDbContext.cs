@@ -18,6 +18,18 @@ public class ApplicationDbContext : DbContext
     public DbSet<Project> Projects { get; set; }
     public DbSet<ProjectTask> ProjectTasks { get; set; }
     public DbSet<ImageMetadata> ImageMetadata { get; set; }
+    
+    // Daily Reports entities
+    public DbSet<DailyReport> DailyReports { get; set; }
+    public DbSet<WorkProgressItem> WorkProgressItems { get; set; }
+    public DbSet<PersonnelLog> PersonnelLogs { get; set; }
+    public DbSet<MaterialUsage> MaterialUsages { get; set; }
+    public DbSet<EquipmentLog> EquipmentLogs { get; set; }
+    
+    // Work Requests entities
+    public DbSet<WorkRequest> WorkRequests { get; set; }
+    public DbSet<WorkRequestTask> WorkRequestTasks { get; set; }
+    public DbSet<WorkRequestComment> WorkRequestComments { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -193,6 +205,18 @@ public class ApplicationDbContext : DbContext
                 .WithMany(t => t.Images)
                 .HasForeignKey(i => i.TaskId)
                 .OnDelete(DeleteBehavior.SetNull);
+
+            // Configure relationship with DailyReport
+            entity.HasOne(i => i.DailyReport)
+                .WithMany(dr => dr.Images)
+                .HasForeignKey(i => i.DailyReportId)
+                .OnDelete(DeleteBehavior.SetNull);
+
+            // Configure relationship with WorkRequest
+            entity.HasOne(i => i.WorkRequest)
+                .WithMany(wr => wr.Images)
+                .HasForeignKey(i => i.WorkRequestId)
+                .OnDelete(DeleteBehavior.SetNull);
         });
 
         // Seed default roles
@@ -217,5 +241,217 @@ public class ApplicationDbContext : DbContext
                 CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, DateTimeKind.Utc)
             }
         );
+
+        // Configure DailyReport entity
+        modelBuilder.Entity<DailyReport>(entity =>
+        {
+            entity.HasKey(dr => dr.ReportId);
+            
+            entity.Property(dr => dr.ReportDate)
+                .IsRequired();
+            
+            entity.Property(dr => dr.Status)
+                .IsRequired()
+                .HasConversion<string>();
+                
+            entity.Property(dr => dr.WeatherCondition)
+                .HasConversion<string>();
+            
+            entity.Property(dr => dr.CreatedAt)
+                .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+            // Configure relationships
+            entity.HasOne(dr => dr.Project)
+                .WithMany() // No back navigation from Project
+                .HasForeignKey(dr => dr.ProjectId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(dr => dr.CreatedByUser)
+                .WithMany() // No back navigation from User
+                .HasForeignKey(dr => dr.CreatedByUserId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasOne(dr => dr.SubmittedByUser)
+                .WithMany() // No back navigation from User
+                .HasForeignKey(dr => dr.SubmittedByUserId)
+                .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        // Configure WorkProgressItem entity
+        modelBuilder.Entity<WorkProgressItem>(entity =>
+        {
+            entity.HasKey(wpi => wpi.WorkProgressId);
+            
+            entity.Property(wpi => wpi.Activity)
+                .IsRequired()
+                .HasMaxLength(200);
+            
+            entity.Property(wpi => wpi.CreatedAt)
+                .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+            entity.HasOne(wpi => wpi.DailyReport)
+                .WithMany(dr => dr.WorkProgressItems)
+                .HasForeignKey(wpi => wpi.ReportId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(wpi => wpi.Task)
+                .WithMany() // No back navigation from ProjectTask
+                .HasForeignKey(wpi => wpi.TaskId)
+                .OnDelete(DeleteBehavior.SetNull);
+        });
+
+        // Configure PersonnelLog entity
+        modelBuilder.Entity<PersonnelLog>(entity =>
+        {
+            entity.HasKey(pl => pl.PersonnelLogId);
+            
+            entity.Property(pl => pl.CreatedAt)
+                .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+            entity.HasOne(pl => pl.DailyReport)
+                .WithMany(dr => dr.PersonnelLogs)
+                .HasForeignKey(pl => pl.ReportId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(pl => pl.User)
+                .WithMany() // No back navigation from User
+                .HasForeignKey(pl => pl.UserId)
+                .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        // Configure MaterialUsage entity
+        modelBuilder.Entity<MaterialUsage>(entity =>
+        {
+            entity.HasKey(mu => mu.MaterialUsageId);
+            
+            entity.Property(mu => mu.MaterialName)
+                .IsRequired()
+                .HasMaxLength(200);
+            
+            entity.Property(mu => mu.Unit)
+                .IsRequired()
+                .HasMaxLength(50);
+            
+            entity.Property(mu => mu.CreatedAt)
+                .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+            entity.HasOne(mu => mu.DailyReport)
+                .WithMany(dr => dr.MaterialUsages)
+                .HasForeignKey(mu => mu.ReportId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        // Configure EquipmentLog entity
+        modelBuilder.Entity<EquipmentLog>(entity =>
+        {
+            entity.HasKey(el => el.EquipmentLogId);
+            
+            entity.Property(el => el.EquipmentName)
+                .IsRequired()
+                .HasMaxLength(200);
+            
+            entity.Property(el => el.CreatedAt)
+                .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+            entity.HasOne(el => el.DailyReport)
+                .WithMany(dr => dr.EquipmentLogs)
+                .HasForeignKey(el => el.ReportId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        // Configure WorkRequest entity
+        modelBuilder.Entity<WorkRequest>(entity =>
+        {
+            entity.HasKey(wr => wr.RequestId);
+            
+            entity.Property(wr => wr.Title)
+                .IsRequired()
+                .HasMaxLength(200);
+            
+            entity.Property(wr => wr.Description)
+                .IsRequired()
+                .HasMaxLength(2000);
+            
+            entity.Property(wr => wr.Type)
+                .IsRequired()
+                .HasConversion<string>();
+            
+            entity.Property(wr => wr.Priority)
+                .IsRequired()
+                .HasConversion<string>();
+            
+            entity.Property(wr => wr.Status)
+                .IsRequired()
+                .HasConversion<string>();
+            
+            entity.Property(wr => wr.CreatedAt)
+                .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+            // Configure relationships
+            entity.HasOne(wr => wr.Project)
+                .WithMany() // No back navigation from Project
+                .HasForeignKey(wr => wr.ProjectId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(wr => wr.RequestedByUser)
+                .WithMany() // No back navigation from User
+                .HasForeignKey(wr => wr.RequestedByUserId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasOne(wr => wr.AssignedToUser)
+                .WithMany() // No back navigation from User
+                .HasForeignKey(wr => wr.AssignedToUserId)
+                .OnDelete(DeleteBehavior.SetNull);
+        });
+
+        // Configure WorkRequestTask entity
+        modelBuilder.Entity<WorkRequestTask>(entity =>
+        {
+            entity.HasKey(wrt => wrt.TaskId);
+            
+            entity.Property(wrt => wrt.Title)
+                .IsRequired()
+                .HasMaxLength(200);
+            
+            entity.Property(wrt => wrt.Status)
+                .IsRequired()
+                .HasConversion<string>();
+            
+            entity.Property(wrt => wrt.CreatedAt)
+                .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+            entity.HasOne(wrt => wrt.WorkRequest)
+                .WithMany(wr => wr.Tasks)
+                .HasForeignKey(wrt => wrt.RequestId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(wrt => wrt.AssignedToUser)
+                .WithMany() // No back navigation from User
+                .HasForeignKey(wrt => wrt.AssignedToUserId)
+                .OnDelete(DeleteBehavior.SetNull);
+        });
+
+        // Configure WorkRequestComment entity
+        modelBuilder.Entity<WorkRequestComment>(entity =>
+        {
+            entity.HasKey(wrc => wrc.CommentId);
+            
+            entity.Property(wrc => wrc.Comment)
+                .IsRequired()
+                .HasMaxLength(2000);
+            
+            entity.Property(wrc => wrc.CreatedAt)
+                .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+            entity.HasOne(wrc => wrc.WorkRequest)
+                .WithMany(wr => wr.Comments)
+                .HasForeignKey(wrc => wrc.RequestId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(wrc => wrc.User)
+                .WithMany() // No back navigation from User
+                .HasForeignKey(wrc => wrc.UserId)
+                .OnDelete(DeleteBehavior.Restrict);
+        });
     }
 }

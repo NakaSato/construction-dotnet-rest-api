@@ -14,6 +14,12 @@ public class ImageMetadata
     [ForeignKey("Task")]
     public Guid? TaskId { get; set; }
     
+    [ForeignKey("DailyReport")]
+    public Guid? DailyReportId { get; set; }
+    
+    [ForeignKey("WorkRequest")]
+    public Guid? WorkRequestId { get; set; }
+    
     [ForeignKey("UploadedByUser")]
     public Guid UploadedByUserId { get; set; }
     
@@ -50,5 +56,7 @@ public class ImageMetadata
     // Navigation properties
     public virtual Project Project { get; set; } = null!;
     public virtual ProjectTask? Task { get; set; }
+    public virtual DailyReport? DailyReport { get; set; }
+    public virtual WorkRequest? WorkRequest { get; set; }
     public virtual User UploadedByUser { get; set; } = null!;
 }
