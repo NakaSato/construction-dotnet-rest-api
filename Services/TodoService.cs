@@ -1,5 +1,6 @@
 using dotnet_rest_api.Data;
 using dotnet_rest_api.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace dotnet_rest_api.Services;
 
@@ -17,7 +18,7 @@ public class TodoService : ITodoService
         return _context.TodoItems.ToList();
     }
 
-    public TodoItem GetTodoById(int id)
+    public TodoItem? GetTodoById(int id)
     {
         return _context.TodoItems.FirstOrDefault(t => t.Id == id);
     }
@@ -30,7 +31,28 @@ public class TodoService : ITodoService
 
     public void UpdateTodo(TodoItem todoItem)
     {
-        _context.TodoItems.Update(todoItem);
+        // First, check if entity is already being tracked
+        var existingEntity = _context.TodoItems.Local.FirstOrDefault(t => t.Id == todoItem.Id);
+        
+        if (existingEntity != null)
+        {
+            // Update the existing tracked entity
+            _context.Entry(existingEntity).CurrentValues.SetValues(todoItem);
+        }
+        else
+        {
+            // Check if the entity exists in the database without tracking it
+            var exists = _context.TodoItems.AsNoTracking().Any(t => t.Id == todoItem.Id);
+            if (!exists)
+            {
+                throw new InvalidOperationException($"Todo item with ID {todoItem.Id} not found");
+            }
+            
+            // Entity is not being tracked, so attach and mark as modified
+            _context.TodoItems.Attach(todoItem);
+            _context.Entry(todoItem).State = EntityState.Modified;
+        }
+        
         _context.SaveChanges();
     }
 

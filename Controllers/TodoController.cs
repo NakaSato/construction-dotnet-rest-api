@@ -52,17 +52,21 @@ namespace dotnet_rest_api.Controllers
         {
             if (id != todoItem.Id)
             {
-                return BadRequest();
+                return BadRequest("ID mismatch between route and body");
             }
 
-            var existingTodo = _todoService.GetTodoById(id);
-            if (existingTodo == null)
+            // Don't call GetTodoById here as it would start tracking the entity
+            // The service will handle the tracking properly
+            try
             {
+                _todoService.UpdateTodo(todoItem);
+                return NoContent();
+            }
+            catch (InvalidOperationException)
+            {
+                // If update fails, the todo might not exist
                 return NotFound();
             }
-
-            _todoService.UpdateTodo(todoItem);
-            return NoContent();
         }
 
         [HttpDelete("{id}")]
