@@ -339,8 +339,45 @@ public class ProjectService : IProjectService
             // Apply specific filters based on query parameters
             query = ApplyProjectFilters(query, parameters);
             
-            // Use the generic query service for advanced querying
-            var result = await _queryService.ExecuteQueryAsync(query.Select(p => MapToDto(p)), parameters);
+            // Execute the query first to materialize the data, avoiding the MapToDto memory leak issue
+            var totalCount = await query.CountAsync();
+            var projects = await query
+                .OrderByDescending(p => p.CreatedAt)
+                .Skip((parameters.PageNumber - 1) * parameters.PageSize)
+                .Take(parameters.PageSize)
+                .ToListAsync();
+
+            // Map to DTOs after materialization
+            var projectDtos = projects.Select(MapToDto).ToList();
+            
+            // Create the enhanced paged result
+            var result = new EnhancedPagedResult<ProjectDto>
+            {
+                Items = projectDtos,
+                TotalCount = totalCount,
+                PageNumber = parameters.PageNumber,
+                PageSize = parameters.PageSize,
+                SortBy = parameters.SortBy,
+                SortOrder = parameters.SortOrder,
+                RequestedFields = string.IsNullOrEmpty(parameters.Fields) 
+                    ? new List<string>() 
+                    : parameters.Fields.Split(',').Select(f => f.Trim()).ToList(),
+                Metadata = new QueryMetadata
+                {
+                    ExecutionTime = TimeSpan.FromMilliseconds(0), // Can be enhanced with timing
+                    FiltersApplied = DetermineFiltersApplied(parameters),
+                    QueryComplexity = DetermineQueryComplexity(parameters),
+                    QueryExecutedAt = DateTime.UtcNow,
+                    CacheStatus = "Miss"
+                },
+                Pagination = new PaginationInfo
+                {
+                    TotalItems = totalCount,
+                    TotalPages = (int)Math.Ceiling((double)totalCount / parameters.PageSize),
+                    CurrentPage = parameters.PageNumber,
+                    PageSize = parameters.PageSize
+                }
+            };
             
             return Result<EnhancedPagedResult<ProjectDto>>.Success(result, "Projects retrieved successfully");
         }
