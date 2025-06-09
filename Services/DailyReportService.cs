@@ -27,7 +27,7 @@ public class DailyReportService : IDailyReportService
                     .ThenInclude(wpi => wpi.Task)
                 .Include(r => r.PersonnelLogs)
                     .ThenInclude(pl => pl.User)
-                .Include(r => r.MaterialUsage)
+                .Include(r => r.MaterialUsages)
                 .Include(r => r.EquipmentLogs)
                 .Include(r => r.Images)
                 .FirstOrDefaultAsync(r => r.DailyReportId == reportId);
@@ -69,7 +69,7 @@ public class DailyReportService : IDailyReportService
                 .Include(r => r.Reporter)
                 .Include(r => r.WorkProgressItems)
                 .Include(r => r.PersonnelLogs)
-                .Include(r => r.MaterialUsage)
+                .Include(r => r.MaterialUsages)
                 .Include(r => r.EquipmentLogs)
                 .Include(r => r.Images)
                 .AsQueryable();
@@ -82,10 +82,20 @@ public class DailyReportService : IDailyReportService
                 query = query.Where(r => r.ReporterId == parameters.ReporterId.Value);
 
             if (!string.IsNullOrEmpty(parameters.Status))
-                query = query.Where(r => r.Status.ToString().ToLower() == parameters.Status.ToLower());
+            {
+                if (Enum.TryParse<DailyReportStatus>(parameters.Status, true, out var status))
+                {
+                    query = query.Where(r => r.Status == status);
+                }
+            }
 
             if (!string.IsNullOrEmpty(parameters.WeatherCondition))
-                query = query.Where(r => r.WeatherCondition.ToString().ToLower() == parameters.WeatherCondition.ToLower());
+            {
+                if (Enum.TryParse<WeatherCondition>(parameters.WeatherCondition, true, out var weatherCondition))
+                {
+                    query = query.Where(r => r.WeatherCondition == weatherCondition);
+                }
+            }
 
             if (parameters.ReportDateAfter.HasValue)
                 query = query.Where(r => r.ReportDate >= parameters.ReportDateAfter.Value);
@@ -105,7 +115,7 @@ public class DailyReportService : IDailyReportService
             if (parameters.HasIssues.HasValue)
                 query = query.Where(r => (!string.IsNullOrEmpty(r.Issues)) == parameters.HasIssues.Value);
 
-            var result = await _queryService.QueryAsync(query, parameters, MapToDto);
+            var result = await _queryService.ExecuteQueryAsync(query.Select(r => MapToDto(r)), parameters);
 
             return new ApiResponse<EnhancedPagedResult<DailyReportDto>>
             {
@@ -133,7 +143,7 @@ public class DailyReportService : IDailyReportService
                 .Include(r => r.Reporter)
                 .Include(r => r.WorkProgressItems)
                 .Include(r => r.PersonnelLogs)
-                .Include(r => r.MaterialUsage)
+                .Include(r => r.MaterialUsages)
                 .Include(r => r.EquipmentLogs)
                 .Include(r => r.Images)
                 .Where(r => r.ProjectId == projectId)
@@ -198,13 +208,23 @@ public class DailyReportService : IDailyReportService
                 };
             }
 
+            // Parse weather condition
+            if (!Enum.TryParse<WeatherCondition>(request.WeatherCondition, true, out var weatherCondition))
+            {
+                return new ApiResponse<DailyReportDto>
+                {
+                    Success = false,
+                    Message = "Invalid weather condition"
+                };
+            }
+
             var report = new DailyReport
             {
                 DailyReportId = Guid.NewGuid(),
                 ProjectId = request.ProjectId,
                 ReporterId = reporterId,
                 ReportDate = request.ReportDate,
-                WeatherCondition = request.WeatherCondition,
+                WeatherCondition = weatherCondition,
                 TemperatureHigh = request.TemperatureHigh,
                 TemperatureLow = request.TemperatureLow,
                 Summary = request.Summary,
@@ -225,7 +245,7 @@ public class DailyReportService : IDailyReportService
                 .Include(r => r.Reporter)
                 .Include(r => r.WorkProgressItems)
                 .Include(r => r.PersonnelLogs)
-                .Include(r => r.MaterialUsage)
+                .Include(r => r.MaterialUsages)
                 .Include(r => r.EquipmentLogs)
                 .Include(r => r.Images)
                 .FirstAsync(r => r.DailyReportId == report.DailyReportId);
@@ -257,7 +277,7 @@ public class DailyReportService : IDailyReportService
                 .Include(r => r.Reporter)
                 .Include(r => r.WorkProgressItems)
                 .Include(r => r.PersonnelLogs)
-                .Include(r => r.MaterialUsage)
+                .Include(r => r.MaterialUsages)
                 .Include(r => r.EquipmentLogs)
                 .Include(r => r.Images)
                 .FirstOrDefaultAsync(r => r.DailyReportId == reportId);
@@ -281,8 +301,18 @@ public class DailyReportService : IDailyReportService
                 };
             }
 
+            // Parse weather condition
+            if (!Enum.TryParse<WeatherCondition>(request.WeatherCondition, true, out var weatherCondition))
+            {
+                return new ApiResponse<DailyReportDto>
+                {
+                    Success = false,
+                    Message = "Invalid weather condition"
+                };
+            }
+
             // Update fields
-            report.WeatherCondition = request.WeatherCondition;
+            report.WeatherCondition = weatherCondition;
             report.TemperatureHigh = request.TemperatureHigh;
             report.TemperatureLow = request.TemperatureLow;
             report.Summary = request.Summary;
@@ -516,7 +546,7 @@ public class DailyReportService : IDailyReportService
             // Validate task exists
             if (request.TaskId.HasValue)
             {
-                var taskExists = await _context.Tasks.AnyAsync(t => t.TaskId == request.TaskId.Value);
+                var taskExists = await _context.ProjectTasks.AnyAsync(t => t.TaskId == request.TaskId.Value);
                 if (!taskExists)
                 {
                     return new ApiResponse<WorkProgressItemDto>
@@ -585,7 +615,7 @@ public class DailyReportService : IDailyReportService
             // Validate task exists if provided
             if (request.TaskId.HasValue)
             {
-                var taskExists = await _context.Tasks.AnyAsync(t => t.TaskId == request.TaskId.Value);
+                var taskExists = await _context.ProjectTasks.AnyAsync(t => t.TaskId == request.TaskId.Value);
                 if (!taskExists)
                 {
                     return new ApiResponse<WorkProgressItemDto>
@@ -788,7 +818,7 @@ public class DailyReportService : IDailyReportService
                 Notes = request.Notes
             };
 
-            _context.MaterialUsage.Add(materialUsage);
+            _context.MaterialUsages.Add(materialUsage);
             await _context.SaveChangesAsync();
 
             return new ApiResponse<MaterialUsageDto>
@@ -813,7 +843,7 @@ public class DailyReportService : IDailyReportService
     {
         try
         {
-            var usage = await _context.MaterialUsage.FindAsync(usageId);
+            var usage = await _context.MaterialUsages.FindAsync(usageId);
             if (usage == null)
             {
                 return new ApiResponse<bool>
@@ -823,7 +853,7 @@ public class DailyReportService : IDailyReportService
                 };
             }
 
-            _context.MaterialUsage.Remove(usage);
+            _context.MaterialUsages.Remove(usage);
             await _context.SaveChangesAsync();
 
             return new ApiResponse<bool>
@@ -934,15 +964,15 @@ public class DailyReportService : IDailyReportService
 
     #region Mapping Methods
 
-    private DailyReportDto MapToDto(DailyReport report)
+    private static DailyReportDto MapToDto(DailyReport report)
     {
         return new DailyReportDto
         {
             DailyReportId = report.DailyReportId,
             ProjectId = report.ProjectId,
-            ProjectName = report.Project?.ProjectName,
+            ProjectName = report.Project?.ProjectName ?? string.Empty,
             ReporterId = report.ReporterId,
-            ReporterName = report.Reporter?.FullName,
+            ReporterName = report.Reporter?.FullName ?? string.Empty,
             ReportDate = report.ReportDate,
             WeatherCondition = report.WeatherCondition.ToString(),
             TemperatureHigh = report.TemperatureHigh,
@@ -959,19 +989,19 @@ public class DailyReportService : IDailyReportService
             UpdatedAt = report.UpdatedAt,
             WorkProgressItems = report.WorkProgressItems?.Select(MapWorkProgressItemToDto).ToList() ?? new List<WorkProgressItemDto>(),
             PersonnelLogs = report.PersonnelLogs?.Select(MapPersonnelLogToDto).ToList() ?? new List<PersonnelLogDto>(),
-            MaterialUsage = report.MaterialUsage?.Select(MapMaterialUsageToDto).ToList() ?? new List<MaterialUsageDto>(),
+            MaterialUsage = report.MaterialUsages?.Select(MapMaterialUsageToDto).ToList() ?? new List<MaterialUsageDto>(),
             EquipmentLogs = report.EquipmentLogs?.Select(MapEquipmentLogToDto).ToList() ?? new List<EquipmentLogDto>(),
             ImageCount = report.Images?.Count ?? 0
         };
     }
 
-    private WorkProgressItemDto MapWorkProgressItemToDto(WorkProgressItem item)
+    private static WorkProgressItemDto MapWorkProgressItemToDto(WorkProgressItem item)
     {
         return new WorkProgressItemDto
         {
             WorkProgressItemId = item.WorkProgressItemId,
             TaskId = item.TaskId,
-            TaskTitle = item.Task?.Title,
+            TaskTitle = item.Task?.Title ?? string.Empty,
             Description = item.Description,
             PercentageComplete = item.PercentageComplete,
             HoursWorked = item.HoursWorked,
@@ -980,20 +1010,20 @@ public class DailyReportService : IDailyReportService
         };
     }
 
-    private PersonnelLogDto MapPersonnelLogToDto(PersonnelLog log)
+    private static PersonnelLogDto MapPersonnelLogToDto(PersonnelLog log)
     {
         return new PersonnelLogDto
         {
             PersonnelLogId = log.PersonnelLogId,
             UserId = log.UserId,
-            UserName = log.User?.FullName,
+            UserName = log.User?.FullName ?? string.Empty,
             HoursWorked = log.HoursWorked,
             Position = log.Position,
             Notes = log.Notes
         };
     }
 
-    private MaterialUsageDto MapMaterialUsageToDto(MaterialUsage usage)
+    private static MaterialUsageDto MapMaterialUsageToDto(MaterialUsage usage)
     {
         return new MaterialUsageDto
         {
@@ -1007,14 +1037,14 @@ public class DailyReportService : IDailyReportService
         };
     }
 
-    private EquipmentLogDto MapEquipmentLogToDto(EquipmentLog log)
+    private static EquipmentLogDto MapEquipmentLogToDto(EquipmentLog log)
     {
         return new EquipmentLogDto
         {
             EquipmentLogId = log.EquipmentLogId,
             EquipmentName = log.EquipmentName,
             HoursUsed = log.HoursUsed,
-            OperatorName = log.OperatorName,
+            OperatorName = log.OperatorName ?? string.Empty,
             MaintenanceRequired = log.MaintenanceRequired,
             MaintenanceNotes = log.MaintenanceNotes,
             Notes = log.Notes

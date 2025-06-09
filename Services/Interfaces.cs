@@ -99,12 +99,14 @@ public interface IWorkRequestService
     Task<ApiResponse<EnhancedPagedResult<WorkRequestDto>>> GetWorkRequestsAsync(WorkRequestQueryParameters parameters);
     Task<ApiResponse<PagedResult<WorkRequestDto>>> GetProjectWorkRequestsAsync(Guid projectId, int pageNumber = 1, int pageSize = 10);
     Task<ApiResponse<PagedResult<WorkRequestDto>>> GetUserWorkRequestsAsync(Guid userId, int pageNumber = 1, int pageSize = 10);
+    Task<ApiResponse<PagedResult<WorkRequestDto>>> GetAssignedWorkRequestsAsync(Guid userId, int pageNumber = 1, int pageSize = 10);
     Task<ApiResponse<WorkRequestDto>> CreateWorkRequestAsync(CreateWorkRequestRequest request, Guid requestedById);
     Task<ApiResponse<WorkRequestDto>> UpdateWorkRequestAsync(Guid requestId, UpdateWorkRequestRequest request);
     Task<ApiResponse<bool>> DeleteWorkRequestAsync(Guid requestId);
     Task<ApiResponse<bool>> AssignWorkRequestAsync(Guid requestId, Guid assignedToId);
     Task<ApiResponse<bool>> UpdateWorkRequestStatusAsync(Guid requestId, dotnet_rest_api.Models.WorkRequestStatus status);
     Task<ApiResponse<bool>> UpdateWorkRequestPriorityAsync(Guid requestId, dotnet_rest_api.Models.WorkRequestPriority priority);
+    Task<ApiResponse<WorkRequestDto>> CompleteWorkRequestAsync(Guid requestId);
 
     // Work Request Tasks
     Task<ApiResponse<WorkRequestTaskDto>> AddWorkRequestTaskAsync(Guid requestId, CreateWorkRequestTaskRequest request);

@@ -56,10 +56,10 @@ jobs:
             'health check status is 200': (r) => r.status === 200
           });
 
-          // Todo API test
-          let todoResponse = http.get(`${BASE_URL}/api/todo`);
-          check(todoResponse, {
-            'todo API status is 200': (r) => r.status === 200
+          // Solar Projects API test
+          let projectsResponse = http.get(`${BASE_URL}/api/v1/projects`);
+          check(projectsResponse, {
+            'projects API status is 200': (r) => r.status === 200
           });
 
           sleep(1);

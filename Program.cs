@@ -189,6 +189,9 @@ builder.Services.AddScoped<ICloudStorageService, CloudStorageService>();
 builder.Services.AddScoped<IDailyReportService, DailyReportService>();
 builder.Services.AddScoped<IWorkRequestService, WorkRequestService>();
 
+// Register Data Seeder service
+builder.Services.AddScoped<DataSeeder>();
+
 // Add rate limiting services
 builder.Services.AddRateLimit(builder.Configuration);
 
@@ -258,13 +261,22 @@ using (var scope = app.Services.CreateScope())
         if (app.Environment.IsDevelopment() || Environment.GetEnvironmentVariable("APPLY_MIGRATIONS") == "true")
         {
             logger.LogInformation("Applying database migrations...");
-            context.Database.Migrate();
+            await context.Database.MigrateAsync();
             logger.LogInformation("Database migrations applied successfully.");
+            
+            // Seed sample data in development
+            if (app.Environment.IsDevelopment())
+            {
+                logger.LogInformation("Seeding sample data...");
+                var dataSeeder = services.GetRequiredService<DataSeeder>();
+                await dataSeeder.SeedSampleDataAsync();
+                logger.LogInformation("Sample data seeded successfully.");
+            }
         }
         else
         {
             // In production, ensure database exists but don't auto-migrate
-            context.Database.EnsureCreated();
+            await context.Database.EnsureCreatedAsync();
         }
         
         logger.LogInformation("Database initialization completed.");
@@ -281,4 +293,4 @@ using (var scope = app.Services.CreateScope())
     }
 }
 
-app.Run();
+await app.RunAsync();

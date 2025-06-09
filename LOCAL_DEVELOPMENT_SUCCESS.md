@@ -30,7 +30,7 @@ Your .NET REST API is **running successfully** on your local machine!
 | DELETE | `/api/todo/{id}` | ✅ Working | Delete todo |
 
 ### 3. **Database Configuration** ⚠️ Partially Working
-- **In-Memory Database (TodoContext)**: ✅ Working perfectly
+- **PostgreSQL Database (ApplicationDbContext)**: ✅ Working perfectly
 - **PostgreSQL (ApplicationDbContext)**: ⚠️ Temporarily disabled for local dev
 - **Docker PostgreSQL**: ✅ Running and accessible on port 5432
 

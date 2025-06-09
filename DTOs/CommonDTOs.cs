@@ -692,9 +692,13 @@ public class DailyReportDto
     public List<WorkProgressItemDto> WorkProgressItems { get; set; } = new();
     public List<PersonnelLogDto> PersonnelLogs { get; set; } = new();
     public List<MaterialUsageDto> MaterialUsages { get; set; } = new();
+    public List<MaterialUsageDto> MaterialUsage { get; set; } = new();
     public List<EquipmentLogDto> EquipmentLogs { get; set; } = new();
     public List<ImageMetadataDto> Images { get; set; } = new();
     public int ImageCount { get; set; }
+    
+    // HATEOAS Links
+    public List<LinkDto> Links { get; set; } = new();
 }
 
 public class CreateDailyReportRequest
@@ -895,7 +899,7 @@ public class EquipmentLogDto
 // Work Requests DTOs
 public class WorkRequestDto
 {
-    public Guid RequestId { get; set; }
+    public Guid WorkRequestId { get; set; }
     public Guid ProjectId { get; set; }
     public string ProjectName { get; set; } = string.Empty;
     public string Title { get; set; } = string.Empty;
@@ -903,12 +907,14 @@ public class WorkRequestDto
     public string Type { get; set; } = string.Empty;
     public string Priority { get; set; } = string.Empty;
     public string Status { get; set; } = string.Empty;
-    public UserDto RequestedBy { get; set; } = null!;
-    public UserDto? AssignedTo { get; set; }
+    public Guid RequestedById { get; set; }
+    public string? RequestedByName { get; set; } = string.Empty;
+    public Guid? AssignedToId { get; set; }
+    public string? AssignedToName { get; set; } = string.Empty;
     public DateTime? RequestedDate { get; set; }
-    public DateTime? RequiredByDate { get; set; }
+    public DateTime? DueDate { get; set; }
     public DateTime? StartedAt { get; set; }
-    public DateTime? CompletedAt { get; set; }
+    public DateTime? CompletedDate { get; set; }
     public string? Resolution { get; set; } = string.Empty;
     public decimal? EstimatedCost { get; set; }
     public decimal? ActualCost { get; set; }
@@ -923,6 +929,10 @@ public class WorkRequestDto
     public List<WorkRequestTaskDto> Tasks { get; set; } = new();
     public List<WorkRequestCommentDto> Comments { get; set; } = new();
     public List<ImageMetadataDto> Images { get; set; } = new();
+    public int ImageCount { get; set; }
+    
+    // HATEOAS Links
+    public List<LinkDto> Links { get; set; } = new();
 }
 
 public class CreateWorkRequestRequest
@@ -946,9 +956,9 @@ public class CreateWorkRequestRequest
         ErrorMessage = "Priority must be one of: Low, Medium, High, Critical")]
     public string Priority { get; set; } = "Medium";
 
-    public Guid? AssignedToUserId { get; set; }
+    public Guid? AssignedToId { get; set; }
 
-    public DateTime? RequiredByDate { get; set; }
+    public DateTime? DueDate { get; set; }
 
     [Range(0, double.MaxValue, ErrorMessage = "Estimated cost must be non-negative")]
     public decimal? EstimatedCost { get; set; }
@@ -985,9 +995,9 @@ public class UpdateWorkRequestRequest
         ErrorMessage = "Status must be one of: Pending, InProgress, Completed, Cancelled, OnHold")]
     public string Status { get; set; } = "Pending";
 
-    public Guid? AssignedToUserId { get; set; }
+    public Guid? AssignedToId { get; set; }
 
-    public DateTime? RequiredByDate { get; set; }
+    public DateTime? DueDate { get; set; }
 
     [StringLength(1000, ErrorMessage = "Resolution cannot exceed 1000 characters")]
     public string? Resolution { get; set; } = string.Empty;
@@ -1013,7 +1023,7 @@ public class UpdateWorkRequestRequest
 
 public class WorkRequestTaskDto
 {
-    public Guid TaskId { get; set; }
+    public Guid WorkRequestTaskId { get; set; }
     public Guid RequestId { get; set; }
     public string Title { get; set; } = string.Empty;
     public string Description { get; set; } = string.Empty;
@@ -1077,9 +1087,10 @@ public class UpdateWorkRequestTaskRequest
 
 public class WorkRequestCommentDto
 {
-    public Guid CommentId { get; set; }
+    public Guid WorkRequestCommentId { get; set; }
     public Guid RequestId { get; set; }
-    public UserDto User { get; set; } = null!;
+    public Guid AuthorId { get; set; }
+    public string? AuthorName { get; set; } = string.Empty;
     public string Comment { get; set; } = string.Empty;
     public DateTime CreatedAt { get; set; }
 }
@@ -1092,4 +1103,12 @@ public class CreateWorkRequestCommentRequest
     [Required(ErrorMessage = "Comment is required")]
     [StringLength(2000, MinimumLength = 1, ErrorMessage = "Comment must be between 1 and 2000 characters")]
     public string Comment { get; set; } = string.Empty;
+}
+
+// HATEOAS Link DTO for REST API navigation
+public class LinkDto
+{
+    public string Href { get; set; } = string.Empty;
+    public string Rel { get; set; } = string.Empty;
+    public string Method { get; set; } = "GET";
 }

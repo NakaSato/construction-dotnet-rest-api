@@ -67,7 +67,7 @@ echo $SWAGGER_RESPONSE | grep -q "/api/v1/tasks/rich" && echo "✅ Tasks rich pa
 # Test 8: Legacy Endpoints
 echo ""
 echo "8️⃣  Testing Legacy Endpoints Availability..."
-echo $SWAGGER_RESPONSE | grep -q "/api/Todo" && echo "✅ Legacy Todo endpoints documented" || echo "❌ Legacy Todo endpoints missing"
+echo $SWAGGER_RESPONSE | grep -q "/api/v1/projects" && echo "✅ Solar Projects API endpoints documented" || echo "❌ Solar Projects API endpoints missing"
 
 # Test 9: Extract Sample Endpoint Details
 echo ""

@@ -1,14 +1,14 @@
 # GitHub Copilot Instructions for .NET REST API
 
-This project is a .NET 9.0 REST API for managing Todo items. Follow these instructions when working with this codebase.
+This project is a .NET 9.0 REST API for solar project management. Follow these instructions when working with this codebase.
 
 ## Project Overview
 
 - **Framework**: .NET 9.0
 - **Architecture**: Clean Architecture with Controllers, Services, and Data layers
-- **Database**: Entity Framework Core with In-Memory Database
+- **Database**: Entity Framework Core with PostgreSQL Database
 - **API Documentation**: Swagger/OpenAPI
-- **Main Entity**: TodoItem
+- **Main Entities**: Project, Task, User, DailyReport, WorkRequest
 
 ## Code Style Guidelines
 
@@ -35,10 +35,10 @@ This project is a .NET 9.0 REST API for managing Todo items. Follow these instru
 ## Project Structure
 
 ```
-/Controllers     - API controllers (TodoController.cs)
-/Models         - Domain models (TodoItem.cs)
-/Services       - Business logic (ITodoService.cs, TodoService.cs)
-/Data           - Database context (TodoContext.cs)
+/Controllers     - API controllers (V1 versioned controllers)
+/Models         - Domain models (Project, Task, User, DailyReport, WorkRequest)
+/Services       - Business logic interfaces and implementations
+/Data           - Database context (ApplicationDbContext.cs)
 /Program.cs     - Application entry point with DI configuration
 ```
 
@@ -46,40 +46,40 @@ This project is a .NET 9.0 REST API for managing Todo items. Follow these instru
 
 ### Controller Pattern
 ```csharp
-[Route("api/[controller]")]
+[Route("api/v1/[controller]")]
 [ApiController]
-public class TodoController : ControllerBase
+public class ProjectsController : ControllerBase
 {
-    private readonly ITodoService _todoService;
+    private readonly IProjectService _projectService;
     
-    public TodoController(ITodoService todoService)
+    public ProjectsController(IProjectService projectService)
     {
-        _todoService = todoService;
+        _projectService = projectService;
     }
     
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<TodoItem>>> GetTodos()
+    public async Task<ActionResult<IEnumerable<Project>>> GetProjects()
     {
-        var todos = await _todoService.GetAllTodosAsync();
-        return Ok(todos);
+        var projects = await _projectService.GetAllProjectsAsync();
+        return Ok(projects);
     }
 }
 ```
 
 ### Service Pattern
 ```csharp
-public class TodoService : ITodoService
+public class ProjectService : IProjectService
 {
-    private readonly TodoContext _context;
+    private readonly ApplicationDbContext _context;
     
-    public TodoService(TodoContext context)
+    public ProjectService(ApplicationDbContext context)
     {
         _context = context;
     }
     
-    public async Task<IEnumerable<TodoItem>> GetAllTodosAsync()
+    public async Task<IEnumerable<Project>> GetAllProjectsAsync()
     {
-        return await _context.TodoItems.ToListAsync();
+        return await _context.Projects.ToListAsync();
     }
 }
 ```
@@ -123,12 +123,14 @@ Current NuGet packages:
 
 ## API Endpoints
 
-Current Todo API endpoints:
-- `GET /api/todo` - Get all todos
-- `GET /api/todo/{id}` - Get todo by ID
-- `POST /api/todo` - Create new todo
-- `PUT /api/todo/{id}` - Update existing todo
-- `DELETE /api/todo/{id}` - Delete todo
+Current Solar Projects API endpoints:
+- `GET /api/v1/projects` - Get all projects
+- `GET /api/v1/projects/{id}` - Get project by ID
+- `POST /api/v1/projects` - Create new project
+- `PUT /api/v1/projects/{id}` - Update existing project
+- `DELETE /api/v1/projects/{id}` - Delete project
+- `GET /api/v1/daily-reports` - Get daily reports
+- `GET /api/v1/work-requests` - Get work requests
 
 ## Development Commands
 

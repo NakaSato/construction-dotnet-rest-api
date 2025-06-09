@@ -117,12 +117,26 @@ public class WorkRequestService : IWorkRequestService
             if (parameters.HasComments.HasValue)
                 query = query.Where(wr => wr.Comments.Any() == parameters.HasComments.Value);
 
-            var result = await _queryService.QueryAsync(query, parameters, MapToDto);
+            var result = await _queryService.ExecuteQueryAsync(query, parameters);
+            
+            // Map WorkRequest entities to WorkRequestDto
+            var mappedItems = result.Items.Select(MapToDto).ToList();
+            var mappedResult = new EnhancedPagedResult<WorkRequestDto>
+            {
+                Items = mappedItems,
+                TotalCount = result.TotalCount,
+                PageNumber = result.PageNumber,
+                PageSize = result.PageSize,
+                SortBy = result.SortBy,
+                SortOrder = result.SortOrder,
+                RequestedFields = result.RequestedFields,
+                Metadata = result.Metadata
+            };
 
             return new ApiResponse<EnhancedPagedResult<WorkRequestDto>>
             {
                 Success = true,
-                Data = result
+                Data = mappedResult
             };
         }
         catch (Exception ex)
@@ -226,6 +240,51 @@ public class WorkRequestService : IWorkRequestService
         }
     }
 
+    public async Task<ApiResponse<PagedResult<WorkRequestDto>>> GetAssignedWorkRequestsAsync(Guid userId, int pageNumber = 1, int pageSize = 10)
+    {
+        try
+        {
+            var query = _context.WorkRequests
+                .Include(wr => wr.Project)
+                .Include(wr => wr.RequestedBy)
+                .Include(wr => wr.AssignedTo)
+                .Include(wr => wr.Tasks)
+                .Include(wr => wr.Comments)
+                .Include(wr => wr.Images)
+                .Where(wr => wr.AssignedToId == userId)
+                .OrderByDescending(wr => wr.CreatedAt);
+
+            var totalCount = await query.CountAsync();
+            var workRequests = await query
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+            var workRequestDtos = workRequests.Select(MapToDto).ToList();
+
+            return new ApiResponse<PagedResult<WorkRequestDto>>
+            {
+                Success = true,
+                Data = new PagedResult<WorkRequestDto>
+                {
+                    Items = workRequestDtos,
+                    TotalCount = totalCount,
+                    PageNumber = pageNumber,
+                    PageSize = pageSize
+                }
+            };
+        }
+        catch (Exception ex)
+        {
+            return new ApiResponse<PagedResult<WorkRequestDto>>
+            {
+                Success = false,
+                Message = "An error occurred while retrieving assigned work requests",
+                Errors = new List<string> { ex.Message }
+            };
+        }
+    }
+
     public async Task<ApiResponse<WorkRequestDto>> CreateWorkRequestAsync(CreateWorkRequestRequest request, Guid requestedById)
     {
         try
@@ -263,8 +322,8 @@ public class WorkRequestService : IWorkRequestService
                 AssignedToId = request.AssignedToId,
                 Title = request.Title,
                 Description = request.Description,
-                Type = request.Type,
-                Priority = request.Priority,
+                Type = Enum.Parse<WorkRequestType>(request.Type),
+                Priority = Enum.Parse<WorkRequestPriority>(request.Priority),
                 Status = WorkRequestStatus.Open,
                 DueDate = request.DueDate,
                 CreatedAt = DateTime.UtcNow,
@@ -342,8 +401,27 @@ public class WorkRequestService : IWorkRequestService
             workRequest.AssignedToId = request.AssignedToId;
             workRequest.Title = request.Title;
             workRequest.Description = request.Description;
-            workRequest.Type = request.Type;
-            workRequest.Priority = request.Priority;
+            // Parse and validate enum values
+            if (!Enum.TryParse<WorkRequestType>(request.Type, true, out var workRequestType))
+            {
+                return new ApiResponse<WorkRequestDto>
+                {
+                    Success = false,
+                    Message = "Invalid work request type"
+                };
+            }
+
+            if (!Enum.TryParse<WorkRequestPriority>(request.Priority, true, out var workRequestPriority))
+            {
+                return new ApiResponse<WorkRequestDto>
+                {
+                    Success = false,
+                    Message = "Invalid work request priority"
+                };
+            }
+
+            workRequest.Type = workRequestType;
+            workRequest.Priority = workRequestPriority;
             workRequest.DueDate = request.DueDate;
             workRequest.UpdatedAt = DateTime.UtcNow;
 
@@ -537,6 +615,52 @@ public class WorkRequestService : IWorkRequestService
             {
                 Success = false,
                 Message = "An error occurred while updating the work request priority",
+                Errors = new List<string> { ex.Message }
+            };
+        }
+    }
+
+    public async Task<ApiResponse<WorkRequestDto>> CompleteWorkRequestAsync(Guid requestId)
+    {
+        try
+        {
+            var workRequest = await _context.WorkRequests
+                .Include(wr => wr.Project)
+                .Include(wr => wr.RequestedBy)
+                .Include(wr => wr.AssignedTo)
+                .Include(wr => wr.Tasks)
+                .Include(wr => wr.Comments)
+                .Include(wr => wr.Images)
+                .FirstOrDefaultAsync(wr => wr.WorkRequestId == requestId);
+
+            if (workRequest == null)
+            {
+                return new ApiResponse<WorkRequestDto>
+                {
+                    Success = false,
+                    Message = "Work request not found"
+                };
+            }
+
+            workRequest.Status = WorkRequestStatus.Completed;
+            workRequest.CompletedDate = DateTime.UtcNow;
+            workRequest.UpdatedAt = DateTime.UtcNow;
+
+            await _context.SaveChangesAsync();
+
+            return new ApiResponse<WorkRequestDto>
+            {
+                Success = true,
+                Data = MapToDto(workRequest),
+                Message = "Work request completed successfully"
+            };
+        }
+        catch (Exception ex)
+        {
+            return new ApiResponse<WorkRequestDto>
+            {
+                Success = false,
+                Message = "An error occurred while completing the work request",
                 Errors = new List<string> { ex.Message }
             };
         }
@@ -798,13 +922,13 @@ public class WorkRequestService : IWorkRequestService
 
     #region Mapping Methods
 
-    private WorkRequestDto MapToDto(WorkRequest workRequest)
+    private static WorkRequestDto MapToDto(WorkRequest workRequest)
     {
         return new WorkRequestDto
         {
             WorkRequestId = workRequest.WorkRequestId,
             ProjectId = workRequest.ProjectId,
-            ProjectName = workRequest.Project?.ProjectName,
+            ProjectName = workRequest.Project?.ProjectName ?? string.Empty,
             RequestedById = workRequest.RequestedById,
             RequestedByName = workRequest.RequestedBy?.FullName,
             AssignedToId = workRequest.AssignedToId,
@@ -824,7 +948,7 @@ public class WorkRequestService : IWorkRequestService
         };
     }
 
-    private WorkRequestTaskDto MapWorkRequestTaskToDto(WorkRequestTask task)
+    private static WorkRequestTaskDto MapWorkRequestTaskToDto(WorkRequestTask task)
     {
         return new WorkRequestTaskDto
         {
@@ -839,7 +963,7 @@ public class WorkRequestService : IWorkRequestService
         };
     }
 
-    private WorkRequestCommentDto MapWorkRequestCommentToDto(WorkRequestComment comment)
+    private static WorkRequestCommentDto MapWorkRequestCommentToDto(WorkRequestComment comment)
     {
         return new WorkRequestCommentDto
         {

@@ -39,20 +39,17 @@ docker-compose -f docker-compose.dev.yml up -d
 ## 🏗️ Project Structure
 
 - **Controllers/**
-  - `TodoController.cs`: Legacy Todo item management
   - `HealthController.cs`: Application health monitoring
   - `V1/`: Versioned API controllers (Auth, Projects, Tasks, Users, Images)
   
 - **Models/**
-  - `TodoItem.cs`: Todo data structure
   - Domain models for solar project management
   
 - **Services/**
-  - `TodoService.cs`: Todo business logic
   - Project, Task, User, Auth, and Image services
   
 - **Data/**
-  - `TodoContext.cs`: Database contexts (In-Memory + PostgreSQL)
+  - `ApplicationDbContext.cs`: Main database context (PostgreSQL)
   
 - **Migrations/**
   - Entity Framework Core database migrations
@@ -98,13 +95,19 @@ docker-compose -f docker-compose.dev.yml logs -f
 docker-compose -f docker-compose.dev.yml down
 ```
 
-## Usage
+## 🚀 API Endpoints
 
-- **GET /todos**: Retrieve all Todo items.
-- **GET /todos/{id}**: Retrieve a specific Todo item by ID.
-- **POST /todos**: Create a new Todo item.
-- **PUT /todos/{id}**: Update an existing Todo item.
-- **DELETE /todos/{id}**: Delete a Todo item.
+### **Solar Projects Management API**
+- **Authentication**: `/api/v1/auth` - Login, register, JWT token management
+- **Projects**: `/api/v1/projects` - Project CRUD operations
+- **Tasks**: `/api/v1/projects/{projectId}/tasks` - Task management within projects
+- **Users**: `/api/v1/users` - User management and profiles
+- **Images**: `/api/v1/images` - File upload and metadata management
+- **Daily Reports**: `/api/v1/daily-reports` - Construction daily reporting
+- **Work Requests**: `/api/v1/work-requests` - Work request management
+
+### **System Health**
+- **Health Check**: `/health` - Application health status
 
 ## Contributing
 
