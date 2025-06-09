@@ -1,5 +1,6 @@
 using dotnet_rest_api.DTOs;
 using dotnet_rest_api.Models;
+using dotnet_rest_api.Common;
 
 namespace dotnet_rest_api.Services;
 
@@ -27,15 +28,15 @@ public interface IUserService
 
 public interface IProjectService
 {
-    Task<ApiResponse<ProjectDto>> GetProjectByIdAsync(Guid projectId);
-    Task<ApiResponse<PagedResult<ProjectDto>>> GetProjectsAsync(int pageNumber = 1, int pageSize = 10, Guid? managerId = null);
-    Task<ApiResponse<EnhancedPagedResult<ProjectDto>>> GetProjectsAsync(ProjectQueryParameters parameters);
-    Task<ApiResponse<PagedResult<ProjectDto>>> GetProjectsLegacyAsync(int pageNumber = 1, int pageSize = 10, Guid? managerId = null);
-    Task<ApiResponse<ProjectDto>> CreateProjectAsync(CreateProjectRequest request);
-    Task<ApiResponse<ProjectDto>> UpdateProjectAsync(Guid projectId, UpdateProjectRequest request);
-    Task<ApiResponse<ProjectDto>> PatchProjectAsync(Guid projectId, PatchProjectRequest request);
-    Task<ApiResponse<bool>> DeleteProjectAsync(Guid projectId);
-    Task<ApiResponse<PagedResult<ProjectDto>>> GetUserProjectsAsync(Guid userId, int pageNumber = 1, int pageSize = 10);
+    Task<Result<ProjectDto>> GetProjectByIdAsync(Guid projectId);
+    Task<Result<PagedResult<ProjectDto>>> GetProjectsAsync(int pageNumber = 1, int pageSize = 10, Guid? managerId = null);
+    Task<Result<EnhancedPagedResult<ProjectDto>>> GetProjectsAsync(ProjectQueryParameters parameters);
+    Task<Result<PagedResult<ProjectDto>>> GetProjectsLegacyAsync(int pageNumber = 1, int pageSize = 10, Guid? managerId = null);
+    Task<Result<ProjectDto>> CreateProjectAsync(CreateProjectRequest request);
+    Task<Result<ProjectDto>> UpdateProjectAsync(Guid projectId, UpdateProjectRequest request);
+    Task<Result<ProjectDto>> PatchProjectAsync(Guid projectId, PatchProjectRequest request);
+    Task<Result<bool>> DeleteProjectAsync(Guid projectId);
+    Task<Result<PagedResult<ProjectDto>>> GetUserProjectsAsync(Guid userId, int pageNumber = 1, int pageSize = 10);
 }
 
 public interface ITaskService

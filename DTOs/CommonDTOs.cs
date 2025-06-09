@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using dotnet_rest_api.Common;
 
 namespace dotnet_rest_api.DTOs;
 
@@ -293,15 +294,6 @@ public class ImageUploadRequest
 }
 
 // Error Response DTOs
-public class ValidationError
-{
-    public string Field { get; set; } = string.Empty;
-    public string Code { get; set; } = string.Empty;
-    public string Message { get; set; } = string.Empty;
-    public object? AttemptedValue { get; set; }
-    public Dictionary<string, object> AdditionalInfo { get; set; } = new();
-}
-
 public class ErrorDetail
 {
     public string Code { get; set; } = string.Empty;

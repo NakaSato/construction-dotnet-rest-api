@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using dotnet_rest_api.DTOs;
 using dotnet_rest_api.Services;
 using dotnet_rest_api.Attributes;
+using dotnet_rest_api.Controllers;
 using Asp.Versioning;
 
 namespace dotnet_rest_api.Controllers.V1;
@@ -14,7 +15,7 @@ namespace dotnet_rest_api.Controllers.V1;
 [ApiVersion("1.0")]
 [Route("api/v{version:apiVersion}/users")]
 [Authorize]
-public class UsersController : ControllerBase
+public class UsersController : BaseApiController
 {
     private readonly IUserService _userService;
     private readonly IQueryService _queryService;
@@ -43,20 +44,17 @@ public class UsersController : ControllerBase
     {
         try
         {
-            // Validate pagination parameters
-            if (pageNumber < 1)
-                return BadRequest("Page number must be greater than 0.");
-
-            if (pageSize < 1 || pageSize > 100)
-                return BadRequest("Page size must be between 1 and 100.");
+            // Validate pagination parameters using base controller method
+            var validationResult = ValidatePaginationParameters(pageNumber, pageSize);
+            if (validationResult != null)
+                return validationResult;
 
             var result = await _userService.GetUsersAsync(pageNumber, pageSize, role);
             return Ok(result);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error retrieving users");
-            return StatusCode(500, "An error occurred while retrieving users.");
+            return HandleException(_logger, ex, "retrieving users");
         }
     }
 
@@ -73,14 +71,13 @@ public class UsersController : ControllerBase
         {
             var result = await _userService.GetUserByIdAsync(id);
             if (!result.Success)
-                return NotFound(result.Message);
+                return CreateNotFoundResponse(result.Message);
             
             return Ok(result.Data);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error retrieving user {UserId}", id);
-            return StatusCode(500, "An error occurred while retrieving the user.");
+            return HandleException(_logger, ex, $"retrieving user {id}");
         }
     }
 
@@ -96,19 +93,18 @@ public class UsersController : ControllerBase
         try
         {
             if (string.IsNullOrWhiteSpace(username))
-                return BadRequest("Username cannot be empty.");
+                return CreateErrorResponse("Username cannot be empty", 400);
 
             var user = await _userService.GetUserByUsernameAsync(username);
             return Ok(user);
         }
         catch (KeyNotFoundException)
         {
-            return NotFound($"User with username '{username}' not found.");
+            return CreateNotFoundResponse($"User with username '{username}' not found");
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error retrieving user by username {Username}", username);
-            return StatusCode(500, "An error occurred while retrieving the user.");
+            return HandleException(_logger, ex, $"retrieving user by username {username}");
         }
     }
 
@@ -125,18 +121,17 @@ public class UsersController : ControllerBase
         try
         {
             if (!ModelState.IsValid)
-                return BadRequest(ModelState);
+                return CreateErrorResponse("Invalid input data", 400);
 
             var result = await _userService.CreateUserAsync(createUserRequest);
             if (!result.Success)
-                return BadRequest(result.Message);
+                return CreateErrorResponse(result.Message, 400);
 
             return CreatedAtAction(nameof(GetUser), new { id = result.Data!.UserId }, result.Data);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error creating user");
-            return StatusCode(500, "An error occurred while creating the user.");
+            return HandleException(_logger, ex, "creating user");
         }
     }
 
@@ -154,18 +149,17 @@ public class UsersController : ControllerBase
         try
         {
             if (!ModelState.IsValid)
-                return BadRequest(ModelState);
+                return CreateErrorResponse("Invalid input data", 400);
 
             var result = await _userService.UpdateUserAsync(id, updateUserRequest);
             if (!result.Success)
-                return NotFound(result.Message);
+                return CreateNotFoundResponse(result.Message);
             
             return Ok(result.Data);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error updating user {UserId}", id);
-            return StatusCode(500, "An error occurred while updating the user.");
+            return HandleException(_logger, ex, $"updating user {id}");
         }
     }
 
@@ -183,18 +177,17 @@ public class UsersController : ControllerBase
         try
         {
             if (!ModelState.IsValid)
-                return BadRequest(ModelState);
+                return CreateErrorResponse("Invalid input data", 400);
 
             var result = await _userService.PatchUserAsync(id, patchUserRequest);
             if (!result.Success)
-                return NotFound(result.Message);
+                return CreateNotFoundResponse(result.Message);
             
             return Ok(result.Data);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error patching user {UserId}", id);
-            return StatusCode(500, "An error occurred while updating the user.");
+            return HandleException(_logger, ex, $"patching user {id}");
         }
     }
 
@@ -218,8 +211,7 @@ public class UsersController : ControllerBase
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error activating user {UserId}", id);
-            return StatusCode(500, "An error occurred while activating the user.");
+            return HandleException(_logger, ex, $"activating user {id}");
         }
     }
 
@@ -243,8 +235,7 @@ public class UsersController : ControllerBase
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error deactivating user {UserId}", id);
-            return StatusCode(500, "An error occurred while deactivating the user.");
+            return HandleException(_logger, ex, $"deactivating user {id}");
         }
     }
 
@@ -262,14 +253,13 @@ public class UsersController : ControllerBase
         {
             var result = await _userService.DeleteUserAsync(id);
             if (!result.Success)
-                return NotFound(result.Message);
+                return CreateNotFoundResponse(result.Message);
             
             return NoContent();
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error deleting user {UserId}", id);
-            return StatusCode(500, "An error occurred while deleting the user.");
+            return HandleException(_logger, ex, $"deleting user {id}");
         }
     }
 
@@ -284,18 +274,16 @@ public class UsersController : ControllerBase
     {
         try
         {
-            // Validate pagination parameters
-            if (parameters.PageNumber < 1)
-                return BadRequest("Page number must be greater than 0.");
+            LogControllerAction(_logger, "GetUsersAdvanced", parameters);
 
-            if (parameters.PageSize < 1 || parameters.PageSize > 100)
-                return BadRequest("Page size must be between 1 and 100.");
+            // Validate pagination parameters using base controller method
+            var validationResult = ValidatePaginationParameters(parameters.PageNumber, parameters.PageSize);
+            if (validationResult != null)
+                return BadRequest(validationResult);
 
-            // Parse filters from query string if not already populated
-            if (!parameters.Filters.Any() && Request.Query.Any())
-            {
-                parameters.Filters = ParseFiltersFromQuery(Request.Query);
-            }
+            // Apply filters from query string using base controller method
+            var filtersString = Request.Query["filter"].FirstOrDefault();
+            ApplyFiltersFromQuery(parameters, filtersString);
 
             var result = await _userService.GetUsersAsync(parameters);
             if (!result.Success)
@@ -305,8 +293,7 @@ public class UsersController : ControllerBase
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error retrieving users with advanced query");
-            return StatusCode(500, "An error occurred while retrieving users.");
+            return HandleException(_logger, ex, "GetUsersAdvanced");
         }
     }
 
@@ -325,12 +312,10 @@ public class UsersController : ControllerBase
     {
         try
         {
-            // Validate pagination parameters
-            if (page < 1)
-                return BadRequest("Page number must be greater than 0.");
-
-            if (pageSize < 1 || pageSize > 100)
-                return BadRequest("Page size must be between 1 and 100.");
+            // Validate pagination parameters using base controller method
+            var validationResult = ValidatePaginationParameters(page, pageSize);
+            if (validationResult != null)
+                return validationResult;
 
             // Create query parameters
             var parameters = new UserQueryParameters
@@ -380,36 +365,5 @@ public class UsersController : ControllerBase
                 Errors = new List<string> { ex.Message }
             });
         }
-    }
-
-    private List<FilterParameter> ParseFiltersFromQuery(IQueryCollection query)
-    {
-        var filters = new List<FilterParameter>();
-        
-        foreach (var kvp in query)
-        {
-            if (kvp.Key.StartsWith("filter."))
-            {
-                var parts = kvp.Key.Split('.');
-                if (parts.Length >= 3)
-                {
-                    var field = parts[1];
-                    var op = parts[2];
-                    var value = kvp.Value.FirstOrDefault();
-                    
-                    if (!string.IsNullOrEmpty(value))
-                    {
-                        filters.Add(new FilterParameter
-                        {
-                            Field = field,
-                            Operator = op,
-                            Value = value
-                        });
-                    }
-                }
-            }
-        }
-        
-        return filters;
     }
 }

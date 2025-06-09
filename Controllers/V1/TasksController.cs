@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using dotnet_rest_api.DTOs;
 using dotnet_rest_api.Services;
 using dotnet_rest_api.Attributes;
+using dotnet_rest_api.Controllers;
 using Asp.Versioning;
 
 namespace dotnet_rest_api.Controllers.V1;
@@ -14,7 +15,7 @@ namespace dotnet_rest_api.Controllers.V1;
 [ApiVersion("1.0")]
 [Route("api/v{version:apiVersion}/tasks")]
 [Authorize]
-public class TasksController : ControllerBase
+public class TasksController : BaseApiController
 {
     private readonly ITaskService _taskService;
     private readonly IQueryService _queryService;
@@ -45,20 +46,23 @@ public class TasksController : ControllerBase
     {
         try
         {
-            // Validate pagination parameters
-            if (pageNumber < 1)
-                return BadRequest("Page number must be greater than 0.");
+            // Log controller action for debugging
+            LogControllerAction(_logger, "GetTasks", new { pageNumber, pageSize, projectId, assigneeId });
 
-            if (pageSize < 1 || pageSize > 100)
-                return BadRequest("Page size must be between 1 and 100.");
+            // Validate pagination parameters using base controller method
+            var validationResult = ValidatePaginationParameters(pageNumber, pageSize);
+            if (validationResult != null)
+                return validationResult;
 
             var result = await _taskService.GetTasksAsync(pageNumber, pageSize, projectId, assigneeId);
-            return Ok(result);
+            if (!result.Success)
+                return CreateErrorResponse(result.Message, 400);
+
+            return Ok(result.Data);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error retrieving tasks");
-            return StatusCode(500, "An error occurred while retrieving tasks.");
+            return HandleException(_logger, ex, "retrieving tasks");
         }
     }
 
@@ -69,20 +73,22 @@ public class TasksController : ControllerBase
     /// <returns>Task details</returns>
     [HttpGet("{id:guid}")]
     [MediumCache] // 15 minute cache for individual task details
-    public async Task<ActionResult<TaskDto>> GetTask(Guid id)
+    public async Task<ActionResult<ApiResponse<TaskDto>>> GetTask(Guid id)
     {
         try
         {
+            // Log controller action for debugging
+            LogControllerAction(_logger, "GetTask", new { id });
+
             var result = await _taskService.GetTaskByIdAsync(id);
             if (!result.Success)
-                return NotFound(result.Message);
+                return CreateNotFoundResponse(result.Message);
             
-            return Ok(result.Data);
+            return CreateSuccessResponse(result.Data!, "Task retrieved successfully");
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error retrieving task {TaskId}", id);
-            return StatusCode(500, "An error occurred while retrieving the task.");
+            return HandleException(_logger, ex, "retrieving task");
         }
     }
 
@@ -93,20 +99,22 @@ public class TasksController : ControllerBase
     /// <returns>List of project tasks</returns>
     [HttpGet("project/{projectId:guid}")]
     [MediumCache] // 15 minute cache for project tasks
-    public async Task<ActionResult<IEnumerable<TaskDto>>> GetProjectTasks(Guid projectId)
+    public async Task<ActionResult<ApiResponse<PagedResult<TaskDto>>>> GetProjectTasks(Guid projectId)
     {
         try
         {
+            // Log controller action for debugging
+            LogControllerAction(_logger, "GetProjectTasks", new { projectId });
+
             var result = await _taskService.GetProjectTasksAsync(projectId);
             if (!result.Success)
-                return NotFound(result.Message);
+                return CreateNotFoundResponse(result.Message);
             
-            return Ok(result.Data);
+            return CreateSuccessResponse(result.Data!, "Project tasks retrieved successfully");
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error retrieving tasks for project {ProjectId}", projectId);
-            return StatusCode(500, "An error occurred while retrieving project tasks.");
+            return HandleException(_logger, ex, "retrieving project tasks");
         }
     }
 
@@ -118,23 +126,30 @@ public class TasksController : ControllerBase
     /// <returns>Created task</returns>
     [HttpPost("project/{projectId:guid}")]
     [NoCache] // No caching for write operations
-    public async Task<ActionResult<TaskDto>> CreateTask(Guid projectId, [FromBody] CreateTaskRequest createTaskRequest)
+    public async Task<ActionResult<ApiResponse<TaskDto>>> CreateTask(Guid projectId, [FromBody] CreateTaskRequest createTaskRequest)
     {
         try
         {
+            // Log controller action for debugging
+            LogControllerAction(_logger, "CreateTask", new { projectId, createTaskRequest });
+
             if (!ModelState.IsValid)
-                return BadRequest(ModelState);
+                return CreateErrorResponse("Invalid input data", 400);
 
             var result = await _taskService.CreateTaskAsync(projectId, createTaskRequest);
             if (!result.Success)
-                return BadRequest(result.Message);
+                return CreateErrorResponse(result.Message, 400);
 
-            return CreatedAtAction(nameof(GetTask), new { id = result.Data!.TaskId }, result.Data);
+            return StatusCode(201, new ApiResponse<TaskDto>
+            {
+                Success = true,
+                Message = "Task created successfully",
+                Data = result.Data
+            });
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error creating task");
-            return StatusCode(500, "An error occurred while creating the task.");
+            return HandleException(_logger, ex, "creating task");
         }
     }
 
@@ -146,23 +161,25 @@ public class TasksController : ControllerBase
     /// <returns>Updated task</returns>
     [HttpPut("{id:guid}")]
     [NoCache] // No caching for write operations
-    public async Task<ActionResult<TaskDto>> UpdateTask(Guid id, [FromBody] UpdateTaskRequest updateTaskRequest)
+    public async Task<ActionResult<ApiResponse<TaskDto>>> UpdateTask(Guid id, [FromBody] UpdateTaskRequest updateTaskRequest)
     {
         try
         {
+            // Log controller action for debugging
+            LogControllerAction(_logger, "UpdateTask", new { id, updateTaskRequest });
+
             if (!ModelState.IsValid)
-                return BadRequest(ModelState);
+                return CreateErrorResponse("Invalid input data", 400);
 
             var result = await _taskService.UpdateTaskAsync(id, updateTaskRequest);
             if (!result.Success)
-                return NotFound(result.Message);
+                return CreateNotFoundResponse(result.Message);
             
-            return Ok(result.Data);
+            return CreateSuccessResponse(result.Data!, "Task updated successfully");
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error updating task {TaskId}", id);
-            return StatusCode(500, "An error occurred while updating the task.");
+            return HandleException(_logger, ex, "updating task");
         }
     }
 
@@ -174,23 +191,22 @@ public class TasksController : ControllerBase
     /// <returns>Updated task</returns>
     [HttpPatch("{id:guid}")]
     [NoCache] // No caching for write operations
-    public async Task<ActionResult<TaskDto>> PatchTask(Guid id, [FromBody] PatchTaskRequest patchTaskRequest)
+    public async Task<ActionResult<ApiResponse<TaskDto>>> PatchTask(Guid id, [FromBody] PatchTaskRequest patchTaskRequest)
     {
         try
         {
             if (!ModelState.IsValid)
-                return BadRequest(ModelState);
+                return CreateErrorResponse("Invalid input data", 400);
 
             var result = await _taskService.PatchTaskAsync(id, patchTaskRequest);
             if (!result.Success)
-                return NotFound(result.Message);
+                return CreateNotFoundResponse(result.Message);
             
-            return Ok(result.Data);
+            return CreateSuccessResponse(result.Data!, "Task updated successfully");
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error patching task {TaskId}", id);
-            return StatusCode(500, "An error occurred while updating the task.");
+            return HandleException(_logger, ex, "updating task");
         }
     }
 
@@ -202,29 +218,28 @@ public class TasksController : ControllerBase
     /// <returns>Updated task</returns>
     [HttpPatch("{id:guid}/status")]
     [NoCache] // No caching for write operations
-    public async Task<ActionResult<bool>> UpdateTaskStatus(Guid id, [FromBody] string status)
+    public async Task<ActionResult<ApiResponse<bool>>> UpdateTaskStatus(Guid id, [FromBody] string status)
     {
         try
         {
             if (string.IsNullOrWhiteSpace(status))
-                return BadRequest("Status cannot be empty.");
+                return CreateErrorResponse("Status cannot be empty", 400);
 
             // Parse string status to enum
             if (!Enum.TryParse<dotnet_rest_api.Models.TaskStatus>(status, true, out var taskStatus))
             {
-                return BadRequest($"Invalid task status: {status}");
+                return CreateErrorResponse($"Invalid task status: {status}", 400);
             }
 
             var result = await _taskService.UpdateTaskStatusAsync(id, taskStatus);
             if (!result.Success)
-                return NotFound(result.Message);
+                return CreateNotFoundResponse(result.Message);
             
-            return Ok(result.Data);
+            return CreateSuccessResponse(result.Data, "Task status updated successfully");
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error updating task status for task {TaskId}", id);
-            return StatusCode(500, "An error occurred while updating the task status.");
+            return HandleException(_logger, ex, "updating task status");
         }
     }
 
@@ -235,20 +250,22 @@ public class TasksController : ControllerBase
     /// <returns>No content if successful</returns>
     [HttpDelete("{id:guid}")]
     [NoCache] // No caching for write operations
-    public async Task<IActionResult> DeleteTask(Guid id)
+    public async Task<ActionResult<ApiResponse<bool>>> DeleteTask(Guid id)
     {
         try
         {
+            // Log controller action for debugging
+            LogControllerAction(_logger, "DeleteTask", new { id });
+
             var result = await _taskService.DeleteTaskAsync(id);
             if (!result.Success)
-                return NotFound(result.Message);
+                return CreateNotFoundResponse(result.Message);
             
-            return NoContent();
+            return CreateSuccessResponse(result.Data, "Task deleted successfully");
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error deleting task {TaskId}", id);
-            return StatusCode(500, "An error occurred while deleting the task.");
+            return HandleException(_logger, ex, "deleting task");
         }
     }
 
@@ -259,65 +276,32 @@ public class TasksController : ControllerBase
     /// <returns>Enhanced paginated list of tasks with metadata</returns>
     [HttpGet("advanced")]
     [ShortCache] // 5 minute cache for advanced task queries
-    public async Task<ActionResult<EnhancedPagedResult<TaskDto>>> GetTasksAdvanced([FromQuery] TaskQueryParameters parameters)
+    public async Task<ActionResult<ApiResponse<EnhancedPagedResult<TaskDto>>>> GetTasksAdvanced([FromQuery] TaskQueryParameters parameters)
     {
         try
         {
-            // Validate pagination parameters
-            if (parameters.PageNumber < 1)
-                return BadRequest("Page number must be greater than 0.");
+            // Log controller action for debugging
+            LogControllerAction(_logger, "GetTasksAdvanced", parameters);
 
-            if (parameters.PageSize < 1 || parameters.PageSize > 100)
-                return BadRequest("Page size must be between 1 and 100.");
+            // Validate pagination parameters using base controller method
+            var validationResult = ValidatePaginationParameters(parameters.PageNumber, parameters.PageSize);
+            if (validationResult != null)
+                return validationResult;
 
-            // Parse filters from query string if not already populated
-            if (!parameters.Filters.Any() && Request.Query.Any())
-            {
-                parameters.Filters = ParseFiltersFromQuery(Request.Query);
-            }
+            // Parse dynamic filters from query string using the base controller method
+            var filterString = Request.Query["filter"].FirstOrDefault();
+            ApplyFiltersFromQuery(parameters, filterString);
 
             var result = await _taskService.GetTasksAsync(parameters);
             if (!result.Success)
-                return BadRequest(result.Message);
+                return CreateErrorResponse(result.Message, 400);
 
-            return Ok(result.Data);
+            return CreateSuccessResponse(result.Data!, "Tasks retrieved successfully");
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error retrieving tasks with advanced query");
-            return StatusCode(500, "An error occurred while retrieving tasks.");
+            return HandleException(_logger, ex, "retrieving tasks with advanced query");
         }
-    }
-
-    private List<FilterParameter> ParseFiltersFromQuery(IQueryCollection query)
-    {
-        var filters = new List<FilterParameter>();
-        
-        foreach (var kvp in query)
-        {
-            if (kvp.Key.StartsWith("filter."))
-            {
-                var parts = kvp.Key.Split('.');
-                if (parts.Length >= 3)
-                {
-                    var field = parts[1];
-                    var op = parts[2];
-                    var value = kvp.Value.FirstOrDefault();
-                    
-                    if (!string.IsNullOrEmpty(value))
-                    {
-                        filters.Add(new FilterParameter
-                        {
-                            Field = field,
-                            Operator = op,
-                            Value = value
-                        });
-                    }
-                }
-            }
-        }
-        
-        return filters;
     }
 
     /// <summary>
@@ -336,12 +320,10 @@ public class TasksController : ControllerBase
     {
         try
         {
-            // Validate pagination parameters
-            if (page < 1)
-                return BadRequest("Page number must be greater than 0.");
-
-            if (pageSize < 1 || pageSize > 100)
-                return BadRequest("Page size must be between 1 and 100.");
+            // Validate pagination parameters using base controller method
+            var validationResult = ValidatePaginationParameters(page, pageSize);
+            if (validationResult != null)
+                return validationResult;
 
             // Create query parameters
             var parameters = new TaskQueryParameters
@@ -358,7 +340,7 @@ public class TasksController : ControllerBase
             // Get data using existing service
             var serviceResult = await _taskService.GetTasksAsync(parameters);
             if (!serviceResult.Success)
-                return BadRequest(serviceResult.Message);
+                return CreateErrorResponse(serviceResult.Message, 400);
 
             // Build base URL for HATEOAS links
             var baseUrl = $"{Request.Scheme}://{Request.Host}{Request.Path}";
@@ -386,12 +368,7 @@ public class TasksController : ControllerBase
         }
         catch (Exception ex)
         {
-            return StatusCode(500, new ApiResponseWithPagination<TaskDto>
-            {
-                Success = false,
-                Message = "An error occurred while retrieving tasks",
-                Errors = new List<string> { ex.Message }
-            });
+            return HandleException(_logger, ex, "retrieving tasks with rich pagination");
         }
     }
 }

@@ -1,6 +1,7 @@
 using dotnet_rest_api.DTOs;
 using dotnet_rest_api.Data;
 using dotnet_rest_api.Models;
+using dotnet_rest_api.Common;
 using Microsoft.EntityFrameworkCore;
 
 namespace dotnet_rest_api.Services;
@@ -27,7 +28,7 @@ public class CachedProjectService : IProjectService
         _logger = logger;
     }
 
-    public async Task<ApiResponse<ProjectDto>> GetProjectByIdAsync(Guid projectId)
+    public async Task<Result<ProjectDto>> GetProjectByIdAsync(Guid projectId)
     {
         var cacheKey = $"project:{projectId}:details";
         

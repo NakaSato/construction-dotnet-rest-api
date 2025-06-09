@@ -160,9 +160,13 @@ builder.Services.AddScoped<IProjectService>(provider =>
 {
     var context = provider.GetRequiredService<ApplicationDbContext>();
     var queryService = provider.GetRequiredService<IQueryService>();
-    var cacheService = provider.GetRequiredService<ICacheService>();
-    var logger = provider.GetRequiredService<ILogger<CachedProjectService>>();
-    return new CachedProjectService(context, queryService, cacheService, logger);
+    // Temporarily use ProjectService instead of CachedProjectService while migrating to Result<T>
+    return new ProjectService(context, queryService);
+    
+    // TODO: Re-enable CachedProjectService after updating it to use Result<T>
+    // var cacheService = provider.GetRequiredService<ICacheService>();
+    // var logger = provider.GetRequiredService<ILogger<CachedProjectService>>();
+    // return new CachedProjectService(context, queryService, cacheService, logger);
 });
 
 builder.Services.AddScoped<IUserService>(provider =>

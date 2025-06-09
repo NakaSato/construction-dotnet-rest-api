@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using dotnet_rest_api.Services;
 using dotnet_rest_api.DTOs;
 using dotnet_rest_api.Attributes;
+using dotnet_rest_api.Controllers;
 using System.Security.Claims;
 using Asp.Versioning;
 
@@ -15,7 +16,7 @@ namespace dotnet_rest_api.Controllers.V1;
 [ApiController]
 [ApiVersion("1.0")]
 [Authorize]
-public class WorkRequestsController : ControllerBase
+public class WorkRequestsController : BaseApiController
 {
     private readonly IWorkRequestService _workRequestService;
     private readonly ILogger<WorkRequestsController> _logger;
@@ -42,11 +43,18 @@ public class WorkRequestsController : ControllerBase
     {
         try
         {
+            // Log controller action for debugging
+            LogControllerAction(_logger, "GetWorkRequests", parameters);
+
+            // Apply dynamic filters from query string using base controller method
+            var filterString = Request.Query["filter"].FirstOrDefault();
+            ApplyFiltersFromQuery(parameters, filterString);
+
             var result = await _workRequestService.GetWorkRequestsAsync(parameters);
 
             if (!result.Success)
             {
-                return BadRequest(result);
+                return CreateErrorResponse(result.Message, 400);
             }
 
             // Add HATEOAS links
@@ -58,16 +66,11 @@ public class WorkRequestsController : ControllerBase
                 }
             }
 
-            return Ok(result);
+            return CreateSuccessResponse(result.Data!, "Work requests retrieved successfully");
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error retrieving work requests");
-            return StatusCode(500, new ApiResponse<object>
-            {
-                Success = false,
-                Message = "An error occurred while retrieving work requests"
-            });
+            return HandleException<EnhancedPagedResult<WorkRequestDto>>(_logger, ex, "retrieving work requests");
         }
     }
 
@@ -85,11 +88,14 @@ public class WorkRequestsController : ControllerBase
     {
         try
         {
+            // Log controller action for debugging
+            LogControllerAction(_logger, "GetWorkRequest", new { id });
+
             var result = await _workRequestService.GetWorkRequestByIdAsync(id);
 
             if (!result.Success)
             {
-                return NotFound(result);
+                return CreateNotFoundResponse(result.Message);
             }
 
             // Add HATEOAS links
@@ -98,16 +104,11 @@ public class WorkRequestsController : ControllerBase
                 AddHateoasLinks(result.Data);
             }
 
-            return Ok(result);
+            return CreateSuccessResponse(result.Data!, "Work request retrieved successfully");
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error retrieving work request {WorkRequestId}", id);
-            return StatusCode(500, new ApiResponse<object>
-            {
-                Success = false,
-                Message = "An error occurred while retrieving the work request"
-            });
+            return HandleException<WorkRequestDto>(_logger, ex, $"retrieving work request {id}");
         }
     }
 
@@ -130,11 +131,14 @@ public class WorkRequestsController : ControllerBase
     {
         try
         {
+            // Log controller action for debugging
+            LogControllerAction(_logger, "GetProjectWorkRequests", new { projectId, pageNumber, pageSize });
+
             var result = await _workRequestService.GetProjectWorkRequestsAsync(projectId, pageNumber, pageSize);
 
             if (!result.Success)
             {
-                return NotFound(result);
+                return CreateNotFoundResponse(result.Message);
             }
 
             // Add HATEOAS links
@@ -146,16 +150,11 @@ public class WorkRequestsController : ControllerBase
                 }
             }
 
-            return Ok(result);
+            return CreateSuccessResponse(result.Data!, "Project work requests retrieved successfully");
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error retrieving work requests for project {ProjectId}", projectId);
-            return StatusCode(500, new ApiResponse<object>
-            {
-                Success = false,
-                Message = "An error occurred while retrieving project work requests"
-            });
+            return HandleException<PagedResult<WorkRequestDto>>(_logger, ex, $"retrieving work requests for project {projectId}");
         }
     }
 
@@ -178,11 +177,14 @@ public class WorkRequestsController : ControllerBase
     {
         try
         {
+            // Log controller action for debugging
+            LogControllerAction(_logger, "GetAssignedWorkRequests", new { userId, pageNumber, pageSize });
+
             var result = await _workRequestService.GetAssignedWorkRequestsAsync(userId, pageNumber, pageSize);
 
             if (!result.Success)
             {
-                return NotFound(result);
+                return CreateNotFoundResponse(result.Message);
             }
 
             // Add HATEOAS links
@@ -194,16 +196,11 @@ public class WorkRequestsController : ControllerBase
                 }
             }
 
-            return Ok(result);
+            return CreateSuccessResponse(result.Data!, "Assigned work requests retrieved successfully");
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error retrieving work requests assigned to user {UserId}", userId);
-            return StatusCode(500, new ApiResponse<object>
-            {
-                Success = false,
-                Message = "An error occurred while retrieving assigned work requests"
-            });
+            return HandleException<PagedResult<WorkRequestDto>>(_logger, ex, $"retrieving work requests assigned to user {userId}");
         }
     }
 
@@ -220,14 +217,19 @@ public class WorkRequestsController : ControllerBase
     {
         try
         {
+            // Log controller action for debugging
+            LogControllerAction(_logger, "CreateWorkRequest", new { request.Title, request.ProjectId });
+
             if (!ModelState.IsValid)
             {
-                return BadRequest(new ApiResponse<object>
+                var errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage).ToList();
+                var response = new ApiResponse<object>
                 {
                     Success = false,
                     Message = "Invalid request data",
-                    Errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage).ToList()
-                });
+                    Errors = errors
+                };
+                return BadRequest(response);
             }
 
             var userId = GetCurrentUserId();
@@ -235,7 +237,7 @@ public class WorkRequestsController : ControllerBase
 
             if (!result.Success)
             {
-                return BadRequest(result);
+                return CreateErrorResponse(result.Message, 400);
             }
 
             // Add HATEOAS links
@@ -251,12 +253,7 @@ public class WorkRequestsController : ControllerBase
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error creating work request");
-            return StatusCode(500, new ApiResponse<object>
-            {
-                Success = false,
-                Message = "An error occurred while creating the work request"
-            });
+            return HandleException<WorkRequestDto>(_logger, ex, "creating work request");
         }
     }
 
@@ -275,21 +272,28 @@ public class WorkRequestsController : ControllerBase
     {
         try
         {
+            // Log controller action for debugging
+            LogControllerAction(_logger, "UpdateWorkRequest", new { id, request.Title });
+
             if (!ModelState.IsValid)
             {
-                return BadRequest(new ApiResponse<object>
+                var errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage).ToList();
+                var response = new ApiResponse<object>
                 {
                     Success = false,
                     Message = "Invalid request data",
-                    Errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage).ToList()
-                });
+                    Errors = errors
+                };
+                return BadRequest(response);
             }
 
             var result = await _workRequestService.UpdateWorkRequestAsync(id, request);
 
             if (!result.Success)
             {
-                return result.Message == "Work request not found" ? NotFound(result) : BadRequest(result);
+                return result.Message == "Work request not found" 
+                    ? CreateNotFoundResponse(result.Message) 
+                    : CreateErrorResponse(result.Message, 400);
             }
 
             // Add HATEOAS links
@@ -298,16 +302,11 @@ public class WorkRequestsController : ControllerBase
                 AddHateoasLinks(result.Data);
             }
 
-            return Ok(result);
+            return CreateSuccessResponse(result.Data!, "Work request updated successfully");
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error updating work request {WorkRequestId}", id);
-            return StatusCode(500, new ApiResponse<object>
-            {
-                Success = false,
-                Message = "An error occurred while updating the work request"
-            });
+            return HandleException<WorkRequestDto>(_logger, ex, $"updating work request {id}");
         }
     }
 
@@ -324,23 +323,23 @@ public class WorkRequestsController : ControllerBase
     {
         try
         {
+            // Log controller action for debugging
+            LogControllerAction(_logger, "DeleteWorkRequest", new { id });
+
             var result = await _workRequestService.DeleteWorkRequestAsync(id);
 
             if (!result.Success)
             {
-                return result.Message == "Work request not found" ? NotFound(result) : BadRequest(result);
+                return result.Message == "Work request not found" 
+                    ? CreateNotFoundResponse(result.Message) 
+                    : CreateErrorResponse(result.Message, 400);
             }
 
-            return Ok(result);
+            return CreateSuccessResponse(result.Data, "Work request deleted successfully");
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error deleting work request {WorkRequestId}", id);
-            return StatusCode(500, new ApiResponse<object>
-            {
-                Success = false,
-                Message = "An error occurred while deleting the work request"
-            });
+            return HandleException<bool>(_logger, ex, $"deleting work request {id}");
         }
     }
 
@@ -361,24 +360,23 @@ public class WorkRequestsController : ControllerBase
     {
         try
         {
+            // Log controller action for debugging
+            LogControllerAction(_logger, "AssignWorkRequest", new { id, userId });
+
             var result = await _workRequestService.AssignWorkRequestAsync(id, userId);
 
             if (!result.Success)
             {
                 return result.Message == "Work request not found" || result.Message == "User not found" 
-                    ? NotFound(result) : BadRequest(result);
+                    ? CreateNotFoundResponse(result.Message) 
+                    : CreateErrorResponse(result.Message, 400);
             }
 
-            return Ok(result);
+            return CreateSuccessResponse(result.Data, "Work request assigned successfully");
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error assigning work request {WorkRequestId} to user {UserId}", id, userId);
-            return StatusCode(500, new ApiResponse<object>
-            {
-                Success = false,
-                Message = "An error occurred while assigning the work request"
-            });
+            return HandleException<bool>(_logger, ex, $"assigning work request {id} to user {userId}");
         }
     }
 
@@ -386,33 +384,39 @@ public class WorkRequestsController : ControllerBase
     /// Complete a work request
     /// </summary>
     /// <param name="id">The work request ID</param>
-    /// <returns>Success status</returns>
+    /// <returns>Completed work request</returns>
     [HttpPost("{id:guid}/complete")]
-    [ProducesResponseType(typeof(ApiResponse<bool>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse<WorkRequestDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    public async Task<ActionResult<ApiResponse<bool>>> CompleteWorkRequest(Guid id)
+    public async Task<ActionResult<ApiResponse<WorkRequestDto>>> CompleteWorkRequest(Guid id)
     {
         try
         {
+            // Log controller action for debugging
+            LogControllerAction(_logger, "CompleteWorkRequest", new { id });
+
             var result = await _workRequestService.CompleteWorkRequestAsync(id);
 
             if (!result.Success)
             {
-                return result.Message == "Work request not found" ? NotFound(result) : BadRequest(result);
+                return result.Message == "Work request not found" 
+                    ? CreateNotFoundResponse(result.Message) 
+                    : CreateErrorResponse(result.Message, 400);
             }
 
-            return Ok(result);
+            // Add HATEOAS links
+            if (result.Data != null)
+            {
+                AddHateoasLinks(result.Data);
+            }
+
+            return CreateSuccessResponse(result.Data!, "Work request completed successfully");
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error completing work request {WorkRequestId}", id);
-            return StatusCode(500, new ApiResponse<object>
-            {
-                Success = false,
-                Message = "An error occurred while completing the work request"
-            });
+            return HandleException<WorkRequestDto>(_logger, ex, $"completing work request {id}");
         }
     }
 
@@ -433,21 +437,28 @@ public class WorkRequestsController : ControllerBase
     {
         try
         {
+            // Log controller action for debugging
+            LogControllerAction(_logger, "AddWorkRequestTask", new { workRequestId, request.Title });
+
             if (!ModelState.IsValid)
             {
-                return BadRequest(new ApiResponse<object>
+                var errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage).ToList();
+                var response = new ApiResponse<object>
                 {
                     Success = false,
                     Message = "Invalid request data",
-                    Errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage).ToList()
-                });
+                    Errors = errors
+                };
+                return BadRequest(response);
             }
 
             var result = await _workRequestService.AddWorkRequestTaskAsync(workRequestId, request);
 
             if (!result.Success)
             {
-                return result.Message == "Work request not found" ? NotFound(result) : BadRequest(result);
+                return result.Message == "Work request not found" 
+                    ? CreateNotFoundResponse(result.Message) 
+                    : CreateErrorResponse(result.Message, 400);
             }
 
             return CreatedAtAction(
@@ -457,12 +468,7 @@ public class WorkRequestsController : ControllerBase
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error adding task to work request {WorkRequestId}", workRequestId);
-            return StatusCode(500, new ApiResponse<object>
-            {
-                Success = false,
-                Message = "An error occurred while adding the work request task"
-            });
+            return HandleException<WorkRequestTaskDto>(_logger, ex, $"adding task to work request {workRequestId}");
         }
     }
 
@@ -482,33 +488,35 @@ public class WorkRequestsController : ControllerBase
     {
         try
         {
+            // Log controller action for debugging
+            LogControllerAction(_logger, "UpdateWorkRequestTask", new { workRequestId, taskId });
+
             if (!ModelState.IsValid)
             {
-                return BadRequest(new ApiResponse<object>
+                var errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage).ToList();
+                var response = new ApiResponse<object>
                 {
                     Success = false,
                     Message = "Invalid request data",
-                    Errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage).ToList()
-                });
+                    Errors = errors
+                };
+                return BadRequest(response);
             }
 
             var result = await _workRequestService.UpdateWorkRequestTaskAsync(taskId, request);
 
             if (!result.Success)
             {
-                return result.Message == "Work request task not found" ? NotFound(result) : BadRequest(result);
+                return result.Message == "Work request task not found" 
+                    ? CreateNotFoundResponse(result.Message) 
+                    : CreateErrorResponse(result.Message, 400);
             }
 
-            return Ok(result);
+            return CreateSuccessResponse(result.Data!, "Work request task updated successfully");
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error updating work request task {TaskId}", taskId);
-            return StatusCode(500, new ApiResponse<object>
-            {
-                Success = false,
-                Message = "An error occurred while updating the work request task"
-            });
+            return HandleException<WorkRequestTaskDto>(_logger, ex, $"updating work request task {taskId}");
         }
     }
 
@@ -526,23 +534,23 @@ public class WorkRequestsController : ControllerBase
     {
         try
         {
+            // Log controller action for debugging
+            LogControllerAction(_logger, "DeleteWorkRequestTask", new { workRequestId, taskId });
+
             var result = await _workRequestService.DeleteWorkRequestTaskAsync(taskId);
 
             if (!result.Success)
             {
-                return result.Message == "Work request task not found" ? NotFound(result) : BadRequest(result);
+                return result.Message == "Work request task not found" 
+                    ? CreateNotFoundResponse(result.Message) 
+                    : CreateErrorResponse(result.Message, 400);
             }
 
-            return Ok(result);
+            return CreateSuccessResponse(result.Data, "Work request task deleted successfully");
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error deleting work request task {TaskId}", taskId);
-            return StatusCode(500, new ApiResponse<object>
-            {
-                Success = false,
-                Message = "An error occurred while deleting the work request task"
-            });
+            return HandleException<bool>(_logger, ex, $"deleting work request task {taskId}");
         }
     }
 
@@ -565,14 +573,19 @@ public class WorkRequestsController : ControllerBase
     {
         try
         {
+            // Log controller action for debugging
+            LogControllerAction(_logger, "AddWorkRequestComment", new { workRequestId });
+
             if (!ModelState.IsValid)
             {
-                return BadRequest(new ApiResponse<object>
+                var errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage).ToList();
+                var response = new ApiResponse<object>
                 {
                     Success = false,
                     Message = "Invalid request data",
-                    Errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage).ToList()
-                });
+                    Errors = errors
+                };
+                return BadRequest(response);
             }
 
             var userId = GetCurrentUserId();
@@ -580,7 +593,9 @@ public class WorkRequestsController : ControllerBase
 
             if (!result.Success)
             {
-                return result.Message == "Work request not found" ? NotFound(result) : BadRequest(result);
+                return result.Message == "Work request not found" 
+                    ? CreateNotFoundResponse(result.Message) 
+                    : CreateErrorResponse(result.Message, 400);
             }
 
             return CreatedAtAction(
@@ -590,12 +605,7 @@ public class WorkRequestsController : ControllerBase
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error adding comment to work request {WorkRequestId}", workRequestId);
-            return StatusCode(500, new ApiResponse<object>
-            {
-                Success = false,
-                Message = "An error occurred while adding the work request comment"
-            });
+            return HandleException<WorkRequestCommentDto>(_logger, ex, $"adding comment to work request {workRequestId}");
         }
     }
 
@@ -613,23 +623,23 @@ public class WorkRequestsController : ControllerBase
     {
         try
         {
+            // Log controller action for debugging
+            LogControllerAction(_logger, "DeleteWorkRequestComment", new { workRequestId, commentId });
+
             var result = await _workRequestService.DeleteWorkRequestCommentAsync(commentId);
 
             if (!result.Success)
             {
-                return result.Message == "Work request comment not found" ? NotFound(result) : BadRequest(result);
+                return result.Message == "Work request comment not found" 
+                    ? CreateNotFoundResponse(result.Message) 
+                    : CreateErrorResponse(result.Message, 400);
             }
 
-            return Ok(result);
+            return CreateSuccessResponse(result.Data, "Work request comment deleted successfully");
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error deleting work request comment {CommentId}", commentId);
-            return StatusCode(500, new ApiResponse<object>
-            {
-                Success = false,
-                Message = "An error occurred while deleting the work request comment"
-            });
+            return HandleException<bool>(_logger, ex, $"deleting work request comment {commentId}");
         }
     }
 

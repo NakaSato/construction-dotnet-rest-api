@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using dotnet_rest_api.Services;
 using dotnet_rest_api.DTOs;
 using dotnet_rest_api.Attributes;
+using dotnet_rest_api.Controllers;
 using System.Security.Claims;
 using Asp.Versioning;
 
@@ -15,7 +16,7 @@ namespace dotnet_rest_api.Controllers.V1;
 [ApiController]
 [ApiVersion("1.0")]
 [Authorize]
-public class DailyReportsController : ControllerBase
+public class DailyReportsController : BaseApiController
 {
     private readonly IDailyReportService _dailyReportService;
     private readonly ILogger<DailyReportsController> _logger;
@@ -42,11 +43,18 @@ public class DailyReportsController : ControllerBase
     {
         try
         {
+            // Log controller action for debugging
+            LogControllerAction(_logger, "GetDailyReports", parameters);
+
+            // Apply dynamic filters from query string using base controller method
+            var filterString = Request.Query["filter"].FirstOrDefault();
+            ApplyFiltersFromQuery(parameters, filterString);
+
             var result = await _dailyReportService.GetDailyReportsAsync(parameters);
 
             if (!result.Success)
             {
-                return BadRequest(result);
+                return CreateErrorResponse(result.Message, 400);
             }
 
             // Add HATEOAS links
@@ -58,16 +66,11 @@ public class DailyReportsController : ControllerBase
                 }
             }
 
-            return Ok(result);
+            return CreateSuccessResponse(result.Data!, "Daily reports retrieved successfully");
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error retrieving daily reports");
-            return StatusCode(500, new ApiResponse<object>
-            {
-                Success = false,
-                Message = "An error occurred while retrieving daily reports"
-            });
+            return HandleException(_logger, ex, "retrieving daily reports");
         }
     }
 
@@ -85,11 +88,14 @@ public class DailyReportsController : ControllerBase
     {
         try
         {
+            // Log controller action for debugging
+            LogControllerAction(_logger, "GetDailyReport", new { id });
+
             var result = await _dailyReportService.GetDailyReportByIdAsync(id);
 
             if (!result.Success)
             {
-                return NotFound(result);
+                return CreateNotFoundResponse(result.Message);
             }
 
             // Add HATEOAS links
@@ -98,16 +104,11 @@ public class DailyReportsController : ControllerBase
                 AddHateoasLinks(result.Data);
             }
 
-            return Ok(result);
+            return CreateSuccessResponse(result.Data!, "Daily report retrieved successfully");
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error retrieving daily report {ReportId}", id);
-            return StatusCode(500, new ApiResponse<object>
-            {
-                Success = false,
-                Message = "An error occurred while retrieving the daily report"
-            });
+            return HandleException(_logger, ex, $"retrieving daily report {id}");
         }
     }
 
@@ -130,11 +131,14 @@ public class DailyReportsController : ControllerBase
     {
         try
         {
+            // Log controller action for debugging
+            LogControllerAction(_logger, "GetProjectDailyReports", new { projectId, pageNumber, pageSize });
+
             var result = await _dailyReportService.GetProjectDailyReportsAsync(projectId, pageNumber, pageSize);
 
             if (!result.Success)
             {
-                return NotFound(result);
+                return CreateNotFoundResponse(result.Message);
             }
 
             // Add HATEOAS links
@@ -146,16 +150,11 @@ public class DailyReportsController : ControllerBase
                 }
             }
 
-            return Ok(result);
+            return CreateSuccessResponse(result.Data!, "Project daily reports retrieved successfully");
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error retrieving daily reports for project {ProjectId}", projectId);
-            return StatusCode(500, new ApiResponse<object>
-            {
-                Success = false,
-                Message = "An error occurred while retrieving project daily reports"
-            });
+            return HandleException(_logger, ex, $"retrieving daily reports for project {projectId}");
         }
     }
 
@@ -172,14 +171,12 @@ public class DailyReportsController : ControllerBase
     {
         try
         {
+            // Log controller action for debugging
+            LogControllerAction(_logger, "CreateDailyReport", request);
+
             if (!ModelState.IsValid)
             {
-                return BadRequest(new ApiResponse<object>
-                {
-                    Success = false,
-                    Message = "Invalid request data",
-                    Errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage).ToList()
-                });
+                return CreateErrorResponse("Invalid request data", 400);
             }
 
             var userId = GetCurrentUserId();
@@ -187,7 +184,7 @@ public class DailyReportsController : ControllerBase
 
             if (!result.Success)
             {
-                return BadRequest(result);
+                return CreateErrorResponse(result.Message, 400);
             }
 
             // Add HATEOAS links
@@ -196,19 +193,11 @@ public class DailyReportsController : ControllerBase
                 AddHateoasLinks(result.Data);
             }
 
-            return CreatedAtAction(
-                nameof(GetDailyReport),
-                new { id = result.Data!.DailyReportId },
-                result);
+            return CreateSuccessResponse(result.Data!, "Daily report created successfully");
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error creating daily report");
-            return StatusCode(500, new ApiResponse<object>
-            {
-                Success = false,
-                Message = "An error occurred while creating the daily report"
-            });
+            return HandleException(_logger, ex, "creating daily report");
         }
     }
 
@@ -227,21 +216,19 @@ public class DailyReportsController : ControllerBase
     {
         try
         {
+            // Log controller action for debugging
+            LogControllerAction(_logger, "UpdateDailyReport", new { id, request });
+
             if (!ModelState.IsValid)
             {
-                return BadRequest(new ApiResponse<object>
-                {
-                    Success = false,
-                    Message = "Invalid request data",
-                    Errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage).ToList()
-                });
+                return CreateErrorResponse("Invalid request data", 400);
             }
 
             var result = await _dailyReportService.UpdateDailyReportAsync(id, request);
 
             if (!result.Success)
             {
-                return result.Message == "Daily report not found" ? NotFound(result) : BadRequest(result);
+                return result.Message == "Daily report not found" ? CreateNotFoundResponse(result.Message) : CreateErrorResponse(result.Message, 400);
             }
 
             // Add HATEOAS links
@@ -250,16 +237,11 @@ public class DailyReportsController : ControllerBase
                 AddHateoasLinks(result.Data);
             }
 
-            return Ok(result);
+            return CreateSuccessResponse(result.Data!, "Daily report updated successfully");
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error updating daily report {ReportId}", id);
-            return StatusCode(500, new ApiResponse<object>
-            {
-                Success = false,
-                Message = "An error occurred while updating the daily report"
-            });
+            return HandleException(_logger, ex, $"updating daily report {id}");
         }
     }
 
@@ -276,23 +258,21 @@ public class DailyReportsController : ControllerBase
     {
         try
         {
+            // Log controller action for debugging
+            LogControllerAction(_logger, "DeleteDailyReport", new { id });
+
             var result = await _dailyReportService.DeleteDailyReportAsync(id);
 
             if (!result.Success)
             {
-                return result.Message == "Daily report not found" ? NotFound(result) : BadRequest(result);
+                return result.Message == "Daily report not found" ? CreateNotFoundResponse(result.Message) : CreateErrorResponse(result.Message, 400);
             }
 
-            return Ok(result);
+            return CreateSuccessResponse(result.Data, "Daily report deleted successfully");
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error deleting daily report {ReportId}", id);
-            return StatusCode(500, new ApiResponse<object>
-            {
-                Success = false,
-                Message = "An error occurred while deleting the daily report"
-            });
+            return HandleException(_logger, ex, $"deleting daily report {id}");
         }
     }
 
@@ -310,23 +290,21 @@ public class DailyReportsController : ControllerBase
     {
         try
         {
+            // Log controller action for debugging
+            LogControllerAction(_logger, "SubmitDailyReport", new { id });
+
             var result = await _dailyReportService.SubmitDailyReportAsync(id);
 
             if (!result.Success)
             {
-                return result.Message == "Daily report not found" ? NotFound(result) : BadRequest(result);
+                return result.Message == "Daily report not found" ? CreateNotFoundResponse(result.Message) : CreateErrorResponse(result.Message, 400);
             }
 
-            return Ok(result);
+            return CreateSuccessResponse(result.Data, "Daily report submitted successfully");
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error submitting daily report {ReportId}", id);
-            return StatusCode(500, new ApiResponse<object>
-            {
-                Success = false,
-                Message = "An error occurred while submitting the daily report"
-            });
+            return HandleException(_logger, ex, $"submitting daily report {id}");
         }
     }
 
@@ -346,23 +324,21 @@ public class DailyReportsController : ControllerBase
     {
         try
         {
+            // Log controller action for debugging
+            LogControllerAction(_logger, "ApproveDailyReport", new { id });
+
             var result = await _dailyReportService.ApproveDailyReportAsync(id);
 
             if (!result.Success)
             {
-                return result.Message == "Daily report not found" ? NotFound(result) : BadRequest(result);
+                return result.Message == "Daily report not found" ? CreateNotFoundResponse(result.Message) : CreateErrorResponse(result.Message, 400);
             }
 
-            return Ok(result);
+            return CreateSuccessResponse(result.Data, "Daily report approved successfully");
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error approving daily report {ReportId}", id);
-            return StatusCode(500, new ApiResponse<object>
-            {
-                Success = false,
-                Message = "An error occurred while approving the daily report"
-            });
+            return HandleException(_logger, ex, $"approving daily report {id}");
         }
     }
 
@@ -383,23 +359,21 @@ public class DailyReportsController : ControllerBase
     {
         try
         {
+            // Log controller action for debugging
+            LogControllerAction(_logger, "RejectDailyReport", new { id, rejectionReason });
+
             var result = await _dailyReportService.RejectDailyReportAsync(id, rejectionReason);
 
             if (!result.Success)
             {
-                return result.Message == "Daily report not found" ? NotFound(result) : BadRequest(result);
+                return result.Message == "Daily report not found" ? CreateNotFoundResponse(result.Message) : CreateErrorResponse(result.Message, 400);
             }
 
-            return Ok(result);
+            return CreateSuccessResponse(result.Data, "Daily report rejected successfully");
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error rejecting daily report {ReportId}", id);
-            return StatusCode(500, new ApiResponse<object>
-            {
-                Success = false,
-                Message = "An error occurred while rejecting the daily report"
-            });
+            return HandleException(_logger, ex, $"rejecting daily report {id}");
         }
     }
 
@@ -420,36 +394,26 @@ public class DailyReportsController : ControllerBase
     {
         try
         {
+            // Log controller action for debugging
+            LogControllerAction(_logger, "AddWorkProgressItem", new { reportId, request });
+
             if (!ModelState.IsValid)
             {
-                return BadRequest(new ApiResponse<object>
-                {
-                    Success = false,
-                    Message = "Invalid request data",
-                    Errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage).ToList()
-                });
+                return CreateErrorResponse("Invalid request data", 400);
             }
 
             var result = await _dailyReportService.AddWorkProgressItemAsync(reportId, request);
 
             if (!result.Success)
             {
-                return result.Message == "Daily report not found" ? NotFound(result) : BadRequest(result);
+                return result.Message == "Daily report not found" ? CreateNotFoundResponse(result.Message) : CreateErrorResponse(result.Message, 400);
             }
 
-            return CreatedAtAction(
-                nameof(GetDailyReport),
-                new { id = reportId },
-                result);
+            return CreateSuccessResponse(result.Data!, "Work progress item added successfully");
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error adding work progress item to daily report {ReportId}", reportId);
-            return StatusCode(500, new ApiResponse<object>
-            {
-                Success = false,
-                Message = "An error occurred while adding the work progress item"
-            });
+            return HandleException(_logger, ex, $"adding work progress item to daily report {reportId}");
         }
     }
 
@@ -469,33 +433,26 @@ public class DailyReportsController : ControllerBase
     {
         try
         {
+            // Log controller action for debugging
+            LogControllerAction(_logger, "UpdateWorkProgressItem", new { reportId, itemId, request });
+
             if (!ModelState.IsValid)
             {
-                return BadRequest(new ApiResponse<object>
-                {
-                    Success = false,
-                    Message = "Invalid request data",
-                    Errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage).ToList()
-                });
+                return CreateErrorResponse("Invalid request data", 400);
             }
 
             var result = await _dailyReportService.UpdateWorkProgressItemAsync(itemId, request);
 
             if (!result.Success)
             {
-                return result.Message == "Work progress item not found" ? NotFound(result) : BadRequest(result);
+                return result.Message == "Work progress item not found" ? CreateNotFoundResponse(result.Message) : CreateErrorResponse(result.Message, 400);
             }
 
-            return Ok(result);
+            return CreateSuccessResponse(result.Data!, "Work progress item updated successfully");
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error updating work progress item {ItemId}", itemId);
-            return StatusCode(500, new ApiResponse<object>
-            {
-                Success = false,
-                Message = "An error occurred while updating the work progress item"
-            });
+            return HandleException(_logger, ex, $"updating work progress item {itemId}");
         }
     }
 
@@ -513,23 +470,21 @@ public class DailyReportsController : ControllerBase
     {
         try
         {
+            // Log controller action for debugging
+            LogControllerAction(_logger, "DeleteWorkProgressItem", new { reportId, itemId });
+
             var result = await _dailyReportService.DeleteWorkProgressItemAsync(itemId);
 
             if (!result.Success)
             {
-                return result.Message == "Work progress item not found" ? NotFound(result) : BadRequest(result);
+                return result.Message == "Work progress item not found" ? CreateNotFoundResponse(result.Message) : CreateErrorResponse(result.Message, 400);
             }
 
-            return Ok(result);
+            return CreateSuccessResponse(result.Data, "Work progress item deleted successfully");
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error deleting work progress item {ItemId}", itemId);
-            return StatusCode(500, new ApiResponse<object>
-            {
-                Success = false,
-                Message = "An error occurred while deleting the work progress item"
-            });
+            return HandleException(_logger, ex, $"deleting work progress item {itemId}");
         }
     }
 

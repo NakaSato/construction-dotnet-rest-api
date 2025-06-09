@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 using dotnet_rest_api.DTOs;
 using dotnet_rest_api.Services;
+using dotnet_rest_api.Controllers;
 using Asp.Versioning;
 
 namespace dotnet_rest_api.Controllers.V1;
@@ -14,7 +15,7 @@ namespace dotnet_rest_api.Controllers.V1;
 [ApiVersion("1.0")]
 [Route("api/v{version:apiVersion}/images")]
 [Authorize]
-public class ImagesController : ControllerBase
+public class ImagesController : BaseApiController
 {
     private readonly IImageService _imageService;
     private readonly IQueryService _queryService;
@@ -40,7 +41,7 @@ public class ImagesController : ControllerBase
     /// <param name="exifData">Optional EXIF data</param>
     /// <returns>Image metadata</returns>
     [HttpPost("upload")]
-    public async Task<ActionResult<ImageMetadataDto>> UploadImage(
+    public async Task<ActionResult<ApiResponse<ImageMetadataDto>>> UploadImage(
         IFormFile file, 
         [FromForm] Guid projectId,
         [FromForm] Guid? taskId = null,
@@ -53,12 +54,12 @@ public class ImagesController : ControllerBase
         try
         {
             if (file == null || file.Length == 0)
-                return BadRequest("No file uploaded");
+                return CreateErrorResponse("No file uploaded", 400);
 
             // Get current user ID from JWT claims
             var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (!Guid.TryParse(userIdClaim, out var uploadedByUserId))
-                return Unauthorized("Invalid user token");
+                return CreateErrorResponse("Invalid user token", 401);
 
             var uploadRequest = new ImageUploadRequest
             {
@@ -74,13 +75,13 @@ public class ImagesController : ControllerBase
             var result = await _imageService.UploadImageAsync(file, uploadRequest, uploadedByUserId);
             
             if (!result.Success)
-                return BadRequest(result.Message);
+                return CreateErrorResponse(result.Message, 400);
 
-            return CreatedAtAction(nameof(GetImage), new { id = result.Data!.ImageId }, result.Data);
+            return CreateSuccessResponse(result.Data!, "Image uploaded successfully");
         }
         catch (Exception ex)
         {
-            return StatusCode(500, $"Internal server error: {ex.Message}");
+            return HandleException(_logger, ex, "uploading image");
         }
     }
 
@@ -90,21 +91,20 @@ public class ImagesController : ControllerBase
     /// <param name="id">Image ID</param>
     /// <returns>Image metadata</returns>
     [HttpGet("{id:guid}")]
-    public async Task<ActionResult<ImageMetadataDto>> GetImage(Guid id)
+    public async Task<ActionResult<ApiResponse<ImageMetadataDto>>> GetImage(Guid id)
     {
         try
         {
             var result = await _imageService.GetImageMetadataAsync(id);
 
             if (!result.Success)
-                return NotFound(result.Message);
+                return CreateNotFoundResponse(result.Message);
 
-            return Ok(result.Data);
+            return CreateSuccessResponse(result.Data!, "Image metadata retrieved successfully");
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error retrieving image {ImageId}", id);
-            return StatusCode(500, "An error occurred while retrieving the image");
+            return HandleException(_logger, ex, $"retrieving image {id}");
         }
     }
 
@@ -114,21 +114,20 @@ public class ImagesController : ControllerBase
     /// <param name="id">Image ID</param>
     /// <returns>Direct image URL</returns>
     [HttpGet("{id:guid}/url")]
-    public async Task<ActionResult<string>> GetImageUrl(Guid id)
+    public async Task<ActionResult<ApiResponse<string>>> GetImageUrl(Guid id)
     {
         try
         {
             var result = await _imageService.GetImageUrlAsync(id);
 
             if (!result.Success)
-                return NotFound(result.Message);
+                return CreateNotFoundResponse(result.Message);
 
-            return Ok(new { url = result.Data });
+            return CreateSuccessResponse(result.Data!, "Image URL retrieved successfully");
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error getting image URL {ImageId}", id);
-            return StatusCode(500, "An error occurred while getting the image URL");
+            return HandleException(_logger, ex, $"getting image URL for {id}");
         }
     }
 
@@ -140,31 +139,28 @@ public class ImagesController : ControllerBase
     /// <param name="pageSize">Page size (default: 10, max: 100)</param>
     /// <returns>Paginated list of project images</returns>
     [HttpGet("project/{projectId:guid}")]
-    public async Task<ActionResult<PagedResult<ImageMetadataDto>>> GetProjectImages(
+    public async Task<ActionResult<ApiResponse<PagedResult<ImageMetadataDto>>>> GetProjectImages(
         Guid projectId,
         [FromQuery] int pageNumber = 1,
         [FromQuery] int pageSize = 10)
     {
         try
         {
-            // Validate pagination parameters
-            if (pageNumber < 1)
-                return BadRequest("Page number must be greater than 0");
-
-            if (pageSize < 1 || pageSize > 100)
-                return BadRequest("Page size must be between 1 and 100");
+            // Validate pagination parameters using base controller method
+            var validationResult = ValidatePaginationParameters(pageNumber, pageSize);
+            if (validationResult != null)
+                return validationResult;
 
             var result = await _imageService.GetProjectImagesAsync(projectId, pageNumber, pageSize);
 
             if (!result.Success)
-                return BadRequest(result.Message);
+                return CreateErrorResponse(result.Message, 400);
 
-            return Ok(result.Data);
+            return CreateSuccessResponse(result.Data!, "Project images retrieved successfully");
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error retrieving project images {ProjectId}", projectId);
-            return StatusCode(500, "An error occurred while retrieving project images");
+            return HandleException(_logger, ex, $"retrieving project images for project {projectId}");
         }
     }
 
@@ -176,31 +172,28 @@ public class ImagesController : ControllerBase
     /// <param name="pageSize">Page size (default: 10, max: 100)</param>
     /// <returns>Paginated list of task images</returns>
     [HttpGet("task/{taskId:guid}")]
-    public async Task<ActionResult<PagedResult<ImageMetadataDto>>> GetTaskImages(
+    public async Task<ActionResult<ApiResponse<PagedResult<ImageMetadataDto>>>> GetTaskImages(
         Guid taskId,
         [FromQuery] int pageNumber = 1,
         [FromQuery] int pageSize = 10)
     {
         try
         {
-            // Validate pagination parameters
-            if (pageNumber < 1)
-                return BadRequest("Page number must be greater than 0");
-
-            if (pageSize < 1 || pageSize > 100)
-                return BadRequest("Page size must be between 1 and 100");
+            // Validate pagination parameters using base controller method
+            var validationResult = ValidatePaginationParameters(pageNumber, pageSize);
+            if (validationResult != null)
+                return validationResult;
 
             var result = await _imageService.GetTaskImagesAsync(taskId, pageNumber, pageSize);
 
             if (!result.Success)
-                return BadRequest(result.Message);
+                return CreateErrorResponse(result.Message, 400);
 
-            return Ok(result.Data);
+            return CreateSuccessResponse(result.Data!, "Task images retrieved successfully");
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error retrieving task images {TaskId}", taskId);
-            return StatusCode(500, "An error occurred while retrieving task images");
+            return HandleException(_logger, ex, $"retrieving task images for task {taskId}");
         }
     }
 
@@ -210,21 +203,20 @@ public class ImagesController : ControllerBase
     /// <param name="id">Image ID</param>
     /// <returns>No content if successful</returns>
     [HttpDelete("{id:guid}")]
-    public async Task<IActionResult> DeleteImage(Guid id)
+    public async Task<ActionResult<ApiResponse<object>>> DeleteImage(Guid id)
     {
         try
         {
             var result = await _imageService.DeleteImageAsync(id);
 
             if (!result.Success)
-                return NotFound(result.Message);
+                return CreateNotFoundResponse(result.Message);
 
-            return NoContent();
+            return CreateSuccessResponse(new object(), "Image deleted successfully");
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error deleting image {ImageId}", id);
-            return StatusCode(500, "An error occurred while deleting the image");
+            return HandleException(_logger, ex, $"deleting image {id}");
         }
     }
 
@@ -241,7 +233,7 @@ public class ImagesController : ControllerBase
     /// <param name="exifData">Optional EXIF data</param>
     /// <returns>List of uploaded image metadata</returns>
     [HttpPost("bulk-upload")]
-    public async Task<ActionResult<IEnumerable<ImageMetadataDto>>> BulkUploadImages(
+    public async Task<ActionResult<ApiResponse<object>>> BulkUploadImages(
         List<IFormFile> files,
         [FromForm] Guid projectId,
         [FromForm] Guid? taskId = null,
@@ -254,15 +246,15 @@ public class ImagesController : ControllerBase
         try
         {
             if (files == null || files.Count == 0)
-                return BadRequest("No files provided");
+                return CreateErrorResponse("No files provided", 400);
 
             if (files.Count > 10)
-                return BadRequest("Maximum 10 files allowed per bulk upload");
+                return CreateErrorResponse("Maximum 10 files allowed per bulk upload", 400);
 
             // Get current user ID from JWT claims
             var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (!Guid.TryParse(userIdClaim, out var uploadedByUserId))
-                return Unauthorized("Invalid user token");
+                return CreateErrorResponse("Invalid user token", 401);
 
             var request = new ImageUploadRequest
             {
@@ -300,7 +292,7 @@ public class ImagesController : ControllerBase
             }
 
             if (errors.Any() && !results.Any())
-                return BadRequest(new { message = "All uploads failed", errors });
+                return CreateErrorResponse("All uploads failed", 400);
 
             var response = new
             {
@@ -314,12 +306,11 @@ public class ImagesController : ControllerBase
                 }
             };
 
-            return Ok(response);
+            return CreateSuccessResponse((object)response, "Bulk upload completed");
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error in bulk upload");
-            return StatusCode(500, "An error occurred during bulk upload");
+            return HandleException(_logger, ex, "bulk upload");
         }
     }
 
@@ -330,7 +321,7 @@ public class ImagesController : ControllerBase
     /// <param name="parameters">Advanced query parameters</param>
     /// <returns>Enhanced paginated list of project images with metadata</returns>
     [HttpGet("project/{projectId:guid}/advanced")]
-    public async Task<ActionResult<EnhancedPagedResult<ImageMetadataDto>>> GetProjectImagesAdvanced(
+    public async Task<ActionResult<ApiResponse<EnhancedPagedResult<ImageMetadataDto>>>> GetProjectImagesAdvanced(
         Guid projectId,
         [FromQuery] ImageQueryParameters parameters)
     {
@@ -338,10 +329,10 @@ public class ImagesController : ControllerBase
         {
             // Validate pagination parameters
             if (parameters.PageNumber < 1)
-                return BadRequest("Page number must be greater than 0");
+                return CreateErrorResponse("Page number must be greater than 0", 400);
 
             if (parameters.PageSize < 1 || parameters.PageSize > 100)
-                return BadRequest("Page size must be between 1 and 100");
+                return CreateErrorResponse("Page size must be between 1 and 100", 400);
 
             // Set the project ID in parameters
             parameters.ProjectId = projectId;
@@ -355,14 +346,13 @@ public class ImagesController : ControllerBase
             var result = await _imageService.GetProjectImagesAsync(projectId, parameters);
 
             if (!result.Success)
-                return BadRequest(result.Message);
+                return CreateErrorResponse(result.Message, 400);
 
-            return Ok(result.Data);
+            return CreateSuccessResponse(result.Data!, "Project images retrieved successfully");
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error retrieving project images with advanced query {ProjectId}", projectId);
-            return StatusCode(500, "An error occurred while retrieving project images");
+            return HandleException(_logger, ex, $"retrieving project images with advanced query for project {projectId}");
         }
     }
 
@@ -382,12 +372,10 @@ public class ImagesController : ControllerBase
     {
         try
         {
-            // Validate pagination parameters
-            if (page < 1)
-                return BadRequest("Page number must be greater than 0.");
-
-            if (pageSize < 1 || pageSize > 100)
-                return BadRequest("Page size must be between 1 and 100.");
+            // Validate pagination parameters using base controller method
+            var validationResult = ValidatePaginationParameters(page, pageSize);
+            if (validationResult != null)
+                return validationResult;
 
             // Create query parameters
             var parameters = new ImageQueryParameters
@@ -405,7 +393,7 @@ public class ImagesController : ControllerBase
             // Get data using existing service
             var serviceResult = await _imageService.GetProjectImagesAsync(projectId, parameters);
             if (!serviceResult.Success)
-                return BadRequest(serviceResult.Message);
+                return CreateErrorResponse(serviceResult.Message, 400);
 
             // Build base URL for HATEOAS links
             var baseUrl = $"{Request.Scheme}://{Request.Host}{Request.Path}";
@@ -433,13 +421,7 @@ public class ImagesController : ControllerBase
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error retrieving project images with rich pagination for project {ProjectId}", projectId);
-            return StatusCode(500, new ApiResponseWithPagination<ImageMetadataDto>
-            {
-                Success = false,
-                Message = "An error occurred while retrieving project images",
-                Errors = new List<string> { ex.Message }
-            });
+            return HandleException(_logger, ex, $"retrieving project images with rich pagination for project {projectId}");
         }
     }
 

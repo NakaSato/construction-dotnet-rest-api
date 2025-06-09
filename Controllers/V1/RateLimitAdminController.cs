@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
 using dotnet_rest_api.DTOs;
 using dotnet_rest_api.Services;
+using dotnet_rest_api.Controllers;
 using dotnet_rest_api.Middleware;
 using Asp.Versioning;
 
@@ -14,7 +15,7 @@ namespace dotnet_rest_api.Controllers.V1;
 [ApiVersion("1.0")]
 [Route("api/v{version:apiVersion}/rate-limit")]
 [Authorize] // Require authentication for admin operations
-public class RateLimitAdminController : ControllerBase
+public class RateLimitAdminController : BaseApiController
 {
     private readonly IRateLimitMonitoringService _monitoringService;
     private readonly ILogger<RateLimitAdminController> _logger;
@@ -39,15 +40,11 @@ public class RateLimitAdminController : ControllerBase
             var period = TimeSpan.FromHours(Math.Max(1, Math.Min(24, hours))); // Limit between 1-24 hours
             var statistics = await _monitoringService.GetStatistics(period);
 
-            return Ok(ApiResponse<RateLimitStatistics>.SuccessResponse(
-                statistics, 
-                $"Rate limit statistics for the past {hours} hours retrieved successfully"));
+            return CreateSuccessResponse(statistics, $"Rate limit statistics for the past {hours} hours retrieved successfully");
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error retrieving rate limit statistics");
-            return StatusCode(500, ApiResponse<RateLimitStatistics>.ServerErrorResponse(
-                HttpContext.Request.Path, HttpContext.TraceIdentifier));
+            return HandleException<RateLimitStatistics>(_logger, ex, "retrieving rate limit statistics");
         }
     }
 
@@ -62,15 +59,11 @@ public class RateLimitAdminController : ControllerBase
         {
             var topClients = await _monitoringService.GetTopClients(Math.Max(1, Math.Min(100, count)));
 
-            return Ok(ApiResponse<List<ClientRateLimitInfo>>.SuccessResponse(
-                topClients, 
-                $"Top {count} clients retrieved successfully"));
+            return CreateSuccessResponse(topClients, $"Top {count} clients retrieved successfully");
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error retrieving top clients");
-            return StatusCode(500, ApiResponse<List<ClientRateLimitInfo>>.ServerErrorResponse(
-                HttpContext.Request.Path, HttpContext.TraceIdentifier));
+            return HandleException<List<ClientRateLimitInfo>>(_logger, ex, "retrieving top clients");
         }
     }
 
@@ -86,15 +79,11 @@ public class RateLimitAdminController : ControllerBase
             var period = TimeSpan.FromHours(Math.Max(1, Math.Min(24, hours)));
             var violations = await _monitoringService.GetRecentViolations(period);
 
-            return Ok(ApiResponse<List<RateLimitViolation>>.SuccessResponse(
-                violations, 
-                $"Rate limit violations for the past {hours} hours retrieved successfully"));
+            return CreateSuccessResponse(violations, $"Rate limit violations for the past {hours} hours retrieved successfully");
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error retrieving rate limit violations");
-            return StatusCode(500, ApiResponse<List<RateLimitViolation>>.ServerErrorResponse(
-                HttpContext.Request.Path, HttpContext.TraceIdentifier));
+            return HandleException<List<RateLimitViolation>>(_logger, ex, "retrieving rate limit violations");
         }
     }
 
@@ -108,15 +97,11 @@ public class RateLimitAdminController : ControllerBase
         {
             var rules = await _monitoringService.GetActiveRules();
 
-            return Ok(ApiResponse<Dictionary<string, RateLimitRule>>.SuccessResponse(
-                rules, 
-                "Active rate limiting rules retrieved successfully"));
+            return CreateSuccessResponse(rules, "Active rate limiting rules retrieved successfully");
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error retrieving rate limiting rules");
-            return StatusCode(500, ApiResponse<Dictionary<string, RateLimitRule>>.ServerErrorResponse(
-                HttpContext.Request.Path, HttpContext.TraceIdentifier));
+            return HandleException<Dictionary<string, RateLimitRule>>(_logger, ex, "retrieving rate limiting rules");
         }
     }
 
@@ -131,17 +116,7 @@ public class RateLimitAdminController : ControllerBase
         {
             if (string.IsNullOrWhiteSpace(clientId))
             {
-                return BadRequest(ApiResponse<object>.ValidationErrorResponse(
-                    new List<ValidationError>
-                    {
-                        new ValidationError
-                        {
-                            Field = "clientId",
-                            Code = "REQUIRED",
-                            Message = "Client ID is required"
-                        }
-                    },
-                    HttpContext.Request.Path, HttpContext.TraceIdentifier));
+                return CreateErrorResponse("Client ID is required", 400);
             }
 
             await _monitoringService.ClearClientLimits(clientId);
@@ -149,15 +124,11 @@ public class RateLimitAdminController : ControllerBase
             _logger.LogInformation("Rate limits cleared for client {ClientId} by user {UserId}", 
                 clientId, User.Identity?.Name ?? "Unknown");
 
-            return Ok(ApiResponse<object>.SuccessResponse(
-                null, 
-                $"Rate limits cleared for client {clientId}"));
+            return CreateSuccessResponse<object>(null, $"Rate limits cleared for client {clientId}");
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error clearing rate limits for client {ClientId}", clientId);
-            return StatusCode(500, ApiResponse<object>.ServerErrorResponse(
-                HttpContext.Request.Path, HttpContext.TraceIdentifier));
+            return HandleException<object>(_logger, ex, $"clearing rate limits for client {clientId}");
         }
     }
 
@@ -174,15 +145,11 @@ public class RateLimitAdminController : ControllerBase
             _logger.LogWarning("All rate limits cleared by user {UserId}", 
                 User.Identity?.Name ?? "Unknown");
 
-            return Ok(ApiResponse<object>.SuccessResponse(
-                null, 
-                "All rate limits cleared successfully"));
+            return CreateSuccessResponse<object>(null, "All rate limits cleared successfully");
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error clearing all rate limits");
-            return StatusCode(500, ApiResponse<object>.ServerErrorResponse(
-                HttpContext.Request.Path, HttpContext.TraceIdentifier));
+            return HandleException(_logger, ex, "clearing all rate limits");
         }
     }
 
@@ -198,47 +165,17 @@ public class RateLimitAdminController : ControllerBase
         {
             if (string.IsNullOrWhiteSpace(ruleName))
             {
-                return BadRequest(ApiResponse<object>.ValidationErrorResponse(
-                    new List<ValidationError>
-                    {
-                        new ValidationError
-                        {
-                            Field = "ruleName",
-                            Code = "REQUIRED",
-                            Message = "Rule name is required"
-                        }
-                    },
-                    HttpContext.Request.Path, HttpContext.TraceIdentifier));
+                return CreateErrorResponse("Rule name is required", 400);
             }
 
             if (rule.Limit <= 0)
             {
-                return BadRequest(ApiResponse<object>.ValidationErrorResponse(
-                    new List<ValidationError>
-                    {
-                        new ValidationError
-                        {
-                            Field = "limit",
-                            Code = "INVALID_VALUE",
-                            Message = "Limit must be greater than 0"
-                        }
-                    },
-                    HttpContext.Request.Path, HttpContext.TraceIdentifier));
+                return CreateErrorResponse("Limit must be greater than 0", 400);
             }
 
             if (rule.Period <= TimeSpan.Zero)
             {
-                return BadRequest(ApiResponse<object>.ValidationErrorResponse(
-                    new List<ValidationError>
-                    {
-                        new ValidationError
-                        {
-                            Field = "period",
-                            Code = "INVALID_VALUE",
-                            Message = "Period must be greater than 0"
-                        }
-                    },
-                    HttpContext.Request.Path, HttpContext.TraceIdentifier));
+                return CreateErrorResponse("Period must be greater than 0", 400);
             }
 
             await _monitoringService.UpdateRuleConfiguration(ruleName, rule);
@@ -246,15 +183,11 @@ public class RateLimitAdminController : ControllerBase
             _logger.LogInformation("Rate limiting rule {RuleName} updated by user {UserId}: {Limit} requests per {Period}", 
                 ruleName, User.Identity?.Name ?? "Unknown", rule.Limit, rule.Period);
 
-            return Ok(ApiResponse<object>.SuccessResponse(
-                null, 
-                $"Rate limiting rule '{ruleName}' updated successfully"));
+            return CreateSuccessResponse<object>(null, $"Rate limiting rule '{ruleName}' updated successfully");
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error updating rate limiting rule {RuleName}", ruleName);
-            return StatusCode(500, ApiResponse<object>.ServerErrorResponse(
-                HttpContext.Request.Path, HttpContext.TraceIdentifier));
+            return HandleException(_logger, ex, $"updating rate limiting rule {ruleName}");
         }
     }
 
@@ -267,20 +200,18 @@ public class RateLimitAdminController : ControllerBase
     {
         try
         {
-            return Ok(ApiResponse<object>.SuccessResponse(
-                new
-                {
-                    status = "healthy",
-                    timestamp = DateTime.UtcNow,
-                    service = "rate-limiting"
-                },
-                "Rate limiting service is healthy"));
+            var healthData = new
+            {
+                status = "healthy",
+                timestamp = DateTime.UtcNow,
+                service = "rate-limiting"
+            };
+
+            return CreateSuccessResponse<object>(healthData, "Rate limiting service is healthy");
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Rate limiting health check failed");
-            return StatusCode(500, ApiResponse<object>.ServerErrorResponse(
-                HttpContext.Request.Path, HttpContext.TraceIdentifier));
+            return HandleException(_logger, ex, "rate limiting health check");
         }
     }
 }

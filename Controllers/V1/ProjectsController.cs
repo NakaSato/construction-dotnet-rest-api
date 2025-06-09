@@ -4,6 +4,7 @@ using System.Security.Claims;
 using dotnet_rest_api.DTOs;
 using dotnet_rest_api.Services;
 using dotnet_rest_api.Attributes;
+using dotnet_rest_api.Controllers;
 using Asp.Versioning;
 
 namespace dotnet_rest_api.Controllers.V1;
@@ -12,15 +13,17 @@ namespace dotnet_rest_api.Controllers.V1;
 [ApiVersion("1.0")]
 [Route("api/v{version:apiVersion}/[controller]")]
 [Authorize]
-public class ProjectsController : ControllerBase
+public class ProjectsController : BaseApiController
 {
     private readonly IProjectService _projectService;
     private readonly IQueryService _queryService;
+    private readonly ILogger<ProjectsController> _logger;
 
-    public ProjectsController(IProjectService projectService, IQueryService queryService)
+    public ProjectsController(IProjectService projectService, IQueryService queryService, ILogger<ProjectsController> logger)
     {
         _projectService = projectService;
         _queryService = queryService;
+        _logger = logger;
     }
 
     /// <summary>
@@ -30,15 +33,15 @@ public class ProjectsController : ControllerBase
     [MediumCache] // 15 minute cache for project lists
     public async Task<ActionResult<ApiResponse<EnhancedPagedResult<ProjectDto>>>> GetProjects([FromQuery] ProjectQueryParameters parameters)
     {
-        // Parse dynamic filters from query string if provided
+        // Log controller action for debugging
+        LogControllerAction(_logger, "GetProjects", parameters);
+
+        // Parse dynamic filters from query string using the base controller method
         var filterString = Request.Query["filter"].FirstOrDefault();
-        if (!string.IsNullOrEmpty(filterString))
-        {
-            parameters.Filters.AddRange(parameters.ParseFilters(filterString));
-        }
+        ApplyFiltersFromQuery(parameters, filterString);
 
         var result = await _projectService.GetProjectsAsync(parameters);
-        return Ok(result);
+        return ToApiResponse(result);
     }
 
     /// <summary>
@@ -51,8 +54,11 @@ public class ProjectsController : ControllerBase
         [FromQuery] int pageSize = 10,
         [FromQuery] Guid? managerId = null)
     {
+        // Log controller action for debugging
+        LogControllerAction(_logger, "GetProjectsLegacy", new { pageNumber, pageSize, managerId });
+
         var result = await _projectService.GetProjectsLegacyAsync(pageNumber, pageSize, managerId);
-        return Ok(result);
+        return ToApiResponse(result);
     }
 
     /// <summary>
@@ -62,14 +68,11 @@ public class ProjectsController : ControllerBase
     [LongCache] // 1 hour cache for individual project details
     public async Task<ActionResult<ApiResponse<ProjectDto>>> GetProject(Guid id)
     {
-        var result = await _projectService.GetProjectByIdAsync(id);
-        
-        if (!result.Success)
-        {
-            return NotFound(result);
-        }
+        // Log controller action for debugging
+        LogControllerAction(_logger, "GetProject", new { id });
 
-        return Ok(result);
+        var result = await _projectService.GetProjectByIdAsync(id);
+        return ToApiResponse(result);
     }
 
     /// <summary>
@@ -80,24 +83,23 @@ public class ProjectsController : ControllerBase
     [NoCache] // No caching for write operations
     public async Task<ActionResult<ApiResponse<ProjectDto>>> CreateProject([FromBody] CreateProjectRequest request)
     {
+        // Log controller action for debugging
+        LogControllerAction(_logger, "CreateProject", request);
+
         if (!ModelState.IsValid)
         {
-            return BadRequest(new ApiResponse<ProjectDto>
-            {
-                Success = false,
-                Message = "Invalid request data",
-                Errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage).ToList()
-            });
+            return CreateErrorResponse("Invalid input data", 400);
         }
 
         var result = await _projectService.CreateProjectAsync(request);
         
-        if (!result.Success)
+        if (result.IsSuccess)
         {
-            return BadRequest(result);
+            return CreatedAtAction(nameof(GetProject), new { id = result.Data!.ProjectId }, 
+                ToApiResponse(result).Value);
         }
 
-        return CreatedAtAction(nameof(GetProject), new { id = result.Data!.ProjectId }, result);
+        return ToApiResponse(result);
     }
 
     /// <summary>
@@ -108,24 +110,16 @@ public class ProjectsController : ControllerBase
     [NoCache] // No caching for write operations
     public async Task<ActionResult<ApiResponse<ProjectDto>>> UpdateProject(Guid id, [FromBody] UpdateProjectRequest request)
     {
+        // Log controller action for debugging
+        LogControllerAction(_logger, "UpdateProject", new { id, request });
+
         if (!ModelState.IsValid)
         {
-            return BadRequest(new ApiResponse<ProjectDto>
-            {
-                Success = false,
-                Message = "Invalid request data",
-                Errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage).ToList()
-            });
+            return CreateErrorResponse("Invalid input data", 400);
         }
 
         var result = await _projectService.UpdateProjectAsync(id, request);
-        
-        if (!result.Success)
-        {
-            return NotFound(result);
-        }
-
-        return Ok(result);
+        return ToApiResponse(result);
     }
 
     /// <summary>
@@ -136,24 +130,16 @@ public class ProjectsController : ControllerBase
     [NoCache] // No caching for write operations
     public async Task<ActionResult<ApiResponse<ProjectDto>>> PatchProject(Guid id, [FromBody] PatchProjectRequest request)
     {
+        // Log controller action for debugging
+        LogControllerAction(_logger, "PatchProject", new { id, request });
+
         if (!ModelState.IsValid)
         {
-            return BadRequest(new ApiResponse<ProjectDto>
-            {
-                Success = false,
-                Message = "Invalid request data",
-                Errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage).ToList()
-            });
+            return CreateErrorResponse("Invalid input data", 400);
         }
 
         var result = await _projectService.PatchProjectAsync(id, request);
-        
-        if (!result.Success)
-        {
-            return NotFound(result);
-        }
-
-        return Ok(result);
+        return ToApiResponse(result);
     }
 
     /// <summary>
@@ -164,14 +150,11 @@ public class ProjectsController : ControllerBase
     [NoCache] // No caching for write operations
     public async Task<ActionResult<ApiResponse<bool>>> DeleteProject(Guid id)
     {
-        var result = await _projectService.DeleteProjectAsync(id);
-        
-        if (!result.Success)
-        {
-            return NotFound(result);
-        }
+        // Log controller action for debugging
+        LogControllerAction(_logger, "DeleteProject", new { id });
 
-        return Ok(result);
+        var result = await _projectService.DeleteProjectAsync(id);
+        return ToApiResponse(result);
     }
 
     /// <summary>
@@ -183,18 +166,17 @@ public class ProjectsController : ControllerBase
         [FromQuery] int pageNumber = 1,
         [FromQuery] int pageSize = 10)
     {
+        // Log controller action for debugging
+        LogControllerAction(_logger, "GetMyProjects", new { pageNumber, pageSize });
+
         var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
         if (!Guid.TryParse(userIdClaim, out var userId))
         {
-            return Unauthorized(new ApiResponse<PagedResult<ProjectDto>>
-            {
-                Success = false,
-                Message = "Invalid user ID in token"
-            });
+            return CreateErrorResponse("Invalid user ID in token", 401);
         }
 
         var result = await _projectService.GetUserProjectsAsync(userId, pageNumber, pageSize);
-        return Ok(result);
+        return ToApiResponse(result);
     }
 
     /// <summary>
@@ -212,12 +194,13 @@ public class ProjectsController : ControllerBase
     {
         try
         {
-            // Validate pagination parameters
-            if (page < 1)
-                return BadRequest("Page number must be greater than 0.");
+            // Log controller action for debugging
+            LogControllerAction(_logger, "GetProjectsWithRichPagination", new { page, pageSize, managerId, status, sortBy, sortOrder });
 
-            if (pageSize < 1 || pageSize > 100)
-                return BadRequest("Page size must be between 1 and 100.");
+            // Validate pagination parameters using base controller method
+            var validationResult = ValidatePaginationParameters(page, pageSize);
+            if (validationResult != null)
+                return validationResult;
 
             // Create query parameters
             var parameters = new ProjectQueryParameters
@@ -232,7 +215,7 @@ public class ProjectsController : ControllerBase
 
             // Get data using existing service
             var serviceResult = await _projectService.GetProjectsAsync(parameters);
-            if (!serviceResult.Success)
+            if (!serviceResult.IsSuccess)
                 return BadRequest(serviceResult.Message);
 
             // Build base URL for HATEOAS links
@@ -260,12 +243,7 @@ public class ProjectsController : ControllerBase
         }
         catch (Exception ex)
         {
-            return StatusCode(500, new ApiResponseWithPagination<ProjectDto>
-            {
-                Success = false,
-                Message = "An error occurred while retrieving projects",
-                Errors = new List<string> { ex.Message }
-            });
+            return HandleException(_logger, ex, "retrieving projects with rich pagination");
         }
     }
 }

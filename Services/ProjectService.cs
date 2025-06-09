@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using dotnet_rest_api.Data;
 using dotnet_rest_api.DTOs;
 using dotnet_rest_api.Models;
+using dotnet_rest_api.Common;
 
 namespace dotnet_rest_api.Services;
 
@@ -16,7 +17,7 @@ public class ProjectService : IProjectService
         _queryService = queryService;
     }
 
-    public async Task<ApiResponse<ProjectDto>> GetProjectByIdAsync(Guid projectId)
+    public async Task<Result<ProjectDto>> GetProjectByIdAsync(Guid projectId)
     {
         try
         {
@@ -28,33 +29,19 @@ public class ProjectService : IProjectService
 
             if (project == null)
             {
-                return new ApiResponse<ProjectDto>
-                {
-                    Success = false,
-                    Message = "Project not found"
-                };
+                return Result<ProjectDto>.NotFound("Project", projectId.ToString());
             }
 
             var projectDto = MapToDto(project);
-
-            return new ApiResponse<ProjectDto>
-            {
-                Success = true,
-                Data = projectDto
-            };
+            return Result<ProjectDto>.Success(projectDto, "Project retrieved successfully");
         }
         catch (Exception ex)
         {
-            return new ApiResponse<ProjectDto>
-            {
-                Success = false,
-                Message = "An error occurred while retrieving the project",
-                Errors = new List<string> { ex.Message }
-            };
+            return Result<ProjectDto>.ServerError($"An error occurred while retrieving the project: {ex.Message}");
         }
     }
 
-    public async Task<ApiResponse<PagedResult<ProjectDto>>> GetProjectsAsync(int pageNumber = 1, int pageSize = 10, Guid? managerId = null)
+    public async Task<Result<PagedResult<ProjectDto>>> GetProjectsAsync(int pageNumber = 1, int pageSize = 10, Guid? managerId = null)
     {
         try
         {
@@ -86,24 +73,15 @@ public class ProjectService : IProjectService
                 PageSize = pageSize
             };
 
-            return new ApiResponse<PagedResult<ProjectDto>>
-            {
-                Success = true,
-                Data = result
-            };
+            return Result<PagedResult<ProjectDto>>.Success(result, "Projects retrieved successfully");
         }
         catch (Exception ex)
         {
-            return new ApiResponse<PagedResult<ProjectDto>>
-            {
-                Success = false,
-                Message = "An error occurred while retrieving projects",
-                Errors = new List<string> { ex.Message }
-            };
+            return Result<PagedResult<ProjectDto>>.ServerError($"An error occurred while retrieving projects: {ex.Message}");
         }
     }
 
-    public async Task<ApiResponse<ProjectDto>> CreateProjectAsync(CreateProjectRequest request)
+    public async Task<Result<ProjectDto>> CreateProjectAsync(CreateProjectRequest request)
     {
         try
         {
@@ -114,11 +92,7 @@ public class ProjectService : IProjectService
 
             if (manager == null)
             {
-                return new ApiResponse<ProjectDto>
-                {
-                    Success = false,
-                    Message = "Project manager not found or inactive"
-                };
+                return Result<ProjectDto>.Failure("Project manager not found or inactive", null, ResultErrorType.Validation);
             }
 
             var project = new Project
@@ -145,26 +119,15 @@ public class ProjectService : IProjectService
                 .FirstAsync(p => p.ProjectId == project.ProjectId);
 
             var projectDto = MapToDto(project);
-
-            return new ApiResponse<ProjectDto>
-            {
-                Success = true,
-                Message = "Project created successfully",
-                Data = projectDto
-            };
+            return Result<ProjectDto>.Success(projectDto, "Project created successfully");
         }
         catch (Exception ex)
         {
-            return new ApiResponse<ProjectDto>
-            {
-                Success = false,
-                Message = "An error occurred while creating the project",
-                Errors = new List<string> { ex.Message }
-            };
+            return Result<ProjectDto>.ServerError($"An error occurred while creating the project: {ex.Message}");
         }
     }
 
-    public async Task<ApiResponse<ProjectDto>> UpdateProjectAsync(Guid projectId, UpdateProjectRequest request)
+    public async Task<Result<ProjectDto>> UpdateProjectAsync(Guid projectId, UpdateProjectRequest request)
     {
         try
         {
@@ -176,11 +139,7 @@ public class ProjectService : IProjectService
 
             if (project == null)
             {
-                return new ApiResponse<ProjectDto>
-                {
-                    Success = false,
-                    Message = "Project not found"
-                };
+                return Result<ProjectDto>.NotFound("Project", projectId.ToString());
             }
 
             // Validate project manager exists
@@ -189,21 +148,13 @@ public class ProjectService : IProjectService
 
             if (manager == null)
             {
-                return new ApiResponse<ProjectDto>
-                {
-                    Success = false,
-                    Message = "Project manager not found or inactive"
-                };
+                return Result<ProjectDto>.Failure("Project manager not found or inactive", null, ResultErrorType.Validation);
             }
 
             // Parse status
             if (!Enum.TryParse<ProjectStatus>(request.Status, out var status))
             {
-                return new ApiResponse<ProjectDto>
-                {
-                    Success = false,
-                    Message = "Invalid project status"
-                };
+                return Result<ProjectDto>.Failure("Invalid project status", null, ResultErrorType.Validation);
             }
 
             project.ProjectName = request.ProjectName;
@@ -225,26 +176,15 @@ public class ProjectService : IProjectService
                 .FirstAsync(p => p.ProjectId == projectId);
 
             var projectDto = MapToDto(project);
-
-            return new ApiResponse<ProjectDto>
-            {
-                Success = true,
-                Message = "Project updated successfully",
-                Data = projectDto
-            };
+            return Result<ProjectDto>.Success(projectDto, "Project updated successfully");
         }
         catch (Exception ex)
         {
-            return new ApiResponse<ProjectDto>
-            {
-                Success = false,
-                Message = "An error occurred while updating the project",
-                Errors = new List<string> { ex.Message }
-            };
+            return Result<ProjectDto>.ServerError($"An error occurred while updating the project: {ex.Message}");
         }
     }
 
-    public async Task<ApiResponse<ProjectDto>> PatchProjectAsync(Guid projectId, PatchProjectRequest request)
+    public async Task<Result<ProjectDto>> PatchProjectAsync(Guid projectId, PatchProjectRequest request)
     {
         try
         {
@@ -256,11 +196,7 @@ public class ProjectService : IProjectService
 
             if (project == null)
             {
-                return new ApiResponse<ProjectDto>
-                {
-                    Success = false,
-                    Message = "Project not found"
-                };
+                return Result<ProjectDto>.NotFound("Project", projectId.ToString());
             }
 
             // Only update provided fields
@@ -283,11 +219,7 @@ public class ProjectService : IProjectService
             {
                 if (!Enum.TryParse<ProjectStatus>(request.Status, out var status))
                 {
-                    return new ApiResponse<ProjectDto>
-                    {
-                        Success = false,
-                        Message = "Invalid project status"
-                    };
+                    return Result<ProjectDto>.Failure("Invalid project status", null, ResultErrorType.Validation);
                 }
                 project.Status = status;
             }
@@ -315,11 +247,7 @@ public class ProjectService : IProjectService
 
                 if (manager == null)
                 {
-                    return new ApiResponse<ProjectDto>
-                    {
-                        Success = false,
-                        Message = "Project manager not found or inactive"
-                    };
+                    return Result<ProjectDto>.Failure("Project manager not found or inactive", null, ResultErrorType.Validation);
                 }
                 project.ProjectManagerId = request.ProjectManagerId.Value;
             }
@@ -334,61 +262,36 @@ public class ProjectService : IProjectService
                 .FirstAsync(p => p.ProjectId == projectId);
 
             var projectDto = MapToDto(project);
-
-            return new ApiResponse<ProjectDto>
-            {
-                Success = true,
-                Message = "Project updated successfully",
-                Data = projectDto
-            };
+            return Result<ProjectDto>.Success(projectDto, "Project updated successfully");
         }
         catch (Exception ex)
         {
-            return new ApiResponse<ProjectDto>
-            {
-                Success = false,
-                Message = "An error occurred while updating the project",
-                Errors = new List<string> { ex.Message }
-            };
+            return Result<ProjectDto>.ServerError($"An error occurred while updating the project: {ex.Message}");
         }
     }
 
-    public async Task<ApiResponse<bool>> DeleteProjectAsync(Guid projectId)
+    public async Task<Result<bool>> DeleteProjectAsync(Guid projectId)
     {
         try
         {
             var project = await _context.Projects.FindAsync(projectId);
             if (project == null)
             {
-                return new ApiResponse<bool>
-                {
-                    Success = false,
-                    Message = "Project not found"
-                };
+                return Result<bool>.NotFound("Project", projectId.ToString());
             }
 
             _context.Projects.Remove(project);
             await _context.SaveChangesAsync();
 
-            return new ApiResponse<bool>
-            {
-                Success = true,
-                Message = "Project deleted successfully",
-                Data = true
-            };
+            return Result<bool>.Success(true, "Project deleted successfully");
         }
         catch (Exception ex)
         {
-            return new ApiResponse<bool>
-            {
-                Success = false,
-                Message = "An error occurred while deleting the project",
-                Errors = new List<string> { ex.Message }
-            };
+            return Result<bool>.ServerError($"An error occurred while deleting the project: {ex.Message}");
         }
     }
 
-    public async Task<ApiResponse<PagedResult<ProjectDto>>> GetUserProjectsAsync(Guid userId, int pageNumber = 1, int pageSize = 10)
+    public async Task<Result<PagedResult<ProjectDto>>> GetUserProjectsAsync(Guid userId, int pageNumber = 1, int pageSize = 10)
     {
         try
         {
@@ -415,24 +318,15 @@ public class ProjectService : IProjectService
                 PageSize = pageSize
             };
 
-            return new ApiResponse<PagedResult<ProjectDto>>
-            {
-                Success = true,
-                Data = result
-            };
+            return Result<PagedResult<ProjectDto>>.Success(result, "User projects retrieved successfully");
         }
         catch (Exception ex)
         {
-            return new ApiResponse<PagedResult<ProjectDto>>
-            {
-                Success = false,
-                Message = "An error occurred while retrieving user projects",
-                Errors = new List<string> { ex.Message }
-            };
+            return Result<PagedResult<ProjectDto>>.ServerError($"An error occurred while retrieving user projects: {ex.Message}");
         }
     }
 
-    public async Task<ApiResponse<EnhancedPagedResult<ProjectDto>>> GetProjectsAsync(ProjectQueryParameters parameters)
+    public async Task<Result<EnhancedPagedResult<ProjectDto>>> GetProjectsAsync(ProjectQueryParameters parameters)
     {
         try
         {
@@ -448,25 +342,15 @@ public class ProjectService : IProjectService
             // Use the generic query service for advanced querying
             var result = await _queryService.ExecuteQueryAsync(query.Select(p => MapToDto(p)), parameters);
             
-            return new ApiResponse<EnhancedPagedResult<ProjectDto>>
-            {
-                Success = true,
-                Message = "Projects retrieved successfully",
-                Data = result
-            };
+            return Result<EnhancedPagedResult<ProjectDto>>.Success(result, "Projects retrieved successfully");
         }
         catch (Exception ex)
         {
-            return new ApiResponse<EnhancedPagedResult<ProjectDto>>
-            {
-                Success = false,
-                Message = "An error occurred while retrieving projects",
-                Errors = new List<string> { ex.Message }
-            };
+            return Result<EnhancedPagedResult<ProjectDto>>.ServerError($"An error occurred while retrieving projects: {ex.Message}");
         }
     }
 
-    public async Task<ApiResponse<PagedResult<ProjectDto>>> GetProjectsLegacyAsync(int pageNumber = 1, int pageSize = 10, Guid? managerId = null)
+    public async Task<Result<PagedResult<ProjectDto>>> GetProjectsLegacyAsync(int pageNumber = 1, int pageSize = 10, Guid? managerId = null)
     {
         // This method maintains backward compatibility with the original API
         return await GetProjectsAsync(pageNumber, pageSize, managerId);

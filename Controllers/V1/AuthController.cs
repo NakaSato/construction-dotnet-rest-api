@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using dotnet_rest_api.DTOs;
 using dotnet_rest_api.Services;
+using dotnet_rest_api.Controllers;
 using Asp.Versioning;
 
 namespace dotnet_rest_api.Controllers.V1;
@@ -8,13 +9,15 @@ namespace dotnet_rest_api.Controllers.V1;
 [ApiController]
 [ApiVersion("1.0")]
 [Route("api/v{version:apiVersion}/[controller]")]
-public class AuthController : ControllerBase
+public class AuthController : BaseApiController
 {
     private readonly IAuthService _authService;
+    private readonly ILogger<AuthController> _logger;
 
-    public AuthController(IAuthService authService)
+    public AuthController(IAuthService authService, ILogger<AuthController> logger)
     {
         _authService = authService;
+        _logger = logger;
     }
 
     /// <summary>
@@ -23,24 +26,26 @@ public class AuthController : ControllerBase
     [HttpPost("login")]
     public async Task<ActionResult<ApiResponse<LoginResponse>>> Login([FromBody] LoginRequest request)
     {
-        if (!ModelState.IsValid)
+        try
         {
-            return BadRequest(new ApiResponse<LoginResponse>
+            if (!ModelState.IsValid)
             {
-                Success = false,
-                Message = "Invalid request data",
-                Errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage).ToList()
-            });
-        }
+                return CreateErrorResponse("Invalid input data", 400);
+            }
 
-        var result = await _authService.LoginAsync(request);
-        
-        if (!result.Success)
+            var result = await _authService.LoginAsync(request);
+            
+            if (!result.Success)
+            {
+                return CreateErrorResponse(result.Message, 401);
+            }
+
+            return CreateSuccessResponse(result.Data!, "Login successful");
+        }
+        catch (Exception ex)
         {
-            return Unauthorized(result);
+            return HandleException(_logger, ex, "user login");
         }
-
-        return Ok(result);
     }
 
     /// <summary>
@@ -49,24 +54,26 @@ public class AuthController : ControllerBase
     [HttpPost("register")]
     public async Task<ActionResult<ApiResponse<UserDto>>> Register([FromBody] RegisterRequest request)
     {
-        if (!ModelState.IsValid)
+        try
         {
-            return BadRequest(new ApiResponse<UserDto>
+            if (!ModelState.IsValid)
             {
-                Success = false,
-                Message = "Invalid request data",
-                Errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage).ToList()
-            });
-        }
+                return CreateErrorResponse("Invalid request data", 400);
+            }
 
-        var result = await _authService.RegisterAsync(request);
-        
-        if (!result.Success)
+            var result = await _authService.RegisterAsync(request);
+            
+            if (!result.Success)
+            {
+                return CreateErrorResponse(result.Message, 400);
+            }
+
+            return CreateSuccessResponse(result.Data!, "User registered successfully");
+        }
+        catch (Exception ex)
         {
-            return BadRequest(result);
+            return HandleException(_logger, ex, "user registration");
         }
-
-        return CreatedAtAction(nameof(Register), result);
     }
 
     /// <summary>
@@ -75,13 +82,20 @@ public class AuthController : ControllerBase
     [HttpPost("refresh")]
     public async Task<ActionResult<ApiResponse<string>>> RefreshToken([FromBody] string refreshToken)
     {
-        var result = await _authService.RefreshTokenAsync(refreshToken);
-        
-        if (!result.Success)
+        try
         {
-            return Unauthorized(result);
-        }
+            var result = await _authService.RefreshTokenAsync(refreshToken);
+            
+            if (!result.Success)
+            {
+                return CreateErrorResponse(result.Message, 401);
+            }
 
-        return Ok(result);
+            return CreateSuccessResponse(result.Data!, "Token refreshed successfully");
+        }
+        catch (Exception ex)
+        {
+            return HandleException(_logger, ex, "token refresh");
+        }
     }
 }
