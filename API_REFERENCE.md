@@ -195,33 +195,33 @@ The Calendar API provides comprehensive event planning and scheduling functional
 
 ### Event Types
 
-| Type | Description |
-|------|-------------|
-| `Meeting` | Team meetings, client calls, standup meetings |
-| `Deadline` | Project milestones, task due dates, deliverables |
-| `Installation` | On-site installation work, system commissioning |
-| `Maintenance` | Routine maintenance, inspections, repairs |
-| `Training` | Team training sessions, certification courses |
-| `Other` | General events not covered by other types |
+| Type | Value | Description |
+|------|-------|-------------|
+| `Meeting` | 1 | Team meetings, client calls, standup meetings |
+| `Deadline` | 2 | Project milestones, task due dates, deliverables |
+| `Installation` | 3 | On-site installation work, system commissioning |
+| `Maintenance` | 4 | Routine maintenance, inspections, repairs |
+| `Training` | 5 | Team training sessions, certification courses |
+| `Other` | 6 | General events not covered by other types |
 
 ### Event Status
 
-| Status | Description |
-|--------|-------------|
-| `Scheduled` | Event is planned and confirmed |
-| `InProgress` | Event is currently happening |
-| `Completed` | Event has been finished |
-| `Cancelled` | Event has been cancelled |
-| `Postponed` | Event has been delayed to a future date |
+| Status | Value | Description |
+|--------|-------|-------------|
+| `Scheduled` | 1 | Event is planned and confirmed |
+| `InProgress` | 2 | Event is currently happening |
+| `Completed` | 3 | Event has been finished |
+| `Cancelled` | 4 | Event has been cancelled |
+| `Postponed` | 5 | Event has been delayed to a future date |
 
 ### Event Priority
 
-| Priority | Description |
-|----------|-------------|
-| `Low` | Optional or flexible events |
-| `Medium` | Standard priority events |
-| `High` | Important events requiring attention |
-| `Critical` | Urgent events that cannot be missed |
+| Priority | Value | Description |
+|----------|-------|-------------|
+| `Low` | 1 | Optional or flexible events |
+| `Medium` | 2 | Standard priority events |
+| `High` | 3 | Important events requiring attention |
+| `Critical` | 4 | Urgent events that cannot be missed |
 
 ### Get All Calendar Events
 **GET** `/api/v1/calendar`
@@ -250,41 +250,36 @@ GET /api/v1/calendar?startDate=2025-06-01&endDate=2025-06-30&eventType=Meeting&p
 ```json
 {
   "success": true,
-  "message": "Calendar events retrieved successfully",
+  "message": "Operation completed successfully",
   "data": {
     "events": [
       {
-        "eventId": "123e4567-e89b-12d3-a456-426614174000",
+        "id": "123e4567-e89b-12d3-a456-426614174000",
         "title": "Project Kickoff Meeting",
-        "description": "Initial planning meeting for Solar Installation Project Alpha",
         "startDateTime": "2025-06-10T09:00:00Z",
         "endDateTime": "2025-06-10T10:30:00Z",
-        "eventType": "Meeting",
-        "status": "Scheduled",
-        "priority": "High",
-        "location": "Conference Room A",
         "isAllDay": false,
-        "isRecurring": false,
-        "projectId": "456e7890-e89b-12d3-a456-426614174000",
-        "taskId": null,
-        "createdByUserId": "789e0123-e89b-12d3-a456-426614174000",
-        "assignedToUserId": "789e0123-e89b-12d3-a456-426614174000",
-        "createdAt": "2025-06-08T14:30:00Z",
-        "updatedAt": "2025-06-08T14:30:00Z",
-        "color": "#2196F3",
-        "isPrivate": false,
-        "meetingUrl": "https://teams.microsoft.com/l/meetup-join/...",
-        "attendees": "john.doe@example.com, jane.smith@example.com"
+        "eventType": 1,
+        "eventTypeName": "Meeting",
+        "status": 1,
+        "statusName": "Scheduled",
+        "priority": 3,
+        "priorityName": "High",
+        "location": "Conference Room A",
+        "projectName": "Solar Installation Project Alpha",
+        "taskName": null,
+        "isRecurring": false
       }
     ],
     "totalCount": 25,
-    "pageNumber": 1,
+    "page": 1,
     "pageSize": 20,
     "totalPages": 2,
     "hasPreviousPage": false,
     "hasNextPage": true
   },
-  "errors": []
+  "errors": [],
+  "error": null
 }
 ```
 
@@ -295,35 +290,42 @@ GET /api/v1/calendar?startDate=2025-06-01&endDate=2025-06-30&eventType=Meeting&p
 ```json
 {
   "success": true,
-  "message": "Calendar event retrieved successfully",
+  "message": "Operation completed successfully",
   "data": {
-    "eventId": "123e4567-e89b-12d3-a456-426614174000",
+    "id": "123e4567-e89b-12d3-a456-426614174000",
     "title": "Project Kickoff Meeting",
     "description": "Initial planning meeting for Solar Installation Project Alpha",
     "startDateTime": "2025-06-10T09:00:00Z",
     "endDateTime": "2025-06-10T10:30:00Z",
-    "eventType": "Meeting",
-    "status": "Scheduled",
-    "priority": "High",
-    "location": "Conference Room A",
     "isAllDay": false,
+    "eventType": 1,
+    "eventTypeName": "Meeting",
+    "status": 1,
+    "statusName": "Scheduled",
+    "priority": 3,
+    "priorityName": "High",
+    "location": "Conference Room A",
+    "projectId": "456e7890-e89b-12d3-a456-426614174000",
+    "projectName": "Solar Installation Project Alpha",
+    "taskId": null,
+    "taskName": null,
+    "createdByUserId": "789e0123-e89b-12d3-a456-426614174000",
+    "createdByUserName": null,
+    "assignedToUserId": "789e0123-e89b-12d3-a456-426614174000",
+    "assignedToUserName": null,
     "isRecurring": false,
     "recurrencePattern": null,
     "recurrenceEndDate": null,
-    "notes": "Bring project specifications and timeline",
     "reminderMinutes": 15,
-    "projectId": "456e7890-e89b-12d3-a456-426614174000",
-    "taskId": null,
-    "createdByUserId": "789e0123-e89b-12d3-a456-426614174000",
-    "assignedToUserId": "789e0123-e89b-12d3-a456-426614174000",
-    "createdAt": "2025-06-08T14:30:00Z",
-    "updatedAt": "2025-06-08T14:30:00Z",
-    "color": "#2196F3",
     "isPrivate": false,
     "meetingUrl": "https://teams.microsoft.com/l/meetup-join/...",
-    "attendees": "john.doe@example.com, jane.smith@example.com"
+    "attendees": "john.doe@example.com, jane.smith@example.com",
+    "notes": "Bring project specifications and timeline",
+    "createdAt": "2025-06-08T14:30:00Z",
+    "updatedAt": "2025-06-08T14:30:00Z"
   },
-  "errors": []
+  "errors": [],
+  "error": null
 }
 ```
 
@@ -358,30 +360,42 @@ GET /api/v1/calendar?startDate=2025-06-01&endDate=2025-06-30&eventType=Meeting&p
 ```json
 {
   "success": true,
-  "message": "Calendar event created successfully",
+  "message": "Operation completed successfully",
   "data": {
-    "eventId": "456e7890-e89b-12d3-a456-426614174000",
+    "id": "456e7890-e89b-12d3-a456-426614174000",
     "title": "Installation Site Visit",
     "description": "On-site inspection and preparation for solar panel installation",
     "startDateTime": "2025-06-15T08:00:00Z",
     "endDateTime": "2025-06-15T12:00:00Z",
-    "eventType": "Installation",
-    "status": "Scheduled",
-    "priority": "High",
-    "location": "123 Solar Street, Sunnyville, CA",
     "isAllDay": false,
-    "isRecurring": false,
+    "eventType": 3,
+    "eventTypeName": "Installation",
+    "status": 1,
+    "statusName": "Scheduled",
+    "priority": 3,
+    "priorityName": "High",
+    "location": "123 Solar Street, Sunnyville, CA",
     "projectId": "456e7890-e89b-12d3-a456-426614174000",
+    "projectName": null,
     "taskId": "789e0123-e89b-12d3-a456-426614174000",
+    "taskName": null,
     "createdByUserId": "789e0123-e89b-12d3-a456-426614174000",
+    "createdByUserName": null,
     "assignedToUserId": "123e4567-e89b-12d3-a456-426614174000",
-    "createdAt": "2025-06-10T16:15:00Z",
-    "updatedAt": "2025-06-10T16:15:00Z",
-    "color": "#FF9800",
+    "assignedToUserName": null,
+    "isRecurring": false,
+    "recurrencePattern": null,
+    "recurrenceEndDate": null,
+    "reminderMinutes": 15,
     "isPrivate": false,
-    "attendees": "tech1@example.com, supervisor@example.com"
+    "meetingUrl": null,
+    "attendees": "tech1@example.com, supervisor@example.com",
+    "notes": "Bring safety equipment and measurement tools",
+    "createdAt": "2025-06-10T16:15:00Z",
+    "updatedAt": "2025-06-10T16:15:00Z"
   },
-  "errors": []
+  "errors": [],
+  "error": null
 }
 ```
 

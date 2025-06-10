@@ -1,10 +1,10 @@
-# Solar Projects REST API
+# Solar Projects REST API with Calendar Management
 
-This project is a comprehensive REST API built using .NET 9.0 for managing solar projects, tasks, and todo items. It provides complete CRUD operations with modern features including JWT authentication, file uploads, database integration, and Azure deployment capabilities.
+This project is a comprehensive REST API built using .NET 9.0 for managing solar projects, tasks, daily reports, work requests, and calendar events. It provides complete CRUD operations with modern features including JWT authentication, file uploads, advanced caching, rate limiting, and comprehensive calendar management.
 
 ## 🚀 Quick Start
 
-### **Option 1: Local Development (Recommended)**
+### **Local Development (Recommended)**
 ```bash
 # Clone and navigate to the project
 git clone <repository-url>
@@ -14,39 +14,84 @@ cd dotnet-rest-api
 dotnet restore
 
 # Run the application
-dotnet run --urls "http://localhost:5001"
+dotnet run --urls "http://localhost:5002"
 
-# Visit http://localhost:5001 for Swagger documentation
+# Visit http://localhost:5002 for Swagger documentation
 ```
 
-### **Option 2: Docker Development**
+### **Docker Development**
 ```bash
 # Start with Docker Compose (includes PostgreSQL)
 docker-compose -f docker-compose.dev.yml up -d
 
-# Application will be available at http://localhost:5001
+# Application will be available at http://localhost:5002
 ```
 
 ## 📱 Current Status
 
-✅ **Application Running**: http://localhost:5001  
-✅ **Swagger UI**: http://localhost:5001 (Interactive API documentation)  
-✅ **Health Check**: http://localhost:5001/health  
-✅ **Todo API**: Full CRUD operations working  
-✅ **PostgreSQL**: Available via Docker on port 5432  
+✅ **Application Running**: http://localhost:5002  
+✅ **Swagger UI**: http://localhost:5002 (Interactive API documentation)  
+✅ **Health Check**: http://localhost:5002/health  
+✅ **Calendar API**: Complete calendar management with conflict detection  
+✅ **Daily Reports API**: Comprehensive field reporting workflow  
+✅ **Work Requests API**: Change orders and additional work tracking  
+✅ **Advanced Features**: Caching, rate limiting, HATEOAS support  
+✅ **Database**: Entity Framework Core with PostgreSQL  
 ✅ **Azure Deployment**: Infrastructure ready (see `DEPLOYMENT_READY.md`)  
+
+## 🎯 Key Features
+
+### **📅 Calendar Management**
+- **Event Scheduling**: Create, update, delete calendar events
+- **Conflict Detection**: Smart scheduling conflict detection
+- **Event Types**: Meeting, Deadline, Installation, Maintenance, Training, Other
+- **Priority Management**: Low, Medium, High, Critical priorities
+- **Project Integration**: Link events to projects and tasks
+- **User Assignment**: Assign events to team members
+- **Upcoming Events**: Filter events by date range
+- **Recurring Events**: Framework for future recurring event support
+
+### **📊 Daily Reports**
+- **Field Reporting**: Comprehensive daily work reports
+- **Workflow Management**: Draft → Submitted → Approved/Rejected
+- **Work Progress**: Track work items, personnel, materials, equipment
+- **Photo Integration**: Associate images with daily reports
+- **HATEOAS Support**: Hypermedia-driven API navigation
+
+### **🔧 Work Requests**
+- **Change Orders**: Manage additional work requests
+- **Priority Tracking**: Low, Medium, High, Critical priorities
+- **Task Management**: Break down work requests into tasks
+- **Comment System**: Collaborative commenting on work requests
+- **Status Tracking**: New, InProgress, Completed, Cancelled states
+
+### **⚡ Performance & Reliability**
+- **Caching**: 5-minute cache duration on frequently accessed endpoints
+- **Rate Limiting**: Configurable rate limiting for API protection
+- **Health Monitoring**: Comprehensive health checks with system metrics
+- **Error Handling**: Consistent error response format with validation
+- **Authentication**: JWT-based security with role-based access control
 
 ## 🏗️ Project Structure
 
 - **Controllers/**
   - `HealthController.cs`: Application health monitoring
-  - `V1/`: Versioned API controllers (Auth, Projects, Tasks, Users, Images)
+  - `V1/CalendarController.cs`: Calendar event management
+  - `V1/DailyReportsController.cs`: Field reporting system
+  - `V1/WorkRequestsController.cs`: Work request management
+  - `V1/`: Additional versioned API controllers (Auth, Projects, Tasks, Users, Images)
   
 - **Models/**
-  - Domain models for solar project management
+  - `CalendarEvent.cs`: Calendar event domain model
+  - `DailyReport.cs`: Daily report with associated entities
+  - `WorkRequest.cs`: Work request management
+  - Additional domain models for solar project management
   
 - **Services/**
-  - Project, Task, User, Auth, and Image services
+  - `CalendarService.cs`: Calendar business logic
+  - `DailyReportService.cs`: Report workflow management
+  - `WorkRequestService.cs`: Work request operations
+  - Additional services for projects, tasks, users, auth, and images
   
 - **Data/**
   - `ApplicationDbContext.cs`: Main database context (PostgreSQL)
