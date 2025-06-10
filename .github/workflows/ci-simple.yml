@@ -1,4 +1,4 @@
-name: CI - Build and Test
+name: CI - Build and Test (Simple)
 
 on:
   push:
@@ -91,27 +91,20 @@ jobs:
 
     - name: Test Docker image
       run: |
-        # Start container in background
         docker run --name test-container -d -p 8080:8080 \
           -e ConnectionStrings__DefaultConnection="Host=host.docker.internal;Database=SolarProjectsDb;Username=postgres;Password=password" \
-          -e ASPNETCORE_ENVIRONMENT="Development" \
           solar-projects-api:${{ github.sha }}
-        
-        # Wait for container to start
         sleep 15
         
         # Check if container is running
         if docker ps | grep test-container; then
-          echo "✅ Container is running successfully"
-          echo "📋 Container logs:"
+          echo "✅ Container is running"
           docker logs test-container
         else
           echo "❌ Container failed to start"
-          echo "📋 Container logs:"
           docker logs test-container
           exit 1
         fi
         
-        # Cleanup
         docker stop test-container
         docker rm test-container

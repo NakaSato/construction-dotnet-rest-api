@@ -1,0 +1,28 @@
+name: "CodeQL Config"
+
+queries:
+  - uses: security-and-quality
+
+# Additional paths to include in analysis
+paths:
+  - "Controllers/"
+  - "Models/"
+  - "Services/"
+  - "DTOs/"
+  - "Data/"
+  - "Program.cs"
+
+# Paths to ignore
+paths-ignore:
+  - "bin/"
+  - "obj/"
+  - "Migrations/"
+  - "uploads/"
+  - "*.Designer.cs"
+
+# For C#, ensure we analyze the right framework
+languages:
+  - csharp
+
+# Build configuration
+build-mode: manual
