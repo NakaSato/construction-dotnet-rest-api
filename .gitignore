@@ -3,6 +3,13 @@ bin/
 obj/
 out/
 
+# Security - Credential files (DO NOT COMMIT)
+CREDENTIALS_FOR_DEPLOYMENT.md
+AZURE_CREDENTIALS_TEMP.md
+*_CREDENTIALS*.md
+*.credentials
+*.secrets
+
 # Build results
 [Dd]ebug/
 [Dd]ebugPublic/
