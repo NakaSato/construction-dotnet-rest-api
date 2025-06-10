@@ -32,6 +32,7 @@ This is a comprehensive API reference for the Solar Projects Management REST API
 
 - [Authentication](#authentication)
 - [Health Monitoring](#health-monitoring)
+- [Calendar Management](#calendar-management)
 - [Daily Reports Management](#daily-reports-management)
 - [Work Request Management](#work-request-management)
 - [Rate Limiting](#rate-limiting)
@@ -183,6 +184,387 @@ This is a comprehensive API reference for the Solar Projects Management REST API
   }
 }
 ```
+
+---
+
+## 📅 Calendar Management
+
+**🔒 Authentication Required**
+
+The Calendar API provides comprehensive event planning and scheduling functionality for solar projects. It supports CRUD operations, advanced filtering, event associations with projects and tasks, conflict detection, and recurring events (future implementation). Each calendar event can be categorized by type, priority, and status with full audit trails.
+
+### Event Types
+
+| Type | Description |
+|------|-------------|
+| `Meeting` | Team meetings, client calls, standup meetings |
+| `Deadline` | Project milestones, task due dates, deliverables |
+| `Installation` | On-site installation work, system commissioning |
+| `Maintenance` | Routine maintenance, inspections, repairs |
+| `Training` | Team training sessions, certification courses |
+| `Other` | General events not covered by other types |
+
+### Event Status
+
+| Status | Description |
+|--------|-------------|
+| `Scheduled` | Event is planned and confirmed |
+| `InProgress` | Event is currently happening |
+| `Completed` | Event has been finished |
+| `Cancelled` | Event has been cancelled |
+| `Postponed` | Event has been delayed to a future date |
+
+### Event Priority
+
+| Priority | Description |
+|----------|-------------|
+| `Low` | Optional or flexible events |
+| `Medium` | Standard priority events |
+| `High` | Important events requiring attention |
+| `Critical` | Urgent events that cannot be missed |
+
+### Get All Calendar Events
+**GET** `/api/v1/calendar`
+
+**Query Parameters**:
+- `startDate` (DateTime): Filter events starting from this date
+- `endDate` (DateTime): Filter events ending before this date
+- `eventType` (EventType): Filter by event type
+- `status` (EventStatus): Filter by event status
+- `priority` (EventPriority): Filter by event priority
+- `isAllDay` (bool): Filter all-day events
+- `isRecurring` (bool): Filter recurring events
+- `projectId` (Guid): Filter events for specific project
+- `taskId` (Guid): Filter events for specific task
+- `createdByUserId` (Guid): Filter events created by user
+- `assignedToUserId` (Guid): Filter events assigned to user
+- `pageNumber` (int): Page number for pagination (default: 1)
+- `pageSize` (int): Number of items per page (default: 10, max: 100)
+
+**Example Request**:
+```
+GET /api/v1/calendar?startDate=2025-06-01&endDate=2025-06-30&eventType=Meeting&pageSize=20
+```
+
+**Response (200 OK)**:
+```json
+{
+  "success": true,
+  "message": "Calendar events retrieved successfully",
+  "data": {
+    "events": [
+      {
+        "eventId": "123e4567-e89b-12d3-a456-426614174000",
+        "title": "Project Kickoff Meeting",
+        "description": "Initial planning meeting for Solar Installation Project Alpha",
+        "startDateTime": "2025-06-10T09:00:00Z",
+        "endDateTime": "2025-06-10T10:30:00Z",
+        "eventType": "Meeting",
+        "status": "Scheduled",
+        "priority": "High",
+        "location": "Conference Room A",
+        "isAllDay": false,
+        "isRecurring": false,
+        "projectId": "456e7890-e89b-12d3-a456-426614174000",
+        "taskId": null,
+        "createdByUserId": "789e0123-e89b-12d3-a456-426614174000",
+        "assignedToUserId": "789e0123-e89b-12d3-a456-426614174000",
+        "createdAt": "2025-06-08T14:30:00Z",
+        "updatedAt": "2025-06-08T14:30:00Z",
+        "color": "#2196F3",
+        "isPrivate": false,
+        "meetingUrl": "https://teams.microsoft.com/l/meetup-join/...",
+        "attendees": "john.doe@example.com, jane.smith@example.com"
+      }
+    ],
+    "totalCount": 25,
+    "pageNumber": 1,
+    "pageSize": 20,
+    "totalPages": 2,
+    "hasPreviousPage": false,
+    "hasNextPage": true
+  },
+  "errors": []
+}
+```
+
+### Get Calendar Event by ID
+**GET** `/api/v1/calendar/{eventId}`
+
+**Response (200 OK)**:
+```json
+{
+  "success": true,
+  "message": "Calendar event retrieved successfully",
+  "data": {
+    "eventId": "123e4567-e89b-12d3-a456-426614174000",
+    "title": "Project Kickoff Meeting",
+    "description": "Initial planning meeting for Solar Installation Project Alpha",
+    "startDateTime": "2025-06-10T09:00:00Z",
+    "endDateTime": "2025-06-10T10:30:00Z",
+    "eventType": "Meeting",
+    "status": "Scheduled",
+    "priority": "High",
+    "location": "Conference Room A",
+    "isAllDay": false,
+    "isRecurring": false,
+    "recurrencePattern": null,
+    "recurrenceEndDate": null,
+    "notes": "Bring project specifications and timeline",
+    "reminderMinutes": 15,
+    "projectId": "456e7890-e89b-12d3-a456-426614174000",
+    "taskId": null,
+    "createdByUserId": "789e0123-e89b-12d3-a456-426614174000",
+    "assignedToUserId": "789e0123-e89b-12d3-a456-426614174000",
+    "createdAt": "2025-06-08T14:30:00Z",
+    "updatedAt": "2025-06-08T14:30:00Z",
+    "color": "#2196F3",
+    "isPrivate": false,
+    "meetingUrl": "https://teams.microsoft.com/l/meetup-join/...",
+    "attendees": "john.doe@example.com, jane.smith@example.com"
+  },
+  "errors": []
+}
+```
+
+### Create Calendar Event
+**POST** `/api/v1/calendar`
+
+**Request Body**:
+```json
+{
+  "title": "Installation Site Visit",
+  "description": "On-site inspection and preparation for solar panel installation",
+  "startDateTime": "2025-06-15T08:00:00Z",
+  "endDateTime": "2025-06-15T12:00:00Z",
+  "eventType": "Installation",
+  "status": "Scheduled",
+  "priority": "High",
+  "location": "123 Solar Street, Sunnyville, CA",
+  "isAllDay": false,
+  "isRecurring": false,
+  "notes": "Bring safety equipment and measurement tools",
+  "reminderMinutes": 30,
+  "projectId": "456e7890-e89b-12d3-a456-426614174000",
+  "taskId": "789e0123-e89b-12d3-a456-426614174000",
+  "assignedToUserId": "123e4567-e89b-12d3-a456-426614174000",
+  "color": "#FF9800",
+  "isPrivate": false,
+  "attendees": "tech1@example.com, supervisor@example.com"
+}
+```
+
+**Response (201 Created)**:
+```json
+{
+  "success": true,
+  "message": "Calendar event created successfully",
+  "data": {
+    "eventId": "456e7890-e89b-12d3-a456-426614174000",
+    "title": "Installation Site Visit",
+    "description": "On-site inspection and preparation for solar panel installation",
+    "startDateTime": "2025-06-15T08:00:00Z",
+    "endDateTime": "2025-06-15T12:00:00Z",
+    "eventType": "Installation",
+    "status": "Scheduled",
+    "priority": "High",
+    "location": "123 Solar Street, Sunnyville, CA",
+    "isAllDay": false,
+    "isRecurring": false,
+    "projectId": "456e7890-e89b-12d3-a456-426614174000",
+    "taskId": "789e0123-e89b-12d3-a456-426614174000",
+    "createdByUserId": "789e0123-e89b-12d3-a456-426614174000",
+    "assignedToUserId": "123e4567-e89b-12d3-a456-426614174000",
+    "createdAt": "2025-06-10T16:15:00Z",
+    "updatedAt": "2025-06-10T16:15:00Z",
+    "color": "#FF9800",
+    "isPrivate": false,
+    "attendees": "tech1@example.com, supervisor@example.com"
+  },
+  "errors": []
+}
+```
+
+### Update Calendar Event
+**PUT** `/api/v1/calendar/{eventId}`
+
+**Request Body**:
+```json
+{
+  "title": "Installation Site Visit - Updated",
+  "description": "Updated: On-site inspection and preparation for solar panel installation",
+  "startDateTime": "2025-06-15T09:00:00Z",
+  "endDateTime": "2025-06-15T13:00:00Z",
+  "status": "InProgress",
+  "priority": "Critical",
+  "location": "123 Solar Street, Sunnyville, CA",
+  "notes": "Updated: Bring safety equipment, measurement tools, and installation materials",
+  "reminderMinutes": 15,
+  "color": "#F44336"
+}
+```
+
+**Response (200 OK)**:
+```json
+{
+  "success": true,
+  "message": "Calendar event updated successfully",
+  "data": {
+    "eventId": "456e7890-e89b-12d3-a456-426614174000",
+    "title": "Installation Site Visit - Updated",
+    "description": "Updated: On-site inspection and preparation for solar panel installation",
+    "startDateTime": "2025-06-15T09:00:00Z",
+    "endDateTime": "2025-06-15T13:00:00Z",
+    "eventType": "Installation",
+    "status": "InProgress",
+    "priority": "Critical",
+    "location": "123 Solar Street, Sunnyville, CA",
+    "isAllDay": false,
+    "isRecurring": false,
+    "projectId": "456e7890-e89b-12d3-a456-426614174000",
+    "taskId": "789e0123-e89b-12d3-a456-426614174000",
+    "createdByUserId": "789e0123-e89b-12d3-a456-426614174000",
+    "assignedToUserId": "123e4567-e89b-12d3-a456-426614174000",
+    "createdAt": "2025-06-10T16:15:00Z",
+    "updatedAt": "2025-06-10T16:45:00Z",
+    "color": "#F44336",
+    "isPrivate": false,
+    "attendees": "tech1@example.com, supervisor@example.com"
+  },
+  "errors": []
+}
+```
+
+### Delete Calendar Event
+**DELETE** `/api/v1/calendar/{eventId}`
+
+**Response (200 OK)**:
+```json
+{
+  "success": true,
+  "message": "Calendar event deleted successfully",
+  "data": null,
+  "errors": []
+}
+```
+
+### Get Events by Project
+**GET** `/api/v1/calendar/project/{projectId}`
+
+**Query Parameters**:
+- `startDate` (DateTime): Filter events starting from this date
+- `endDate` (DateTime): Filter events ending before this date
+- `eventType` (EventType): Filter by event type
+- `status` (EventStatus): Filter by event status
+
+**Response (200 OK)**:
+```json
+{
+  "success": true,
+  "message": "Project calendar events retrieved successfully",
+  "data": [
+    {
+      "eventId": "123e4567-e89b-12d3-a456-426614174000",
+      "title": "Project Kickoff Meeting",
+      "startDateTime": "2025-06-10T09:00:00Z",
+      "endDateTime": "2025-06-10T10:30:00Z",
+      "eventType": "Meeting",
+      "status": "Scheduled",
+      "priority": "High"
+    }
+  ],
+  "errors": []
+}
+```
+
+### Get Events by Task
+**GET** `/api/v1/calendar/task/{taskId}`
+
+**Response**: Similar to project events endpoint
+
+### Get Events by User
+**GET** `/api/v1/calendar/user/{userId}`
+
+**Response**: Similar to project events endpoint
+
+### Get Upcoming Events
+**GET** `/api/v1/calendar/upcoming`
+
+**Query Parameters**:
+- `days` (int): Number of days to look ahead (default: 7, max: 365)
+- `userId` (Guid): Filter events for specific user
+
+**Response (200 OK)**:
+```json
+{
+  "success": true,
+  "message": "Upcoming calendar events retrieved successfully",
+  "data": [
+    {
+      "eventId": "123e4567-e89b-12d3-a456-426614174000",
+      "title": "Project Kickoff Meeting",
+      "startDateTime": "2025-06-10T09:00:00Z",
+      "endDateTime": "2025-06-10T10:30:00Z",
+      "eventType": "Meeting",
+      "status": "Scheduled",
+      "priority": "High",
+      "location": "Conference Room A"
+    }
+  ],
+  "errors": []
+}
+```
+
+### Check Event Conflicts
+**POST** `/api/v1/calendar/conflicts`
+
+**Request Body**:
+```json
+{
+  "startDateTime": "2025-06-15T09:00:00Z",
+  "endDateTime": "2025-06-15T11:00:00Z",
+  "userId": "123e4567-e89b-12d3-a456-426614174000",
+  "excludeEventId": "456e7890-e89b-12d3-a456-426614174000"
+}
+```
+
+**Response (200 OK)**:
+```json
+{
+  "success": true,
+  "message": "Conflict check completed",
+  "data": {
+    "hasConflicts": true,
+    "conflictingEvents": [
+      {
+        "eventId": "789e0123-e89b-12d3-a456-426614174000",
+        "title": "Team Standup",
+        "startDateTime": "2025-06-15T09:30:00Z",
+        "endDateTime": "2025-06-15T10:00:00Z",
+        "eventType": "Meeting",
+        "status": "Scheduled"
+      }
+    ]
+  },
+  "errors": []
+}
+```
+
+### Recurring Events (Future Implementation)
+
+The following endpoints are placeholders for future recurring event functionality:
+
+#### Get Recurring Events
+**GET** `/api/v1/calendar/recurring`
+
+#### Create Recurring Event Series
+**POST** `/api/v1/calendar/recurring`
+
+#### Update Recurring Event Series
+**PUT** `/api/v1/calendar/recurring/{seriesId}`
+
+#### Delete Recurring Event Series
+**DELETE** `/api/v1/calendar/recurring/{seriesId}`
 
 ---
 

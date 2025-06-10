@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using dotnet_rest_api.Data;
@@ -11,9 +12,11 @@ using dotnet_rest_api.Data;
 namespace dotnet_rest_api.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250610161423_AddCalendarEvents")]
+    partial class AddCalendarEvents
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -134,7 +137,7 @@ namespace dotnet_rest_api.Migrations
 
                     b.HasIndex("TaskId");
 
-                    b.ToTable("CalendarEvents", (string)null);
+                    b.ToTable("CalendarEvents");
                 });
 
             modelBuilder.Entity("dotnet_rest_api.Models.DailyReport", b =>
@@ -234,7 +237,7 @@ namespace dotnet_rest_api.Migrations
 
                     b.HasIndex("SubmittedByUserId");
 
-                    b.ToTable("DailyReports", (string)null);
+                    b.ToTable("DailyReports");
                 });
 
             modelBuilder.Entity("dotnet_rest_api.Models.EquipmentLog", b =>
@@ -286,7 +289,7 @@ namespace dotnet_rest_api.Migrations
 
                     b.HasIndex("DailyReportId");
 
-                    b.ToTable("EquipmentLogs", (string)null);
+                    b.ToTable("EquipmentLogs");
                 });
 
             modelBuilder.Entity("dotnet_rest_api.Models.ImageMetadata", b =>
@@ -366,7 +369,7 @@ namespace dotnet_rest_api.Migrations
 
                     b.HasIndex("WorkRequestId");
 
-                    b.ToTable("ImageMetadata", (string)null);
+                    b.ToTable("ImageMetadata");
                 });
 
             modelBuilder.Entity("dotnet_rest_api.Models.MaterialUsage", b =>
@@ -411,7 +414,7 @@ namespace dotnet_rest_api.Migrations
 
                     b.HasIndex("DailyReportId");
 
-                    b.ToTable("MaterialUsages", (string)null);
+                    b.ToTable("MaterialUsages");
                 });
 
             modelBuilder.Entity("dotnet_rest_api.Models.PersonnelLog", b =>
@@ -448,7 +451,7 @@ namespace dotnet_rest_api.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("PersonnelLogs", (string)null);
+                    b.ToTable("PersonnelLogs");
                 });
 
             modelBuilder.Entity("dotnet_rest_api.Models.Project", b =>
@@ -497,7 +500,7 @@ namespace dotnet_rest_api.Migrations
 
                     b.HasIndex("ProjectManagerId");
 
-                    b.ToTable("Projects", (string)null);
+                    b.ToTable("Projects");
                 });
 
             modelBuilder.Entity("dotnet_rest_api.Models.ProjectTask", b =>
@@ -543,7 +546,7 @@ namespace dotnet_rest_api.Migrations
 
                     b.HasIndex("ProjectId");
 
-                    b.ToTable("ProjectTasks", (string)null);
+                    b.ToTable("ProjectTasks");
                 });
 
             modelBuilder.Entity("dotnet_rest_api.Models.Role", b =>
@@ -564,7 +567,7 @@ namespace dotnet_rest_api.Migrations
                     b.HasIndex("RoleName")
                         .IsUnique();
 
-                    b.ToTable("Roles", (string)null);
+                    b.ToTable("Roles");
 
                     b.HasData(
                         new
@@ -638,7 +641,7 @@ namespace dotnet_rest_api.Migrations
                     b.HasIndex("Username")
                         .IsUnique();
 
-                    b.ToTable("Users", (string)null);
+                    b.ToTable("Users");
 
                     b.HasData(
                         new
@@ -708,7 +711,7 @@ namespace dotnet_rest_api.Migrations
 
                     b.HasIndex("TaskId");
 
-                    b.ToTable("WorkProgressItems", (string)null);
+                    b.ToTable("WorkProgressItems");
                 });
 
             modelBuilder.Entity("dotnet_rest_api.Models.WorkRequest", b =>
@@ -800,7 +803,7 @@ namespace dotnet_rest_api.Migrations
 
                     b.HasIndex("RequestedById");
 
-                    b.ToTable("WorkRequests", (string)null);
+                    b.ToTable("WorkRequests");
                 });
 
             modelBuilder.Entity("dotnet_rest_api.Models.WorkRequestComment", b =>
@@ -831,7 +834,7 @@ namespace dotnet_rest_api.Migrations
 
                     b.HasIndex("WorkRequestId");
 
-                    b.ToTable("WorkRequestComments", (string)null);
+                    b.ToTable("WorkRequestComments");
                 });
 
             modelBuilder.Entity("dotnet_rest_api.Models.WorkRequestTask", b =>
@@ -890,7 +893,7 @@ namespace dotnet_rest_api.Migrations
 
                     b.HasIndex("WorkRequestId");
 
-                    b.ToTable("WorkRequestTasks", (string)null);
+                    b.ToTable("WorkRequestTasks");
                 });
 
             modelBuilder.Entity("dotnet_rest_api.Models.CalendarEvent", b =>

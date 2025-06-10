@@ -17,7 +17,7 @@ CYAN='\033[0;36m'
 NC='\033[0m' # No Color
 
 # API Configuration
-API_BASE="http://localhost:5002"
+API_BASE="http://localhost:5001"
 CONTENT_TYPE="Content-Type: application/json"
 RATE_LIMIT_DELAY=3  # Delay between requests to avoid rate limiting
 
@@ -38,6 +38,7 @@ TASK_ID=""
 DAILY_REPORT_ID=""
 WORK_REQUEST_ID=""
 WORK_PROGRESS_ID=""
+CALENDAR_EVENT_ID=""
 
 # =============================================================================
 # Utility Functions
@@ -451,6 +452,165 @@ test_work_requests() {
     fi
 }
 
+test_calendar_management() {
+    print_header "CALENDAR MANAGEMENT TESTS"
+    
+    if [ -z "$AUTH_TOKEN" ]; then
+        print_error "No authentication token available. Calendar tests require authentication."
+        return
+    fi
+    
+    # Create a calendar event
+    print_test "Create Calendar Event"
+    rate_limit_delay
+    response=$(curl -s -X POST "$API_BASE/api/v1/calendar" \
+        -H "$CONTENT_TYPE" \
+        -H "Authorization: Bearer $AUTH_TOKEN" \
+        -d '{
+            "title": "Test Calendar Event",
+            "description": "This is a test calendar event created by automated testing",
+            "startDateTime": "2025-06-15T09:00:00Z",
+            "endDateTime": "2025-06-15T10:30:00Z",
+            "eventType": "Meeting",
+            "status": "Scheduled",
+            "priority": "Medium",
+            "location": "Conference Room A",
+            "isAllDay": false,
+            "isRecurring": false,
+            "notes": "Automated test event",
+            "reminderMinutes": 15,
+            "color": "#2196F3",
+            "isPrivate": false,
+            "attendees": "test@example.com"
+        }')
+    
+    if check_success "$response" "Create calendar event"; then
+        CALENDAR_EVENT_ID=$(echo "$response" | jq -r '.data.eventId')
+        print_info "Created calendar event ID: $CALENDAR_EVENT_ID"
+    fi
+    
+    # Get all calendar events with pagination
+    print_test "Get All Calendar Events"
+    rate_limit_delay
+    response=$(curl -s "$API_BASE/api/v1/calendar?pageSize=10" \
+        -H "Authorization: Bearer $AUTH_TOKEN")
+    check_success "$response" "Get all calendar events"
+    
+    # Get calendar event by ID (if we have one)
+    if [ -n "$CALENDAR_EVENT_ID" ]; then
+        print_test "Get Calendar Event by ID"
+        rate_limit_delay
+        response=$(curl -s "$API_BASE/api/v1/calendar/$CALENDAR_EVENT_ID" \
+            -H "Authorization: Bearer $AUTH_TOKEN")
+        check_success "$response" "Get calendar event by ID"
+        
+        # Update calendar event
+        print_test "Update Calendar Event"
+        rate_limit_delay
+        response=$(curl -s -X PUT "$API_BASE/api/v1/calendar/$CALENDAR_EVENT_ID" \
+            -H "$CONTENT_TYPE" \
+            -H "Authorization: Bearer $AUTH_TOKEN" \
+            -d '{
+                "title": "Updated Test Calendar Event",
+                "description": "Updated description for automated testing",
+                "startDateTime": "2025-06-15T10:00:00Z",
+                "endDateTime": "2025-06-15T11:30:00Z",
+                "status": "InProgress",
+                "priority": "High",
+                "location": "Conference Room B",
+                "notes": "Updated automated test event",
+                "reminderMinutes": 30,
+                "color": "#FF9800"
+            }')
+        check_success "$response" "Update calendar event"
+    fi
+    
+    # Get upcoming events
+    print_test "Get Upcoming Events"
+    rate_limit_delay
+    response=$(curl -s "$API_BASE/api/v1/calendar/upcoming?days=30" \
+        -H "Authorization: Bearer $AUTH_TOKEN")
+    check_success "$response" "Get upcoming events"
+    
+    # Test conflict checking
+    print_test "Check Event Conflicts"
+    rate_limit_delay
+    response=$(curl -s -X POST "$API_BASE/api/v1/calendar/conflicts" \
+        -H "$CONTENT_TYPE" \
+        -H "Authorization: Bearer $AUTH_TOKEN" \
+        -d '{
+            "startDateTime": "2025-06-15T09:30:00Z",
+            "endDateTime": "2025-06-15T11:00:00Z",
+            "userId": "'$USER_ID'"
+        }')
+    check_success "$response" "Check event conflicts"
+    
+    # Test filtering by date range
+    print_test "Get Events by Date Range"
+    rate_limit_delay
+    response=$(curl -s "$API_BASE/api/v1/calendar?startDate=2025-06-01&endDate=2025-06-30" \
+        -H "Authorization: Bearer $AUTH_TOKEN")
+    check_success "$response" "Get events by date range"
+    
+    # Test filtering by event type
+    print_test "Get Events by Type"
+    rate_limit_delay
+    response=$(curl -s "$API_BASE/api/v1/calendar?eventType=Meeting" \
+        -H "Authorization: Bearer $AUTH_TOKEN")
+    check_success "$response" "Get events by type"
+    
+    # Test filtering by status
+    print_test "Get Events by Status"
+    rate_limit_delay
+    response=$(curl -s "$API_BASE/api/v1/calendar?status=Scheduled" \
+        -H "Authorization: Bearer $AUTH_TOKEN")
+    check_success "$response" "Get events by status"
+    
+    # Test events by project (if we have a project ID)
+    if [ -n "$PROJECT_ID" ]; then
+        print_test "Get Events by Project"
+        rate_limit_delay
+        response=$(curl -s "$API_BASE/api/v1/calendar/project/$PROJECT_ID" \
+            -H "Authorization: Bearer $AUTH_TOKEN")
+        check_success "$response" "Get events by project"
+    fi
+    
+    # Test events by task (if we have a task ID)
+    if [ -n "$TASK_ID" ]; then
+        print_test "Get Events by Task"
+        rate_limit_delay
+        response=$(curl -s "$API_BASE/api/v1/calendar/task/$TASK_ID" \
+            -H "Authorization: Bearer $AUTH_TOKEN")
+        check_success "$response" "Get events by task"
+    fi
+    
+    # Test events by user
+    if [ -n "$USER_ID" ]; then
+        print_test "Get Events by User"
+        rate_limit_delay
+        response=$(curl -s "$API_BASE/api/v1/calendar/user/$USER_ID" \
+            -H "Authorization: Bearer $AUTH_TOKEN")
+        check_success "$response" "Get events by user"
+    fi
+    
+    # Test recurring events endpoints (placeholders)
+    print_test "Get Recurring Events (Placeholder)"
+    rate_limit_delay
+    response=$(curl -s "$API_BASE/api/v1/calendar/recurring" \
+        -H "Authorization: Bearer $AUTH_TOKEN")
+    # We expect this to work even if it returns empty data
+    check_success "$response" "Get recurring events"
+    
+    # Clean up - delete the test calendar event (if we have one)
+    if [ -n "$CALENDAR_EVENT_ID" ]; then
+        print_test "Delete Calendar Event"
+        rate_limit_delay
+        response=$(curl -s -X DELETE "$API_BASE/api/v1/calendar/$CALENDAR_EVENT_ID" \
+            -H "Authorization: Bearer $AUTH_TOKEN")
+        check_success "$response" "Delete calendar event"
+    fi
+}
+
 test_legacy_todos() {
     print_header "LEGACY TODO MANAGEMENT TESTS"
     
@@ -621,6 +781,7 @@ main() {
     test_task_management
     test_daily_reports
     test_work_requests
+    test_calendar_management
     test_legacy_todos
     test_debug_endpoints
     test_rate_limiting

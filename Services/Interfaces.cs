@@ -126,3 +126,27 @@ public interface ICloudStorageService
     Task<string> GetFileUrlAsync(string key, TimeSpan? expiration = null);
     Task<bool> DeleteFileAsync(string key);
 }
+
+public interface ICalendarService
+{
+    Task<ApiResponse<CalendarEventResponseDto>> GetEventByIdAsync(Guid eventId);
+    Task<ApiResponse<PaginatedCalendarEventsDto>> GetEventsAsync(CalendarQueryDto query);
+    Task<ApiResponse<PagedResult<CalendarEventSummaryDto>>> GetProjectEventsAsync(Guid projectId, int pageNumber = 1, int pageSize = 20);
+    Task<ApiResponse<PagedResult<CalendarEventSummaryDto>>> GetTaskEventsAsync(Guid taskId, int pageNumber = 1, int pageSize = 20);
+    Task<ApiResponse<PagedResult<CalendarEventSummaryDto>>> GetUserEventsAsync(Guid userId, int pageNumber = 1, int pageSize = 20);
+    Task<ApiResponse<CalendarEventResponseDto>> CreateEventAsync(CreateCalendarEventDto request, Guid createdByUserId);
+    Task<ApiResponse<CalendarEventResponseDto>> UpdateEventAsync(Guid eventId, UpdateCalendarEventDto request);
+    Task<ApiResponse<bool>> DeleteEventAsync(Guid eventId);
+    Task<ApiResponse<bool>> UpdateEventStatusAsync(Guid eventId, dotnet_rest_api.Models.CalendarEventStatus status);
+    Task<ApiResponse<IEnumerable<CalendarEventSummaryDto>>> GetUpcomingEventsAsync(int days = 7, Guid? userId = null);
+    Task<ApiResponse<IEnumerable<CalendarEventSummaryDto>>> GetTodayEventsAsync(Guid userId);
+    Task<ApiResponse<IEnumerable<CalendarEventSummaryDto>>> GetConflictingEventsAsync(DateTime startDateTime, DateTime endDateTime, Guid? excludeEventId = null);
+    Task<ApiResponse<ConflictCheckResult>> CheckConflictsAsync(DateTime startDateTime, DateTime endDateTime, Guid? userId = null, Guid? excludeEventId = null);
+    
+    // Recurring events
+    Task<ApiResponse<IEnumerable<CalendarEventSummaryDto>>> GetRecurringEventsAsync();
+    Task<ApiResponse<IEnumerable<CalendarEventSummaryDto>>> GetRecurringEventInstancesAsync(Guid eventId, DateTime startDate, DateTime endDate);
+    Task<ApiResponse<CalendarEventResponseDto>> CreateRecurringEventAsync(CreateCalendarEventDto request, Guid createdByUserId);
+    Task<ApiResponse<bool>> UpdateRecurringEventAsync(Guid eventId, UpdateCalendarEventDto request, bool updateAllInstances = false);
+    Task<ApiResponse<bool>> DeleteRecurringEventAsync(Guid eventId, bool deleteAllInstances = false);
+}

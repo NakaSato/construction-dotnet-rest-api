@@ -193,6 +193,9 @@ builder.Services.AddScoped<ICloudStorageService, CloudStorageService>();
 builder.Services.AddScoped<IDailyReportService, DailyReportService>();
 builder.Services.AddScoped<IWorkRequestService, WorkRequestService>();
 
+// Register Calendar service
+builder.Services.AddScoped<ICalendarService, CalendarService>();
+
 // Register Data Seeder service
 builder.Services.AddScoped<DataSeeder>();
 

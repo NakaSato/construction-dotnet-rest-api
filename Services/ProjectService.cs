@@ -471,4 +471,42 @@ public class ProjectService : IProjectService
             CompletedTaskCount = project.Tasks.Count(t => t.Status == Models.TaskStatus.Completed)
         };
     }
+
+    private int DetermineFiltersApplied(ProjectQueryParameters parameters)
+    {
+        int count = 0;
+        
+        if (!string.IsNullOrEmpty(parameters.ProjectName)) count++;
+        if (!string.IsNullOrEmpty(parameters.Status)) count++;
+        if (!string.IsNullOrEmpty(parameters.ClientInfo)) count++;
+        if (!string.IsNullOrEmpty(parameters.Address)) count++;
+        if (parameters.ManagerId.HasValue) count++;
+        if (parameters.StartDateAfter.HasValue) count++;
+        if (parameters.StartDateBefore.HasValue) count++;
+        if (parameters.EstimatedEndDateAfter.HasValue) count++;
+        if (parameters.EstimatedEndDateBefore.HasValue) count++;
+        
+        // Add generic filters
+        count += parameters.Filters.Count;
+        
+        return count;
+    }
+    
+    private string DetermineQueryComplexity(ProjectQueryParameters parameters)
+    {
+        var complexity = DetermineFiltersApplied(parameters);
+        
+        // Add complexity for sorting
+        if (!string.IsNullOrEmpty(parameters.SortBy)) complexity++;
+        
+        // Add complexity for field selection
+        if (!string.IsNullOrEmpty(parameters.Fields)) complexity++;
+        
+        return complexity switch
+        {
+            <= 2 => "Simple",
+            <= 5 => "Medium",
+            _ => "Complex"
+        };
+    }
 }

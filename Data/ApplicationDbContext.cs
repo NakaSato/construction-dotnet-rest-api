@@ -30,6 +30,9 @@ public class ApplicationDbContext : DbContext
     public DbSet<WorkRequest> WorkRequests { get; set; }
     public DbSet<WorkRequestTask> WorkRequestTasks { get; set; }
     public DbSet<WorkRequestComment> WorkRequestComments { get; set; }
+    
+    // Calendar entities
+    public DbSet<CalendarEvent> CalendarEvents { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -452,6 +455,89 @@ public class ApplicationDbContext : DbContext
                 .WithMany() // No back navigation from User
                 .HasForeignKey(wrc => wrc.AuthorId)
                 .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        // Configure CalendarEvent entity
+        modelBuilder.Entity<CalendarEvent>(entity =>
+        {
+            entity.HasKey(ce => ce.EventId);
+            
+            entity.Property(ce => ce.Title)
+                .IsRequired()
+                .HasMaxLength(200);
+            
+            entity.Property(ce => ce.Description)
+                .HasMaxLength(2000);
+            
+            entity.Property(ce => ce.StartDateTime)
+                .IsRequired();
+            
+            entity.Property(ce => ce.EndDateTime)
+                .IsRequired();
+            
+            entity.Property(ce => ce.EventType)
+                .IsRequired()
+                .HasConversion<string>();
+            
+            entity.Property(ce => ce.Status)
+                .IsRequired()
+                .HasConversion<string>();
+            
+            entity.Property(ce => ce.Priority)
+                .IsRequired()
+                .HasConversion<string>();
+            
+            entity.Property(ce => ce.Location)
+                .HasMaxLength(500);
+            
+            entity.Property(ce => ce.RecurrencePattern)
+                .HasMaxLength(100);
+            
+            entity.Property(ce => ce.MeetingUrl)
+                .HasMaxLength(500);
+            
+            entity.Property(ce => ce.Attendees)
+                .HasMaxLength(1000);
+            
+            entity.Property(ce => ce.Notes)
+                .HasMaxLength(1000);
+            
+            entity.Property(ce => ce.CreatedAt)
+                .HasDefaultValueSql("CURRENT_TIMESTAMP");
+            
+            entity.Property(ce => ce.UpdatedAt)
+                .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+            // Foreign key relationships
+            entity.HasOne(ce => ce.Project)
+                .WithMany() // No back navigation from Project
+                .HasForeignKey(ce => ce.ProjectId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(ce => ce.Task)
+                .WithMany() // No back navigation from ProjectTask
+                .HasForeignKey(ce => ce.TaskId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(ce => ce.CreatedBy)
+                .WithMany() // No back navigation from User
+                .HasForeignKey(ce => ce.CreatedByUserId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasOne(ce => ce.AssignedTo)
+                .WithMany() // No back navigation from User
+                .HasForeignKey(ce => ce.AssignedToUserId)
+                .OnDelete(DeleteBehavior.SetNull);
+
+            // Indexes for better performance
+            entity.HasIndex(ce => ce.StartDateTime);
+            entity.HasIndex(ce => ce.EndDateTime);
+            entity.HasIndex(ce => ce.EventType);
+            entity.HasIndex(ce => ce.Status);
+            entity.HasIndex(ce => ce.ProjectId);
+            entity.HasIndex(ce => ce.TaskId);
+            entity.HasIndex(ce => ce.CreatedByUserId);
+            entity.HasIndex(ce => ce.AssignedToUserId);
         });
     }
 }
