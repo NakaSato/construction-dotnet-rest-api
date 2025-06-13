@@ -31,18 +31,17 @@ services:
     container_name: solar-projects-api
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
-      - ASPNETCORE_URLS=http://+:5000
+      - ASPNETCORE_URLS=http://+:8080
       - ConnectionStrings__DefaultConnection=Host=postgres;Database=SolarProjectsDb;Username=postgres;Password=postgres;Port=5432
-      - Jwt__Key=ThisIsASecretKeyForJWTTokenGenerationAndShouldBeChangedInProduction
-      - Jwt__Issuer=SolarProjectsAPI
-      - Jwt__Audience=SolarProjectsClient
-      - Jwt__ExpiryInHours=24
-      - AWS__Region=us-east-1
-      - AWS__S3BucketName=solar-projects-images
-      - Upload__MaxFileSizeInMB=10
-      - Upload__TempStoragePath=temp/
+      - JwtSettings__SecretKey=SolarProjects2024-SuperSecretKey-ForJWT-Authentication-Security-32Plus-Characters!
+      - JwtSettings__Issuer=http://localhost:5002
+      - JwtSettings__Audience=http://localhost:5002
+      - JwtSettings__ExpirationMinutes=60
+      - CloudinarySettings__CloudName=
+      - CloudinarySettings__ApiKey=
+      - CloudinarySettings__ApiSecret=
     ports:
-      - "5000:5000"
+      - "5002:8080"
     volumes:
       - ./uploads:/app/uploads
       - ./temp:/app/temp
@@ -62,7 +61,7 @@ services:
       PGADMIN_DEFAULT_PASSWORD: admin
       PGADMIN_CONFIG_SERVER_MODE: 'False'
     ports:
-      - "8080:80"
+      - "8081:80"
     volumes:
       - pgadmin_data:/var/lib/pgadmin
     depends_on:

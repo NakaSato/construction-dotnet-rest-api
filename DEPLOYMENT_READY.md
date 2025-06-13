@@ -84,7 +84,7 @@ After deployment completes, verify:
 
 2. **API Functionality:**
    ```bash
-   curl https://solar-projects-api-dev.azurewebsites.net/api/todo
+   curl https://solar-projects-api-dev.azurewebsites.net/api/v1/projects
    ```
 
 3. **Swagger Documentation:**

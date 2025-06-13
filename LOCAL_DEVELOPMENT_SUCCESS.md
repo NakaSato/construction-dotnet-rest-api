@@ -23,11 +23,6 @@ Your .NET REST API is **running successfully** on your local machine!
 |--------|----------|--------|-------------|
 | GET | `/health` | ✅ Working | Basic health check |
 | GET | `/health/detailed` | ✅ Working | Detailed health with database status |
-| GET | `/api/todo` | ✅ Working | Get all todos |
-| GET | `/api/todo/{id}` | ✅ Working | Get specific todo |
-| POST | `/api/todo` | ✅ Working | Create new todo |
-| PUT | `/api/todo/{id}` | ✅ Working | Update existing todo |
-| DELETE | `/api/todo/{id}` | ✅ Working | Delete todo |
 
 ### 3. **Database Configuration** ⚠️ Partially Working
 - **PostgreSQL Database (ApplicationDbContext)**: ✅ Working perfectly
@@ -94,25 +89,6 @@ dotnet watch run --urls "http://localhost:5001"
 
 ### **Testing API Endpoints**
 ```bash
-# Get all todos
-curl http://localhost:5001/api/todo
-
-# Create a new todo
-curl -X POST http://localhost:5001/api/todo \
-  -H "Content-Type: application/json" \
-  -d '{"title": "My Task", "isCompleted": false}'
-
-# Get specific todo
-curl http://localhost:5001/api/todo/1
-
-# Update todo
-curl -X PUT http://localhost:5001/api/todo/1 \
-  -H "Content-Type: application/json" \
-  -d '{"id": 1, "title": "Updated Task", "isCompleted": true}'
-
-# Delete todo
-curl -X DELETE http://localhost:5001/api/todo/1
-
 # Check health
 curl http://localhost:5001/health
 curl http://localhost:5001/health/detailed
@@ -166,18 +142,18 @@ dotnet ef database update --context ApplicationDbContext
 
 ### **Example Usage with Frontend**
 ```javascript
-// Fetch all todos
-fetch('http://localhost:5001/api/todo')
+// Check API health
+fetch('http://localhost:5001/health')
   .then(response => response.json())
-  .then(todos => console.log(todos));
+  .then(health => console.log(health));
 
-// Create new todo
-fetch('http://localhost:5001/api/todo', {
+// Test authentication
+fetch('http://localhost:5001/api/v1/auth/login', {
   method: 'POST',
   headers: { 'Content-Type': 'application/json' },
   body: JSON.stringify({
-    title: 'Learn .NET',
-    isCompleted: false
+    username: 'john_doe',
+    password: 'TestPass123!'
   })
 });
 ```

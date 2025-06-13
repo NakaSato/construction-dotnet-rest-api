@@ -28,7 +28,7 @@ FAILED_TESTS=0
 
 # Test user credentials
 TEST_USERNAME="john_doe"
-TEST_PASSWORD="SecurePassword123!"
+TEST_PASSWORD="TestPass123!"
 
 # Global variables
 AUTH_TOKEN=""

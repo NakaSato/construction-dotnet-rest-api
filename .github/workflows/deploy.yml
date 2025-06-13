@@ -117,8 +117,8 @@ jobs:
         BASE_URL="https://${{ secrets.AZURE_WEBAPP_NAME }}.azurewebsites.net"
         
         # Test API endpoints
-        echo "Testing todo endpoint..."
-        curl -f "$BASE_URL/api/todo" || echo "Todo endpoint test failed"
+        echo "Testing health endpoint..."
+        curl -f "$BASE_URL/health" || echo "Health endpoint test failed"
         
         echo "Testing auth endpoint..."
         curl -f -X POST "$BASE_URL/api/v1/auth/register" \

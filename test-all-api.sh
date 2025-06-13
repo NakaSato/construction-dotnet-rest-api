@@ -17,7 +17,7 @@ CYAN='\033[0;36m'
 NC='\033[0m' # No Color
 
 # API Configuration
-API_BASE="http://localhost:5001"
+API_BASE="${API_BASE:-http://localhost:5002}"
 CONTENT_TYPE="Content-Type: application/json"
 RATE_LIMIT_DELAY=3  # Delay between requests to avoid rate limiting
 
@@ -28,7 +28,7 @@ FAILED_TESTS=0
 
 # Test user credentials (these should exist in your database)
 TEST_USERNAME="john_doe"
-TEST_PASSWORD="SecurePassword123!"
+TEST_PASSWORD="TestPass123!"
 
 # Global variables for storing IDs
 AUTH_TOKEN=""
@@ -611,77 +611,6 @@ test_calendar_management() {
     fi
 }
 
-test_legacy_todos() {
-    print_header "LEGACY TODO MANAGEMENT TESTS"
-    
-    # Get all todos (no auth required)
-    print_test "Get All Todos"
-    status=$(curl -s -o /dev/null -w "%{http_code}" "$API_BASE/api/todo")
-    if [ "$status" = "200" ]; then
-        response=$(curl -s "$API_BASE/api/todo")
-        print_success "Get all todos"
-    elif [ "$status" = "404" ]; then
-        print_warning "Todo endpoints not available (endpoint may have been removed)"
-        return
-    else
-        print_error "Get all todos (Status: $status)"
-        return
-    fi
-    
-    # Create a test todo
-    print_test "Create Todo"
-    response=$(curl -s -X POST "$API_BASE/api/todo" \
-        -H "$CONTENT_TYPE" \
-        -d '{
-            "title": "Test Todo from API Test Suite",
-            "description": "This is a test todo created by the comprehensive test script",
-            "isCompleted": false,
-            "dueDate": "2025-06-30T00:00:00Z"
-        }')
-    
-    if [ $? -eq 0 ] && [ -n "$response" ] && ! echo "$response" | grep -q "error\|Error"; then
-        print_success "Create todo"
-        TODO_ID=$(echo "$response" | jq -r '.id // empty')
-        if [ -n "$TODO_ID" ] && [ "$TODO_ID" != "null" ]; then
-            print_info "Created todo ID: $TODO_ID"
-            
-            # Get todo by ID
-            print_test "Get Todo by ID"
-            response=$(curl -s "$API_BASE/api/todo/$TODO_ID")
-            if [ $? -eq 0 ] && [ -n "$response" ] && ! echo "$response" | grep -q "error\|Error"; then
-                print_success "Get todo by ID"
-            else
-                print_error "Get todo by ID"
-            fi
-            
-            # Update todo
-            print_test "Update Todo"
-            response=$(curl -s -X PUT "$API_BASE/api/todo/$TODO_ID" \
-                -H "$CONTENT_TYPE" \
-                -d "{
-                    \"id\": $TODO_ID,
-                    \"title\": \"Updated Test Todo\",
-                    \"description\": \"This todo was updated by the test suite\",
-                    \"isCompleted\": true,
-                    \"dueDate\": \"2025-06-30T00:00:00Z\"
-                }")
-            
-            if [ $? -eq 0 ]; then
-                print_success "Update todo"
-            else
-                print_error "Update todo"
-            fi
-            
-            # Delete todo
-            print_test "Delete Todo"
-            status=$(curl -s -o /dev/null -w "%{http_code}" -X DELETE "$API_BASE/api/todo/$TODO_ID")
-            check_status "$status" "204" "Delete todo"
-        fi
-    else
-        print_warning "Create todo failed (todo endpoints may not be available)"
-    fi
-}
-
 test_debug_endpoints() {
     print_header "DEBUG INFORMATION TESTS"
     
@@ -782,7 +711,6 @@ main() {
     test_daily_reports
     test_work_requests
     test_calendar_management
-    test_legacy_todos
     test_debug_endpoints
     test_rate_limiting
     test_advanced_querying

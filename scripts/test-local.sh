@@ -60,13 +60,6 @@ test_endpoints() {
         log_error "Health endpoint failed"
     fi
     
-    # Test todo endpoint
-    if curl -f -s "$base_url/api/todo" > /dev/null; then
-        log_success "Todo endpoint working"
-    else
-        log_warning "Todo endpoint may require authentication"
-    fi
-    
     # Test swagger
     if curl -f -s "$base_url/swagger/index.html" > /dev/null; then
         log_success "Swagger documentation available"

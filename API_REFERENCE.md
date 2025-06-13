@@ -39,7 +39,6 @@ This is a comprehensive API reference for the Solar Projects Management REST API
 - [Caching and Performance](#caching-and-performance)
 - [HATEOAS Implementation](#hateoas-implementation)
 - [Advanced Querying](#advanced-querying)
-- [Todo Management (Legacy)](#todo-management-legacy)
 - [Debug Information](#debug-information)
 - [User Management](#user-management)
 - [Project Management](#project-management)
@@ -108,6 +107,14 @@ This is a comprehensive API reference for the Solar Projects Management REST API
 }
 ```
 
+**Available Role IDs**:
+- `1` - Admin (Full system access)
+- `2` - Manager (Project management access)
+- `3` - User (Field technician access)
+- `4` - Viewer (Read-only access)
+
+**Note**: If `roleId` is not provided or is `0`, the system will assign the default role (`3` - User).
+
 **Response (201 Created)**:
 ```json
 {
@@ -144,6 +151,29 @@ This is a comprehensive API reference for the Solar Projects Management REST API
   "errors": []
 }
 ```
+
+### Role-Based Access Control
+
+The API uses a role-based permission system with the following hierarchy:
+
+| Role ID | Role Name | Permissions | Description |
+|---------|-----------|-------------|-------------|
+| `1` | **Admin** | Full Access | Complete system administration, user management, all CRUD operations |
+| `2` | **Manager** | Project Management | Create/edit projects, manage teams, view reports, limited user management |
+| `3` | **User** | Field Operations | Create daily reports, update tasks, view assigned projects |
+| `4` | **Viewer** | Read Only | View-only access to projects, reports, and data |
+
+**Authorization Header Format**:
+```
+Authorization: Bearer <your-jwt-token>
+```
+
+**Role Requirements by Endpoint Category**:
+- **User Management**: Admin only
+- **Project Creation/Editing**: Admin, Manager
+- **Daily Reports**: All authenticated users
+- **Calendar Events**: All authenticated users
+- **Work Requests**: All authenticated users
 
 ---
 
@@ -1268,107 +1298,6 @@ Work requests are used to track additional work, change orders, and special requ
 
 ---
 
-## ✅ Todo Management (Legacy)
-
-### Get All Todos
-**GET** `/api/todo`
-
-**Response (200 OK)**:
-```json
-[
-  {
-    "id": 1,
-    "title": "Complete solar panel installation",
-    "isCompleted": false,
-    "dueDate": "2025-06-15T00:00:00Z"
-  },
-  {
-    "id": 2,
-    "title": "Submit project documentation",
-    "isCompleted": true,
-    "dueDate": "2025-06-10T00:00:00Z"
-  }
-]
-```
-
-### Get Todo by ID
-**GET** `/api/todo/{id}`
-
-**Parameters**:
-- `id` (path, integer): Todo item ID
-
-**Response (200 OK)**:
-```json
-{
-  "id": 1,
-  "title": "Complete solar panel installation",
-  "isCompleted": false,
-  "dueDate": "2025-06-15T00:00:00Z"
-}
-```
-
-**Response (404 Not Found)**:
-```json
-{
-  "type": "https://tools.ietf.org/html/rfc9110#section-15.5.5",
-  "title": "Not Found",
-  "status": 404,
-  "traceId": "00-4bfbd643cef305ad68bd0b16d14a6998-51d8e25c1be1cfd9-00"
-}
-```
-
-### Create Todo
-**POST** `/api/todo`
-
-**Request Body**:
-```json
-{
-  "title": "Test Todo Item",
-  "description": "This is a test todo",
-  "isCompleted": false,
-  "dueDate": "2025-06-20T00:00:00Z"
-}
-```
-
-**Response (201 Created)**:
-```json
-{
-  "id": 3,
-  "title": "Test Todo Item",
-  "isCompleted": false,
-  "dueDate": "2025-06-20T00:00:00Z"
-}
-```
-
-### Update Todo
-**PUT** `/api/todo/{id}`
-
-**Parameters**:
-- `id` (path, integer): Todo item ID
-
-**Request Body**:
-```json
-{
-  "id": 1,
-  "title": "Updated Todo Title",
-  "description": "Updated description",
-  "isCompleted": true,
-  "dueDate": "2025-06-15T00:00:00Z"
-}
-```
-
-**Response (204 No Content)**
-
-### Delete Todo
-**DELETE** `/api/todo/{id}`
-
-**Parameters**:
-- `id` (path, integer): Todo item ID
-
-**Response (204 No Content)**
-
----
-
 ## 🔧 Debug Information
 
 ### Get Configuration
@@ -2304,13 +2233,6 @@ curl -X POST http://localhost:5002/api/v1/daily-reports \
 ```bash
 curl -X GET "http://localhost:5002/api/v1/daily-reports?status=Submitted&pageSize=20" \
   -H "Authorization: Bearer $TOKEN"
-```
-
-**Create a new todo (legacy)**:
-```bash
-curl -X POST http://localhost:5002/api/todo \
-  -H "Content-Type: application/json" \
-  -d '{"title":"New Todo","isCompleted":false,"dueDate":"2025-06-30T00:00:00Z"}'
 ```
 
 ### Using PowerShell

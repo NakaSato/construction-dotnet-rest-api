@@ -67,7 +67,6 @@ CLOUDINARY_API_SECRET: 'your-api-secret'
 
 Check these URLs:
 - Health: `https://your-app-name.azurewebsites.net/health`
-- API: `https://your-app-name.azurewebsites.net/api/todo`
 - Swagger: `https://your-app-name.azurewebsites.net/swagger`
 
 ## Available GitHub Actions Workflows
