@@ -193,6 +193,11 @@ builder.Services.AddScoped<ICloudStorageService, CloudStorageService>();
 builder.Services.AddScoped<IDailyReportService, DailyReportService>();
 builder.Services.AddScoped<IWorkRequestService, WorkRequestService>();
 
+// Approval workflow services
+builder.Services.AddScoped<IWorkRequestApprovalService, WorkRequestApprovalService>();
+builder.Services.AddScoped<INotificationService, NotificationService>();
+builder.Services.AddScoped<IEmailService, EmailService>();
+
 // Register Calendar service
 builder.Services.AddScoped<ICalendarService, CalendarService>();
 

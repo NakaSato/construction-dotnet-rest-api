@@ -150,3 +150,31 @@ public interface ICalendarService
     Task<ApiResponse<bool>> UpdateRecurringEventAsync(Guid eventId, UpdateCalendarEventDto request, bool updateAllInstances = false);
     Task<ApiResponse<bool>> DeleteRecurringEventAsync(Guid eventId, bool deleteAllInstances = false);
 }
+
+public interface INotificationService
+{
+    Task<ApiResponse<bool>> SendWorkRequestNotificationAsync(Guid workRequestId, Guid recipientId, NotificationType type, string? customMessage = null, Guid? senderId = null);
+    Task<ApiResponse<bool>> SendBulkNotificationsAsync(List<Guid> workRequestIds, List<Guid> recipientIds, NotificationType type, string? customMessage = null, Guid? senderId = null);
+    Task<ApiResponse<PagedResult<NotificationDto>>> GetUserNotificationsAsync(Guid userId, int pageNumber = 1, int pageSize = 20, bool unreadOnly = false);
+    Task<ApiResponse<bool>> MarkNotificationAsReadAsync(Guid notificationId, Guid userId);
+    Task<ApiResponse<bool>> MarkAllNotificationsAsReadAsync(Guid userId);
+}
+
+public interface IEmailService
+{
+    Task<ApiResponse<bool>> SendEmailAsync(string to, string subject, string body, string? cc = null);
+    Task<ApiResponse<bool>> SendBulkEmailAsync(List<string> recipients, string subject, string body);
+}
+
+public interface IWorkRequestApprovalService
+{
+    Task<ApiResponse<bool>> SubmitForApprovalAsync(Guid workRequestId, SubmitForApprovalRequest request, Guid submitterId);
+    Task<ApiResponse<bool>> ProcessApprovalAsync(Guid workRequestId, ApprovalRequest request, Guid approverId);
+    Task<ApiResponse<bool>> BulkApprovalAsync(BulkApprovalRequest request, Guid approverId);
+    Task<ApiResponse<ApprovalWorkflowStatusDto>> GetApprovalStatusAsync(Guid workRequestId);
+    Task<ApiResponse<PagedResult<WorkRequestDto>>> GetPendingApprovalsAsync(Guid approverId, int pageNumber = 1, int pageSize = 20);
+    Task<ApiResponse<ApprovalStatisticsDto>> GetApprovalStatisticsAsync(Guid? userId = null);
+    Task<ApiResponse<PagedResult<WorkRequestApprovalDto>>> GetApprovalHistoryAsync(Guid workRequestId, int pageNumber = 1, int pageSize = 20);
+    Task<ApiResponse<bool>> EscalateApprovalAsync(Guid workRequestId, Guid escalateToUserId, string reason, Guid escalatedById);
+    Task<ApiResponse<bool>> SendApprovalRemindersAsync();
+}

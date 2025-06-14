@@ -6,7 +6,10 @@ namespace dotnet_rest_api.Models;
 public enum WorkRequestStatus
 {
     Open,
-    Pending,
+    PendingManagerApproval,
+    PendingAdminApproval,
+    Approved,
+    Rejected,
     InProgress,
     Completed,
     Cancelled,
@@ -88,6 +91,37 @@ public class WorkRequest
     [MaxLength(1000)]
     public string? Notes { get; set; } = string.Empty;
     
+    // Approval workflow fields
+    [ForeignKey("ManagerApprover")]
+    public Guid? ManagerApproverId { get; set; }
+    
+    [ForeignKey("AdminApprover")]
+    public Guid? AdminApproverId { get; set; }
+    
+    public DateTime? ManagerApprovalDate { get; set; }
+    
+    public DateTime? AdminApprovalDate { get; set; }
+    
+    public DateTime? SubmittedForApprovalDate { get; set; }
+    
+    [MaxLength(1000)]
+    public string? ManagerComments { get; set; } = string.Empty;
+    
+    [MaxLength(1000)]
+    public string? AdminComments { get; set; } = string.Empty;
+    
+    [MaxLength(500)]
+    public string? RejectionReason { get; set; } = string.Empty;
+    
+    public bool RequiresManagerApproval { get; set; } = true;
+    
+    public bool RequiresAdminApproval { get; set; } = false;
+    
+    // Auto-approval settings
+    public decimal? AutoApprovalThreshold { get; set; }
+    
+    public bool IsAutoApproved { get; set; } = false;
+    
     public DateTime CreatedAt { get; set; }
     
     public DateTime? UpdatedAt { get; set; }
@@ -96,8 +130,12 @@ public class WorkRequest
     public virtual Project Project { get; set; } = null!;
     public virtual User RequestedBy { get; set; } = null!;
     public virtual User? AssignedTo { get; set; }
+    public virtual User? ManagerApprover { get; set; }
+    public virtual User? AdminApprover { get; set; }
     public virtual ICollection<WorkRequestTask> Tasks { get; set; } = new List<WorkRequestTask>();
     public virtual ICollection<WorkRequestComment> Comments { get; set; } = new List<WorkRequestComment>();
+    public virtual ICollection<WorkRequestApproval> ApprovalHistory { get; set; } = new List<WorkRequestApproval>();
+    public virtual ICollection<WorkRequestNotification> Notifications { get; set; } = new List<WorkRequestNotification>();
     public virtual ICollection<ImageMetadata> Images { get; set; } = new List<ImageMetadata>();
 }
 

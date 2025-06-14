@@ -917,9 +917,28 @@ public class WorkRequestDto
     public DateTime CreatedAt { get; set; }
     public DateTime? UpdatedAt { get; set; }
     
+    // Approval workflow fields
+    public Guid? ManagerApproverId { get; set; }
+    public string? ManagerApproverName { get; set; } = string.Empty;
+    public Guid? AdminApproverId { get; set; }
+    public string? AdminApproverName { get; set; } = string.Empty;
+    public DateTime? ManagerApprovalDate { get; set; }
+    public DateTime? AdminApprovalDate { get; set; }
+    public DateTime? SubmittedForApprovalDate { get; set; }
+    public string? ManagerComments { get; set; } = string.Empty;
+    public string? AdminComments { get; set; } = string.Empty;
+    public string? RejectionReason { get; set; } = string.Empty;
+    public bool RequiresManagerApproval { get; set; }
+    public bool RequiresAdminApproval { get; set; }
+    public bool IsAutoApproved { get; set; }
+    public string? CurrentApproverName { get; set; } = string.Empty;
+    public string? NextApproverName { get; set; } = string.Empty;
+    public int DaysPendingApproval { get; set; }
+    
     // Related data
     public List<WorkRequestTaskDto> Tasks { get; set; } = new();
     public List<WorkRequestCommentDto> Comments { get; set; } = new();
+    public List<WorkRequestApprovalDto> ApprovalHistory { get; set; } = new();
     public List<ImageMetadataDto> Images { get; set; } = new();
     public int ImageCount { get; set; }
     
@@ -1097,10 +1116,125 @@ public class CreateWorkRequestCommentRequest
     public string Comment { get; set; } = string.Empty;
 }
 
-// HATEOAS Link DTO for REST API navigation
+// HATEOAS Link DTO
 public class LinkDto
 {
-    public string Href { get; set; } = string.Empty;
     public string Rel { get; set; } = string.Empty;
+    public string Href { get; set; } = string.Empty;
     public string Method { get; set; } = "GET";
+}
+
+// Work Request Approval DTOs
+public class WorkRequestApprovalDto
+{
+    public Guid ApprovalId { get; set; }
+    public Guid WorkRequestId { get; set; }
+    public string WorkRequestTitle { get; set; } = string.Empty;
+    public Guid ApproverId { get; set; }
+    public string ApproverName { get; set; } = string.Empty;
+    public string Action { get; set; } = string.Empty;
+    public string Level { get; set; } = string.Empty;
+    public string PreviousStatus { get; set; } = string.Empty;
+    public string NewStatus { get; set; } = string.Empty;
+    public string? Comments { get; set; } = string.Empty;
+    public string? RejectionReason { get; set; } = string.Empty;
+    public DateTime CreatedAt { get; set; }
+    public DateTime? ProcessedAt { get; set; }
+    public bool IsActive { get; set; }
+    public string? EscalationReason { get; set; } = string.Empty;
+    public DateTime? EscalationDate { get; set; }
+}
+
+public class ApprovalRequest
+{
+    [Required(ErrorMessage = "Action is required")]
+    [RegularExpression(@"^(Approve|Reject|Escalate)$", 
+        ErrorMessage = "Action must be one of: Approve, Reject, Escalate")]
+    public string Action { get; set; } = string.Empty;
+
+    [StringLength(1000, ErrorMessage = "Comments cannot exceed 1000 characters")]
+    public string? Comments { get; set; } = string.Empty;
+
+    [StringLength(500, ErrorMessage = "Rejection reason cannot exceed 500 characters")]
+    public string? RejectionReason { get; set; } = string.Empty;
+
+    public Guid? EscalateToUserId { get; set; }
+
+    [StringLength(500, ErrorMessage = "Escalation reason cannot exceed 500 characters")]
+    public string? EscalationReason { get; set; } = string.Empty;
+}
+
+public class SubmitForApprovalRequest
+{
+    public Guid? PreferredManagerId { get; set; }
+    
+    public bool RequiresAdminApproval { get; set; } = false;
+    
+    [StringLength(1000, ErrorMessage = "Comments cannot exceed 1000 characters")]
+    public string? Comments { get; set; } = string.Empty;
+}
+
+public class ApprovalWorkflowStatusDto
+{
+    public Guid WorkRequestId { get; set; }
+    public string Title { get; set; } = string.Empty;
+    public string CurrentStatus { get; set; } = string.Empty;
+    public bool RequiresManagerApproval { get; set; }
+    public bool RequiresAdminApproval { get; set; }
+    public bool IsManagerApproved { get; set; }
+    public bool IsAdminApproved { get; set; }
+    public string? CurrentApproverName { get; set; } = string.Empty;
+    public string? NextApproverName { get; set; } = string.Empty;
+    public List<WorkRequestApprovalDto> ApprovalHistory { get; set; } = new();
+    public DateTime? SubmittedForApprovalDate { get; set; }
+    public DateTime? LastActionDate { get; set; }
+    public int DaysPendingApproval { get; set; }
+}
+
+public class BulkApprovalRequest
+{
+    [Required]
+    [MinLength(1, ErrorMessage = "At least one work request ID is required")]
+    public List<Guid> WorkRequestIds { get; set; } = new();
+
+    [Required(ErrorMessage = "Action is required")]
+    [RegularExpression(@"^(Approve|Reject)$", 
+        ErrorMessage = "Action must be one of: Approve, Reject")]
+    public string Action { get; set; } = string.Empty;
+
+    [StringLength(1000, ErrorMessage = "Comments cannot exceed 1000 characters")]
+    public string? Comments { get; set; } = string.Empty;
+
+    [StringLength(500, ErrorMessage = "Rejection reason cannot exceed 500 characters")]
+    public string? RejectionReason { get; set; } = string.Empty;
+}
+
+public class ApprovalStatisticsDto
+{
+    public int TotalPendingApprovals { get; set; }
+    public int ManagerPendingApprovals { get; set; }
+    public int AdminPendingApprovals { get; set; }
+    public int OverdueApprovalsCount { get; set; }
+    public int ApprovalsTodayCount { get; set; }
+    public int ApprovalsThisWeekCount { get; set; }
+    public int ApprovalsThisMonthCount { get; set; }
+    public double AverageApprovalTimeHours { get; set; }
+    public List<WorkRequestDto> UrgentPendingApprovals { get; set; } = new();
+    public List<WorkRequestDto> OverdueApprovalsList { get; set; } = new();
+}
+
+// Notification DTOs
+public class NotificationDto
+{
+    public Guid NotificationId { get; set; }
+    public Guid WorkRequestId { get; set; }
+    public string WorkRequestTitle { get; set; } = string.Empty;
+    public string Type { get; set; } = string.Empty;
+    public string Status { get; set; } = string.Empty;
+    public string Subject { get; set; } = string.Empty;
+    public string Message { get; set; } = string.Empty;
+    public DateTime CreatedAt { get; set; }
+    public DateTime? SentAt { get; set; }
+    public DateTime? ReadAt { get; set; }
+    public bool IsRead { get; set; }
 }

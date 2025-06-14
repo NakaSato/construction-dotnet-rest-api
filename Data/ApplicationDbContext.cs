@@ -34,6 +34,10 @@ public class ApplicationDbContext : DbContext
     // Calendar entities
     public DbSet<CalendarEvent> CalendarEvents { get; set; }
 
+    // Work Request Approval entities
+    public DbSet<WorkRequestApproval> WorkRequestApprovals { get; set; }
+    public DbSet<WorkRequestNotification> WorkRequestNotifications { get; set; }
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
@@ -538,6 +542,102 @@ public class ApplicationDbContext : DbContext
             entity.HasIndex(ce => ce.TaskId);
             entity.HasIndex(ce => ce.CreatedByUserId);
             entity.HasIndex(ce => ce.AssignedToUserId);
+        });
+
+        // Configure WorkRequestApproval entity
+        modelBuilder.Entity<WorkRequestApproval>(entity =>
+        {
+            entity.HasKey(wra => wra.ApprovalId);
+            
+            entity.Property(wra => wra.Comments)
+                .HasMaxLength(1000);
+            
+            entity.Property(wra => wra.RejectionReason)
+                .HasMaxLength(500);
+            
+            entity.Property(wra => wra.EscalationReason)
+                .HasMaxLength(500);
+            
+            entity.Property(wra => wra.CreatedAt)
+                .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+            // Foreign key relationships
+            entity.HasOne(wra => wra.WorkRequest)
+                .WithMany(wr => wr.ApprovalHistory)
+                .HasForeignKey(wra => wra.WorkRequestId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(wra => wra.Approver)
+                .WithMany()
+                .HasForeignKey(wra => wra.ApproverId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasOne(wra => wra.EscalatedFrom)
+                .WithMany(wra => wra.Escalations)
+                .HasForeignKey(wra => wra.EscalatedFromId)
+                .OnDelete(DeleteBehavior.SetNull);
+
+            // Indexes
+            entity.HasIndex(wra => wra.WorkRequestId);
+            entity.HasIndex(wra => wra.ApproverId);
+            entity.HasIndex(wra => wra.Action);
+            entity.HasIndex(wra => wra.Level);
+            entity.HasIndex(wra => wra.CreatedAt);
+            entity.HasIndex(wra => wra.IsActive);
+        });
+
+        // Configure WorkRequestNotification entity
+        modelBuilder.Entity<WorkRequestNotification>(entity =>
+        {
+            entity.HasKey(wrn => wrn.NotificationId);
+            
+            entity.Property(wrn => wrn.Subject)
+                .IsRequired()
+                .HasMaxLength(200);
+            
+            entity.Property(wrn => wrn.Message)
+                .IsRequired()
+                .HasMaxLength(2000);
+            
+            entity.Property(wrn => wrn.EmailTo)
+                .HasMaxLength(500);
+            
+            entity.Property(wrn => wrn.EmailCc)
+                .HasMaxLength(500);
+            
+            entity.Property(wrn => wrn.ErrorMessage)
+                .HasMaxLength(1000);
+            
+            entity.Property(wrn => wrn.Metadata)
+                .HasMaxLength(2000);
+            
+            entity.Property(wrn => wrn.CreatedAt)
+                .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+            // Foreign key relationships
+            entity.HasOne(wrn => wrn.WorkRequest)
+                .WithMany(wr => wr.Notifications)
+                .HasForeignKey(wrn => wrn.WorkRequestId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(wrn => wrn.Recipient)
+                .WithMany()
+                .HasForeignKey(wrn => wrn.RecipientId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasOne(wrn => wrn.Sender)
+                .WithMany()
+                .HasForeignKey(wrn => wrn.SenderId)
+                .OnDelete(DeleteBehavior.SetNull);
+
+            // Indexes
+            entity.HasIndex(wrn => wrn.WorkRequestId);
+            entity.HasIndex(wrn => wrn.RecipientId);
+            entity.HasIndex(wrn => wrn.Type);
+            entity.HasIndex(wrn => wrn.Status);
+            entity.HasIndex(wrn => wrn.CreatedAt);
+            entity.HasIndex(wrn => wrn.SentAt);
+            entity.HasIndex(wrn => wrn.ReadAt);
         });
     }
 }

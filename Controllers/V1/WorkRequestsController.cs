@@ -20,13 +20,16 @@ public class WorkRequestsController : BaseApiController
 {
     private readonly IWorkRequestService _workRequestService;
     private readonly ILogger<WorkRequestsController> _logger;
+    private readonly IWorkRequestApprovalService _approvalService;
 
     public WorkRequestsController(
         IWorkRequestService workRequestService,
-        ILogger<WorkRequestsController> logger)
+        ILogger<WorkRequestsController> logger,
+        IWorkRequestApprovalService approvalService)
     {
         _workRequestService = workRequestService;
         _logger = logger;
+        _approvalService = approvalService;
     }
 
     /// <summary>
@@ -645,12 +648,369 @@ public class WorkRequestsController : BaseApiController
 
     #endregion
 
+    #region Approval Workflow
+
+    /// <summary>
+    /// Submit a work request for approval
+    /// </summary>
+    /// <param name="id">Work request ID</param>
+    /// <param name="request">Approval submission request</param>
+    /// <returns>Success response</returns>
+    [HttpPost("{id}/submit-approval")]
+    [ProducesResponseType(typeof(ApiResponse<bool>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<ApiResponse<bool>>> SubmitForApproval(Guid id, [FromBody] SubmitForApprovalRequest request)
+    {
+        try
+        {
+            var userId = GetCurrentUserId();
+            if (!IsValidUserId(userId))
+            {
+                return Unauthorized(new ApiResponse<object>
+                {
+                    Success = false,
+                    Message = "User not authenticated"
+                });
+            }
+
+            var result = await _approvalService.SubmitForApprovalAsync(id, request, userId);
+            
+            if (!result.Success)
+            {
+                return BadRequest(result);
+            }
+
+            return Ok(result);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error submitting work request for approval");
+            return StatusCode(500, new ApiResponse<object>
+            {
+                Success = false,
+                Message = "An error occurred while submitting for approval"
+            });
+        }
+    }
+
+    /// <summary>
+    /// Process approval for a work request (approve/reject/escalate)
+    /// </summary>
+    /// <param name="id">Work request ID</param>
+    /// <param name="request">Approval request</param>
+    /// <returns>Success response</returns>
+    [HttpPost("{id}/process-approval")]
+    [Authorize(Roles = "Manager,Admin")]
+    [ProducesResponseType(typeof(ApiResponse<bool>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<ApiResponse<bool>>> ProcessApproval(Guid id, [FromBody] ApprovalRequest request)
+    {
+        try
+        {
+            var userId = GetCurrentUserId();
+            if (!IsValidUserId(userId))
+            {
+                return Unauthorized(new ApiResponse<object>
+                {
+                    Success = false,
+                    Message = "User not authenticated"
+                });
+            }
+
+            var result = await _approvalService.ProcessApprovalAsync(id, request, userId);
+            
+            if (!result.Success)
+            {
+                return BadRequest(result);
+            }
+
+            return Ok(result);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error processing approval");
+            return StatusCode(500, new ApiResponse<object>
+            {
+                Success = false,
+                Message = "An error occurred while processing approval"
+            });
+        }
+    }
+
+    /// <summary>
+    /// Get approval workflow status for a work request
+    /// </summary>
+    /// <param name="id">Work request ID</param>
+    /// <returns>Approval workflow status</returns>
+    [HttpGet("{id}/approval-status")]
+    [ProducesResponseType(typeof(ApiResponse<ApprovalWorkflowStatusDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<ApiResponse<ApprovalWorkflowStatusDto>>> GetApprovalStatus(Guid id)
+    {
+        try
+        {
+            var result = await _approvalService.GetApprovalStatusAsync(id);
+            
+            if (!result.Success)
+            {
+                return NotFound(result);
+            }
+
+            return Ok(result);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error getting approval status");
+            return StatusCode(500, new ApiResponse<object>
+            {
+                Success = false,
+                Message = "An error occurred while getting approval status"
+            });
+        }
+    }
+
+    /// <summary>
+    /// Get approval history for a work request
+    /// </summary>
+    /// <param name="id">Work request ID</param>
+    /// <param name="pageNumber">Page number</param>
+    /// <param name="pageSize">Page size</param>
+    /// <returns>Paginated approval history</returns>
+    [HttpGet("{id}/approval-history")]
+    [ProducesResponseType(typeof(ApiResponse<PagedResult<WorkRequestApprovalDto>>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    public async Task<ActionResult<ApiResponse<PagedResult<WorkRequestApprovalDto>>>> GetApprovalHistory(
+        Guid id, 
+        [FromQuery] int pageNumber = 1, 
+        [FromQuery] int pageSize = 20)
+    {
+        try
+        {
+            var result = await _approvalService.GetApprovalHistoryAsync(id, pageNumber, pageSize);
+            return Ok(result);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error getting approval history");
+            return StatusCode(500, new ApiResponse<object>
+            {
+                Success = false,
+                Message = "An error occurred while getting approval history"
+            });
+        }
+    }
+
+    /// <summary>
+    /// Escalate approval to another user
+    /// </summary>
+    /// <param name="id">Work request ID</param>
+    /// <param name="escalateToUserId">User to escalate to</param>
+    /// <param name="reason">Escalation reason</param>
+    /// <returns>Success response</returns>
+    [HttpPost("{id}/escalate")]
+    [Authorize(Roles = "Manager,Admin")]
+    [ProducesResponseType(typeof(ApiResponse<bool>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    public async Task<ActionResult<ApiResponse<bool>>> EscalateApproval(
+        Guid id, 
+        [FromQuery] Guid escalateToUserId, 
+        [FromQuery] string reason)
+    {
+        try
+        {
+            var userId = GetCurrentUserId();
+            if (!IsValidUserId(userId))
+            {
+                return Unauthorized(new ApiResponse<object>
+                {
+                    Success = false,
+                    Message = "User not authenticated"
+                });
+            }
+
+            var result = await _approvalService.EscalateApprovalAsync(id, escalateToUserId, reason, userId);
+            
+            if (!result.Success)
+            {
+                return BadRequest(result);
+            }
+
+            return Ok(result);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error escalating approval");
+            return StatusCode(500, new ApiResponse<object>
+            {
+                Success = false,
+                Message = "An error occurred while escalating approval"
+            });
+        }
+    }
+
+    /// <summary>
+    /// Get pending approvals for the current user
+    /// </summary>
+    /// <param name="pageNumber">Page number</param>
+    /// <param name="pageSize">Page size</param>
+    /// <returns>Paginated pending approvals</returns>
+    [HttpGet("pending-approvals")]
+    [Authorize(Roles = "Manager,Admin")]
+    [ProducesResponseType(typeof(ApiResponse<PagedResult<WorkRequestDto>>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    public async Task<ActionResult<ApiResponse<PagedResult<WorkRequestDto>>>> GetPendingApprovals(
+        [FromQuery] int pageNumber = 1, 
+        [FromQuery] int pageSize = 20)
+    {
+        try
+        {
+            var userId = GetCurrentUserId();
+            if (!IsValidUserId(userId))
+            {
+                return Unauthorized(new ApiResponse<object>
+                {
+                    Success = false,
+                    Message = "User not authenticated"
+                });
+            }
+
+            var result = await _approvalService.GetPendingApprovalsAsync(userId, pageNumber, pageSize);
+            return Ok(result);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error getting pending approvals");
+            return StatusCode(500, new ApiResponse<object>
+            {
+                Success = false,
+                Message = "An error occurred while getting pending approvals"
+            });
+        }
+    }
+
+    /// <summary>
+    /// Get approval statistics
+    /// </summary>
+    /// <returns>Approval statistics</returns>
+    [HttpGet("approval-statistics")]
+    [Authorize(Roles = "Manager,Admin")]
+    [ProducesResponseType(typeof(ApiResponse<ApprovalStatisticsDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    public async Task<ActionResult<ApiResponse<ApprovalStatisticsDto>>> GetApprovalStatistics()
+    {
+        try
+        {
+            var userId = GetCurrentUserId();
+            var result = await _approvalService.GetApprovalStatisticsAsync(userId);
+            return Ok(result);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error getting approval statistics");
+            return StatusCode(500, new ApiResponse<object>
+            {
+                Success = false,
+                Message = "An error occurred while getting approval statistics"
+            });
+        }
+    }
+
+    /// <summary>
+    /// Process bulk approvals
+    /// </summary>
+    /// <param name="request">Bulk approval request</param>
+    /// <returns>Success response</returns>
+    [HttpPost("bulk-approval")]
+    [Authorize(Roles = "Manager,Admin")]
+    [ProducesResponseType(typeof(ApiResponse<bool>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    public async Task<ActionResult<ApiResponse<bool>>> BulkApproval([FromBody] BulkApprovalRequest request)
+    {
+        try
+        {
+            var userId = GetCurrentUserId();
+            if (!IsValidUserId(userId))
+            {
+                return Unauthorized(new ApiResponse<object>
+                {
+                    Success = false,
+                    Message = "User not authenticated"
+                });
+            }
+
+            var result = await _approvalService.BulkApprovalAsync(request, userId);
+            return Ok(result);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error processing bulk approval");
+            return StatusCode(500, new ApiResponse<object>
+            {
+                Success = false,
+                Message = "An error occurred while processing bulk approval"
+            });
+        }
+    }
+
+    /// <summary>
+    /// Send approval reminders for overdue requests
+    /// </summary>
+    /// <returns>Success response</returns>
+    [HttpPost("send-approval-reminders")]
+    [Authorize(Roles = "Admin")]
+    [ProducesResponseType(typeof(ApiResponse<bool>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    public async Task<ActionResult<ApiResponse<bool>>> SendApprovalReminders()
+    {
+        try
+        {
+            var result = await _approvalService.SendApprovalRemindersAsync();
+            return Ok(result);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error sending approval reminders");
+            return StatusCode(500, new ApiResponse<object>
+            {
+                Success = false,
+                Message = "An error occurred while sending approval reminders"
+            });
+        }
+    }
+
+    #endregion
+
     #region Helper Methods
 
     private Guid GetCurrentUserId()
     {
-        var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        var userIdClaim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
         return Guid.TryParse(userIdClaim, out var userId) ? userId : Guid.Empty;
+    }
+    
+    /// <summary>
+    /// Validates if user ID is valid (not empty)
+    /// </summary>
+    /// <param name="userId">User ID to validate</param>
+    /// <returns>True if valid, false otherwise</returns>
+    private bool IsValidUserId(Guid userId)
+    {
+        return userId != Guid.Empty;
     }
 
     private void AddHateoasLinks(WorkRequestDto workRequest)
@@ -659,19 +1019,19 @@ public class WorkRequestsController : BaseApiController
         {
             new LinkDto
             {
-                Href = Url.Action(nameof(GetWorkRequest), new { id = workRequest.WorkRequestId }),
+                Href = Url.Action(nameof(GetWorkRequest), new { id = workRequest.WorkRequestId }) ?? "",
                 Rel = "self",
                 Method = "GET"
             },
             new LinkDto
             {
-                Href = Url.Action(nameof(UpdateWorkRequest), new { id = workRequest.WorkRequestId }),
+                Href = Url.Action(nameof(UpdateWorkRequest), new { id = workRequest.WorkRequestId }) ?? "",
                 Rel = "update",
                 Method = "PUT"
             },
             new LinkDto
             {
-                Href = Url.Action(nameof(DeleteWorkRequest), new { id = workRequest.WorkRequestId }),
+                Href = Url.Action(nameof(DeleteWorkRequest), new { id = workRequest.WorkRequestId }) ?? "",
                 Rel = "delete",
                 Method = "DELETE"
             }
@@ -682,7 +1042,7 @@ public class WorkRequestsController : BaseApiController
         {
             workRequest.Links.Add(new LinkDto
             {
-                Href = Url.Action(nameof(CompleteWorkRequest), new { id = workRequest.WorkRequestId }),
+                Href = Url.Action(nameof(CompleteWorkRequest), new { id = workRequest.WorkRequestId }) ?? "",
                 Rel = "complete",
                 Method = "POST"
             });
@@ -692,7 +1052,7 @@ public class WorkRequestsController : BaseApiController
         {
             workRequest.Links.Add(new LinkDto
             {
-                Href = Url.Action(nameof(AssignWorkRequest), new { id = workRequest.WorkRequestId, userId = "{userId}" }),
+                Href = Url.Action(nameof(AssignWorkRequest), new { id = workRequest.WorkRequestId, userId = "{userId}" }) ?? "",
                 Rel = "assign",
                 Method = "POST"
             });
