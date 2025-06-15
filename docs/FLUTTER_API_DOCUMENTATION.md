@@ -1,7 +1,15 @@
 # Solar Projects API Documentation for Flutter
 
 ## Overview
-Complete API documentation for the Solar Projects .NET REST API, designed for Flutter mobile app integration. This API uses JWT authentication with role-based access control (RBAC).
+Complete API documentation for the Solar Projects .NET REST API, designed for Flutter mobile app integration. This API uses JWT authentication with role-based access control (RBAC) and implements Clean Architecture principles.
+
+## Features
+- Complete CRUD operations for Projects, Tasks, and Daily Reports
+- Role-based access control (Administrator, ProjectManager, User)
+- Advanced querying with filtering, sorting, and pagination
+- Rich HATEOAS pagination support
+- Intelligent caching strategies
+- Robust error handling
 
 ## Base Configuration
 
@@ -548,142 +556,92 @@ Future<TaskDto?> createTask(String projectId, CreateTaskRequest request) async {
 
 ### 11. Get Daily Reports
 **Endpoint**: `GET /api/v1/daily-reports`  
-**Access**: All authenticated users
+**Access**: Authenticated Users
 
 ```dart
-// Daily Report Model
-class DailyReportDto {
-  final String dailyReportId;
-  final String projectId;
-  final DateTime reportDate;
-  final String? weatherConditions;
-  final int? crewSize;
-  final double? hoursWorked;
-  final String? workCompleted;
-  final String? issuesEncountered;
-  final String? materialUsed;
-  final String status;
-  final UserDto? submittedByUser;
+Future<List<DailyReport>> getDailyReports({
+  int pageNumber = 1,
+  int pageSize = 10,
+  String? projectId,
+  DateTime? startDate,
+  DateTime? endDate,
+}) async {
+  final queryParams = {
+    'pageNumber': pageNumber.toString(),
+    'pageSize': pageSize.toString(),
+    if (projectId != null) 'projectId': projectId,
+    if (startDate != null) 'startDate': startDate.toIso8601String(),
+    if (endDate != null) 'endDate': endDate.toIso8601String(),
+  };
 
-  DailyReportDto.fromJson(Map<String, dynamic> json)
-    : dailyReportId = json['dailyReportId'],
-      projectId = json['projectId'],
-      reportDate = DateTime.parse(json['reportDate']),
-      weatherConditions = json['weatherConditions'],
-      crewSize = json['crewSize'],
-      hoursWorked = json['hoursWorked']?.toDouble(),
-      workCompleted = json['workCompleted'],
-      issuesEncountered = json['issuesEncountered'],
-      materialUsed = json['materialUsed'],
-      status = json['status'],
-      submittedByUser = json['submittedByUser'] != null 
-          ? UserDto.fromJson(json['submittedByUser']) : null;
-}
-
-// Query Parameters
-class DailyReportQueryParameters {
-  final int pageNumber;
-  final int pageSize;
-  final String? projectId;
-  final DateTime? reportDateAfter;
-  final DateTime? reportDateBefore;
-  final String? status;
-
-  DailyReportQueryParameters({
-    this.pageNumber = 1,
-    this.pageSize = 10,
-    this.projectId,
-    this.reportDateAfter,
-    this.reportDateBefore,
-    this.status,
-  });
-
-  String toQueryString() {
-    final params = <String, String>{
-      'pageNumber': pageNumber.toString(),
-      'pageSize': pageSize.toString(),
-    };
-    
-    if (projectId != null) params['projectId'] = projectId!;
-    if (reportDateAfter != null) params['reportDateAfter'] = reportDateAfter!.toIso8601String();
-    if (reportDateBefore != null) params['reportDateBefore'] = reportDateBefore!.toIso8601String();
-    if (status != null) params['status'] = status!;
-    
-    return params.entries.map((e) => '${e.key}=${Uri.encodeComponent(e.value)}').join('&');
-  }
-}
-
-// Flutter Usage
-Future<List<DailyReportDto>> getDailyReports({DailyReportQueryParameters? params}) async {
+  final queryString = Uri(queryParameters: queryParams).query;
+  
   try {
-    String url = '${ApiConfig.apiBaseUrl}/daily-reports';
-    if (params != null) {
-      url += '?${params.toQueryString()}';
-    }
-
     final response = await http.get(
-      Uri.parse(url),
+      Uri.parse('${ApiConfig.apiBaseUrl}/daily-reports?$queryString'),
       headers: ApiClient.headers,
     );
 
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body);
       return (data['data']['items'] as List)
-          .map((report) => DailyReportDto.fromJson(report))
+          .map((item) => DailyReport.fromJson(item))
           .toList();
     }
-    return [];
+    throw Exception('Failed to fetch daily reports');
   } catch (e) {
-    print('Get daily reports error: $e');
-    return [];
+    print('Error fetching daily reports: $e');
+    rethrow;
   }
 }
 ```
 
-### 12. Create Daily Report
-**Endpoint**: `POST /api/v1/daily-reports`  
-**Access**: Administrator, ProjectManager, Technician
+### 12. Get Daily Report by ID
+**Endpoint**: `GET /api/v1/daily-reports/{id}`  
+**Access**: Authenticated Users
 
 ```dart
-// Request Model
+Future<DailyReport> getDailyReport(String id) async {
+  try {
+    final response = await http.get(
+      Uri.parse('${ApiConfig.apiBaseUrl}/daily-reports/$id'),
+      headers: ApiClient.headers,
+    );
+
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+      return DailyReport.fromJson(data['data']);
+    }
+    throw Exception('Failed to fetch daily report');
+  } catch (e) {
+    print('Error fetching daily report: $e');
+    rethrow;
+  }
+}
+```
+
+### 13. Create Daily Report
+**Endpoint**: `POST /api/v1/daily-reports`  
+**Access**: Project Managers, Site Supervisors
+
+```dart
 class CreateDailyReportRequest {
   final String projectId;
-  final DateTime reportDate;
-  final String? weatherConditions;
-  final int? crewSize;
-  final double? hoursWorked;
-  final String? workCompleted;
-  final String? issuesEncountered;
-  final String? materialUsed;
-  final String submittedById;
-
-  CreateDailyReportRequest({
-    required this.projectId,
-    required this.reportDate,
-    this.weatherConditions,
-    this.crewSize,
-    this.hoursWorked,
-    this.workCompleted,
-    this.issuesEncountered,
-    this.materialUsed,
-    required this.submittedById,
-  });
+  final String summary;
+  final List<String> activities;
+  final WeatherData weatherData;
+  final List<String> attachments;
 
   Map<String, dynamic> toJson() => {
     'projectId': projectId,
-    'reportDate': reportDate.toIso8601String(),
-    'weatherConditions': weatherConditions,
-    'crewSize': crewSize,
-    'hoursWorked': hoursWorked,
-    'workCompleted': workCompleted,
-    'issuesEncountered': issuesEncountered,
-    'materialUsed': materialUsed,
-    'submittedById': submittedById,
+    'summary': summary,
+    'activities': activities,
+    'weatherData': weatherData.toJson(),
+    'attachments': attachments,
   };
 }
 
-// Flutter Usage
-Future<DailyReportDto?> createDailyReport(CreateDailyReportRequest request) async {
+Future<DailyReport> createDailyReport(CreateDailyReportRequest request) async {
   try {
     final response = await http.post(
       Uri.parse('${ApiConfig.apiBaseUrl}/daily-reports'),
@@ -693,109 +651,74 @@ Future<DailyReportDto?> createDailyReport(CreateDailyReportRequest request) asyn
 
     if (response.statusCode == 201) {
       final data = jsonDecode(response.body);
-      return DailyReportDto.fromJson(data['data']);
+      return DailyReport.fromJson(data['data']);
     }
-    return null;
+    throw Exception('Failed to create daily report');
   } catch (e) {
-    print('Create daily report error: $e');
-    return null;
+    print('Error creating daily report: $e');
+    rethrow;
   }
 }
 ```
 
-### 13. Update Daily Report
+### 14. Update Daily Report
 **Endpoint**: `PUT /api/v1/daily-reports/{id}`  
-**Access**: Administrator, ProjectManager, Technician
+**Access**: Project Managers, Site Supervisors (Original Creator)
 
 ```dart
-// Request Model (similar to Create but with optional fields)
 class UpdateDailyReportRequest {
-  final String? weatherConditions;
-  final int? crewSize;
-  final double? hoursWorked;
-  final String? workCompleted;
-  final String? issuesEncountered;
-  final String? materialUsed;
+  final String summary;
+  final List<String> activities;
+  final WeatherData weatherData;
+  final List<String> attachments;
 
-  UpdateDailyReportRequest({
-    this.weatherConditions,
-    this.crewSize,
-    this.hoursWorked,
-    this.workCompleted,
-    this.issuesEncountered,
-    this.materialUsed,
-  });
-
-  Map<String, dynamic> toJson() {
-    final map = <String, dynamic>{};
-    if (weatherConditions != null) map['weatherConditions'] = weatherConditions;
-    if (crewSize != null) map['crewSize'] = crewSize;
-    if (hoursWorked != null) map['hoursWorked'] = hoursWorked;
-    if (workCompleted != null) map['workCompleted'] = workCompleted;
-    if (issuesEncountered != null) map['issuesEncountered'] = issuesEncountered;
-    if (materialUsed != null) map['materialUsed'] = materialUsed;
-    return map;
-  }
+  Map<String, dynamic> toJson() => {
+    'summary': summary,
+    'activities': activities,
+    'weatherData': weatherData.toJson(),
+    'attachments': attachments,
+  };
 }
 
-// Flutter Usage
-Future<DailyReportDto?> updateDailyReport(String reportId, UpdateDailyReportRequest request) async {
+Future<DailyReport> updateDailyReport(
+  String id,
+  UpdateDailyReportRequest request,
+) async {
   try {
     final response = await http.put(
-      Uri.parse('${ApiConfig.apiBaseUrl}/daily-reports/$reportId'),
+      Uri.parse('${ApiConfig.apiBaseUrl}/daily-reports/$id'),
       headers: ApiClient.headers,
       body: jsonEncode(request.toJson()),
     );
 
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body);
-      return DailyReportDto.fromJson(data['data']);
+      return DailyReport.fromJson(data['data']);
     }
-    return null;
+    throw Exception('Failed to update daily report');
   } catch (e) {
-    print('Update daily report error: $e');
-    return null;
+    print('Error updating daily report: $e');
+    rethrow;
   }
 }
 ```
 
-### 14. Approve Daily Report
-**Endpoint**: `POST /api/v1/daily-reports/{id}/approve`  
-**Access**: Administrator, ProjectManager
+### 15. Delete Daily Report
+**Endpoint**: `DELETE /api/v1/daily-reports/{id}`  
+**Access**: Project Managers, Administrators
 
 ```dart
-Future<bool> approveDailyReport(String reportId) async {
+Future<bool> deleteDailyReport(String id) async {
   try {
-    final response = await http.post(
-      Uri.parse('${ApiConfig.apiBaseUrl}/daily-reports/$reportId/approve'),
+    final response = await http.delete(
+      Uri.parse('${ApiConfig.apiBaseUrl}/daily-reports/$id'),
       headers: ApiClient.headers,
     );
 
-    return response.statusCode == 200;
+    return response.statusCode == 204;
   } catch (e) {
-    print('Approve daily report error: $e');
-    return false;
-  }
-}
-```
-
-### 15. Reject Daily Report
-**Endpoint**: `POST /api/v1/daily-reports/{id}/reject`  
-**Access**: Administrator, ProjectManager
-
-```dart
-Future<bool> rejectDailyReport(String reportId, String rejectionReason) async {
-  try {
-    final response = await http.post(
-      Uri.parse('${ApiConfig.apiBaseUrl}/daily-reports/$reportId/reject'),
-      headers: ApiClient.headers,
-      body: jsonEncode({'rejectionReason': rejectionReason}),
-    );
-
-    return response.statusCode == 200;
-  } catch (e) {
-    print('Reject daily report error: $e');
-    return false;
+    print('Error deleting daily report: $e');
+    rethrow;
   }
 }
 ```
@@ -1361,234 +1284,362 @@ class PagedResult<T> {
 }
 ```
 
-## Error Handling
+## Error Handling & Best Practices
 
-### Standard Error Response
+### API Response Wrapper
+
 ```dart
-class ApiError {
-  final String type;
-  final String title;
-  final int status;
-  final String detail;
-  final String? instance;
-  final String? traceId;
-  final List<ErrorDetail> errors;
+class ApiResponse<T> {
+  final bool success;
+  final String message;
+  final T? data;
+  final List<String>? errors;
 
-  ApiError.fromJson(Map<String, dynamic> json)
-    : type = json['type'],
-      title = json['title'],
-      status = json['status'],
-      detail = json['detail'],
-      instance = json['instance'],
-      traceId = json['traceId'],
-      errors = (json['errors'] as List?)
-          ?.map((error) => ErrorDetail.fromJson(error))
-          .toList() ?? [];
+  ApiResponse.fromJson(
+    Map<String, dynamic> json,
+    T Function(Map<String, dynamic>) fromJson,
+  )   : success = json['success'],
+        message = json['message'],
+        errors = json['errors'] != null 
+            ? List<String>.from(json['errors'])
+            : null,
+        data = json['data'] != null 
+            ? fromJson(json['data'])
+            : null;
 }
 
-class ErrorDetail {
-  final String code;
+// For list responses
+class ApiListResponse<T> {
+  final bool success;
   final String message;
-  final List<dynamic> details;
+  final List<T> data;
+  final List<String>? errors;
 
-  ErrorDetail.fromJson(Map<String, dynamic> json)
-    : code = json['code'],
-      message = json['message'],
-      details = json['details'] ?? [];
+  ApiListResponse.fromJson(
+    Map<String, dynamic> json,
+    T Function(Map<String, dynamic>) fromJson,
+  )   : success = json['success'],
+        message = json['message'],
+        errors = json['errors'] != null 
+            ? List<String>.from(json['errors'])
+            : null,
+        data = (json['data'] as List)
+            .map((item) => fromJson(item))
+            .toList();
 }
 ```
 
-### Global Error Handler
+### Error Handling Service
+
 ```dart
+class ApiException implements Exception {
+  final String message;
+  final int? statusCode;
+  final List<String>? errors;
+
+  ApiException(this.message, {this.statusCode, this.errors});
+
+  @override
+  String toString() => message;
+}
+
 class ApiErrorHandler {
-  static String getErrorMessage(http.Response response) {
+  static void handleError(http.Response response) {
+    switch (response.statusCode) {
+      case 400:
+        throw ApiException(
+          'Bad Request',
+          statusCode: 400,
+          errors: _parseErrors(response),
+        );
+      case 401:
+        throw ApiException(
+          'Unauthorized - Please login again',
+          statusCode: 401,
+        );
+      case 403:
+        throw ApiException(
+          'Forbidden - You don\'t have permission',
+          statusCode: 403,
+        );
+      case 404:
+        throw ApiException(
+          'Not Found',
+          statusCode: 404,
+        );
+      case 500:
+        throw ApiException(
+          'Internal Server Error',
+          statusCode: 500,
+        );
+      default:
+        throw ApiException(
+          'Something went wrong',
+          statusCode: response.statusCode,
+        );
+    }
+  }
+
+  static List<String>? _parseErrors(http.Response response) {
     try {
       final data = jsonDecode(response.body);
-      
-      if (data['message'] != null) {
-        return data['message'];
+      if (data['errors'] != null) {
+        return List<String>.from(data['errors']);
       }
-      
-      if (data['errors'] != null && data['errors'].isNotEmpty) {
-        return data['errors'].first;
-      }
-      
-      return 'An unexpected error occurred';
+      return null;
+    } catch (_) {
+      return null;
+    }
+  }
+}
+```
+
+### Implementing Retry Logic
+
+```dart
+Future<T> retryRequest<T>(
+  Future<T> Function() request, {
+  int maxAttempts = 3,
+  Duration delay = const Duration(seconds: 1),
+}) async {
+  int attempts = 0;
+  while (true) {
+    try {
+      attempts++;
+      return await request();
     } catch (e) {
-      return 'Network error occurred';
+      if (attempts >= maxAttempts) rethrow;
+      if (e is ApiException && e.statusCode == 401) rethrow; // Don't retry auth errors
+      
+      await Future.delayed(delay * attempts);
+    }
+  }
+}
+
+// Usage Example
+Future<List<Project>> getProjectsWithRetry() async {
+  return retryRequest(
+    () => getProjects(),
+    maxAttempts: 3,
+    delay: Duration(seconds: 2),
+  );
+}
+```
+
+### Caching Implementation
+
+```dart
+class ApiCache {
+  static final _cache = <String, _CacheEntry>{};
+  
+  static T? get<T>(String key) {
+    final entry = _cache[key];
+    if (entry == null) return null;
+    
+    if (entry.isExpired) {
+      _cache.remove(key);
+      return null;
+    }
+    
+    return entry.value as T;
+  }
+  
+  static void set<T>(String key, T value, Duration ttl) {
+    _cache[key] = _CacheEntry(
+      value: value,
+      expiresAt: DateTime.now().add(ttl),
+    );
+  }
+  
+  static void remove(String key) {
+    _cache.remove(key);
+  }
+  
+  static void clear() {
+    _cache.clear();
+  }
+}
+
+class _CacheEntry {
+  final dynamic value;
+  final DateTime expiresAt;
+  
+  _CacheEntry({required this.value, required this.expiresAt});
+  
+  bool get isExpired => DateTime.now().isAfter(expiresAt);
+}
+
+// Usage Example
+Future<Project> getProjectWithCache(String id) async {
+  final cacheKey = 'project_$id';
+  final cached = ApiCache.get<Project>(cacheKey);
+  if (cached != null) return cached;
+  
+  final project = await getProject(id);
+  ApiCache.set(cacheKey, project, Duration(minutes: 15));
+  return project;
+}
+```
+
+### Best Practices
+
+1. **Token Management**
+```dart
+class AuthManager {
+  static String? _token;
+  static String? _refreshToken;
+  static DateTime? _expiresAt;
+  
+  static bool get isLoggedIn => 
+    _token != null && _expiresAt != null && 
+    DateTime.now().isBefore(_expiresAt!);
+  
+  static Future<void> refreshTokenIfNeeded() async {
+    if (!isLoggedIn && _refreshToken != null) {
+      // Implement token refresh logic
     }
   }
   
-  static void handleError(http.Response response) {
-    final message = getErrorMessage(response);
-    
-    switch (response.statusCode) {
-      case 400:
-        throw BadRequestException(message);
-      case 401:
-        throw UnauthorizedException(message);
-      case 403:
-        throw ForbiddenException(message);
-      case 404:
-        throw NotFoundException(message);
-      case 429:
-        throw RateLimitException(message);
-      case 500:
-        throw ServerException(message);
-      default:
-        throw ApiException(message);
-    }
+  static Future<void> logout() async {
+    _token = null;
+    _refreshToken = null;
+    _expiresAt = null;
+    ApiCache.clear();
+    // Implement additional cleanup
   }
 }
-
-// Custom Exceptions
-class ApiException implements Exception {
-  final String message;
-  ApiException(this.message);
-}
-
-class BadRequestException extends ApiException {
-  BadRequestException(String message) : super(message);
-}
-
-class UnauthorizedException extends ApiException {
-  UnauthorizedException(String message) : super(message);
-}
-
-class ForbiddenException extends ApiException {
-  ForbiddenException(String message) : super(message);
-}
-
-class NotFoundException extends ApiException {
-  NotFoundException(String message) : super(message);
-}
-
-class RateLimitException extends ApiException {
-  RateLimitException(String message) : super(message);
-}
-
-class ServerException extends ApiException {
-  ServerException(String message) : super(message);
-}
 ```
 
-## Flutter Dependencies
-
-Add these dependencies to your `pubspec.yaml`:
-
-```yaml
-dependencies:
-  flutter:
-    sdk: flutter
-  http: ^1.1.0
-  shared_preferences: ^2.2.2  # For token storage
-  provider: ^6.1.1  # For state management
-  json_annotation: ^4.8.1
-
-dev_dependencies:
-  flutter_test:
-    sdk: flutter
-  build_runner: ^2.4.7
-  json_serializable: ^6.7.1
-```
-
-## Usage Example
-
-### Complete Flutter Integration Example
+2. **API Service Base Class**
 ```dart
-// main.dart
-import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
+abstract class BaseApiService {
+  final String baseUrl;
+  
+  BaseApiService(this.baseUrl);
+  
+  Future<T> get<T>(
+    String endpoint,
+    T Function(Map<String, dynamic>) fromJson, {
+    Map<String, String>? queryParams,
+  }) async {
+    final uri = Uri.parse('$baseUrl$endpoint')
+        .replace(queryParameters: queryParams);
+    
+    try {
+      final response = await http.get(uri, headers: ApiClient.headers);
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        return fromJson(data);
+      }
+      ApiErrorHandler.handleError(response);
+      throw ApiException('Unknown error');
+    } catch (e) {
+      if (e is ApiException) rethrow;
+      throw ApiException('Network error: $e');
+    }
+  }
+  
+  // Implement post, put, delete similarly
+}
+```
 
-void main() {
-  runApp(MyApp());
+3. **Connectivity Handling**
+```dart
+class ConnectivityService {
+  static final _connectivity = Connectivity();
+  
+  static Future<bool> checkConnectivity() async {
+    final result = await _connectivity.checkConnectivity();
+    return result != ConnectivityResult.none;
+  }
+  
+  static Stream<ConnectivityResult> get onConnectivityChanged =>
+    _connectivity.onConnectivityChanged;
 }
 
-class MyApp extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return MultiProvider(
-      providers: [
-        ChangeNotifierProvider(create: (_) => AuthProvider()),
-        ChangeNotifierProvider(create: (_) => ProjectProvider()),
-      ],
-      child: MaterialApp(
-        title: 'Solar Projects',
-        home: LoginScreen(),
-      ),
+// Usage in API calls
+Future<T> withConnectivity<T>(Future<T> Function() apiCall) async {
+  if (!await ConnectivityService.checkConnectivity()) {
+    throw ApiException('No internet connection');
+  }
+  return apiCall();
+}
+```
+
+4. **Request Queue Management**
+```dart
+class RequestQueue {
+  static final _queue = Queue<Future Function()>();
+  static bool _processing = false;
+  
+  static Future<void> add(Future Function() request) async {
+    _queue.add(request);
+    if (!_processing) {
+      _processing = true;
+      await _processQueue();
+    }
+  }
+  
+  static Future<void> _processQueue() async {
+    while (_queue.isNotEmpty) {
+      final request = _queue.removeFirst();
+      try {
+        await request();
+      } catch (e) {
+        print('Error processing queued request: $e');
+      }
+    }
+    _processing = false;
+  }
+}
+```
+
+5. **Loading State Management**
+```dart
+class LoadingState<T> {
+  final T? data;
+  final bool isLoading;
+  final String? error;
+  
+  const LoadingState({
+    this.data,
+    this.isLoading = false,
+    this.error,
+  });
+  
+  LoadingState<T> copyWith({
+    T? data,
+    bool? isLoading,
+    String? error,
+  }) {
+    return LoadingState(
+      data: data ?? this.data,
+      isLoading: isLoading ?? this.isLoading,
+      error: error ?? this.error,
     );
   }
 }
 
-// auth_provider.dart
-class AuthProvider extends ChangeNotifier {
-  UserDto? _user;
-  String? _token;
-
-  UserDto? get user => _user;
-  bool get isAuthenticated => _token != null;
-
-  Future<bool> login(String username, String password) async {
-    try {
-      final loginResponse = await login(username, password);
-      if (loginResponse != null) {
-        _user = loginResponse.user;
-        _token = loginResponse.token;
-        notifyListeners();
-        return true;
-      }
-      return false;
-    } catch (e) {
-      print('Login error: $e');
-      return false;
-    }
-  }
-
-  void logout() {
-    _user = null;
-    _token = null;
-    ApiClient.clearAuthToken();
-    notifyListeners();
-  }
-}
-
-// project_provider.dart
-class ProjectProvider extends ChangeNotifier {
-  List<ProjectDto> _projects = [];
-  bool _isLoading = false;
-
-  List<ProjectDto> get projects => _projects;
-  bool get isLoading => _isLoading;
-
+// Usage with StateNotifier
+class ProjectsNotifier extends StateNotifier<LoadingState<List<Project>>> {
+  final ProjectsRepository _repository;
+  
+  ProjectsNotifier(this._repository) : super(LoadingState());
+  
   Future<void> loadProjects() async {
-    _isLoading = true;
-    notifyListeners();
-
+    state = state.copyWith(isLoading: true);
     try {
-      _projects = await getProjects();
+      final projects = await _repository.getProjects();
+      state = state.copyWith(
+        data: projects,
+        isLoading: false,
+      );
     } catch (e) {
-      print('Load projects error: $e');
-    }
-
-    _isLoading = false;
-    notifyListeners();
-  }
-
-  Future<bool> createProject(CreateProjectRequest request) async {
-    try {
-      final project = await createProject(request);
-      if (project != null) {
-        _projects.add(project);
-        notifyListeners();
-        return true;
-      }
-      return false;
-    } catch (e) {
-      print('Create project error: $e');
-      return false;
+      state = state.copyWith(
+        error: e.toString(),
+        isLoading: false,
+      );
     }
   }
 }
 ```
-
-This documentation provides complete Flutter integration for all Solar Projects API endpoints with proper RBAC implementation, error handling, and real-world usage examples.
