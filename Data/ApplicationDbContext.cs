@@ -38,6 +38,10 @@ public class ApplicationDbContext : DbContext
     public DbSet<WorkRequestApproval> WorkRequestApprovals { get; set; }
     public DbSet<WorkRequestNotification> WorkRequestNotifications { get; set; }
 
+    // Weekly Planning entities
+    public DbSet<WeeklyWorkRequest> WeeklyWorkRequests { get; set; }
+    public DbSet<WeeklyReport> WeeklyReports { get; set; }
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
@@ -638,6 +642,102 @@ public class ApplicationDbContext : DbContext
             entity.HasIndex(wrn => wrn.CreatedAt);
             entity.HasIndex(wrn => wrn.SentAt);
             entity.HasIndex(wrn => wrn.ReadAt);
+        });
+
+        // Configure WeeklyWorkRequest entity
+        modelBuilder.Entity<WeeklyWorkRequest>(entity =>
+        {
+            entity.HasKey(w => w.WeeklyRequestId);
+            
+            entity.Property(w => w.OverallGoals)
+                .IsRequired()
+                .HasMaxLength(2000);
+
+            entity.Property(w => w.KeyTasks)
+                .HasColumnType("jsonb")
+                .HasDefaultValue("[]");
+
+            entity.Property(w => w.PersonnelForecast)
+                .HasMaxLength(1000);
+
+            entity.Property(w => w.MajorEquipment)
+                .HasMaxLength(1000);
+
+            entity.Property(w => w.CriticalMaterials)
+                .HasMaxLength(1000);
+
+            entity.Property(w => w.Priority)
+                .HasMaxLength(50);
+
+            entity.Property(w => w.Type)
+                .HasMaxLength(100);
+
+            // Foreign key relationships
+            entity.HasOne(w => w.Project)
+                .WithMany()
+                .HasForeignKey(w => w.ProjectId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(w => w.RequestedByUser)
+                .WithMany()
+                .HasForeignKey(w => w.RequestedById)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasOne(w => w.ApprovedByUser)
+                .WithMany()
+                .HasForeignKey(w => w.ApprovedById)
+                .OnDelete(DeleteBehavior.SetNull);
+
+            // Indexes
+            entity.HasIndex(w => w.ProjectId);
+            entity.HasIndex(w => w.WeekStartDate);
+            entity.HasIndex(w => w.Status);
+            entity.HasIndex(w => w.RequestedById);
+            entity.HasIndex(w => w.CreatedAt);
+        });
+
+        // Configure WeeklyReport entity
+        modelBuilder.Entity<WeeklyReport>(entity =>
+        {
+            entity.HasKey(w => w.WeeklyReportId);
+            
+            entity.Property(w => w.SummaryOfProgress)
+                .IsRequired()
+                .HasMaxLength(2000);
+
+            entity.Property(w => w.MajorAccomplishments)
+                .HasColumnType("jsonb")
+                .HasDefaultValue("[]");
+
+            entity.Property(w => w.MajorIssues)
+                .HasColumnType("jsonb")
+                .HasDefaultValue("[]");
+
+            entity.Property(w => w.Lookahead)
+                .HasMaxLength(2000);
+
+            // Foreign key relationships
+            entity.HasOne(w => w.Project)
+                .WithMany()
+                .HasForeignKey(w => w.ProjectId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(w => w.SubmittedByUser)
+                .WithMany()
+                .HasForeignKey(w => w.SubmittedById)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasOne(w => w.ApprovedByUser)
+                .WithMany()
+                .HasForeignKey(w => w.ApprovedById)
+                .OnDelete(DeleteBehavior.SetNull);
+
+            // Indexes
+            entity.HasIndex(w => w.ProjectId);
+            entity.HasIndex(w => w.WeekStartDate);
+            entity.HasIndex(w => w.Status);
+            entity.HasIndex(w => w.SubmittedById);
+            entity.HasIndex(w => w.CreatedAt);
         });
     }
 }

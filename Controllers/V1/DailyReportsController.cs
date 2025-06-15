@@ -31,6 +31,7 @@ public class DailyReportsController : BaseApiController
 
     /// <summary>
     /// Get all daily reports with filtering and pagination
+    /// Available to: All authenticated users (view reports)
     /// </summary>
     /// <param name="parameters">Query parameters for filtering and pagination</param>
     /// <returns>Paginated list of daily reports</returns>
@@ -160,10 +161,12 @@ public class DailyReportsController : BaseApiController
 
     /// <summary>
     /// Create a new daily report
+    /// Available to: Administrator, ProjectManager, Technician (Technicians log their daily work)
     /// </summary>
     /// <param name="request">Daily report creation request</param>
     /// <returns>Created daily report</returns>
     [HttpPost]
+    [Authorize(Roles = "Administrator,ProjectManager,Technician")]
     [ProducesResponseType(typeof(ApiResponse<DailyReportDto>), StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -203,11 +206,13 @@ public class DailyReportsController : BaseApiController
 
     /// <summary>
     /// Update an existing daily report
+    /// Available to: Administrator, ProjectManager, Technician (Technicians can edit their daily work)
     /// </summary>
     /// <param name="id">The daily report ID</param>
     /// <param name="request">Daily report update request</param>
     /// <returns>Updated daily report</returns>
     [HttpPut("{id:guid}")]
+    [Authorize(Roles = "Administrator,ProjectManager,Technician")]
     [ProducesResponseType(typeof(ApiResponse<DailyReportDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status404NotFound)]
@@ -247,10 +252,12 @@ public class DailyReportsController : BaseApiController
 
     /// <summary>
     /// Delete a daily report
+    /// Available to: Administrator only (full system access)
     /// </summary>
     /// <param name="id">The daily report ID</param>
     /// <returns>Success status</returns>
     [HttpDelete("{id:guid}")]
+    [Authorize(Roles = "Administrator")]
     [ProducesResponseType(typeof(ApiResponse<bool>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -310,11 +317,12 @@ public class DailyReportsController : BaseApiController
 
     /// <summary>
     /// Approve a daily report
+    /// Available to: Administrator, ProjectManager (approval authority)
     /// </summary>
     /// <param name="id">The daily report ID</param>
     /// <returns>Success status</returns>
     [HttpPost("{id:guid}/approve")]
-    [Authorize(Roles = "Manager,Admin")]
+    [Authorize(Roles = "Administrator,ProjectManager")]
     [ProducesResponseType(typeof(ApiResponse<bool>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status404NotFound)]
@@ -344,12 +352,13 @@ public class DailyReportsController : BaseApiController
 
     /// <summary>
     /// Reject a daily report and request revisions
+    /// Available to: Administrator, ProjectManager (approval authority)
     /// </summary>
     /// <param name="id">The daily report ID</param>
     /// <param name="rejectionReason">Reason for rejection</param>
     /// <returns>Success status</returns>
     [HttpPost("{id:guid}/reject")]
-    [Authorize(Roles = "Manager,Admin")]
+    [Authorize(Roles = "Administrator,ProjectManager")]
     [ProducesResponseType(typeof(ApiResponse<bool>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status404NotFound)]

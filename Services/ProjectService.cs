@@ -105,7 +105,29 @@ public class ProjectService : IProjectService
                 StartDate = request.StartDate,
                 EstimatedEndDate = request.EstimatedEndDate,
                 ProjectManagerId = request.ProjectManagerId,
-                CreatedAt = DateTime.UtcNow
+                CreatedAt = DateTime.UtcNow,
+                
+                // Solar Project Specific Fields
+                Team = request.Team,
+                ConnectionType = request.ConnectionType,
+                ConnectionNotes = request.ConnectionNotes,
+                TotalCapacityKw = request.TotalCapacityKw,
+                PvModuleCount = request.PvModuleCount,
+                
+                // Equipment Details
+                Inverter125kw = request.EquipmentDetails?.Inverter125kw,
+                Inverter80kw = request.EquipmentDetails?.Inverter80kw,
+                Inverter60kw = request.EquipmentDetails?.Inverter60kw,
+                Inverter40kw = request.EquipmentDetails?.Inverter40kw,
+                
+                // Business Values
+                FtsValue = request.FtsValue,
+                RevenueValue = request.RevenueValue,
+                PqmValue = request.PqmValue,
+                
+                // Location Coordinates
+                Latitude = request.LocationCoordinates?.Latitude,
+                Longitude = request.LocationCoordinates?.Longitude
             };
 
             _context.Projects.Add(project);
@@ -468,7 +490,40 @@ public class ProjectService : IProjectService
                 IsActive = project.ProjectManager.IsActive
             },
             TaskCount = project.Tasks.Count,
-            CompletedTaskCount = project.Tasks.Count(t => t.Status == Models.TaskStatus.Completed)
+            CompletedTaskCount = project.Tasks.Count(t => t.Status == Models.TaskStatus.Completed),
+            
+            // Solar Project Specific Fields
+            Team = project.Team,
+            ConnectionType = project.ConnectionType,
+            ConnectionNotes = project.ConnectionNotes,
+            TotalCapacityKw = project.TotalCapacityKw,
+            PvModuleCount = project.PvModuleCount,
+            
+            // Equipment Details
+            EquipmentDetails = project.Inverter125kw.HasValue || project.Inverter80kw.HasValue || 
+                             project.Inverter60kw.HasValue || project.Inverter40kw.HasValue ? 
+                new EquipmentDetailsDto
+                {
+                    Inverter125kw = project.Inverter125kw ?? 0,
+                    Inverter80kw = project.Inverter80kw ?? 0,
+                    Inverter60kw = project.Inverter60kw ?? 0,
+                    Inverter40kw = project.Inverter40kw ?? 0
+                } : null,
+            
+            // Business Values
+            FtsValue = project.FtsValue,
+            RevenueValue = project.RevenueValue,
+            PqmValue = project.PqmValue,
+            
+            // Location Coordinates
+            LocationCoordinates = project.Latitude.HasValue && project.Longitude.HasValue ?
+                new LocationCoordinatesDto
+                {
+                    Latitude = project.Latitude.Value,
+                    Longitude = project.Longitude.Value
+                } : null,
+                
+            CreatedAt = project.CreatedAt
         };
     }
 

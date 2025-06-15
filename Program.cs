@@ -193,6 +193,10 @@ builder.Services.AddScoped<ICloudStorageService, CloudStorageService>();
 builder.Services.AddScoped<IDailyReportService, DailyReportService>();
 builder.Services.AddScoped<IWorkRequestService, WorkRequestService>();
 
+// Register Weekly Planning services
+builder.Services.AddScoped<IWeeklyWorkRequestService, WeeklyWorkRequestService>();
+builder.Services.AddScoped<IWeeklyReportService, WeeklyReportService>();
+
 // Approval workflow services
 builder.Services.AddScoped<IWorkRequestApprovalService, WorkRequestApprovalService>();
 builder.Services.AddScoped<INotificationService, NotificationService>();

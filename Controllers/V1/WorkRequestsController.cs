@@ -209,10 +209,12 @@ public class WorkRequestsController : BaseApiController
 
     /// <summary>
     /// Create a new work request
+    /// Available to: Administrator, ProjectManager, Planner (planning responsibilities)
     /// </summary>
     /// <param name="request">Work request creation request</param>
     /// <returns>Created work request</returns>
     [HttpPost]
+    [Authorize(Roles = "Administrator,ProjectManager,Planner")]
     [ProducesResponseType(typeof(ApiResponse<WorkRequestDto>), StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -353,7 +355,7 @@ public class WorkRequestsController : BaseApiController
     /// <param name="userId">The user ID to assign to</param>
     /// <returns>Success status</returns>
     [HttpPost("{id:guid}/assign/{userId:guid}")]
-    [Authorize(Roles = "Manager,Admin")]
+    [Authorize(Roles = "Administrator,ProjectManager")]
     [ProducesResponseType(typeof(ApiResponse<bool>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status404NotFound)]
@@ -702,7 +704,7 @@ public class WorkRequestsController : BaseApiController
     /// <param name="request">Approval request</param>
     /// <returns>Success response</returns>
     [HttpPost("{id}/process-approval")]
-    [Authorize(Roles = "Manager,Admin")]
+    [Authorize(Roles = "Administrator,ProjectManager")]
     [ProducesResponseType(typeof(ApiResponse<bool>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -971,7 +973,7 @@ public class WorkRequestsController : BaseApiController
     /// </summary>
     /// <returns>Success response</returns>
     [HttpPost("send-approval-reminders")]
-    [Authorize(Roles = "Admin")]
+    [Authorize(Roles = "Administrator")]
     [ProducesResponseType(typeof(ApiResponse<bool>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]

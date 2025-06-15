@@ -30,6 +30,7 @@ public class TasksController : BaseApiController
 
     /// <summary>
     /// Gets all tasks with optional pagination and filtering
+    /// Available to: All authenticated users (view assigned tasks)
     /// </summary>
     /// <param name="pageNumber">Page number (default: 1)</param>
     /// <param name="pageSize">Page size (default: 10, max: 100)</param>
@@ -68,6 +69,7 @@ public class TasksController : BaseApiController
 
     /// <summary>
     /// Gets a specific task by ID
+    /// Available to: All authenticated users (view task details)
     /// </summary>
     /// <param name="id">Task ID</param>
     /// <returns>Task details</returns>
@@ -120,11 +122,13 @@ public class TasksController : BaseApiController
 
     /// <summary>
     /// Creates a new task
+    /// Available to: Administrator, ProjectManager (can manage tasks)
     /// </summary>
     /// <param name="projectId">Project ID</param>
     /// <param name="createTaskRequest">Task creation data</param>
     /// <returns>Created task</returns>
     [HttpPost("project/{projectId:guid}")]
+    [Authorize(Roles = "Administrator,ProjectManager")]
     [NoCache] // No caching for write operations
     public async Task<ActionResult<ApiResponse<TaskDto>>> CreateTask(Guid projectId, [FromBody] CreateTaskRequest createTaskRequest)
     {

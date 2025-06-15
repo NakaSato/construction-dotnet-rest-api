@@ -178,3 +178,25 @@ public interface IWorkRequestApprovalService
     Task<ApiResponse<bool>> EscalateApprovalAsync(Guid workRequestId, Guid escalateToUserId, string reason, Guid escalatedById);
     Task<ApiResponse<bool>> SendApprovalRemindersAsync();
 }
+
+public interface IWeeklyWorkRequestService
+{
+    Task<ApiResponse<WeeklyWorkRequestDto>> GetWeeklyWorkRequestByIdAsync(Guid requestId);
+    Task<ApiResponse<EnhancedPagedResult<WeeklyWorkRequestDto>>> GetWeeklyWorkRequestsAsync(WeeklyWorkRequestQueryParameters parameters);
+    Task<ApiResponse<WeeklyWorkRequestDto>> CreateWeeklyWorkRequestAsync(CreateWeeklyWorkRequestDto request);
+    Task<ApiResponse<WeeklyWorkRequestDto>> UpdateWeeklyWorkRequestAsync(Guid requestId, UpdateWeeklyWorkRequestDto request);
+    Task<ApiResponse<WeeklyWorkRequestDto>> UpdateWeeklyWorkRequestStatusAsync(Guid requestId, WeeklyRequestStatus status);
+    Task<ApiResponse<bool>> DeleteWeeklyWorkRequestAsync(Guid requestId);
+    Task<ApiResponse<EnhancedPagedResult<WeeklyWorkRequestDto>>> GetProjectWeeklyWorkRequestsAsync(Guid projectId, WeeklyWorkRequestQueryParameters parameters);
+}
+
+public interface IWeeklyReportService
+{
+    Task<ApiResponse<WeeklyReportDto>> GetWeeklyReportByIdAsync(Guid reportId);
+    Task<ApiResponse<EnhancedPagedResult<WeeklyReportDto>>> GetWeeklyReportsAsync(WeeklyReportQueryParameters parameters);
+    Task<ApiResponse<WeeklyReportDto>> CreateWeeklyReportAsync(CreateWeeklyReportDto request);
+    Task<ApiResponse<WeeklyReportDto>> UpdateWeeklyReportAsync(Guid reportId, UpdateWeeklyReportDto request);
+    Task<ApiResponse<WeeklyReportDto>> UpdateWeeklyReportStatusAsync(Guid reportId, WeeklyReportStatus status);
+    Task<ApiResponse<bool>> DeleteWeeklyReportAsync(Guid reportId);
+    Task<ApiResponse<EnhancedPagedResult<WeeklyReportDto>>> GetProjectWeeklyReportsAsync(Guid projectId, WeeklyReportQueryParameters parameters);
+}

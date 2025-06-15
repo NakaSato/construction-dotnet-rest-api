@@ -26,14 +26,32 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status.ToString()))
             .ForMember(dest => dest.TaskCount, opt => opt.MapFrom(src => src.Tasks.Count))
             .ForMember(dest => dest.CompletedTaskCount, opt => opt.MapFrom(src => src.Tasks.Count(t => t.Status == dotnet_rest_api.Models.TaskStatus.Completed)))
-            .ForMember(dest => dest.ProjectManager, opt => opt.MapFrom(src => src.ProjectManager));
+            .ForMember(dest => dest.ProjectManager, opt => opt.MapFrom(src => src.ProjectManager))
+            .ForMember(dest => dest.EquipmentDetails, opt => opt.MapFrom(src => new EquipmentDetailsDto
+            {
+                Inverter125kw = src.Inverter125kw ?? 0,
+                Inverter80kw = src.Inverter80kw ?? 0,
+                Inverter60kw = src.Inverter60kw ?? 0,
+                Inverter40kw = src.Inverter40kw ?? 0
+            }))
+            .ForMember(dest => dest.LocationCoordinates, opt => opt.MapFrom(src => 
+                src.Latitude.HasValue && src.Longitude.HasValue 
+                    ? new LocationCoordinatesDto { Latitude = src.Latitude.Value, Longitude = src.Longitude.Value }
+                    : null));
 
         CreateMap<CreateProjectRequest, Project>()
             .ForMember(dest => dest.ProjectId, opt => opt.Ignore())
             .ForMember(dest => dest.CreatedAt, opt => opt.Ignore())
             .ForMember(dest => dest.ProjectManager, opt => opt.Ignore())
             .ForMember(dest => dest.Tasks, opt => opt.Ignore())
-            .ForMember(dest => dest.Images, opt => opt.Ignore());
+            .ForMember(dest => dest.Images, opt => opt.Ignore())
+            .ForMember(dest => dest.Status, opt => opt.MapFrom(src => ProjectStatus.Planning))
+            .ForMember(dest => dest.Inverter125kw, opt => opt.MapFrom(src => src.EquipmentDetails != null ? src.EquipmentDetails.Inverter125kw : (int?)null))
+            .ForMember(dest => dest.Inverter80kw, opt => opt.MapFrom(src => src.EquipmentDetails != null ? src.EquipmentDetails.Inverter80kw : (int?)null))
+            .ForMember(dest => dest.Inverter60kw, opt => opt.MapFrom(src => src.EquipmentDetails != null ? src.EquipmentDetails.Inverter60kw : (int?)null))
+            .ForMember(dest => dest.Inverter40kw, opt => opt.MapFrom(src => src.EquipmentDetails != null ? src.EquipmentDetails.Inverter40kw : (int?)null))
+            .ForMember(dest => dest.Latitude, opt => opt.MapFrom(src => src.LocationCoordinates != null ? src.LocationCoordinates.Latitude : (decimal?)null))
+            .ForMember(dest => dest.Longitude, opt => opt.MapFrom(src => src.LocationCoordinates != null ? src.LocationCoordinates.Longitude : (decimal?)null));
 
         CreateMap<UpdateProjectRequest, Project>()
             .ForMember(dest => dest.ProjectId, opt => opt.Ignore())
@@ -187,8 +205,109 @@ public class MappingProfile : Profile
             // Note: UploadedByName and ProjectName properties not found in ImageMetadataDto - mappings removed
             // ImageMetadataDto has UploadedBy (UserDto) property instead
 
+        // Weekly Work Request mappings
+        CreateMap<WeeklyWorkRequest, WeeklyWorkRequestDto>()
+            .ForMember(dest => dest.ProjectName, opt => opt.MapFrom(src => src.Project.ProjectName))
+            .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status.ToString()))
+            .ForMember(dest => dest.RequestedBy, opt => opt.MapFrom(src => src.RequestedByUser))
+            .ForMember(dest => dest.ApprovedBy, opt => opt.MapFrom(src => src.ApprovedByUser))
+            .ForMember(dest => dest.KeyTasks, opt => opt.MapFrom(src => ParseJsonArray(src.KeyTasks)))
+            .ForMember(dest => dest.ResourceForecast, opt => opt.MapFrom(src => new WeeklyResourceForecastDto
+            {
+                Personnel = src.PersonnelForecast,
+                MajorEquipment = src.MajorEquipment,
+                CriticalMaterials = src.CriticalMaterials
+            }));
+
+        CreateMap<CreateWeeklyWorkRequestDto, WeeklyWorkRequest>()
+            .ForMember(dest => dest.WeeklyRequestId, opt => opt.Ignore())
+            .ForMember(dest => dest.Status, opt => opt.MapFrom(src => WeeklyRequestStatus.Draft))
+            .ForMember(dest => dest.CreatedAt, opt => opt.Ignore())
+            .ForMember(dest => dest.UpdatedAt, opt => opt.Ignore())
+            .ForMember(dest => dest.ApprovedAt, opt => opt.Ignore())
+            .ForMember(dest => dest.ApprovedById, opt => opt.Ignore())
+            .ForMember(dest => dest.Project, opt => opt.Ignore())
+            .ForMember(dest => dest.RequestedByUser, opt => opt.Ignore())
+            .ForMember(dest => dest.ApprovedByUser, opt => opt.Ignore())
+            .ForMember(dest => dest.KeyTasks, opt => opt.MapFrom(src => SerializeJsonArray(src.KeyTasks)))
+            .ForMember(dest => dest.PersonnelForecast, opt => opt.MapFrom(src => src.ResourceForecast != null ? src.ResourceForecast.Personnel : null))
+            .ForMember(dest => dest.MajorEquipment, opt => opt.MapFrom(src => src.ResourceForecast != null ? src.ResourceForecast.MajorEquipment : null))
+            .ForMember(dest => dest.CriticalMaterials, opt => opt.MapFrom(src => src.ResourceForecast != null ? src.ResourceForecast.CriticalMaterials : null))
+            .ForMember(dest => dest.EstimatedHours, opt => opt.MapFrom(src => 0))
+            .ForMember(dest => dest.Priority, opt => opt.MapFrom(src => "Normal"))
+            .ForMember(dest => dest.Type, opt => opt.MapFrom(src => "Standard"));
+
+        // Weekly Report mappings
+        CreateMap<WeeklyReport, WeeklyReportDto>()
+            .ForMember(dest => dest.ProjectName, opt => opt.MapFrom(src => src.Project.ProjectName))
+            .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status.ToString()))
+            .ForMember(dest => dest.SubmittedBy, opt => opt.MapFrom(src => src.SubmittedByUser))
+            .ForMember(dest => dest.ApprovedBy, opt => opt.MapFrom(src => src.ApprovedByUser))
+            .ForMember(dest => dest.MajorAccomplishments, opt => opt.MapFrom(src => ParseJsonArray(src.MajorAccomplishments)))
+            .ForMember(dest => dest.MajorIssues, opt => opt.MapFrom(src => ParseWeeklyIssues(src.MajorIssues)))
+            .ForMember(dest => dest.AggregatedMetrics, opt => opt.MapFrom(src => new WeeklyAggregatedMetricsDto
+            {
+                TotalManHours = src.TotalManHours,
+                PanelsInstalled = src.PanelsInstalled,
+                SafetyIncidents = src.SafetyIncidents,
+                DelaysReported = src.DelaysReported
+            }));
+
+        CreateMap<CreateWeeklyReportDto, WeeklyReport>()
+            .ForMember(dest => dest.WeeklyReportId, opt => opt.Ignore())
+            .ForMember(dest => dest.Status, opt => opt.MapFrom(src => WeeklyReportStatus.Draft))
+            .ForMember(dest => dest.CreatedAt, opt => opt.Ignore())
+            .ForMember(dest => dest.UpdatedAt, opt => opt.Ignore())
+            .ForMember(dest => dest.ApprovedAt, opt => opt.Ignore())
+            .ForMember(dest => dest.ApprovedById, opt => opt.Ignore())
+            .ForMember(dest => dest.Project, opt => opt.Ignore())
+            .ForMember(dest => dest.SubmittedByUser, opt => opt.Ignore())
+            .ForMember(dest => dest.ApprovedByUser, opt => opt.Ignore())
+            .ForMember(dest => dest.MajorAccomplishments, opt => opt.MapFrom(src => SerializeJsonArray(src.MajorAccomplishments)))
+            .ForMember(dest => dest.MajorIssues, opt => opt.MapFrom(src => SerializeWeeklyIssues(src.MajorIssues)))
+            .ForMember(dest => dest.TotalManHours, opt => opt.MapFrom(src => src.AggregatedMetrics != null ? src.AggregatedMetrics.TotalManHours : 0))
+            .ForMember(dest => dest.PanelsInstalled, opt => opt.MapFrom(src => src.AggregatedMetrics != null ? src.AggregatedMetrics.PanelsInstalled : 0))
+            .ForMember(dest => dest.SafetyIncidents, opt => opt.MapFrom(src => src.AggregatedMetrics != null ? src.AggregatedMetrics.SafetyIncidents : 0))
+            .ForMember(dest => dest.DelaysReported, opt => opt.MapFrom(src => src.AggregatedMetrics != null ? src.AggregatedMetrics.DelaysReported : 0))
+            .ForMember(dest => dest.CompletionPercentage, opt => opt.MapFrom(src => 0));
+
         // Role mappings
         // Note: RoleDto class not found in codebase - mapping commented out
         // CreateMap<Role, RoleDto>();
+    }
+
+    // Helper methods for JSON parsing
+    private static List<string> ParseJsonArray(string jsonString)
+    {
+        try
+        {
+            return System.Text.Json.JsonSerializer.Deserialize<List<string>>(jsonString ?? "[]") ?? new List<string>();
+        }
+        catch
+        {
+            return new List<string>();
+        }
+    }
+
+    private static List<WeeklyIssueDto> ParseWeeklyIssues(string jsonString)
+    {
+        try
+        {
+            return System.Text.Json.JsonSerializer.Deserialize<List<WeeklyIssueDto>>(jsonString ?? "[]") ?? new List<WeeklyIssueDto>();
+        }
+        catch
+        {
+            return new List<WeeklyIssueDto>();
+        }
+    }
+
+    private static string SerializeJsonArray(List<string>? list)
+    {
+        return System.Text.Json.JsonSerializer.Serialize(list ?? new List<string>());
+    }
+
+    private static string SerializeWeeklyIssues(List<WeeklyIssueDto>? list)
+    {
+        return System.Text.Json.JsonSerializer.Serialize(list ?? new List<WeeklyIssueDto>());
     }
 }

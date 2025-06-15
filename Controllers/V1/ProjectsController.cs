@@ -28,6 +28,7 @@ public class ProjectsController : BaseApiController
 
     /// <summary>
     /// Get all projects with advanced filtering, sorting, and field selection
+    /// Available to: All authenticated users (view projects)
     /// </summary>
     [HttpGet]
     [MediumCache] // 15 minute cache for project lists
@@ -77,9 +78,10 @@ public class ProjectsController : BaseApiController
 
     /// <summary>
     /// Create a new project
+    /// Available to: Administrator, ProjectManager (can manage projects)
     /// </summary>
     [HttpPost]
-    [Authorize(Roles = "Admin,Manager")]
+    [Authorize(Roles = "Administrator,ProjectManager")]
     [NoCache] // No caching for write operations
     public async Task<ActionResult<ApiResponse<ProjectDto>>> CreateProject([FromBody] CreateProjectRequest request)
     {
@@ -104,9 +106,10 @@ public class ProjectsController : BaseApiController
 
     /// <summary>
     /// Update an existing project
+    /// Available to: Administrator, ProjectManager (can manage projects)
     /// </summary>
     [HttpPut("{id:guid}")]
-    [Authorize(Roles = "Admin,Manager")]
+    [Authorize(Roles = "Administrator,ProjectManager")]
     [NoCache] // No caching for write operations
     public async Task<ActionResult<ApiResponse<ProjectDto>>> UpdateProject(Guid id, [FromBody] UpdateProjectRequest request)
     {
@@ -124,9 +127,10 @@ public class ProjectsController : BaseApiController
 
     /// <summary>
     /// Partially update a project
+    /// Available to: Administrator, ProjectManager (can manage projects)
     /// </summary>
     [HttpPatch("{id:guid}")]
-    [Authorize(Roles = "Admin,Manager")]
+    [Authorize(Roles = "Administrator,ProjectManager")]
     [NoCache] // No caching for write operations
     public async Task<ActionResult<ApiResponse<ProjectDto>>> PatchProject(Guid id, [FromBody] PatchProjectRequest request)
     {
@@ -144,9 +148,10 @@ public class ProjectsController : BaseApiController
 
     /// <summary>
     /// Delete a project
+    /// Available to: Administrator only (full system access)
     /// </summary>
     [HttpDelete("{id:guid}")]
-    [Authorize(Roles = "Admin")]
+    [Authorize(Roles = "Administrator")]
     [NoCache] // No caching for write operations
     public async Task<ActionResult<ApiResponse<bool>>> DeleteProject(Guid id)
     {

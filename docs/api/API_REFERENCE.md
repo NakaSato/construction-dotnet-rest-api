@@ -69,7 +69,8 @@ dev_dependencies:
 - [📊 Daily Reports](#-daily-reports)
 - [🔧 Work Requests](#-work-requests)
 - [📅 Calendar Events](#-calendar-events)
-- [🖼️ Image Upload](#️-image-upload)
+- [� Weekly Planning and Reporting](#-weekly-planning-and-reporting)
+- [�🖼️ Image Upload](#️-image-upload)
 - [⚡ Rate Limiting](#-rate-limiting)
 - [❌ Error Handling](#-error-handling)
 - [📱 Flutter Code Examples](#-flutter-code-examples)
@@ -1781,19 +1782,39 @@ class _StatusChip extends StatelessWidget {
 
 ### 📝 Create Project
 **POST** `/api/v1/projects`  
-**🎯 Role Required**: Admin, Manager
+**🎯 Role Required**: Administrator, ProjectManager
 
 **Request Body**:
 ```json
 {
-  "name": "Solar Installation Project Beta",
-  "description": "Commercial solar installation for office complex",
-  "startDate": "2025-07-01",
-  "endDate": "2025-09-30",
-  "location": "Business District, San Francisco, CA",
-  "budget": 500000.00
+  "projectName": "New Solar Installation Project",
+  "address": "456 Oak Ave, Another City, State 67890",
+  "clientInfo": "XYZ Corp - Contact: Sarah Johnson (555-987-6543)",
+  "startDate": "2025-07-01T00:00:00Z",
+  "estimatedEndDate": "2025-09-30T00:00:00Z",
+  "projectManagerId": "123e4567-e89b-12d3-a456-426614174000",
+  "team": "E2",
+  "connectionType": "LV",
+  "connectionNotes": "เสาหม้อแปลงไม่มีพื้นที่ในการทำ Zero Export แรงสูง",
+  "totalCapacityKw": 171.0,
+  "pvModuleCount": 300,
+  "equipmentDetails": {
+    "inverter125kw": 1,
+    "inverter80kw": 0,
+    "inverter60kw": 1,
+    "inverter40kw": 0
+  },
+  "ftsValue": 6,
+  "revenueValue": 1,
+  "pqmValue": 0,
+  "locationCoordinates": {
+    "latitude": 14.72746,
+    "longitude": 102.16276
+  }
 }
 ```
+
+**Success Response (201 Created)**: (Same structure as Get Project by ID)
 
 ### ✏️ Update Project
 **PUT** `/api/v1/projects/{projectId}`  
@@ -1858,279 +1879,301 @@ class _StatusChip extends StatelessWidget {
 }
 ```
 
-**Flutter Example - Task List**:
-```dart
-class TaskListScreen extends StatefulWidget {
-  final String? projectId;
-  
-  const TaskListScreen({this.projectId});
-  
-  @override
-  _TaskListScreenState createState() => _TaskListScreenState();
-}
+### 🔍 Get Task by ID
+**GET** `/api/v1/tasks/{id}`
 
-class _TaskListScreenState extends State<TaskListScreen> {
-  List<ProjectTask> tasks = [];
-  bool isLoading = true;
-  String selectedStatus = 'All';
-  
-  @override
-  void initState() {
-    super.initState();
-    _loadTasks();
-  }
-  
-  Future<void> _loadTasks() async {
-    setState(() => isLoading = true);
-    
-    try {
-      String endpoint = '/tasks?pageSize=50';
-      if (widget.projectId != null) {
-        endpoint += '&projectId=${widget.projectId}';
-      }
-      if (selectedStatus != 'All') {
-        endpoint += '&status=$selectedStatus';
-      }
-      
-      final response = await ApiClient.get(endpoint);
-      
-      if (response['success']) {
-        setState(() {
-          tasks = (response['data']['tasks'] as List)
-              .map((json) => ProjectTask.fromJson(json))
-              .toList();
-        });
-      }
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error loading tasks: $e')),
-      );
-    } finally {
-      setState(() => isLoading = false);
-    }
-  }
-  
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(widget.projectId != null ? 'Project Tasks' : 'All Tasks'),
-        actions: [
-          PopupMenuButton<String>(
-            initialValue: selectedStatus,
-            onSelected: (status) {
-              setState(() => selectedStatus = status);
-              _loadTasks();
-            },
-            itemBuilder: (context) => [
-              PopupMenuItem(value: 'All', child: Text('All Tasks')),
-              PopupMenuItem(value: 'Pending', child: Text('Pending')),
-              PopupMenuItem(value: 'InProgress', child: Text('In Progress')),
-              PopupMenuItem(value: 'Completed', child: Text('Completed')),
-            ],
-          ),
-        ],
-      ),
-      body: isLoading
-          ? Center(child: CircularProgressIndicator())
-          : RefreshIndicator(
-              onRefresh: _loadTasks,
-              child: tasks.isEmpty
-                  ? Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(Icons.task_alt, size: 64, color: Colors.grey),
-                          SizedBox(height: 16),
-                          Text('No tasks found', style: Theme.of(context).textTheme.titleMedium),
-                        ],
-                      ),
-                    )
-                  : ListView.builder(
-                      padding: EdgeInsets.all(16),
-                      itemCount: tasks.length,
-                      itemBuilder: (context, index) {
-                        final task = tasks[index];
-                        return TaskCard(
-                          task: task,
-                          onTap: () => Navigator.pushNamed(
-                            context,
-                            '/task-details',
-                            arguments: task.id,
-                          ),
-                          onStatusUpdate: (newStatus) => _updateTaskStatus(task.id, newStatus),
-                        );
-                      },
-                    ),
-            ),
-    );
-  }
-  
-  Future<void> _updateTaskStatus(String taskId, String newStatus) async {
-    try {
-      final response = await ApiClient.put('/tasks/$taskId', {
-        'status': newStatus,
-      });
-      
-      if (response['success']) {
-        _loadTasks(); // Refresh the list
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Task status updated')),
-        );
-      }
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error updating task: $e')),
-      );
-    }
-  }
-}
+Get detailed information about a specific task.
 
-class TaskCard extends StatelessWidget {
-  final ProjectTask task;
-  final VoidCallback onTap;
-  final Function(String) onStatusUpdate;
-  
-  const TaskCard({
-    required this.task,
-    required this.onTap,
-    required this.onStatusUpdate,
-  });
-  
-  @override
-  Widget build(BuildContext context) {
-    return Card(
-      margin: EdgeInsets.only(bottom: 16),
-      child: InkWell(
-        onTap: onTap,
-        child: Padding(
-          padding: EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  Expanded(
-                    child: Text(
-                      task.title,
-                      style: Theme.of(context).textTheme.titleMedium,
-                    ),
-                  ),
-                  _PriorityChip(priority: task.priority),
-                ],
-              ),
-              SizedBox(height: 8),
-              Text(
-                task.description,
-                style: Theme.of(context).textTheme.bodyMedium,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-              ),
-              SizedBox(height: 12),
-              Row(
-                children: [
-                  Icon(Icons.person, size: 16, color: Colors.grey),
-                  SizedBox(width: 4),
-                  Text(
-                    task.assignedToUserName,
-                    style: Theme.of(context).textTheme.bodySmall,
-                  ),
-                  Spacer(),
-                  Icon(Icons.schedule, size: 16, color: Colors.grey),
-                  SizedBox(width: 4),
-                  Text(
-                    'Due: ${_formatDate(task.dueDate)}',
-                    style: Theme.of(context).textTheme.bodySmall,
-                  ),
-                ],
-              ),
-              SizedBox(height: 12),
-              Row(
-                children: [
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Progress: ${task.progressPercentage.toStringAsFixed(0)}%',
-                          style: Theme.of(context).textTheme.bodySmall,
-                        ),
-                        SizedBox(height: 4),
-                        LinearProgressIndicator(
-                          value: task.progressPercentage / 100,
-                          backgroundColor: Colors.grey[300],
-                        ),
-                      ],
-                    ),
-                  ),
-                  SizedBox(width: 16),
-                  DropdownButton<String>(
-                    value: task.status,
-                    items: ['Pending', 'InProgress', 'Completed'].map((status) {
-                      return DropdownMenuItem(
-                        value: status,
-                        child: Text(status),
-                      );
-                    }).toList(),
-                    onChanged: (newStatus) {
-                      if (newStatus != null && newStatus != task.status) {
-                        onStatusUpdate(newStatus);
-                      }
-                    },
-                  ),
-                ],
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-  
-  String _formatDate(DateTime date) {
-    return '${date.month}/${date.day}/${date.year}';
-  }
-}
+**Path Parameters**:
+- `id` (Guid): Task ID
 
-class _PriorityChip extends StatelessWidget {
-  final String priority;
-  
-  const _PriorityChip({required this.priority});
-  
-  @override
-  Widget build(BuildContext context) {
-    Color color;
-    switch (priority) {
-      case 'High':
-        color = Colors.red;
-        break;
-      case 'Medium':
-        color = Colors.orange;
-        break;
-      case 'Low':
-        color = Colors.green;
-        break;
-      default:
-        color = Colors.grey;
+**Success Response (200)**:
+```json
+{
+  "success": true,
+  "message": "Task retrieved successfully",
+  "data": {
+    "id": "123e4567-e89b-12d3-a456-426614174000",
+    "title": "Install Solar Panels - Section A",
+    "description": "Install 24 solar panels on the south-facing roof section with proper mounting and electrical connections",
+    "status": "InProgress",
+    "priority": "High",
+    "dueDate": "2025-06-20T00:00:00Z",
+    "projectId": "456e7890-e89b-12d3-a456-426614174001",
+    "projectName": "Solar Installation Project Alpha",
+    "assignedToUserId": "789e0123-e89b-12d3-a456-426614174002",
+    "assignedToUserName": "John Technician",
+    "estimatedHours": 16.0,
+    "actualHours": 12.5,
+    "progressPercentage": 75.0,
+    "createdAt": "2025-06-01T10:00:00Z",
+    "updatedAt": "2025-06-14T14:30:00Z",
+    "createdByUserId": "456e7890-e89b-12d3-a456-426614174001",
+    "createdByUserName": "Project Manager"
+  },
+  "errors": []
+}
+```
+
+### 📋 Get Project Tasks
+**GET** `/api/v1/tasks/project/{projectId}`
+
+Get all tasks for a specific project.
+
+**Path Parameters**:
+- `projectId` (Guid): Project ID
+
+**Success Response (200)**:
+```json
+{
+  "success": true,
+  "message": "Project tasks retrieved successfully",
+  "data": {
+    "items": [
+      {
+        "id": "123e4567-e89b-12d3-a456-426614174000",
+        "title": "Install Solar Panels - Section A",
+        "status": "InProgress",
+        "priority": "High",
+        "dueDate": "2025-06-20T00:00:00Z",
+        "assignedToUserName": "John Technician",
+        "progressPercentage": 75.0
+      }
+    ],
+    "totalCount": 8,
+    "pageNumber": 1,
+    "pageSize": 50
+  },
+  "errors": []
+}
+```
+
+### ➕ Create Task
+**POST** `/api/v1/tasks/project/{projectId}`
+
+**🔒 Requires**: Admin, Manager, or User role
+
+Create a new task for a specific project.
+
+**Path Parameters**:
+- `projectId` (Guid): Project ID
+
+**Request Body**:
+```json
+{
+  "title": "Install Electrical Panel",
+  "description": "Install and configure the main electrical panel for solar system integration",
+  "priority": "High",
+  "dueDate": "2025-06-25T00:00:00Z",
+  "assignedToUserId": "789e0123-e89b-12d3-a456-426614174002",
+  "estimatedHours": 8.0,
+  "status": "Pending"
+}
+```
+
+**Success Response (201)**:
+```json
+{
+  "success": true,
+  "message": "Task created successfully",
+  "data": {
+    "id": "789e0123-e89b-12d3-a456-426614174003",
+    "title": "Install Electrical Panel",
+    "description": "Install and configure the main electrical panel for solar system integration",
+    "status": "Pending",
+    "priority": "High",
+    "dueDate": "2025-06-25T00:00:00Z",
+    "projectId": "456e7890-e89b-12d3-a456-426614174001",
+    "assignedToUserId": "789e0123-e89b-12d3-a456-426614174002",
+    "estimatedHours": 8.0,
+    "progressPercentage": 0.0,
+    "createdAt": "2025-06-15T10:00:00Z"
+  },
+  "errors": []
+}
+```
+
+### ✏️ Update Task
+**PUT** `/api/v1/tasks/{id}`
+
+**🔒 Requires**: Admin, Manager, or task assignee
+
+Update all fields of an existing task.
+
+**Path Parameters**:
+- `id` (Guid): Task ID
+
+**Request Body**:
+```json
+{
+  "title": "Install Electrical Panel - Updated",
+  "description": "Install and configure the main electrical panel for solar system integration with additional safety checks",
+  "priority": "High",
+  "dueDate": "2025-06-26T00:00:00Z",
+  "assignedToUserId": "789e0123-e89b-12d3-a456-426614174002",
+  "estimatedHours": 10.0,
+  "actualHours": 5.0,
+  "status": "InProgress",
+  "progressPercentage": 50.0
+}
+```
+
+**Success Response (200)**:
+```json
+{
+  "success": true,
+  "message": "Task updated successfully",
+  "data": {
+    "id": "789e0123-e89b-12d3-a456-426614174003",
+    "title": "Install Electrical Panel - Updated",
+    "status": "InProgress",
+    "progressPercentage": 50.0,
+    "updatedAt": "2025-06-15T12:00:00Z"
+  },
+  "errors": []
+}
+```
+
+### 🔄 Partially Update Task
+**PATCH** `/api/v1/tasks/{id}`
+
+**🔒 Requires**: Admin, Manager, or task assignee
+
+Update specific fields of an existing task without affecting other fields.
+
+**Path Parameters**:
+- `id` (Guid): Task ID
+
+**Request Body**:
+```json
+{
+  "status": "Completed",
+  "progressPercentage": 100.0,
+  "actualHours": 9.5
+}
+```
+
+**Success Response (200)**:
+```json
+{
+  "success": true,
+  "message": "Task updated successfully",
+  "data": {
+    "id": "789e0123-e89b-12d3-a456-426614174003",
+    "status": "Completed",
+    "progressPercentage": 100.0,
+    "actualHours": 9.5,
+    "updatedAt": "2025-06-15T16:00:00Z"
+  },
+  "errors": []
+}
+```
+
+### 🗑️ Delete Task
+**DELETE** `/api/v1/tasks/{id}`
+
+**🔒 Requires**: Admin or Manager role
+
+Delete a task (soft delete - task is marked as deleted but retained in database).
+
+**Path Parameters**:
+- `id` (Guid): Task ID
+
+**Success Response (200)**:
+```json
+{
+  "success": true,
+  "message": "Task deleted successfully",
+  "data": true,
+  "errors": []
+}
+```
+
+### 🔍 Advanced Task Query
+**GET** `/api/v1/tasks/advanced`
+
+Get tasks with advanced filtering, sorting, and field selection capabilities.
+
+**Query Parameters**:
+- `pageNumber` (int): Page number (default: 1)
+- `pageSize` (int): Items per page (default: 10, max: 100)
+- `projectId` (Guid): Filter by project
+- `assigneeId` (Guid): Filter by assigned user
+- `status` (string): Filter by status
+- `priority` (string): Filter by priority
+- `sortBy` (string): Sort field (title, dueDate, status, priority)
+- `sortOrder` (string): Sort direction (asc, desc)
+- `fields` (string): Comma-separated list of fields to include
+- `filter` (string): Dynamic filter expression
+
+**Success Response (200)**:
+```json
+{
+  "success": true,
+  "message": "Tasks retrieved successfully",
+  "data": {
+    "items": [
+      {
+        "id": "123e4567-e89b-12d3-a456-426614174000",
+        "title": "Install Solar Panels - Section A",
+        "status": "InProgress",
+        "priority": "High"
+      }
+    ],
+    "totalCount": 25,
+    "pageNumber": 1,
+    "pageSize": 10,
+    "totalPages": 3,
+    "hasPreviousPage": false,
+    "hasNextPage": true,
+    "metadata": {
+      "queryTime": "00:00:00.0234567",
+      "appliedFilters": ["status=InProgress"],
+      "availableFields": ["id", "title", "status", "priority", "dueDate"]
     }
-    
-    return Container(
-      padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: color.withOpacity(0.3)),
-      ),
-      child: Text(
-        priority,
-        style: TextStyle(
-          color: color,
-          fontSize: 12,
-          fontWeight: FontWeight.w500,
-        ),
-      ),
-    );
-  }
+  },
+  "errors": []
+}
+```
+
+### 🔗 Rich Task Pagination
+**GET** `/api/v1/tasks/rich`
+
+Get tasks with rich HATEOAS pagination and enhanced metadata for advanced UI components.
+
+**Query Parameters**: Same as advanced query
+
+**Success Response (200)**:
+```json
+{
+  "success": true,
+  "message": "Tasks retrieved successfully",
+  "data": [
+    {
+      "id": "123e4567-e89b-12d3-a456-426614174000",
+      "title": "Install Solar Panels - Section A",
+      "status": "InProgress"
+    }
+  ],
+  "pagination": {
+    "totalItems": 25,
+    "currentPage": 1,
+    "pageSize": 10,
+    "totalPages": 3,
+    "hasNextPage": true,
+    "hasPreviousPage": false,
+    "links": {
+      "first": "http://localhost:5002/api/v1/tasks/rich?page=1&pageSize=10",
+      "last": "http://localhost:5002/api/v1/tasks/rich?page=3&pageSize=10",
+      "next": "http://localhost:5002/api/v1/tasks/rich?page=2&pageSize=10"
+    }
+  },
+  "metadata": {
+    "generatedAt": "2025-06-15T10:30:00Z",
+    "requestId": "req_123456",
+    "apiVersion": "v1"
+  },
+  "errors": []
 }
 ```
 
@@ -2208,264 +2251,534 @@ Work requests are used to document change orders, additional work, or modificati
 }
 ```
 
----
+### 🔄 Work Request Approval Workflow
 
-## ⚡ Rate Limiting
+The approval workflow system enables multi-level approval for work requests with complete audit trail and notifications.
 
-The API implements rate limiting to ensure fair usage:
+#### 📤 Submit Work Request for Approval
+**POST** `/api/v1/work-requests/{id}/submit-approval`
 
-- **Rate Limit**: 50 requests per minute per IP address
-- **Headers Included**: 
-  - `X-RateLimit-Limit`: Maximum requests allowed
-  - `X-RateLimit-Remaining`: Requests remaining in current window
-  - `X-RateLimit-Reset`: Time when the rate limit resets
+Submit a work request for management approval. Only the request creator can submit their own requests.
 
-**Rate Limit Exceeded (429)**:
+**Path Parameters**:
+- `id` (Guid): Work request ID
+
+**Request Body**:
 ```json
 {
-  "success": false,
-  "message": "Rate limit exceeded. Try again later.",
-  "data": null,
-  "errors": ["Too many requests"]
+  "comments": "Ready for manager review. All documentation attached and cost estimates verified."
 }
 ```
 
-**Flutter Example - Rate Limit Handling**:
-```dart
-class ApiClient {
-  static int remainingRequests = 50;
-  static DateTime? resetTime;
-  
-  static Future<Map<String, dynamic>> _handleRateLimit(http.Response response) async {
-    // Update rate limit info from headers
-    remainingRequests = int.tryParse(response.headers['x-ratelimit-remaining'] ?? '50') ?? 50;
-    
-    if (response.statusCode == 429) {
-      final resetHeader = response.headers['x-ratelimit-reset'];
-      if (resetHeader != null) {
-        resetTime = DateTime.fromMillisecondsSinceEpoch(int.parse(resetHeader) * 1000);
-        final waitTime = resetTime!.difference(DateTime.now());
-        
-        throw RateLimitException(
-          message: 'Rate limit exceeded',
-          retryAfter: waitTime,
-          remainingRequests: remainingRequests,
-        );
+**Success Response (200)**:
+```json
+{
+  "success": true,
+  "message": "Work request submitted for approval",
+  "data": true,
+  "errors": []
+}
+```
+
+#### ✅ Process Approval (Approve/Reject)
+**POST** `/api/v1/work-requests/{id}/process-approval`
+
+**🔒 Requires**: Manager or Admin role
+
+Process approval for a work request. Managers can approve requests up to their authority level, Admins can provide final approval.
+
+**Path Parameters**:
+- `id` (Guid): Work request ID
+
+**Request Body**:
+```json
+{
+  "action": "Approve", // "Approve" or "Reject"
+  "comments": "Approved for maintenance. Cost estimate is reasonable and maintenance is needed.",
+  "rejectionReason": "Budget constraints" // Required if action is "Reject"
+}
+```
+
+**Success Response (200)**:
+```json
+{
+  "success": true,
+  "message": "Work request approved successfully",
+  "data": true,
+  "errors": []
+}
+```
+
+#### 📊 Get Approval Status
+**GET** `/api/v1/work-requests/{id}/approval-status`
+
+Get the current approval workflow status for a work request.
+
+**Path Parameters**:
+- `id` (Guid): Work request ID
+
+**Success Response (200)**:
+```json
+{
+  "success": true,
+  "message": "",
+  "data": {
+    "workRequestId": "63d02702-0c28-48a1-ab68-fc633ae7d9f8",
+    "title": "Solar Panel Maintenance Request",
+    "currentStatus": "Approved",
+    "requiresManagerApproval": false,
+    "requiresAdminApproval": false,
+    "isManagerApproved": false,
+    "isAdminApproved": true,
+    "currentApproverName": null,
+    "nextApproverName": null,
+    "submittedForApprovalDate": "2025-06-14T21:12:31.306587Z",
+    "lastActionDate": "2025-06-14T21:14:28.340096Z",
+    "daysPendingApproval": 0
+  },
+  "errors": []
+}
+```
+
+#### 📝 Get Approval History
+**GET** `/api/v1/work-requests/{id}/approval-history`
+
+Get the complete approval history with audit trail for a work request.
+
+**Path Parameters**:
+- `id` (Guid): Work request ID
+
+**Query Parameters**:
+- `pageNumber` (int): Page number (default: 1)
+- `pageSize` (int): Items per page (default: 20)
+
+**Success Response (200)**:
+```json
+{
+  "success": true,
+  "message": "",
+  "data": {
+    "items": [
+      {
+        "approvalId": "8b727c28-103a-4091-930a-02e29101090f",
+        "workRequestId": "63d02702-0c28-48a1-ab68-fc633ae7d9f8",
+        "workRequestTitle": "Solar Panel Maintenance Request",
+        "approverId": "fa5d2bd9-d15a-419a-aa46-e1c11f001deb",
+        "approverName": "Test Administrator",
+        "action": "AdminApproved",
+        "level": "Admin",
+        "previousStatus": "PendingAdminApproval",
+        "newStatus": "Approved",
+        "comments": "Final approval granted. Maintenance authorized to proceed.",
+        "rejectionReason": "",
+        "createdAt": "2025-06-14T21:14:28.340096Z",
+        "processedAt": "2025-06-14T21:14:28.340096Z",
+        "isActive": true
       }
+    ],
+    "totalCount": 2,
+    "pageNumber": 1,
+    "pageSize": 20,
+    "totalPages": 1
+  },
+  "errors": []
+}
+```
+
+#### 📋 Get Pending Approvals
+**GET** `/api/v1/work-requests/pending-approval`
+
+**🔒 Requires**: Manager or Admin role
+
+Get work requests pending approval for the current user's role level.
+
+**Query Parameters**:
+- `pageNumber` (int): Page number (default: 1)
+- `pageSize` (int): Items per page (default: 10)
+
+**Success Response (200)**:
+```json
+{
+  "success": true,
+  "message": "Pending approvals retrieved successfully",
+  "data": {
+    "items": [
+      {
+        "workRequestId": "123e4567-e89b-12d3-a456-426614174000",
+        "title": "Solar Panel Maintenance Request",
+        "description": "Routine maintenance required for solar panels",
+        "estimatedCost": 1500.00,
+        "priority": "Medium",
+        "submittedDate": "2025-06-14T21:12:31.306587Z",
+        "submittedByName": "Test User",
+        "projectName": "Manager Emergency Repair",
+        "daysPending": 0
+      }
+    ],
+    "totalCount": 1,
+    "pageNumber": 1,
+    "pageSize": 10,
+    "totalPages": 1
+  },
+  "errors": []
+}
+```
+
+#### 🔺 Escalate Work Request
+**POST** `/api/v1/work-requests/{id}/escalate`
+
+**🔒 Requires**: Manager or Admin role
+
+Escalate a work request to the next approval level.
+
+**Path Parameters**:
+- `id` (Guid): Work request ID
+
+**Request Body**:
+```json
+{
+  "reason": "Requires executive approval due to budget exceeding department limits",
+  "comments": "This request exceeds our standard approval threshold"
+}
+```
+
+**Success Response (200)**:
+```json
+{
+  "success": true,
+  "message": "Work request escalated successfully",
+  "data": true,
+  "errors": []
+}
+```
+
+#### 📊 Get Approval Statistics
+**GET** `/api/v1/work-requests/approval-statistics`
+
+**🔒 Requires**: Admin role
+
+Get approval workflow statistics and metrics.
+
+**Query Parameters**:
+- `startDate` (DateTime): Filter start date
+- `endDate` (DateTime): Filter end date
+
+**Success Response (200)**:
+```json
+{
+  "success": true,
+  "message": "Approval statistics retrieved successfully",
+  "data": {
+    "totalSubmitted": 45,
+    "totalApproved": 38,
+    "totalRejected": 7,
+    "averageApprovalTime": "2.5 days",
+    "pendingCount": 12,
+    "approvalRate": 84.4,
+    "byStatus": {
+      "Pending": 12,
+      "ManagerApproved": 8,
+      "AdminApproved": 38,
+      "Rejected": 7
+    },
+    "byPriority": {
+      "High": 15,
+      "Medium": 20,
+      "Low": 10
     }
-    
-    return json.decode(response.body);
+  },
+  "errors": []
+}
+```
+
+#### 🚀 Bulk Approval
+**POST** `/api/v1/work-requests/bulk-approval`
+
+**🔒 Requires**: Admin role
+
+Process multiple work request approvals in a single operation.
+
+**Request Body**:
+```json
+{
+  "workRequestIds": [
+    "123e4567-e89b-12d3-a456-426614174000",
+    "456e7890-e89b-12d3-a456-426614174001"
+  ],
+  "action": "Approve", // "Approve" or "Reject"
+  "comments": "Bulk approval for routine maintenance requests",
+  "rejectionReason": "" // Required if action is "Reject"
+}
+```
+
+**Success Response (200)**:
+```json
+{
+  "success": true,
+  "message": "Bulk approval processed successfully",
+  "data": {
+    "processedCount": 2,
+    "successCount": 2,
+    "failedCount": 0,
+    "results": [
+      {
+        "workRequestId": "123e4567-e89b-12d3-a456-426614174000",
+        "success": true,
+        "message": "Approved successfully"
+      }
+    ]
+  },
+  "errors": []
+}
+```
+
+#### 📧 Send Approval Reminders
+**POST** `/api/v1/work-requests/send-approval-reminders`
+
+**🔒 Requires**: Admin role
+
+Send email reminders for pending approvals.
+
+**Request Body**:
+```json
+{
+  "daysPending": 3, // Send reminders for requests pending more than 3 days
+  "includeEscalation": true
+}
+```
+
+**Success Response (200)**:
+```json
+{
+  "success": true,
+  "message": "Approval reminders sent successfully",
+  "data": {
+    "remindersSent": 5,
+    "escalationsSent": 2
+  },
+  "errors": []
+}
+```
+
+### 📱 Flutter Implementation Example - Approval Workflow
+
+```dart
+class ApprovalWorkflowService {
+  static const String baseUrl = 'http://localhost:5002/api/v1/work-requests';
+  
+  // Submit work request for approval
+  static Future<bool> submitForApproval(String workRequestId, String comments) async {
+    try {
+      final response = await http.post(
+        Uri.parse('$baseUrl/$workRequestId/submit-approval'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ${await TokenManager.getToken()}',
+        },
+        body: json.encode({
+          'comments': comments,
+        }),
+      );
+      
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        return data['success'] == true;
+      }
+      return false;
+    } catch (e) {
+      print('Error submitting for approval: $e');
+      return false;
+    }
+  }
+  
+  // Process approval (approve/reject)
+  static Future<bool> processApproval({
+    required String workRequestId,
+    required String action, // "Approve" or "Reject"
+    required String comments,
+    String? rejectionReason,
+  }) async {
+    try {
+      final response = await http.post(
+        Uri.parse('$baseUrl/$workRequestId/process-approval'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ${await TokenManager.getToken()}',
+        },
+        body: json.encode({
+          'action': action,
+          'comments': comments,
+          if (rejectionReason != null) 'rejectionReason': rejectionReason,
+        }),
+      );
+      
+      return response.statusCode == 200;
+    } catch (e) {
+      print('Error processing approval: $e');
+      return false;
+    }
+  }
+  
+  // Get approval status
+  static Future<Map<String, dynamic>?> getApprovalStatus(String workRequestId) async {
+    try {
+      final response = await http.get(
+        Uri.parse('$baseUrl/$workRequestId/approval-status'),
+        headers: {
+          'Authorization': 'Bearer ${await TokenManager.getToken()}',
+        },
+      );
+      
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        return data['data'];
+      }
+      return null;
+    } catch (e) {
+      print('Error getting approval status: $e');
+      return null;
+    }
+  }
+  
+  // Get pending approvals
+  static Future<List<Map<String, dynamic>>> getPendingApprovals({
+    int pageNumber = 1,
+    int pageSize = 10,
+  }) async {
+    try {
+      final response = await http.get(
+        Uri.parse('$baseUrl/pending-approval?pageNumber=$pageNumber&pageSize=$pageSize'),
+        headers: {
+          'Authorization': 'Bearer ${await TokenManager.getToken()}',
+        },
+      );
+      
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        return List<Map<String, dynamic>>.from(data['data']['items']);
+      }
+      return [];
+    } catch (e) {
+      print('Error getting pending approvals: $e');
+      return [];
+    }
+  }
+  
+  // Get work request by ID
+  static Future<Map<String, dynamic>?> getWorkRequest(String requestId) async {
+    try {
+      final response = await http.get(
+        Uri.parse('$baseUrl/$requestId'),
+        headers: {
+          'Authorization': 'Bearer ${await TokenManager.getToken()}',
+        },
+      );
+      
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        return data['data'];
+      }
+      return null;
+    } catch (e) {
+      print('Error getting work request: $e');
+      return null;
+    }
   }
 }
 
-class RateLimitException implements Exception {
-  final String message;
-  final Duration retryAfter;
-  final int remainingRequests;
+// Example Widget for Approval Actions
+class ApprovalActionsWidget extends StatelessWidget {
+  final String workRequestId;
+  final VoidCallback onApprovalChanged;
   
-  RateLimitException({
-    required this.message,
-    required this.retryAfter,
-    required this.remainingRequests,
-  });
-}
-
-// Usage with automatic retry
-Future<Map<String, dynamic>> makeRequestWithRetry(String endpoint) async {
-  try {
-    return await ApiClient.get(endpoint);
-  } on RateLimitException catch (e) {
-    // Show user-friendly message
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Rate limit exceeded. Retrying in ${e.retryAfter.inSeconds} seconds...'),
-        duration: e.retryAfter,
-      ),
+  const ApprovalActionsWidget({
+    Key? key,
+    required this.workRequestId,
+    required this.onApprovalChanged,
+  }) : super(key: key);
+  
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+      children: [
+        ElevatedButton.icon(
+          onPressed: () => _showApprovalDialog(context, 'Approve'),
+          icon: Icon(Icons.check_circle, color: Colors.green),
+          label: Text('Approve'),
+          style: ElevatedButton.styleFrom(backgroundColor: Colors.green[50]),
+        ),
+        ElevatedButton.icon(
+          onPressed: () => _showApprovalDialog(context, 'Reject'),
+          icon: Icon(Icons.cancel, color: Colors.red),
+          label: Text('Reject'),
+          style: ElevatedButton.styleFrom(backgroundColor: Colors.red[50]),
+        ),
+      ],
     );
-    
-    // Wait and retry
-    await Future.delayed(e.retryAfter);
-    return await ApiClient.get(endpoint);
-  }
-}
-```
-
----
-
-## ❌ Error Handling
-
-### Standard Error Response Format
-All error responses follow this consistent format:
-
-```json
-{
-  "success": false,
-  "message": "Error description",
-  "data": null,
-  "errors": ["Detailed error message 1", "Detailed error message 2"]
-}
-```
-
-### Common HTTP Status Codes
-
-| Status Code | Description | Common Causes |
-|-------------|-------------|---------------|
-| `400` | Bad Request | Invalid request format, missing required fields |
-| `401` | Unauthorized | Missing or invalid authentication token |
-| `403` | Forbidden | Insufficient permissions for requested action |
-| `404` | Not Found | Resource doesn't exist or user lacks access |
-| `409` | Conflict | Resource already exists or data conflict |
-| `422` | Unprocessable Entity | Validation errors in request data |
-| `429` | Too Many Requests | Rate limit exceeded |
-| `500` | Internal Server Error | Unexpected server error |
-
-### Flutter Error Handling Best Practices
-
-```dart
-class ApiErrorHandler {
-  static void handleError(BuildContext context, dynamic error) {
-    String message = 'An unexpected error occurred';
-    String? action;
-    
-    if (error is ApiException) {
-      switch (error.statusCode) {
-        case 400:
-          message = 'Invalid request. Please check your input.';
-          break;
-        case 401:
-          message = 'Session expired. Please login again.';
-          action = 'Login';
-          break;
-        case 403:
-          message = 'You don\'t have permission to perform this action.';
-          break;
-        case 404:
-          message = 'The requested item was not found.';
-          break;
-        case 409:
-          message = 'This item already exists.';
-          break;
-        case 422:
-          message = error.errors.isNotEmpty 
-              ? error.errors.join('\n') 
-              : 'Please check your input.';
-          break;
-        case 429:
-          message = 'Too many requests. Please try again later.';
-          break;
-        case 500:
-          message = 'Server error. Please try again later.';
-          break;
-        default:
-          message = error.message;
-      }
-    } else if (error is SocketException) {
-      message = 'No internet connection. Please check your network.';
-      action = 'Retry';
-    } else if (error is TimeoutException) {
-      message = 'Request timed out. Please try again.';
-      action = 'Retry';
-    }
-    
-    _showErrorDialog(context, message, action);
   }
   
-  static void _showErrorDialog(BuildContext context, String message, String? action) {
+  void _showApprovalDialog(BuildContext context, String action) {
+    final commentsController = TextEditingController();
+    final rejectionController = TextEditingController();
+    
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text('Error'),
-        content: Text(message),
-        actions: [
-          if (action != null)
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-                if (action == 'Login') {
-                  Navigator.pushReplacementNamed(context, '/login');
-                }
-                // Handle other actions...
-              },
-              child: Text(action),
+        title: Text('$action Work Request'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(
+              controller: commentsController,
+              decoration: InputDecoration(
+                labelText: 'Comments',
+                hintText: 'Enter your comments...',
+              ),
+              maxLines: 3,
             ),
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: Text('OK'),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-// Usage in your API calls
-try {
-  final response = await ApiClient.post('/daily-reports', reportData);
-  // Handle success
-} catch (error) {
-  ApiErrorHandler.handleError(context, error);
-}
-```
-
-### Validation Error Examples
-
-**Validation Error Response (422)**:
-```json
-{
-  "success": false,
-  "message": "Validation failed",
-  "data": null,
-  "errors": [
-    "Project name is required",
-    "Budget must be greater than 0",
-    "End date must be after start date"
-  ]
-}
-```
-
-**Flutter Validation Error Handling**:
-```dart
-class ValidationErrorWidget extends StatelessWidget {
-  final List<String> errors;
-  
-  const ValidationErrorWidget({required this.errors});
-  
-  @override
-  Widget build(BuildContext context) {
-    if (errors.isEmpty) return SizedBox.shrink();
-    
-    return Container(
-      margin: EdgeInsets.symmetric(vertical: 8),
-      padding: EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: Colors.red.withOpacity(0.1),
-        border: Border.all(color: Colors.red.withOpacity(0.3)),
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Icon(Icons.error, color: Colors.red, size: 20),
-              SizedBox(width: 8),
-              Text(
-                'Please fix the following errors:',
-                style: TextStyle(
-                  color: Colors.red,
-                  fontWeight: FontWeight.w500,
+            if (action == 'Reject') ...[
+              SizedBox(height: 16),
+              TextField(
+                controller: rejectionController,
+                decoration: InputDecoration(
+                  labelText: 'Rejection Reason',
+                  hintText: 'Specify the reason for rejection...',
                 ),
+                maxLines: 2,
               ),
             ],
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text('Cancel'),
           ),
-          SizedBox(height: 8),
-          ...errors.map((error) => Padding(
-                padding: EdgeInsets.only(left: 24, bottom: 4),
-                child: Text(
-                  '• $error',
-                  style: TextStyle(color: Colors.red),
-                ),
-              )),
+          ElevatedButton(
+            onPressed: () async {
+              final success = await ApprovalWorkflowService.processApproval(
+                workRequestId: workRequestId,
+                action: action,
+                comments: commentsController.text,
+                rejectionReason: action == 'Reject' ? rejectionController.text : null,
+              );
+              
+              Navigator.pop(context);
+              
+              if (success) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text('Work request ${action.toLowerCase()}d successfully')),
+                );
+                onApprovalChanged();
+              } else {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text('Failed to $action work request')),
+                );
+              }
+            },
+            child: Text(action),
+          ),
         ],
       ),
     );
@@ -2475,106 +2788,351 @@ class ValidationErrorWidget extends StatelessWidget {
 
 ---
 
-## 📱 Complete Flutter App Example
+## 📅 Weekly Planning and Reporting
 
-Here's a complete example of a Flutter app structure for the Solar Projects API:
+**🔒 Authentication Required**
 
+This section provides endpoints for managing higher-level weekly work requests and summary reports, which complement the granular daily logs.
+
+### 📋 Weekly Work Requests
+
+Weekly Work Requests outline the key objectives, tasks, and resource forecasts for an upcoming week.
+
+**Data Model: WeeklyWorkRequest**
+```json
+{
+  "weeklyRequestId": "guid-for-weekly-request-1",
+  "projectId": "550e8400-e29b-41d4-a716-446655440000",
+  "weekStartDate": "2025-06-16T00:00:00Z",
+  "status": "Approved", // Draft, Submitted, Approved, InProgress, Completed
+  "overallGoals": "Complete installation on Roof Section B and begin electrical rough-in for Section C.",
+  "keyTasks": [
+    "Install 50 panels on Section B",
+    "Run conduit for Section C electrical",
+    "Complete safety inspections"
+  ],
+  "resourceForecast": {
+    "personnel": "Requires 2 electrical teams and 1 installation team.",
+    "majorEquipment": "Crane needed for Monday morning lift.",
+    "criticalMaterials": "Ensure all inverters for Section C are on-site."
+  },
+  "requestedBy": { "userId": "guid-user-pm", "fullName": "Jane Project Manager" },
+  "approvedBy": { "userId": "guid-user-admin", "fullName": "Admin User" },
+  "createdAt": "2025-06-13T14:00:00Z"
+}
+```
+
+#### 📝 Create Weekly Work Request
+**POST** `/api/v1/projects/{projectId}/weekly-requests`
+
+**🎯 Required Role**: Administrator, ProjectManager
+
+**Request Body:**
+```json
+{
+  "weekStartDate": "2025-06-23T00:00:00Z",
+  "overallGoals": "Finalize all electrical work and prepare for final inspection.",
+  "keyTasks": [
+    "Complete all electrical connections",
+    "Conduct pre-commissioning checks",
+    "Prepare documentation for inspection"
+  ],
+  "resourceForecast": {
+    "personnel": "Full electrical team required all week.",
+    "majorEquipment": "Scissor lift for final checks.",
+    "criticalMaterials": "All wiring labels and safety placards."
+  }
+}
+```
+
+**Success Response (201 Created)**: Returns the full WeeklyWorkRequest object
+
+#### 📋 Get Weekly Work Requests for a Project
+**GET** `/api/v1/projects/{projectId}/weekly-requests`
+
+**Query Parameters:**
+- `pageNumber` (integer, optional): Page number (default: 1)
+- `pageSize` (integer, optional): Page size (default: 10)
+- `status` (string, optional): Filter by status (e.g., "Approved")
+
+**Success Response (200 OK)**: Returns a paginated list of WeeklyWorkRequest objects
+
+#### 🔍 Get Weekly Work Request by ID
+**GET** `/api/v1/weekly-requests/{requestId}`
+
+**Success Response (200 OK)**: Returns a single WeeklyWorkRequest object
+
+#### ✏️ Update Weekly Work Request
+**PUT** `/api/v1/weekly-requests/{requestId}`
+
+**🎯 Required Role**: Administrator, ProjectManager (Policy: Can only edit if status is "Draft")
+
+**Success Response (200 OK)**: Returns the updated WeeklyWorkRequest object
+
+#### 📤 Submit/Approve a Weekly Work Request
+**POST** `/api/v1/weekly-requests/{requestId}/submit` (Changes status from "Draft" to "Submitted")
+
+**POST** `/api/v1/weekly-requests/{requestId}/approve` (Changes status from "Submitted" to "Approved")
+
+**Success Response (200 OK)**: Returns the updated WeeklyWorkRequest object with the new status
+
+---
+
+### 📊 Weekly Reports
+
+Weekly Reports provide a summary of the week's progress, aggregating information from daily logs and comparing it against the weekly request.
+
+**Data Model: WeeklyReport**
+```json
+{
+  "weeklyReportId": "guid-for-weekly-report-1",
+  "projectId": "550e8400-e29b-41d4-a716-446655440000",
+  "weekStartDate": "2025-06-16T00:00:00Z",
+  "status": "Submitted", // Draft, Submitted, Approved
+  "summaryOfProgress": "Successfully completed installation on Roof Section B. Electrical rough-in for Section C is 50% complete. Progress is on track with the weekly request.",
+  "aggregatedMetrics": {
+    "totalManHours": 450,
+    "panelsInstalled": 150,
+    "safetyIncidents": 0,
+    "delaysReported": 1
+  },
+  "majorAccomplishments": [
+    "Completed Section B installation ahead of schedule",
+    "Zero safety incidents this week",
+    "Successfully coordinated crane operations"
+  ],
+  "majorIssues": [
+    { 
+      "issueId": "guid-issue-1", 
+      "description": "Material delivery delay on Wednesday caused a 4-hour work stoppage for one team." 
+    }
+  ],
+  "lookahead": "Next week's focus will be completing Section C electrical and starting inverter commissioning.",
+  "submittedBy": { "userId": "guid-user-pm", "fullName": "Jane Project Manager" },
+  "createdAt": "2025-06-20T16:00:00Z"
+}
+```
+
+#### 📝 Create Weekly Report
+**POST** `/api/v1/projects/{projectId}/weekly-reports`
+
+**🎯 Required Role**: Administrator, ProjectManager
+
+**Request Body:**
+```json
+{
+  "weekStartDate": "2025-06-16T00:00:00Z",
+  // Optional: If summary fields are provided, they will be used.
+  // If not, the server can attempt to auto-generate a draft by
+  // aggregating daily logs from the specified week.
+  "summaryOfProgress": "Initial draft summary...",
+  "lookahead": "Planning for next week..."
+}
+```
+
+**Success Response (201 Created)**: Returns the full WeeklyReport object, potentially auto-populated
+
+#### 📋 Get Weekly Reports for a Project
+**GET** `/api/v1/projects/{projectId}/weekly-reports`
+
+**Query Parameters:**
+- `pageNumber` (integer, optional): Page number (default: 1)
+- `pageSize` (integer, optional): Page size (default: 10)
+
+**Success Response (200 OK)**: Returns a paginated list of WeeklyReport objects
+
+#### 🔍 Get Weekly Report by ID
+**GET** `/api/v1/weekly-reports/{reportId}`
+
+**Success Response (200 OK)**: Returns a single WeeklyReport object
+
+#### ✏️ Update Weekly Report
+**PUT** `/api/v1/weekly-reports/{reportId}`
+
+**🎯 Required Role**: Administrator, ProjectManager (Policy: Can only edit if status is "Draft")
+
+**Success Response (200 OK)**: Returns the updated WeeklyReport object
+
+#### 📤 Submit/Approve a Weekly Report
+**POST** `/api/v1/weekly-reports/{reportId}/submit` (Changes status from "Draft" to "Submitted")
+
+**POST** `/api/v1/weekly-reports/{reportId}/approve` (Changes status from "Submitted" to "Approved")
+
+**Success Response (200 OK)**: Returns the updated WeeklyReport object with the new status
+
+**Flutter Example - Weekly Planning Dashboard:**
 ```dart
-// main.dart
-void main() {
-  runApp(MyApp());
+class WeeklyPlanningPage extends StatefulWidget {
+  final String projectId;
+  
+  const WeeklyPlanningPage({Key? key, required this.projectId}) : super(key: key);
+  
+  @override
+  _WeeklyPlanningPageState createState() => _WeeklyPlanningPageState();
 }
 
-class MyApp extends StatelessWidget {
+class _WeeklyPlanningPageState extends State<WeeklyPlanningPage> {
+  List<WeeklyWorkRequest> weeklyRequests = [];
+  List<WeeklyReport> weeklyReports = [];
+  bool isLoading = true;
+  
+  @override
+  void initState() {
+    super.initState();
+    _loadWeeklyData();
+  }
+  
+  Future<void> _loadWeeklyData() async {
+    setState(() => isLoading = true);
+    
+    try {
+      // Load weekly requests
+      final requestsResponse = await ApiClient.get(
+        '/projects/${widget.projectId}/weekly-requests'
+      );
+      
+      // Load weekly reports
+      final reportsResponse = await ApiClient.get(
+        '/projects/${widget.projectId}/weekly-reports'
+      );
+      
+      if (requestsResponse['success'] && reportsResponse['success']) {
+        setState(() {
+          weeklyRequests = (requestsResponse['data']['items'] as List)
+              .map((json) => WeeklyWorkRequest.fromJson(json))
+              .toList();
+          weeklyReports = (reportsResponse['data']['items'] as List)
+              .map((json) => WeeklyReport.fromJson(json))
+              .toList();
+        });
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error loading weekly data: $e')),
+      );
+    } finally {
+      setState(() => isLoading = false);
+    }
+  }
+  
   @override
   Widget build(BuildContext context) {
-    return MultiProvider(
-      providers: [
-        ChangeNotifierProvider(create: (_) => AuthProvider()),
-        ChangeNotifierProvider(create: (_) => ProjectProvider()),
-        ChangeNotifierProvider(create: (_) => DailyReportProvider()),
-      ],
-      child: MaterialApp(
-        title: 'Solar Projects Manager',
-        theme: ThemeData(
-          primarySwatch: Colors.orange,
-          appBarTheme: AppBarTheme(
-            backgroundColor: Colors.orange,
-            foregroundColor: Colors.white,
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Weekly Planning'),
+        actions: [
+          IconButton(
+            icon: Icon(Icons.add),
+            onPressed: () => _showCreateWeeklyRequestDialog(),
           ),
-        ),
-        initialRoute: '/',
-        routes: {
-          '/': (context) => SplashScreen(),
-          '/login': (context) => LoginScreen(),
-          '/dashboard': (context) => DashboardScreen(),
-          '/projects': (context) => ProjectsScreen(),
-          '/daily-reports': (context) => DailyReportsScreen(),
-          '/create-report': (context) => CreateDailyReportScreen(),
+        ],
+      ),
+      body: isLoading
+          ? Center(child: CircularProgressIndicator())
+          : DefaultTabController(
+              length: 2,
+              child: Column(
+                children: [
+                  TabBar(
+                    tabs: [
+                      Tab(text: 'Work Requests', icon: Icon(Icons.assignment)),
+                      Tab(text: 'Reports', icon: Icon(Icons.analytics)),
+                    ],
+                  ),
+                  Expanded(
+                    child: TabBarView(
+                      children: [
+                        _buildWeeklyRequestsList(),
+                        _buildWeeklyReportsList(),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+    );
+  }
+  
+  Widget _buildWeeklyRequestsList() {
+    return RefreshIndicator(
+      onRefresh: _loadWeeklyData,
+      child: ListView.builder(
+        padding: EdgeInsets.all(16),
+        itemCount: weeklyRequests.length,
+        itemBuilder: (context, index) {
+          final request = weeklyRequests[index];
+          return Card(
+            child: ListTile(
+              title: Text('Week of ${_formatDate(request.weekStartDate)}'),
+              subtitle: Text(request.overallGoals),
+              trailing: Chip(
+                label: Text(request.status),
+                backgroundColor: _getStatusColor(request.status),
+              ),
+              onTap: () => _showWeeklyRequestDetails(request),
+            ),
+          );
         },
       ),
     );
   }
-}
-
-// auth_provider.dart
-class AuthProvider extends ChangeNotifier {
-  User? _user;
-  bool _isLoading = false;
   
-  User? get user => _user;
-  bool get isLoading => _isLoading;
-  bool get isLoggedIn => _user != null;
-  
-  Future<void> login(String username, String password) async {
-    _isLoading = true;
-    notifyListeners();
-    
-    try {
-      final authResponse = await AuthService.login(username, password);
-      _user = authResponse.user;
-      notifyListeners();
-    } catch (e) {
-      _isLoading = false;
-      notifyListeners();
-      rethrow;
-    }
-    
-    _isLoading = false;
-    notifyListeners();
+  Widget _buildWeeklyReportsList() {
+    return RefreshIndicator(
+      onRefresh: _loadWeeklyData,
+      child: ListView.builder(
+        padding: EdgeInsets.all(16),
+        itemCount: weeklyReports.length,
+        itemBuilder: (context, index) {
+          final report = weeklyReports[index];
+          return Card(
+            child: ListTile(
+              title: Text('Report: Week of ${_formatDate(report.weekStartDate)}'),
+              subtitle: Text(report.summaryOfProgress),
+              trailing: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Chip(
+                    label: Text(report.status),
+                    backgroundColor: _getStatusColor(report.status),
+                  ),
+                  Text('${report.aggregatedMetrics.totalManHours}h'),
+                ],
+              ),
+              onTap: () => _showWeeklyReportDetails(report),
+            ),
+          );
+        },
+      ),
+    );
   }
   
-  Future<void> logout() async {
-    await AuthService.logout();
-    _user = null;
-    notifyListeners();
+  Color _getStatusColor(String status) {
+    switch (status.toLowerCase()) {
+      case 'draft': return Colors.grey;
+      case 'submitted': return Colors.orange;
+      case 'approved': return Colors.green;
+      case 'inprogress': return Colors.blue;
+      case 'completed': return Colors.teal;
+      default: return Colors.grey;
+    }
   }
   
-  Future<void> checkAuthStatus() async {
-    final isLoggedIn = await AuthService.isLoggedIn();
-    if (isLoggedIn) {
-      // Get user info from stored token or API
-      _user = await AuthService.getCurrentUser();
-      notifyListeners();
-    }
+  String _formatDate(String dateString) {
+    final date = DateTime.parse(dateString);
+    return '${date.day}/${date.month}/${date.year}';
+  }
+  
+  void _showWeeklyRequestDetails(WeeklyWorkRequest request) {
+    // Navigate to detailed weekly request view
+  }
+  
+  void _showWeeklyReportDetails(WeeklyReport report) {
+    // Navigate to detailed weekly report view
+  }
+  
+  void _showCreateWeeklyRequestDialog() {
+    // Show dialog to create new weekly request
   }
 }
 ```
-
-This comprehensive API reference provides Flutter developers with everything needed to integrate with the Solar Projects REST API, including complete code examples, error handling, and best practices for mobile app development.
-
----
-
-## 🎯 Summary
-
-The Solar Projects REST API is designed specifically for mobile app development with Flutter, providing:
-
-✅ **Flexible Authentication** with username/email login  
-✅ **Comprehensive CRUD Operations** for all entities  
-✅ **Mobile-Optimized Features** like GPS integration and image upload  
-✅ **Real-time Data** with efficient pagination and filtering  
-✅ **Robust Error Handling** with consistent response formats  
-✅ **Performance Features** like caching and rate limiting  
-✅ **Complete Flutter Examples** for all major functionality  
-
-For additional support or feature requests, consult the API documentation or contact the development team.
