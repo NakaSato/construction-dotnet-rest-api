@@ -21,6 +21,108 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.Role, opt => opt.Ignore())
             .ForMember(dest => dest.PasswordHash, opt => opt.Ignore());
 
+        // Master Plan mappings
+        CreateMap<MasterPlan, MasterPlanDto>()
+            .ForMember(dest => dest.ProjectName, opt => opt.MapFrom(src => src.Project.ProjectName))
+            .ForMember(dest => dest.CreatedByName, opt => opt.MapFrom(src => src.CreatedBy.FullName))
+            .ForMember(dest => dest.ApprovedByName, opt => opt.MapFrom(src => src.ApprovedBy != null ? src.ApprovedBy.FullName : null));
+
+        CreateMap<CreateMasterPlanRequest, MasterPlan>()
+            .ForMember(dest => dest.MasterPlanId, opt => opt.Ignore())
+            .ForMember(dest => dest.CreatedAt, opt => opt.Ignore())
+            .ForMember(dest => dest.UpdatedAt, opt => opt.Ignore())
+            .ForMember(dest => dest.CreatedById, opt => opt.Ignore())
+            .ForMember(dest => dest.Project, opt => opt.Ignore())
+            .ForMember(dest => dest.CreatedBy, opt => opt.Ignore())
+            .ForMember(dest => dest.ApprovedBy, opt => opt.Ignore())
+            .ForMember(dest => dest.Phases, opt => opt.Ignore())
+            .ForMember(dest => dest.Milestones, opt => opt.Ignore())
+            .ForMember(dest => dest.ProgressReports, opt => opt.Ignore());
+
+        // Project Phase mappings
+        CreateMap<ProjectPhase, ProjectPhaseDto>()
+            .ForMember(dest => dest.TasksCompleted, opt => opt.MapFrom(src => src.Tasks.Count(t => t.Status == dotnet_rest_api.Models.TaskStatus.Completed)))
+            .ForMember(dest => dest.TotalTasks, opt => opt.MapFrom(src => src.Tasks.Count))
+            .ForMember(dest => dest.ActualDurationDays, opt => opt.MapFrom(src => 
+                src.ActualStartDate.HasValue && src.ActualEndDate.HasValue 
+                    ? (decimal)(src.ActualEndDate.Value - src.ActualStartDate.Value).TotalDays 
+                    : src.ActualStartDate.HasValue 
+                        ? (decimal)(DateTime.UtcNow - src.ActualStartDate.Value).TotalDays 
+                        : 0))
+            .ForMember(dest => dest.IsOnSchedule, opt => opt.MapFrom(src => 
+                src.Status == PhaseStatus.Completed 
+                    ? src.ActualEndDate <= src.PlannedEndDate 
+                    : DateTime.UtcNow <= src.PlannedEndDate))
+            .ForMember(dest => dest.IsOnBudget, opt => opt.MapFrom(src => src.ActualCost <= src.EstimatedBudget * 1.05m)); // 5% tolerance
+
+        CreateMap<CreateProjectPhaseRequest, ProjectPhase>()
+            .ForMember(dest => dest.PhaseId, opt => opt.Ignore())
+            .ForMember(dest => dest.MasterPlanId, opt => opt.Ignore())
+            .ForMember(dest => dest.CreatedAt, opt => opt.Ignore())
+            .ForMember(dest => dest.UpdatedAt, opt => opt.Ignore())
+            .ForMember(dest => dest.MasterPlan, opt => opt.Ignore())
+            .ForMember(dest => dest.Tasks, opt => opt.Ignore())
+            .ForMember(dest => dest.Resources, opt => opt.Ignore())
+            .ForMember(dest => dest.PlannedDurationDays, opt => opt.MapFrom(src => (src.PlannedEndDate - src.PlannedStartDate).Days));
+
+        // Project Milestone mappings
+        CreateMap<ProjectMilestone, ProjectMilestoneDto>()
+            .ForMember(dest => dest.PhaseName, opt => opt.MapFrom(src => src.Phase != null ? src.Phase.PhaseName : null))
+            .ForMember(dest => dest.VerifiedByName, opt => opt.MapFrom(src => src.VerifiedBy != null ? src.VerifiedBy.FullName : null))
+            .ForMember(dest => dest.DaysFromPlanned, opt => opt.MapFrom(src => 
+                src.ActualDate.HasValue 
+                    ? (int)(src.ActualDate.Value - src.PlannedDate).TotalDays 
+                    : (int)(DateTime.UtcNow - src.PlannedDate).TotalDays))
+            .ForMember(dest => dest.IsOverdue, opt => opt.MapFrom(src => 
+                src.Status != MilestoneStatus.Completed && DateTime.UtcNow > src.PlannedDate));
+
+        CreateMap<CreateProjectMilestoneRequest, ProjectMilestone>()
+            .ForMember(dest => dest.MilestoneId, opt => opt.Ignore())
+            .ForMember(dest => dest.MasterPlanId, opt => opt.Ignore())
+            .ForMember(dest => dest.CreatedAt, opt => opt.Ignore())
+            .ForMember(dest => dest.UpdatedAt, opt => opt.Ignore())
+            .ForMember(dest => dest.MasterPlan, opt => opt.Ignore())
+            .ForMember(dest => dest.Phase, opt => opt.Ignore())
+            .ForMember(dest => dest.VerifiedBy, opt => opt.Ignore());
+
+        // Progress Report mappings
+        CreateMap<ProgressReport, ProgressReportDto>()
+            .ForMember(dest => dest.ProjectName, opt => opt.MapFrom(src => src.Project.ProjectName))
+            .ForMember(dest => dest.CreatedByName, opt => opt.MapFrom(src => src.CreatedBy.FullName));
+
+        CreateMap<CreateProgressReportRequest, ProgressReport>()
+            .ForMember(dest => dest.ProgressReportId, opt => opt.Ignore())
+            .ForMember(dest => dest.MasterPlanId, opt => opt.Ignore())
+            .ForMember(dest => dest.ProjectId, opt => opt.Ignore())
+            .ForMember(dest => dest.ReportDate, opt => opt.MapFrom(src => DateTime.UtcNow))
+            .ForMember(dest => dest.CreatedAt, opt => opt.Ignore())
+            .ForMember(dest => dest.CreatedById, opt => opt.Ignore())
+            .ForMember(dest => dest.MasterPlan, opt => opt.Ignore())
+            .ForMember(dest => dest.Project, opt => opt.Ignore())
+            .ForMember(dest => dest.CreatedBy, opt => opt.Ignore())
+            .ForMember(dest => dest.PhaseProgressDetails, opt => opt.Ignore());
+
+        // Phase Progress mappings
+        CreateMap<PhaseProgress, PhaseProgressDto>()
+            .ForMember(dest => dest.PhaseName, opt => opt.MapFrom(src => src.Phase.PhaseName));
+
+        CreateMap<UpdatePhaseProgressRequest, PhaseProgress>()
+            .ForMember(dest => dest.PhaseProgressId, opt => opt.Ignore())
+            .ForMember(dest => dest.ProgressReportId, opt => opt.Ignore())
+            .ForMember(dest => dest.ProgressReport, opt => opt.Ignore())
+            .ForMember(dest => dest.Phase, opt => opt.Ignore());
+
+        // Phase Resource mappings
+        CreateMap<PhaseResource, PhaseResourceDto>();
+
+        CreateMap<CreatePhaseResourceRequest, PhaseResource>()
+            .ForMember(dest => dest.PhaseResourceId, opt => opt.Ignore())
+            .ForMember(dest => dest.PhaseId, opt => opt.Ignore())
+            .ForMember(dest => dest.CreatedAt, opt => opt.Ignore())
+            .ForMember(dest => dest.UpdatedAt, opt => opt.Ignore())
+            .ForMember(dest => dest.Phase, opt => opt.Ignore())
+            .ForMember(dest => dest.TotalEstimatedCost, opt => opt.MapFrom(src => src.QuantityRequired * src.UnitCost));
+
         // Project mappings
         CreateMap<Project, ProjectDto>()
             .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status.ToString()))

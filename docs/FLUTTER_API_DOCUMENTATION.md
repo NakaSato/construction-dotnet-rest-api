@@ -1643,3 +1643,1005 @@ class ProjectsNotifier extends StateNotifier<LoadingState<List<Project>>> {
   }
 }
 ```
+
+## Master Plan API Endpoints
+
+### Base Endpoints
+All master plan endpoints are under `/api/v1/master-plans`
+
+| Method | Endpoint | Description | Access Level |
+|--------|----------|-------------|--------------|
+| POST | `/master-plans` | Create new master plan | Project Manager, Admin |
+| GET | `/master-plans/{id}` | Get master plan by ID | All authenticated |
+| GET | `/master-plans/project/{projectId}` | Get master plan by project | All authenticated |
+| PUT | `/master-plans/{id}` | Update master plan | Project Manager, Admin |
+| DELETE | `/master-plans/{id}` | Delete master plan | Admin only |
+| POST | `/master-plans/{id}/approve` | Approve master plan | Admin only |
+| POST | `/master-plans/{id}/activate` | Activate master plan | Project Manager, Admin |
+
+### Progress Tracking Endpoints
+
+| Method | Endpoint | Description | Access Level |
+|--------|----------|-------------|--------------|
+| GET | `/master-plans/{id}/progress` | Get progress summary | All authenticated |
+| GET | `/master-plans/{id}/completion` | Get overall completion % | All authenticated |
+| GET | `/master-plans/{id}/metrics` | Get project metrics/KPIs | All authenticated |
+| GET | `/master-plans/{id}/validate` | Validate master plan | All authenticated |
+
+### Phase Management Endpoints
+
+| Method | Endpoint | Description | Access Level |
+|--------|----------|-------------|--------------|
+| GET | `/master-plans/{id}/phases` | Get all phases | All authenticated |
+| POST | `/master-plans/{id}/phases` | Add new phase | Project Manager, Admin |
+| PUT | `/phases/{phaseId}` | Update phase details | Project Manager, Admin |
+| DELETE | `/phases/{phaseId}` | Delete phase | Project Manager, Admin |
+| PATCH | `/master-plans/{masterPlanId}/phases/{phaseId}/progress` | Update phase progress | Project Manager, Site Supervisor |
+| GET | `/master-plans/{id}/phases/delayed` | Get delayed phases | All authenticated |
+
+### Milestone Management Endpoints
+
+| Method | Endpoint | Description | Access Level |
+|--------|----------|-------------|--------------|
+| GET | `/master-plans/{id}/milestones` | Get all milestones | All authenticated |
+| POST | `/master-plans/{id}/milestones` | Add new milestone | Project Manager, Admin |
+| PUT | `/milestones/{milestoneId}` | Update milestone | Project Manager, Admin |
+| DELETE | `/milestones/{milestoneId}` | Delete milestone | Project Manager, Admin |
+| POST | `/master-plans/{masterPlanId}/milestones/{milestoneId}/complete` | Complete milestone | Project Manager, Site Supervisor |
+| GET | `/master-plans/{id}/milestones/upcoming` | Get upcoming milestones | All authenticated |
+
+### Progress Reports Endpoints
+
+| Method | Endpoint | Description | Access Level |
+|--------|----------|-------------|--------------|
+| GET | `/master-plans/{id}/progress-reports` | Get progress reports (paginated) | All authenticated |
+| POST | `/master-plans/{id}/progress-reports` | Create progress report | Project Manager, Site Supervisor |
+| GET | `/master-plans/{id}/progress-reports/latest` | Get latest progress report | All authenticated |
+
+### Template Management Endpoints
+
+| Method | Endpoint | Description | Access Level |
+|--------|----------|-------------|--------------|
+| GET | `/master-plans/templates` | Get available templates | Project Manager, Admin |
+| POST | `/master-plans/from-template` | Create plan from template | Project Manager, Admin |
+
+## Complete API Examples
+
+### 1. Create Master Plan with Solar Template
+```dart
+class SolarMasterPlanTemplate {
+  static CreateMasterPlanRequest createSolarInstallationPlan({
+    required String projectId,
+    required String projectName,
+    required DateTime startDate,
+    required double totalBudget,
+  }) {
+    final phases = [
+      CreateProjectPhaseRequest(
+        phaseName: 'Site Assessment',
+        description: 'Comprehensive site evaluation and analysis',
+        phaseOrder: 1,
+        plannedStartDate: startDate,
+        plannedEndDate: startDate.add(Duration(days: 3)),
+        estimatedBudget: totalBudget * 0.05, // 5% of budget
+        weightPercentage: 5,
+        riskLevel: RiskLevel.Low,
+        resources: [
+          CreatePhaseResourceRequest(
+            resourceType: ResourceType.Personnel,
+            resourceName: 'Site Engineer',
+            quantityRequired: 1,
+            unit: 'person-days',
+            unitCost: 500,
+            requiredDate: startDate,
+            durationDays: 3,
+          ),
+          CreatePhaseResourceRequest(
+            resourceType: ResourceType.Equipment,
+            resourceName: 'Measurement Tools',
+            quantityRequired: 1,
+            unit: 'set',
+            unitCost: 200,
+            requiredDate: startDate,
+            durationDays: 3,
+          ),
+        ],
+      ),
+      CreateProjectPhaseRequest(
+        phaseName: 'Permit Application',
+        description: 'Obtain all necessary permits and approvals',
+        phaseOrder: 2,
+        plannedStartDate: startDate.add(Duration(days: 4)),
+        plannedEndDate: startDate.add(Duration(days: 14)),
+        estimatedBudget: totalBudget * 0.10, // 10% of budget
+        weightPercentage: 10,
+        riskLevel: RiskLevel.Medium,
+        prerequisites: 'Site Assessment Complete',
+        resources: [
+          CreatePhaseResourceRequest(
+            resourceType: ResourceType.Service,
+            resourceName: 'Permit Processing',
+            quantityRequired: 1,
+            unit: 'application',
+            unitCost: totalBudget * 0.08,
+            requiredDate: startDate.add(Duration(days: 4)),
+            durationDays: 10,
+          ),
+        ],
+      ),
+      CreateProjectPhaseRequest(
+        phaseName: 'Material Procurement',
+        description: 'Order and receive all project materials',
+        phaseOrder: 3,
+        plannedStartDate: startDate.add(Duration(days: 15)),
+        plannedEndDate: startDate.add(Duration(days: 25)),
+        estimatedBudget: totalBudget * 0.15, // 15% of budget
+        weightPercentage: 15,
+        riskLevel: RiskLevel.Medium,
+        prerequisites: 'Permits Approved',
+        resources: [
+          CreatePhaseResourceRequest(
+            resourceType: ResourceType.Material,
+            resourceName: 'Solar Panels',
+            quantityRequired: 30,
+            unit: 'panels',
+            unitCost: 300,
+            requiredDate: startDate.add(Duration(days: 15)),
+            durationDays: 1,
+            supplier: 'SolarTech Inc.',
+          ),
+          CreatePhaseResourceRequest(
+            resourceType: ResourceType.Material,
+            resourceName: 'Inverters',
+            quantityRequired: 2,
+            unit: 'units',
+            unitCost: 2000,
+            requiredDate: startDate.add(Duration(days: 15)),
+            durationDays: 1,
+            supplier: 'PowerMax Solutions',
+          ),
+        ],
+      ),
+      CreateProjectPhaseRequest(
+        phaseName: 'Site Preparation',
+        description: 'Prepare installation site and setup equipment',
+        phaseOrder: 4,
+        plannedStartDate: startDate.add(Duration(days: 26)),
+        plannedEndDate: startDate.add(Duration(days: 28)),
+        estimatedBudget: totalBudget * 0.10, // 10% of budget
+        weightPercentage: 10,
+        riskLevel: RiskLevel.Low,
+        prerequisites: 'Materials Delivered',
+      ),
+      CreateProjectPhaseRequest(
+        phaseName: 'Panel Installation',
+        description: 'Install solar panels and mounting system',
+        phaseOrder: 5,
+        plannedStartDate: startDate.add(Duration(days: 29)),
+        plannedEndDate: startDate.add(Duration(days: 38)),
+        estimatedBudget: totalBudget * 0.30, // 30% of budget
+        weightPercentage: 30,
+        riskLevel: RiskLevel.Medium,
+        prerequisites: 'Site Preparation Complete',
+        resources: [
+          CreatePhaseResourceRequest(
+            resourceType: ResourceType.Personnel,
+            resourceName: 'Installation Team',
+            quantityRequired: 4,
+            unit: 'person-days',
+            unitCost: 400,
+            requiredDate: startDate.add(Duration(days: 29)),
+            durationDays: 10,
+          ),
+        ],
+      ),
+      CreateProjectPhaseRequest(
+        phaseName: 'Electrical Work',
+        description: 'Complete all electrical connections and systems',
+        phaseOrder: 6,
+        plannedStartDate: startDate.add(Duration(days: 39)),
+        plannedEndDate: startDate.add(Duration(days: 45)),
+        estimatedBudget: totalBudget * 0.20, // 20% of budget
+        weightPercentage: 20,
+        riskLevel: RiskLevel.High,
+        prerequisites: 'Panel Installation Complete',
+        resources: [
+          CreatePhaseResourceRequest(
+            resourceType: ResourceType.Personnel,
+            resourceName: 'Licensed Electrician',
+            quantityRequired: 2,
+            unit: 'person-days',
+            unitCost: 600,
+            requiredDate: startDate.add(Duration(days: 39)),
+            durationDays: 7,
+          ),
+        ],
+      ),
+      CreateProjectPhaseRequest(
+        phaseName: 'Testing & Commissioning',
+        description: 'System testing and performance verification',
+        phaseOrder: 7,
+        plannedStartDate: startDate.add(Duration(days: 46)),
+        plannedEndDate: startDate.add(Duration(days: 50)),
+        estimatedBudget: totalBudget * 0.08, // 8% of budget
+        weightPercentage: 8,
+        riskLevel: RiskLevel.Medium,
+        prerequisites: 'Electrical Work Complete',
+      ),
+      CreateProjectPhaseRequest(
+        phaseName: 'Project Completion',
+        description: 'Final cleanup and project handover',
+        phaseOrder: 8,
+        plannedStartDate: startDate.add(Duration(days: 51)),
+        plannedEndDate: startDate.add(Duration(days: 52)),
+        estimatedBudget: totalBudget * 0.02, // 2% of budget
+        weightPercentage: 2,
+        riskLevel: RiskLevel.Low,
+        prerequisites: 'Testing Complete',
+      ),
+    ];
+
+    final milestones = [
+      CreateProjectMilestoneRequest(
+        milestoneName: 'Site Assessment Complete',
+        description: 'Site evaluation and analysis completed',
+        plannedDate: startDate.add(Duration(days: 3)),
+        type: MilestoneType.PhaseCompletion,
+        importance: MilestoneImportance.Medium,
+        weightPercentage: 5,
+        completionCriteria: 'Site survey report completed and approved',
+      ),
+      CreateProjectMilestoneRequest(
+        milestoneName: 'Permits Approved',
+        description: 'All necessary permits obtained',
+        plannedDate: startDate.add(Duration(days: 14)),
+        type: MilestoneType.PermitApproval,
+        importance: MilestoneImportance.High,
+        weightPercentage: 15,
+        completionCriteria: 'Building and electrical permits approved by authorities',
+      ),
+      CreateProjectMilestoneRequest(
+        milestoneName: 'Materials Delivered',
+        description: 'All project materials delivered to site',
+        plannedDate: startDate.add(Duration(days: 25)),
+        type: MilestoneType.MaterialDelivery,
+        importance: MilestoneImportance.High,
+        weightPercentage: 10,
+        completionCriteria: 'All materials delivered and inspected for quality',
+      ),
+      CreateProjectMilestoneRequest(
+        milestoneName: 'Installation Complete',
+        description: 'Physical installation of all components finished',
+        plannedDate: startDate.add(Duration(days: 38)),
+        type: MilestoneType.PhaseCompletion,
+        importance: MilestoneImportance.Critical,
+        weightPercentage: 25,
+        completionCriteria: 'All panels installed and mechanically secured',
+      ),
+      CreateProjectMilestoneRequest(
+        milestoneName: 'Electrical Connection',
+        description: 'Grid connection established and operational',
+        plannedDate: startDate.add(Duration(days: 45)),
+        type: MilestoneType.GridConnection,
+        importance: MilestoneImportance.Critical,
+        weightPercentage: 20,
+        completionCriteria: 'System connected to grid and producing power',
+      ),
+      CreateProjectMilestoneRequest(
+        milestoneName: 'Inspection Passed',
+        description: 'Final inspections completed successfully',
+        plannedDate: startDate.add(Duration(days: 50)),
+        type: MilestoneType.InspectionPassed,
+        importance: MilestoneImportance.Critical,
+        weightPercentage: 15,
+        completionCriteria: 'All inspections passed and certificates issued',
+      ),
+      CreateProjectMilestoneRequest(
+        milestoneName: 'Project Handover',
+        description: 'Project completed and handed over to customer',
+        plannedDate: startDate.add(Duration(days: 52)),
+        type: MilestoneType.ProjectHandover,
+        importance: MilestoneImportance.Critical,
+        weightPercentage: 10,
+        completionCriteria: 'Customer training completed and warranty documentation provided',
+      ),
+    ];
+
+    return CreateMasterPlanRequest(
+      projectId: projectId,
+      planName: '$projectName - Solar Installation Master Plan',
+      description: 'Comprehensive master plan for solar panel installation project',
+      plannedStartDate: startDate,
+      plannedEndDate: startDate.add(Duration(days: 52)),
+      totalEstimatedBudget: totalBudget,
+      phases: phases,
+      milestones: milestones,
+    );
+  }
+}
+
+// Usage
+Future<MasterPlan> createSolarProject(String projectId) async {
+  final request = SolarMasterPlanTemplate.createSolarInstallationPlan(
+    projectId: projectId,
+    projectName: 'Residential Solar Installation',
+    startDate: DateTime.now().add(Duration(days: 7)),
+    totalBudget: 50000.0,
+  );
+
+  return await createMasterPlan(request);
+}
+```
+
+### 2. Daily Progress Update Workflow
+```dart
+class ProgressUpdateService {
+  static Future<void> performDailyUpdate({
+    required String masterPlanId,
+    required String phaseId,
+    required double completionPercentage,
+    required String status,
+    required List<String> accomplishments,
+    required List<String> issues,
+    String? notes,
+  }) async {
+    try {
+      // 1. Update phase progress
+      final phaseUpdate = UpdatePhaseProgressRequest(
+        completionPercentage: completionPercentage,
+        status: status,
+        notes: notes,
+        activitiesCompleted: accomplishments.join('; '),
+        issues: issues.join('; '),
+      );
+
+      await updatePhaseProgress(masterPlanId, phaseId, phaseUpdate);
+
+      // 2. Check and complete milestones
+      final milestones = await getMilestonesByMasterPlan(masterPlanId);
+      for (final milestone in milestones) {
+        if (milestone.phaseId == phaseId && 
+            milestone.status == 'Pending' && 
+            completionPercentage >= 100) {
+          await completeMilestone(
+            masterPlanId,
+            milestone.milestoneId,
+            'Phase completed with ${accomplishments.length} key accomplishments',
+          );
+        }
+      }
+
+      // 3. Create progress report if significant progress
+      if (completionPercentage % 25 == 0) { // Every 25% completion
+        final progressRequest = CreateProgressReportRequest(
+          keyAccomplishments: accomplishments.join('\n'),
+          currentChallenges: issues.join('\n'),
+          upcomingActivities: _generateUpcomingActivities(phaseId),
+          executiveSummary: _generateExecutiveSummary(completionPercentage, accomplishments, issues),
+          phaseUpdates: [phaseUpdate],
+        );
+
+        await createProgressReport(masterPlanId, progressRequest);
+      }
+
+      print('Daily progress update completed successfully');
+    } catch (e) {
+      print('Error updating daily progress: $e');
+      rethrow;
+    }
+  }
+
+  static String _generateUpcomingActivities(String phaseId) {
+    // Generate contextual upcoming activities based on current phase
+    return 'Continue with scheduled activities for the next phase';
+  }
+
+  static String _generateExecutiveSummary(
+    double completion,
+    List<String> accomplishments,
+    List<String> issues,
+  ) {
+    return '''
+Phase Progress: ${completion.toStringAsFixed(1)}% complete
+Key Accomplishments: ${accomplishments.length} items completed
+Current Issues: ${issues.length} items requiring attention
+Overall Status: ${issues.isEmpty ? 'On Track' : 'Needs Attention'}
+    ''';
+  }
+}
+```
+
+### 3. Real-time Progress Dashboard
+```dart
+class ProgressDashboardService {
+  static Future<ProjectDashboardData> getDashboardData(String masterPlanId) async {
+    try {
+      // Fetch all required data in parallel
+      final futures = await Future.wait([
+        getMasterPlan(masterPlanId),
+        getProgressSummary(masterPlanId),
+        getUpcomingMilestones(masterPlanId, days: 7),
+        getDelayedPhases(masterPlanId),
+        getProjectMetrics(masterPlanId),
+        getLatestProgressReport(masterPlanId),
+      ]);
+
+      final masterPlan = futures[0] as MasterPlan;
+      final progressSummary = futures[1] as ProgressSummary;
+      final upcomingMilestones = futures[2] as List<ProjectMilestone>;
+      final delayedPhases = futures[3] as List<ProjectPhase>;
+      final metrics = futures[4] as Map<String, dynamic>;
+      final latestReport = futures[5] as ProgressReport?;
+
+      return ProjectDashboardData(
+        masterPlan: masterPlan,
+        progressSummary: progressSummary,
+        upcomingMilestones: upcomingMilestones,
+        delayedPhases: delayedPhases,
+        metrics: metrics,
+        latestReport: latestReport,
+      );
+    } catch (e) {
+      print('Error fetching dashboard data: $e');
+      rethrow;
+    }
+  }
+}
+
+class ProjectDashboardData {
+  final MasterPlan masterPlan;
+  final ProgressSummary progressSummary;
+  final List<ProjectMilestone> upcomingMilestones;
+  final List<ProjectPhase> delayedPhases;
+  final Map<String, dynamic> metrics;
+  final ProgressReport? latestReport;
+
+  ProjectDashboardData({
+    required this.masterPlan,
+    required this.progressSummary,
+    required this.upcomingMilestones,
+    required this.delayedPhases,
+    required this.metrics,
+    this.latestReport,
+  });
+}
+```
+
+### 4. Complete Flutter Widget Implementation
+```dart
+class MasterPlanDashboard extends StatefulWidget {
+  final String masterPlanId;
+  
+  const MasterPlanDashboard({Key? key, required this.masterPlanId}) : super(key: key);
+
+  @override
+  _MasterPlanDashboardState createState() => _MasterPlanDashboardState();
+}
+
+class _MasterPlanDashboardState extends State<MasterPlanDashboard> {
+  ProjectDashboardData? dashboardData;
+  bool isLoading = true;
+  String? error;
+
+  @override
+  void initState() {
+    super.initState();
+    loadDashboardData();
+    // Set up periodic refresh every 5 minutes
+    Timer.periodic(Duration(minutes: 5), (timer) {
+      if (mounted) loadDashboardData();
+    });
+  }
+
+  Future<void> loadDashboardData() async {
+    try {
+      setState(() {
+        isLoading = true;
+        error = null;
+      });
+
+      final data = await ProgressDashboardService.getDashboardData(widget.masterPlanId);
+
+      setState(() {
+        dashboardData = data;
+        isLoading = false;
+      });
+    } catch (e) {
+      setState(() {
+        error = e.toString();
+        isLoading = false;
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (isLoading) {
+      return Scaffold(
+        appBar: AppBar(title: Text('Project Dashboard')),
+        body: Center(child: CircularProgressIndicator()),
+      );
+    }
+
+    if (error != null) {
+      return Scaffold(
+        appBar: AppBar(title: Text('Project Dashboard')),
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(Icons.error, size: 64, color: Colors.red),
+              SizedBox(height: 16),
+              Text('Error loading dashboard: $error'),
+              SizedBox(height: 16),
+              ElevatedButton(
+                onPressed: loadDashboardData,
+                child: Text('Retry'),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    final data = dashboardData!;
+    
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(data.masterPlan.planName),
+        actions: [
+          IconButton(
+            icon: Icon(Icons.refresh),
+            onPressed: loadDashboardData,
+          ),
+        ],
+      ),
+      body: RefreshIndicator(
+        onRefresh: loadDashboardData,
+        child: SingleChildScrollView(
+          physics: AlwaysScrollableScrollPhysics(),
+          padding: EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Overall Progress Card
+              _buildOverallProgressCard(data.progressSummary),
+              SizedBox(height: 16),
+              
+              // Key Metrics Row
+              _buildKeyMetricsRow(data.metrics),
+              SizedBox(height: 16),
+              
+              // Phase Progress
+              _buildSectionTitle('Phase Progress'),
+              ...data.masterPlan.phases.map((phase) => _buildPhaseCard(phase)).toList(),
+              SizedBox(height: 16),
+              
+              // Upcoming Milestones
+              if (data.upcomingMilestones.isNotEmpty) ...[
+                _buildSectionTitle('Upcoming Milestones (Next 7 Days)'),
+                ...data.upcomingMilestones.map((milestone) => _buildMilestoneCard(milestone)).toList(),
+                SizedBox(height: 16),
+              ],
+              
+              // Delayed Phases Alert
+              if (data.delayedPhases.isNotEmpty) ...[
+                _buildSectionTitle('⚠️ Delayed Phases'),
+                ...data.delayedPhases.map((phase) => _buildDelayedPhaseCard(phase)).toList(),
+                SizedBox(height: 16),
+              ],
+              
+              // Latest Progress Report
+              if (data.latestReport != null) ...[
+                _buildSectionTitle('Latest Progress Report'),
+                _buildProgressReportCard(data.latestReport!),
+              ],
+            ],
+          ),
+        ),
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () => _showProgressUpdateDialog(context),
+        child: Icon(Icons.add),
+        tooltip: 'Update Progress',
+      ),
+    );
+  }
+
+  Widget _buildOverallProgressCard(ProgressSummary summary) {
+    Color healthColor = _getHealthStatusColor(summary.healthStatus);
+    
+    return Card(
+      elevation: 4,
+      child: Padding(
+        padding: EdgeInsets.all(16),
+        child: Column(
+          children: [
+            Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    'Overall Progress',
+                    style: Theme.of(context).textTheme.headline6,
+                  ),
+                ),
+                Container(
+                  padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: healthColor.withOpacity(0.2),
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: Text(
+                    summary.healthStatus,
+                    style: TextStyle(
+                      color: healthColor,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            SizedBox(height: 16),
+            
+            // Circular Progress Indicator
+            Stack(
+              alignment: Alignment.center,
+              children: [
+                SizedBox(
+                  height: 120,
+                  width: 120,
+                  child: CircularProgressIndicator(
+                    value: summary.overallCompletion / 100,
+                    strokeWidth: 8,
+                    backgroundColor: Colors.grey[300],
+                    valueColor: AlwaysStoppedAnimation<Color>(healthColor),
+                  ),
+                ),
+                Text(
+                  '${summary.overallCompletion.toStringAsFixed(1)}%',
+                  style: Theme.of(context).textTheme.headline5?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
+            ),
+            
+            SizedBox(height: 16),
+            
+            // Status Indicators
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: [
+                _buildStatusIndicator(
+                  'Phases',
+                  '${summary.completedPhases}/${summary.totalPhases}',
+                  Icons.timeline,
+                ),
+                _buildStatusIndicator(
+                  'Milestones',
+                  '${summary.completedMilestones}/${summary.totalMilestones}',
+                  Icons.flag,
+                ),
+                _buildStatusIndicator(
+                  'Days Left',
+                  '${summary.daysRemaining}',
+                  Icons.schedule,
+                ),
+              ],
+            ),
+            
+            SizedBox(height: 12),
+            
+            // Schedule and Budget Status
+            Row(
+              children: [
+                Expanded(
+                  child: _buildStatusChip(
+                    'Schedule',
+                    summary.isOnSchedule ? 'On Track' : 'Behind',
+                    summary.isOnSchedule ? Colors.green : Colors.red,
+                  ),
+                ),
+                SizedBox(width: 8),
+                Expanded(
+                  child: _buildStatusChip(
+                    'Budget',
+                    summary.isOnBudget ? 'On Budget' : 'Over Budget',
+                    summary.isOnBudget ? Colors.green : Colors.red,
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildKeyMetricsRow(Map<String, dynamic> metrics) {
+    return Row(
+      children: [
+        Expanded(
+          child: _buildMetricCard(
+            'SPI',
+            metrics['schedulePerformanceIndex']?.toStringAsFixed(2) ?? 'N/A',
+            'Schedule Performance',
+            Icons.timeline,
+          ),
+        ),
+        SizedBox(width: 8),
+        Expanded(
+          child: _buildMetricCard(
+            'CPI',
+            metrics['costPerformanceIndex']?.toStringAsFixed(2) ?? 'N/A',
+            'Cost Performance',
+            Icons.attach_money,
+          ),
+        ),
+        SizedBox(width: 8),
+        Expanded(
+          child: _buildMetricCard(
+            'EAC',
+            '\$${(metrics['estimatedAtCompletion'] ?? 0).toStringAsFixed(0)}',
+            'Est. at Completion',
+            Icons.trending_up,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildMetricCard(String title, String value, String subtitle, IconData icon) {
+    return Card(
+      child: Padding(
+        padding: EdgeInsets.all(12),
+        child: Column(
+          children: [
+            Icon(icon, size: 24, color: Theme.of(context).primaryColor),
+            SizedBox(height: 4),
+            Text(title, style: TextStyle(fontWeight: FontWeight.bold)),
+            Text(value, style: Theme.of(context).textTheme.headline6),
+            Text(subtitle, style: Theme.of(context).textTheme.caption),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSectionTitle(String title) {
+    return Padding(
+      padding: EdgeInsets.only(bottom: 8),
+      child: Text(
+        title,
+        style: Theme.of(context).textTheme.headline6?.copyWith(
+          fontWeight: FontWeight.bold,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildPhaseCard(ProjectPhase phase) {
+    return Card(
+      margin: EdgeInsets.only(bottom: 8),
+      child: ListTile(
+        leading: CircleAvatar(
+          backgroundColor: _getPhaseStatusColor(phase.status),
+          child: Text(
+            '${phase.phaseOrder}',
+            style: TextStyle(color: Colors.white),
+          ),
+        ),
+        title: Text(phase.phaseName),
+        subtitle: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            LinearProgressIndicator(
+              value: phase.completionPercentage / 100,
+              backgroundColor: Colors.grey[300],
+            ),
+            SizedBox(height: 4),
+            Text('${phase.completionPercentage.toStringAsFixed(0)}% • ${phase.status}'),
+          ],
+        ),
+        trailing: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              phase.isOnSchedule ? Icons.schedule : Icons.warning,
+              color: phase.isOnSchedule ? Colors.green : Colors.red,
+            ),
+            Text(
+              phase.isOnSchedule ? 'On Time' : 'Delayed',
+              style: TextStyle(fontSize: 10),
+            ),
+          ],
+        ),
+        onTap: () => _showPhaseDetails(phase),
+      ),
+    );
+  }
+
+  Widget _buildMilestoneCard(ProjectMilestone milestone) {
+    return Card(
+      margin: EdgeInsets.only(bottom: 8),
+      child: ListTile(
+        leading: Icon(
+          Icons.flag,
+          color: milestone.isOverdue ? Colors.red : Colors.blue,
+        ),
+        title: Text(milestone.milestoneName),
+        subtitle: Text(
+          'Due: ${milestone.plannedDate.toString().split(' ')[0]} • ${milestone.importance}',
+        ),
+        trailing: Chip(
+          label: Text(milestone.status),
+          backgroundColor: _getMilestoneStatusColor(milestone.status).withOpacity(0.2),
+        ),
+        onTap: () => _showMilestoneDetails(milestone),
+      ),
+    );
+  }
+
+  Widget _buildDelayedPhaseCard(ProjectPhase phase) {
+    return Card(
+      margin: EdgeInsets.only(bottom: 8),
+      color: Colors.red[50],
+      child: ListTile(
+        leading: Icon(Icons.warning, color: Colors.red),
+        title: Text(phase.phaseName),
+        subtitle: Text(
+          'Behind schedule • ${phase.completionPercentage.toStringAsFixed(0)}% complete',
+        ),
+        trailing: Text(
+          '${phase.actualDurationDays.toStringAsFixed(0)} days',
+          style: TextStyle(color: Colors.red),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildProgressReportCard(ProgressReport report) {
+    return Card(
+      child: Padding(
+        padding: EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Icon(Icons.assessment),
+                SizedBox(width: 8),
+                Text(
+                  'Report Date: ${report.reportDate.toString().split(' ')[0]}',
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+              ],
+            ),
+            SizedBox(height: 8),
+            if (report.executiveSummary != null) ...[
+              Text('Executive Summary:', style: TextStyle(fontWeight: FontWeight.bold)),
+              Text(report.executiveSummary!),
+              SizedBox(height: 8),
+            ],
+            if (report.keyAccomplishments != null) ...[
+              Text('Key Accomplishments:', style: TextStyle(fontWeight: FontWeight.bold)),
+              Text(report.keyAccomplishments!),
+              SizedBox(height: 8),
+            ],
+            if (report.currentChallenges != null) ...[
+              Text('Current Challenges:', style: TextStyle(fontWeight: FontWeight.bold)),
+              Text(report.currentChallenges!),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildStatusIndicator(String label, String value, IconData icon) {
+    return Column(
+      children: [
+        Icon(icon, size: 20),
+        SizedBox(height: 4),
+        Text(label, style: TextStyle(fontSize: 12)),
+        Text(value, style: TextStyle(fontWeight: FontWeight.bold)),
+      ],
+    );
+  }
+
+  Widget _buildStatusChip(String label, String value, Color color) {
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: color.withOpacity(0.3)),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(Icons.circle, size: 8, color: color),
+          SizedBox(width: 4),
+          Text('$label: $value', style: TextStyle(fontSize: 12)),
+        ],
+      ),
+    );
+  }
+
+  Color _getHealthStatusColor(String status) {
+    switch (status.toLowerCase()) {
+      case 'excellent':
+        return Colors.green[700]!;
+      case 'good':
+        return Colors.green;
+      case 'caution':
+        return Colors.orange;
+      case 'atrisk':
+        return Colors.deepOrange;
+      case 'critical':
+        return Colors.red;
+      default:
+        return Colors.grey;
+    }
+  }
+
+  Color _getPhaseStatusColor(String status) {
+    switch (status.toLowerCase()) {
+      case 'completed':
+        return Colors.green;
+      case 'inprogress':
+        return Colors.blue;
+      case 'delayed':
+        return Colors.red;
+      case 'onhold':
+        return Colors.orange;
+      default:
+        return Colors.grey;
+    }
+  }
+
+  Color _getMilestoneStatusColor(String status) {
+    switch (status.toLowerCase()) {
+      case 'completed':
+        return Colors.green;
+      case 'inprogress':
+        return Colors.blue;
+      case 'delayed':
+        return Colors.red;
+      case 'atrisk':
+        return Colors.orange;
+      default:
+        return Colors.grey;
+    }
+  }
+
+  void _showPhaseDetails(ProjectPhase phase) {
+    // Navigate to phase details screen
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => PhaseDetailsScreen(phase: phase),
+      ),
+    );
+  }
+
+  void _showMilestoneDetails(ProjectMilestone milestone) {
+    // Show milestone details dialog
+    showDialog(
+      context: context,
+      builder: (context) => MilestoneDetailsDialog(milestone: milestone),
+    );
+  }
+
+  void _showProgressUpdateDialog(BuildContext context) {
+    // Show progress update dialog
+    showDialog(
+      context: context,
+      builder: (context) => ProgressUpdateDialog(
+        masterPlanId: widget.masterPlanId,
+        onUpdated: loadDashboardData,
+      ),
+    );
+  }
+}
+```

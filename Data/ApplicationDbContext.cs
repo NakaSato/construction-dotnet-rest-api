@@ -19,6 +19,14 @@ public class ApplicationDbContext : DbContext
     public DbSet<ProjectTask> ProjectTasks { get; set; }
     public DbSet<ImageMetadata> ImageMetadata { get; set; }
     
+    // Master Plan and Progress Tracking entities
+    public DbSet<MasterPlan> MasterPlans { get; set; }
+    public DbSet<ProjectPhase> ProjectPhases { get; set; }
+    public DbSet<ProjectMilestone> ProjectMilestones { get; set; }
+    public DbSet<ProgressReport> ProgressReports { get; set; }
+    public DbSet<PhaseProgress> PhaseProgresses { get; set; }
+    public DbSet<PhaseResource> PhaseResources { get; set; }
+    
     // Daily Reports entities
     public DbSet<DailyReport> DailyReports { get; set; }
     public DbSet<WorkProgressItem> WorkProgressItems { get; set; }
@@ -738,6 +746,302 @@ public class ApplicationDbContext : DbContext
             entity.HasIndex(w => w.Status);
             entity.HasIndex(w => w.SubmittedById);
             entity.HasIndex(w => w.CreatedAt);
+        });
+
+        // Configure MasterPlan entity
+        modelBuilder.Entity<MasterPlan>(entity =>
+        {
+            entity.HasKey(mp => mp.MasterPlanId);
+            
+            entity.Property(mp => mp.PlanName)
+                .IsRequired()
+                .HasMaxLength(255);
+
+            entity.Property(mp => mp.Description)
+                .HasMaxLength(1000);
+
+            entity.Property(mp => mp.TotalEstimatedBudget)
+                .HasColumnType("decimal(18,2)");
+
+            entity.Property(mp => mp.ApprovalNotes)
+                .HasMaxLength(2000);
+
+            // Foreign key relationships
+            entity.HasOne(mp => mp.Project)
+                .WithMany()
+                .HasForeignKey(mp => mp.ProjectId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(mp => mp.CreatedBy)
+                .WithMany()
+                .HasForeignKey(mp => mp.CreatedById)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasOne(mp => mp.ApprovedBy)
+                .WithMany()
+                .HasForeignKey(mp => mp.ApprovedById)
+                .OnDelete(DeleteBehavior.SetNull);
+
+            // Indexes
+            entity.HasIndex(mp => mp.ProjectId).IsUnique();
+            entity.HasIndex(mp => mp.Status);
+            entity.HasIndex(mp => mp.CreatedAt);
+        });
+
+        // Configure ProjectPhase entity
+        modelBuilder.Entity<ProjectPhase>(entity =>
+        {
+            entity.HasKey(p => p.PhaseId);
+            
+            entity.Property(p => p.PhaseName)
+                .IsRequired()
+                .HasMaxLength(255);
+
+            entity.Property(p => p.Description)
+                .HasMaxLength(1000);
+
+            entity.Property(p => p.EstimatedBudget)
+                .HasColumnType("decimal(18,2)");
+
+            entity.Property(p => p.ActualCost)
+                .HasColumnType("decimal(18,2)");
+
+            entity.Property(p => p.WeightPercentage)
+                .HasColumnType("decimal(5,2)");
+
+            entity.Property(p => p.CompletionPercentage)
+                .HasColumnType("decimal(5,2)");
+
+            entity.Property(p => p.Prerequisites)
+                .HasMaxLength(500);
+
+            entity.Property(p => p.Notes)
+                .HasMaxLength(2000);
+
+            // Foreign key relationships
+            entity.HasOne(p => p.MasterPlan)
+                .WithMany(mp => mp.Phases)
+                .HasForeignKey(p => p.MasterPlanId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // Indexes
+            entity.HasIndex(p => p.MasterPlanId);
+            entity.HasIndex(p => p.PhaseOrder);
+            entity.HasIndex(p => p.Status);
+        });
+
+        // Configure ProjectMilestone entity
+        modelBuilder.Entity<ProjectMilestone>(entity =>
+        {
+            entity.HasKey(m => m.MilestoneId);
+            
+            entity.Property(m => m.MilestoneName)
+                .IsRequired()
+                .HasMaxLength(255);
+
+            entity.Property(m => m.Description)
+                .HasMaxLength(1000);
+
+            entity.Property(m => m.WeightPercentage)
+                .HasColumnType("decimal(5,2)");
+
+            entity.Property(m => m.CompletionCriteria)
+                .HasMaxLength(2000);
+
+            entity.Property(m => m.CompletionEvidence)
+                .HasMaxLength(1000);
+
+            entity.Property(m => m.Notes)
+                .HasMaxLength(2000);
+
+            // Foreign key relationships
+            entity.HasOne(m => m.MasterPlan)
+                .WithMany(mp => mp.Milestones)
+                .HasForeignKey(m => m.MasterPlanId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(m => m.Phase)
+                .WithMany()
+                .HasForeignKey(m => m.PhaseId)
+                .OnDelete(DeleteBehavior.SetNull);
+
+            entity.HasOne(m => m.VerifiedBy)
+                .WithMany()
+                .HasForeignKey(m => m.VerifiedById)
+                .OnDelete(DeleteBehavior.SetNull);
+
+            // Indexes
+            entity.HasIndex(m => m.MasterPlanId);
+            entity.HasIndex(m => m.PhaseId);
+            entity.HasIndex(m => m.Status);
+            entity.HasIndex(m => m.PlannedDate);
+        });
+
+        // Configure ProgressReport entity
+        modelBuilder.Entity<ProgressReport>(entity =>
+        {
+            entity.HasKey(pr => pr.ProgressReportId);
+            
+            entity.Property(pr => pr.OverallCompletionPercentage)
+                .HasColumnType("decimal(5,2)");
+
+            entity.Property(pr => pr.SchedulePerformanceIndex)
+                .HasColumnType("decimal(5,4)");
+
+            entity.Property(pr => pr.CostPerformanceIndex)
+                .HasColumnType("decimal(5,4)");
+
+            entity.Property(pr => pr.ActualCostToDate)
+                .HasColumnType("decimal(18,2)");
+
+            entity.Property(pr => pr.EstimatedCostAtCompletion)
+                .HasColumnType("decimal(18,2)");
+
+            entity.Property(pr => pr.BudgetVariance)
+                .HasColumnType("decimal(18,2)");
+
+            entity.Property(pr => pr.KeyAccomplishments)
+                .HasMaxLength(4000);
+
+            entity.Property(pr => pr.CurrentChallenges)
+                .HasMaxLength(4000);
+
+            entity.Property(pr => pr.UpcomingActivities)
+                .HasMaxLength(4000);
+
+            entity.Property(pr => pr.RiskSummary)
+                .HasMaxLength(2000);
+
+            entity.Property(pr => pr.QualityNotes)
+                .HasMaxLength(2000);
+
+            entity.Property(pr => pr.WeatherImpact)
+                .HasMaxLength(1000);
+
+            entity.Property(pr => pr.ResourceNotes)
+                .HasMaxLength(2000);
+
+            entity.Property(pr => pr.ExecutiveSummary)
+                .HasMaxLength(3000);
+
+            // Foreign key relationships
+            entity.HasOne(pr => pr.MasterPlan)
+                .WithMany(mp => mp.ProgressReports)
+                .HasForeignKey(pr => pr.MasterPlanId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(pr => pr.Project)
+                .WithMany()
+                .HasForeignKey(pr => pr.ProjectId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(pr => pr.CreatedBy)
+                .WithMany()
+                .HasForeignKey(pr => pr.CreatedById)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // Indexes
+            entity.HasIndex(pr => pr.MasterPlanId);
+            entity.HasIndex(pr => pr.ProjectId);
+            entity.HasIndex(pr => pr.ReportDate);
+            entity.HasIndex(pr => pr.HealthStatus);
+        });
+
+        // Configure PhaseProgress entity
+        modelBuilder.Entity<PhaseProgress>(entity =>
+        {
+            entity.HasKey(pp => pp.PhaseProgressId);
+            
+            entity.Property(pp => pp.CompletionPercentage)
+                .HasColumnType("decimal(5,2)");
+
+            entity.Property(pp => pp.PlannedCompletionPercentage)
+                .HasColumnType("decimal(5,2)");
+
+            entity.Property(pp => pp.ProgressVariance)
+                .HasColumnType("decimal(5,2)");
+
+            entity.Property(pp => pp.Notes)
+                .HasMaxLength(2000);
+
+            entity.Property(pp => pp.ActivitiesCompleted)
+                .HasMaxLength(2000);
+
+            entity.Property(pp => pp.Issues)
+                .HasMaxLength(2000);
+
+            // Foreign key relationships
+            entity.HasOne(pp => pp.ProgressReport)
+                .WithMany(pr => pr.PhaseProgressDetails)
+                .HasForeignKey(pp => pp.ProgressReportId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(pp => pp.Phase)
+                .WithMany()
+                .HasForeignKey(pp => pp.PhaseId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // Indexes
+            entity.HasIndex(pp => pp.ProgressReportId);
+            entity.HasIndex(pp => pp.PhaseId);
+        });
+
+        // Configure PhaseResource entity
+        modelBuilder.Entity<PhaseResource>(entity =>
+        {
+            entity.HasKey(pr => pr.PhaseResourceId);
+            
+            entity.Property(pr => pr.ResourceName)
+                .IsRequired()
+                .HasMaxLength(255);
+
+            entity.Property(pr => pr.Description)
+                .HasMaxLength(500);
+
+            entity.Property(pr => pr.Unit)
+                .IsRequired()
+                .HasMaxLength(50);
+
+            entity.Property(pr => pr.UnitCost)
+                .HasColumnType("decimal(18,2)");
+
+            entity.Property(pr => pr.TotalEstimatedCost)
+                .HasColumnType("decimal(18,2)");
+
+            entity.Property(pr => pr.ActualCost)
+                .HasColumnType("decimal(18,2)");
+
+            entity.Property(pr => pr.Supplier)
+                .HasMaxLength(255);
+
+            entity.Property(pr => pr.Notes)
+                .HasMaxLength(1000);
+
+            // Foreign key relationships
+            entity.HasOne(pr => pr.Phase)
+                .WithMany(p => p.Resources)
+                .HasForeignKey(pr => pr.PhaseId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // Indexes
+            entity.HasIndex(pr => pr.PhaseId);
+            entity.HasIndex(pr => pr.ResourceType);
+            entity.HasIndex(pr => pr.AllocationStatus);
+        });
+
+        // Update ProjectTask to include Phase relationship
+        modelBuilder.Entity<ProjectTask>(entity =>
+        {
+            // Add foreign key to Phase
+            entity.HasOne<ProjectPhase>()
+                .WithMany(p => p.Tasks)
+                .HasForeignKey(t => t.PhaseId)
+                .OnDelete(DeleteBehavior.SetNull);
+
+            // Add indexes for new fields
+            entity.HasIndex(t => t.PhaseId);
+            entity.HasIndex(t => t.Priority);
+            entity.HasIndex(t => t.CompletionPercentage);
         });
     }
 }

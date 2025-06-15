@@ -128,6 +128,9 @@ builder.Services.AddApiVersioning(options =>
     options.SubstituteApiVersionInUrl = true;
 });
 
+// Configure AutoMapper
+builder.Services.AddAutoMapper(typeof(Program));
+
 // Add caching services
 builder.Services.AddMemoryCache();
 
@@ -196,6 +199,9 @@ builder.Services.AddScoped<IWorkRequestService, WorkRequestService>();
 // Register Weekly Planning services
 builder.Services.AddScoped<IWeeklyWorkRequestService, WeeklyWorkRequestService>();
 builder.Services.AddScoped<IWeeklyReportService, WeeklyReportService>();
+
+// Register Master Plan services
+builder.Services.AddScoped<IMasterPlanService, MasterPlanService>();
 
 // Approval workflow services
 builder.Services.AddScoped<IWorkRequestApprovalService, WorkRequestApprovalService>();
