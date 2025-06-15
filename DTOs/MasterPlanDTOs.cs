@@ -5,10 +5,10 @@ namespace dotnet_rest_api.DTOs;
 // Master Plan DTOs
 public class MasterPlanDto
 {
-    public int Id { get; set; }
+    public Guid Id { get; set; }
     public string Title { get; set; } = string.Empty;
     public string? Description { get; set; }
-    public int ProjectId { get; set; }
+    public Guid ProjectId { get; set; }
     public DateTime StartDate { get; set; }
     public DateTime EndDate { get; set; }
     public string Status { get; set; } = string.Empty;
@@ -16,9 +16,11 @@ public class MasterPlanDto
     public string? Priority { get; set; }
     public string? Notes { get; set; }
     public DateTime CreatedAt { get; set; }
-    public DateTime UpdatedAt { get; set; }
-    public string? CreatedBy { get; set; }
-    public string? UpdatedBy { get; set; }
+    public DateTime? UpdatedAt { get; set; }
+    public Guid CreatedById { get; set; }
+    public string? ProjectName { get; set; }
+    public string? CreatedByName { get; set; }
+    public string? ApprovedByName { get; set; }
 }
 
 public class CreateMasterPlanRequest
@@ -48,14 +50,19 @@ public class UpdateMasterPlanRequest
 // Project Phase DTOs
 public class ProjectPhaseDto
 {
-    public int Id { get; set; }
+    public Guid Id { get; set; }
     public string Name { get; set; } = string.Empty;
     public string? Description { get; set; }
     public DateTime StartDate { get; set; }
     public DateTime EndDate { get; set; }
     public PhaseStatus Status { get; set; }
     public decimal CompletionPercentage { get; set; }
-    public int MasterPlanId { get; set; }
+    public Guid MasterPlanId { get; set; }
+    public int TasksCompleted { get; set; }
+    public int TotalTasks { get; set; }
+    public decimal ActualDurationDays { get; set; }
+    public bool IsOnSchedule { get; set; }
+    public bool IsOnBudget { get; set; }
 }
 
 public class CreateProjectPhaseRequest
@@ -64,6 +71,10 @@ public class CreateProjectPhaseRequest
     public string? Description { get; set; }
     public DateTime StartDate { get; set; }
     public DateTime EndDate { get; set; }
+    
+    // For compatibility with mapping profile
+    public DateTime PlannedStartDate => StartDate;
+    public DateTime PlannedEndDate => EndDate;
 }
 
 public class UpdateProjectPhaseRequest
@@ -79,14 +90,18 @@ public class UpdateProjectPhaseRequest
 // Project Milestone DTOs
 public class ProjectMilestoneDto
 {
-    public int Id { get; set; }
+    public Guid Id { get; set; }
     public string Name { get; set; } = string.Empty;
     public string? Description { get; set; }
     public DateTime DueDate { get; set; }
     public bool IsCompleted { get; set; }
     public DateTime? CompletedDate { get; set; }
-    public int MasterPlanId { get; set; }
+    public Guid MasterPlanId { get; set; }
     public string? Evidence { get; set; }
+    public string? PhaseName { get; set; }
+    public string? VerifiedByName { get; set; }
+    public int DaysFromPlanned { get; set; }
+    public bool IsOverdue { get; set; }
 }
 
 public class CreateProjectMilestoneRequest

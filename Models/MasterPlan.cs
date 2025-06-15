@@ -33,6 +33,12 @@ public class MasterPlan
     public int TotalPlannedDays { get; set; }
     
     /// <summary>
+    /// Total estimated budget for the entire plan
+    /// </summary>
+    [Column(TypeName = "decimal(18,2)")]
+    public decimal TotalEstimatedBudget { get; set; }
+    
+    /// <summary>
     /// Current version of the master plan (for tracking changes)
     /// </summary>
     public int Version { get; set; } = 1;

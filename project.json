@@ -1,0 +1,2290 @@
+[
+{
+"projectName": "44 สถานีผลิตน้ำบ้านนางเลง กปภ.สาขากบินทร์บุรี",
+"address": "ต.กบินทร์ อ.กบินทร์บุรี จ.ปราจีนบุรี 25110",
+"clientInfo": "44 สถานีผลิตน้ำบ้านนางเลง กปภ.สาขากบินทร์บุรี",
+"startDate": null,
+"estimatedEndDate": null,
+"projectManagerId":"4ffd1db8-ca56-4f5d-9b33-cc0cf12ba9a9",
+"team": "C",
+"connectionType": "MV",
+"connectionNotes": null,
+"totalCapacityKw": 190.38,
+"pvModuleCount": 334,
+"equipmentDetails": {
+"inverter125kw": 1,
+"inverter80kw": 0,
+"inverter60kw": 1,
+"inverter40kw": 0
+},
+"ftsValue": 5,
+"revenueValue": 1,
+"pqmValue": 1,
+"locationCoordinates": {
+"latitude": 13.9616361,
+"longitude": 101.729307
+}
+},
+{
+"projectName": "45 สถานีผลิตน้ำบางบริบูรณ์ กปภ.สาขาปราจีนบุรี",
+"address": "ต.ดงพระราม อ.เมืองปราจีนบุรี จ.ปราจีนบุรี 25000",
+"clientInfo": "45 สถานีผลิตน้ำบางบริบูรณ์ กปภ.สาขาปราจีนบุรี",
+"startDate": null,
+"estimatedEndDate": null,
+"projectManagerId":"4ffd1db8-ca56-4f5d-9b33-cc0cf12ba9a9",
+"team": "C",
+"connectionType": "MV",
+"connectionNotes": null,
+"totalCapacityKw": 416.1,
+"pvModuleCount": 730,
+"equipmentDetails": {
+"inverter125kw": 2,
+"inverter80kw": 2,
+"inverter60kw": 0,
+"inverter40kw": 0
+},
+"ftsValue": 13,
+"revenueValue": 1,
+"pqmValue": 1,
+"locationCoordinates": {
+"latitude": 14.0575,
+"longitude": 101.3917
+}
+},
+{
+"projectName": "46 สถานีผลิตน้ำท่าตูม กปภ.สาขาปราจีนบุรี",
+"address": "ต.ท่าตูม อ.ศรีมหาโพธิ จ.ปราจีนบุรี 25140",
+"clientInfo": "46 สถานีผลิตน้ำท่าตูม กปภ.สาขาปราจีนบุรี",
+"startDate": null,
+"estimatedEndDate": null,
+"projectManagerId":"4ffd1db8-ca56-4f5d-9b33-cc0cf12ba9a9",
+"team": "C",
+"connectionType": "MV",
+"connectionNotes": null,
+"totalCapacityKw": 216.6,
+"pvModuleCount": 380,
+"equipmentDetails": {
+"inverter125kw": 1,
+"inverter80kw": 1,
+"inverter60kw": 0,
+"inverter40kw": 0
+},
+"ftsValue": 6,
+"revenueValue": 1,
+"pqmValue": 1,
+"locationCoordinates": {
+"latitude": 13.93556,
+"longitude": 101.55021
+}
+},
+{
+"projectName": "47 สถานีผลิตน้ำศรีมหาโพธิ กปภ.สาขาปราจีนบุรี",
+"address": "ต.ศรีมหาโพธิ อ.ศรีมหาโพธิ จ.ปราจีนบุรี 25140",
+"clientInfo": "47 สถานีผลิตน้ำศรีมหาโพธิ กปภ.สาขาปราจีนบุรี",
+"startDate": null,
+"estimatedEndDate": null,
+"projectManagerId":"4ffd1db8-ca56-4f5d-9b33-cc0cf12ba9a9",
+"team": "C",
+"connectionType": "LV",
+"connectionNotes": null,
+"totalCapacityKw": 91.2,
+"pvModuleCount": 160,
+"equipmentDetails": {
+"inverter125kw": 0,
+"inverter80kw": 1,
+"inverter60kw": 0,
+"inverter40kw": 0
+},
+"ftsValue": 3,
+"revenueValue": 1,
+"pqmValue": 0,
+"locationCoordinates": {
+"latitude": 13.9648,
+"longitude": 101.509
+}
+},
+{
+"projectName": "48 สถานีผลิตน้ำวัฒนานคร กปภ.สาขาวัฒนานคร",
+"address": "ต.วัฒนานคร อ.วัฒนานคร จ.สระแก้ว 27160",
+"clientInfo": "48 สถานีผลิตน้ำวัฒนานคร กปภ.สาขาวัฒนานคร",
+"startDate": null,
+"estimatedEndDate": null,
+"projectManagerId":"4ffd1db8-ca56-4f5d-9b33-cc0cf12ba9a9",
+"team": "C",
+"connectionType": "MV",
+"connectionNotes": null,
+"totalCapacityKw": 125.4,
+"pvModuleCount": 220,
+"equipmentDetails": {
+"inverter125kw": 1,
+"inverter80kw": 0,
+"inverter60kw": 0,
+"inverter40kw": 0
+},
+"ftsValue": 4,
+"revenueValue": 1,
+"pqmValue": 1,
+"locationCoordinates": {
+"latitude": 13.7504806,
+"longitude": 102.322174
+}
+},
+{
+"projectName": "49 สถานีผลิตน้ำสระแก้ว-สระขวัญ กปภ.สาขาสระแก้ว",
+"address": "ต.สระแก้ว อ.เมืองสระแก้ว จ.สระแก้ว 27000",
+"clientInfo": "49 สถานีผลิตน้ำสระแก้ว-สระขวัญ กปภ.สาขาสระแก้ว",
+"startDate": null,
+"estimatedEndDate": null,
+"projectManagerId":"4ffd1db8-ca56-4f5d-9b33-cc0cf12ba9a9",
+"team": "C",
+"connectionType": "MV",
+"connectionNotes": null,
+"totalCapacityKw": 241.68,
+"pvModuleCount": 424,
+"equipmentDetails": {
+"inverter125kw": 2,
+"inverter80kw": 0,
+"inverter60kw": 0,
+"inverter40kw": 0
+},
+"ftsValue": 6,
+"revenueValue": 1,
+"pqmValue": 1,
+"locationCoordinates": {
+"latitude": 13.82389,
+"longitude": 102.05768
+}
+},
+{
+"projectName": "50 สถานีผลิตน้ำวังสำลี กปภ.สาขาสระแก้ว",
+"address": "ต.วังใหม่ อ.วังสมบูรณ์ จ.สระแก้ว 27250",
+"clientInfo": "50 สถานีผลิตน้ำวังสำลี กปภ.สาขาสระแก้ว",
+"startDate": null,
+"estimatedEndDate": null,
+"projectManagerId":"4ffd1db8-ca56-4f5d-9b33-cc0cf12ba9a9",
+"team": "C",
+"connectionType": "LV",
+"connectionNotes": null,
+"totalCapacityKw": 102.6,
+"pvModuleCount": 180,
+"equipmentDetails": {
+"inverter125kw": 0,
+"inverter80kw": 0,
+"inverter60kw": 1,
+"inverter40kw": 1
+},
+"ftsValue": 4,
+"revenueValue": 1,
+"pqmValue": 0,
+"locationCoordinates": {
+"latitude": 13.44051,
+"longitude": 102.1642
+}
+},
+{
+"projectName": "51 สถานีผลิตน้ำพระปรง กปภ.สาขาอรัญประเทศ",
+"address": "ต.ช่องกุ่ม อ.วัฒนานคร จ.สระแก้ว 27160",
+"clientInfo": "51 สถานีผลิตน้ำพระปรง กปภ.สาขาอรัญประเทศ",
+"startDate": null,
+"estimatedEndDate": null,
+"projectManagerId":"4ffd1db8-ca56-4f5d-9b33-cc0cf12ba9a9",
+"team": "C",
+"connectionType": "MV",
+"connectionNotes": null,
+"totalCapacityKw": 307.8,
+"pvModuleCount": 540,
+"equipmentDetails": {
+"inverter125kw": 2,
+"inverter80kw": 0,
+"inverter60kw": 1,
+"inverter40kw": 0
+},
+"ftsValue": 10,
+"revenueValue": 1,
+"pqmValue": 1,
+"locationCoordinates": {
+"latitude": 13.9974018,
+"longitude": 102.426753
+}
+},
+{
+"projectName": "52 สถานีผลิตน้ำบ้านด่าน กปภ.สาขาอรัญประเทศ",
+"address": "ต.บ้านด่าน อ.อรัญประเทศ จ.สระแก้ว 27120",
+"clientInfo": "52 สถานีผลิตน้ำบ้านด่าน กปภ.สาขาอรัญประเทศ",
+"startDate": null,
+"estimatedEndDate": null,
+"projectManagerId":"4ffd1db8-ca56-4f5d-9b33-cc0cf12ba9a9",
+"team": "C",
+"connectionType": "MV",
+"connectionNotes": null,
+"totalCapacityKw": 256.5,
+"pvModuleCount": 450,
+"equipmentDetails": {
+"inverter125kw": 2,
+"inverter80kw": 0,
+"inverter60kw": 0,
+"inverter40kw": 0
+},
+"ftsValue": 6,
+"revenueValue": 1,
+"pqmValue": 1,
+"locationCoordinates": {
+"latitude": 13.7225033,
+"longitude": 102.466237
+}
+},
+{
+"projectName": "53 โรงกรองน้ำเนินไร่สอง กปภ.สาขาแหลมฉบัง",
+"address": "ต.ทุ่งสุขลา อ.ศรีราชา จ.ชลบุรี 20230",
+"clientInfo": "53 โรงกรองน้ำเนินไร่สอง กปภ.สาขาแหลมฉบัง",
+"startDate": null,
+"estimatedEndDate": null,
+"projectManagerId":"4ffd1db8-ca56-4f5d-9b33-cc0cf12ba9a9",
+"team": "C",
+"connectionType": "MV",
+"connectionNotes": null,
+"totalCapacityKw": 175.56,
+"pvModuleCount": 308,
+"equipmentDetails": {
+"inverter125kw": 0,
+"inverter80kw": 2,
+"inverter60kw": 0,
+"inverter40kw": 0
+},
+"ftsValue": 6,
+"revenueValue": 1,
+"pqmValue": 1,
+"locationCoordinates": {
+"latitude": 13.09905,
+"longitude": 100.9368
+}
+},
+{
+"projectName": "54 สถานีจ่ายน้ำบางแสน กปภ.สาขาชลบุรี",
+"address": "ต.แสนสุข อ.เมืองชลบุรี จ.ชลบุรี 20130",
+"clientInfo": "54 สถานีจ่ายน้ำบางแสน กปภ.สาขาชลบุรี",
+"startDate": null,
+"estimatedEndDate": null,
+"projectManagerId":"4ffd1db8-ca56-4f5d-9b33-cc0cf12ba9a9",
+"team": "C",
+"connectionType": "MV",
+"connectionNotes": null,
+"totalCapacityKw": 175.56,
+"pvModuleCount": 308,
+"equipmentDetails": {
+"inverter125kw": 0,
+"inverter80kw": 2,
+"inverter60kw": 0,
+"inverter40kw": 0
+},
+"ftsValue": 5,
+"revenueValue": 1,
+"pqmValue": 1,
+"locationCoordinates": {
+"latitude": 13.29131,
+"longitude": 100.91221
+}
+},
+{
+"projectName": "55 สถานีผลิตน้ำบางพระ3 กปภ.สาขาชลบุรี",
+"address": "ต.บางพระ อ.ศรีราชา จ.ชลบุรี 20110",
+"clientInfo": "55 สถานีผลิตน้ำบางพระ3 กปภ.สาขาชลบุรี",
+"startDate": null,
+"estimatedEndDate": null,
+"projectManagerId":"4ffd1db8-ca56-4f5d-9b33-cc0cf12ba9a9",
+"team": "C",
+"connectionType": "MV",
+"connectionNotes": null,
+"totalCapacityKw": 689.7,
+"pvModuleCount": 1210,
+"equipmentDetails": {
+"inverter125kw": 4,
+"inverter80kw": 2,
+"inverter60kw": 0,
+"inverter40kw": 0
+},
+"ftsValue": 16,
+"revenueValue": 1,
+"pqmValue": 1,
+"locationCoordinates": {
+"latitude": 13.19835,
+"longitude": 100.9569
+}
+},
+{
+"projectName": "56 สถานีจ่ายน้ำเคหะชุมชนเสม็ด กปภ.สาขาชลบุรี",
+"address": "ต.เสม็ด อ.เมืองชลบุรี จ.ชลบุรี 20000",
+"clientInfo": "56 สถานีจ่ายน้ำเคหะชุมชนเสม็ด กปภ.สาขาชลบุรี",
+"startDate": null,
+"estimatedEndDate": null,
+"projectManagerId":"4ffd1db8-ca56-4f5d-9b33-cc0cf12ba9a9",
+"team": "C",
+"connectionType": "MV",
+"connectionNotes": null,
+"totalCapacityKw": 176.7,
+"pvModuleCount": 310,
+"equipmentDetails": {
+"inverter125kw": 0,
+"inverter80kw": 2,
+"inverter60kw": 0,
+"inverter40kw": 0
+},
+"ftsValue": 4,
+"revenueValue": 1,
+"pqmValue": 1,
+"locationCoordinates": {
+"latitude": 13.33293,
+"longitude": 100.95722
+}
+},
+{
+"projectName": "57 สถานีจ่ายน้ำเขาสุวรรณ กปภ.สาขาชลบุรี",
+"address": "ต.บ้านสวน อ.เมืองชลบุรี จ.ชลบุรี 20000",
+"clientInfo": "57 สถานีจ่ายน้ำเขาสุวรรณ กปภ.สาขาชลบุรี",
+"startDate": null,
+"estimatedEndDate": null,
+"projectManagerId":"4ffd1db8-ca56-4f5d-9b33-cc0cf12ba9a9",
+"team": "C",
+"connectionType": "MV",
+"connectionNotes": null,
+"totalCapacityKw": 263.34,
+"pvModuleCount": 462,
+"equipmentDetails": {
+"inverter125kw": 2,
+"inverter80kw": 0,
+"inverter60kw": 0,
+"inverter40kw": 0
+},
+"ftsValue": 8,
+"revenueValue": 1,
+"pqmValue": 1,
+"locationCoordinates": {
+"latitude": 13.374332,
+"longitude": 101.003933
+}
+},
+{
+"projectName": "58 สำนักงานประปาชลบุรี กปภ.สาขาชลบุรี",
+"address": "ต.บ้านสวน อ.เมืองชลบุรี จ.ชลบุรี 20000",
+"clientInfo": "58 สำนักงานประปาชลบุรี กปภ.สาขาชลบุรี",
+"startDate": null,
+"estimatedEndDate": null,
+"projectManagerId":"4ffd1db8-ca56-4f5d-9b33-cc0cf12ba9a9",
+"team": "C",
+"connectionType": "MV",
+"connectionNotes": null,
+"totalCapacityKw": 159.6,
+"pvModuleCount": 280,
+"equipmentDetails": {
+"inverter125kw": 0,
+"inverter80kw": 2,
+"inverter60kw": 0,
+"inverter40kw": 0
+},
+"ftsValue": 4,
+"revenueValue": 1,
+"pqmValue": 1,
+"locationCoordinates": {
+"latitude": 13.34561,
+"longitude": 100.97787
+}
+},
+{
+"projectName": "59 สถานีจ่ายน้ำบางปะกง (คลองหัวจาก) กปภ.สาขาชลบุรี",
+"address": "ต.บางปะกง อ.บางปะกง จ.ฉะเชิงเทรา 24130",
+"clientInfo": "59 สถานีจ่ายน้ำบางปะกง (คลองหัวจาก) กปภ.สาขาชลบุรี",
+"startDate": null,
+"estimatedEndDate": null,
+"projectManagerId":"4ffd1db8-ca56-4f5d-9b33-cc0cf12ba9a9",
+"team": "C",
+"connectionType": "LV",
+"connectionNotes": null,
+"totalCapacityKw": 102.6,
+"pvModuleCount": 180,
+"equipmentDetails": {
+"inverter125kw": 0,
+"inverter80kw": 0,
+"inverter60kw": 1,
+"inverter40kw": 1
+},
+"ftsValue": 4,
+"revenueValue": 1,
+"pqmValue": 0,
+"locationCoordinates": {
+"latitude": 13.50265,
+"longitude": 101.00348
+}
+},
+{
+"projectName": "60 สถานีผลิตน้ำบางน้ำเปรี้ยว กปภ.สาขาบางคล้า",
+"address": "ต.บางขนาก อ.บางน้ำเปรี้ยว จ.ฉะเชิงเทรา 24150",
+"clientInfo": "60 สถานีผลิตน้ำบางน้ำเปรี้ยว กปภ.สาขาบางคล้า",
+"startDate": null,
+"estimatedEndDate": null,
+"projectManagerId":"4ffd1db8-ca56-4f5d-9b33-cc0cf12ba9a9",
+"team": "C",
+"connectionType": "LV",
+"connectionNotes": null,
+"totalCapacityKw": 100.32,
+"pvModuleCount": 176,
+"equipmentDetails": {
+"inverter125kw": 0,
+"inverter80kw": 0,
+"inverter60kw": 1,
+"inverter40kw": 1
+},
+"ftsValue": 3,
+"revenueValue": 1,
+"pqmValue": 0,
+"locationCoordinates": {
+"latitude": 13.85949,
+"longitude": 101.1431
+}
+},
+{
+"projectName": "61 สถานีจ่ายน้ำหัวสำโรง กปภ.สาขาบางคล้า",
+"address": "ต.หัวสำโรง อ.แปลงยาว จ.ฉะเชิงเทรา 24190",
+"clientInfo": "61 สถานีจ่ายน้ำหัวสำโรง กปภ.สาขาบางคล้า",
+"startDate": null,
+"estimatedEndDate": null,
+"projectManagerId":"4ffd1db8-ca56-4f5d-9b33-cc0cf12ba9a9",
+"team": "C",
+"connectionType": "MV",
+"connectionNotes": null,
+"totalCapacityKw": 433.2,
+"pvModuleCount": 760,
+"equipmentDetails": {
+"inverter125kw": 0,
+"inverter80kw": 5,
+"inverter60kw": 0,
+"inverter40kw": 0
+},
+"ftsValue": 13,
+"revenueValue": 1,
+"pqmValue": 1,
+"locationCoordinates": {
+"latitude": 13.6569811,
+"longitude": 101.27179
+}
+},
+{
+"projectName": "62 สถานีจ่ายน้ำพิมพา กปภ.สาขาบางคล้า",
+"address": "ต.พิมพา อ.บางปะกง จ.ฉะเชิงเทรา 24180",
+"clientInfo": "62 สถานีจ่ายน้ำพิมพา กปภ.สาขาบางคล้า",
+"startDate": null,
+"estimatedEndDate": null,
+"projectManagerId":"4ffd1db8-ca56-4f5d-9b33-cc0cf12ba9a9",
+"team": "C",
+"connectionType": "LV",
+"connectionNotes": null,
+"totalCapacityKw": 75.24,
+"pvModuleCount": 132,
+"equipmentDetails": {
+"inverter125kw": 0,
+"inverter80kw": 1,
+"inverter60kw": 0,
+"inverter40kw": 0
+},
+"ftsValue": 3,
+"revenueValue": 1,
+"pqmValue": 0,
+"locationCoordinates": {
+"latitude": 13.61554,
+"longitude": 100.94481
+}
+},
+{
+"projectName": "63 สถานีผลิตน้ำคลองหลวงแพ่ง กปภ.สาขาบางคล้า",
+"address": "ต.คลองหลวงแพ่ง อ.เมืองฉะเชิงเทรา จ.ฉะเชิงเทรา 24000",
+"clientInfo": "63 สถานีผลิตน้ำคลองหลวงแพ่ง กปภ.สาขาบางคล้า",
+"startDate": null,
+"estimatedEndDate": null,
+"projectManagerId":"4ffd1db8-ca56-4f5d-9b33-cc0cf12ba9a9",
+"team": "C",
+"connectionType": "MV",
+"connectionNotes": null,
+"totalCapacityKw": 192.66,
+"pvModuleCount": 338,
+"equipmentDetails": {
+"inverter125kw": 0,
+"inverter80kw": 2,
+"inverter60kw": 0,
+"inverter40kw": 0
+},
+"ftsValue": 5,
+"revenueValue": 1,
+"pqmValue": 1,
+"locationCoordinates": {
+"latitude": 13.78145,
+"longitude": 100.94421
+}
+},
+{
+"projectName": "64 สถานีผลิตน้ำมาบยางพร กปภ.สาขาพัทยา",
+"address": "ต.มาบยางพร อ.ปลวกแดง จ.ระยอง 21140",
+"clientInfo": "64 สถานีผลิตน้ำมาบยางพร กปภ.สาขาพัทยา",
+"startDate": null,
+"estimatedEndDate": null,
+"projectManagerId":"4ffd1db8-ca56-4f5d-9b33-cc0cf12ba9a9",
+"team": "C",
+"connectionType": "MV",
+"connectionNotes": null,
+"totalCapacityKw": 633.84,
+"pvModuleCount": 1112,
+"equipmentDetails": {
+"inverter125kw": 5,
+"inverter80kw": 0,
+"inverter60kw": 0,
+"inverter40kw": 0
+},
+"ftsValue": 16,
+"revenueValue": 2,
+"pqmValue": 1,
+"locationCoordinates": {
+"latitude": 13.0178,
+"longitude": 101.13372
+}
+},
+{
+"projectName": "65 สถานีผลิตน้ำแม่ข่ายบ้านบึง กปภ.สาขาบ้านบึง",
+"address": "ต.บ้านบึง อ.บ้านบึง จ.ชลบุรี 20170",
+"clientInfo": "65 สถานีผลิตน้ำแม่ข่ายบ้านบึง กปภ.สาขาบ้านบึง",
+"startDate": null,
+"estimatedEndDate": null,
+"projectManagerId":"4ffd1db8-ca56-4f5d-9b33-cc0cf12ba9a9",
+"team": "C",
+"connectionType": "MV",
+"connectionNotes": "เสามิเตอร์ไกล้เสาหม้อแปลง(ระยะปักเสาไม่พอ)",
+"totalCapacityKw": 100.32,
+"pvModuleCount": 176,
+"equipmentDetails": {
+"inverter125kw": 0,
+"inverter80kw": 0,
+"inverter60kw": 1,
+"inverter40kw": 1
+},
+"ftsValue": 3,
+"revenueValue": 1,
+"pqmValue": 1,
+"locationCoordinates": {
+"latitude": 13.29932,
+"longitude": 101.10879
+}
+},
+{
+"projectName": "66 สถานีผลิตน้ำเกาะขนุน กปภ.สาขาพนมสารคาม",
+"address": "ต.เกาะขนุน อ.พนมสารคาม จ.ฉะเชิงเทรา 24120",
+"clientInfo": "66 สถานีผลิตน้ำเกาะขนุน กปภ.สาขาพนมสารคาม",
+"startDate": null,
+"estimatedEndDate": null,
+"projectManagerId":"4ffd1db8-ca56-4f5d-9b33-cc0cf12ba9a9",
+"team": "C",
+"connectionType": "MV",
+"connectionNotes": null,
+"totalCapacityKw": 524.4,
+"pvModuleCount": 920,
+"equipmentDetails": {
+"inverter125kw": 4,
+"inverter80kw": 0,
+"inverter60kw": 0,
+"inverter40kw": 0
+},
+"ftsValue": 15,
+"revenueValue": 1,
+"pqmValue": 1,
+"locationCoordinates": {
+"latitude": 13.7238,
+"longitude": 101.3821
+}
+},
+{
+"projectName": "67 สถานีผลิตน้ำท่าตะเกียบ กปภ.สาขาพนมสารคาม",
+"address": "ต.ท่าตะเกียบ อ.ท่าตะเกียบ จ.ฉะเชิงเทรา 24160",
+"clientInfo": "67 สถานีผลิตน้ำท่าตะเกียบ กปภ.สาขาพนมสารคาม",
+"startDate": null,
+"estimatedEndDate": null,
+"projectManagerId":"4ffd1db8-ca56-4f5d-9b33-cc0cf12ba9a9",
+"team": "C",
+"connectionType": "MV",
+"connectionNotes": null,
+"totalCapacityKw": 131.1,
+"pvModuleCount": 230,
+"equipmentDetails": {
+"inverter125kw": 1,
+"inverter80kw": 0,
+"inverter60kw": 0,
+"inverter40kw": 0
+},
+"ftsValue": 4,
+"revenueValue": 1,
+"pqmValue": 1,
+"locationCoordinates": {
+"latitude": 13.449552,
+"longitude": 101.65588
+}
+},
+{
+"projectName": "68 สถานีจ่ายน้ำพานทอง กปภ.สาขาพนัสนิคม",
+"address": "ต.พานทอง อ.พานทอง จ.ชลบุรี 20160",
+"clientInfo": "68 สถานีจ่ายน้ำพานทอง กปภ.สาขาพนัสนิคม",
+"startDate": null,
+"estimatedEndDate": null,
+"projectManagerId":"4ffd1db8-ca56-4f5d-9b33-cc0cf12ba9a9",
+"team": "C",
+"connectionType": "MV",
+"connectionNotes": null,
+"totalCapacityKw": 437.76,
+"pvModuleCount": 768,
+"equipmentDetails": {
+"inverter125kw": 3,
+"inverter80kw": 0,
+"inverter60kw": 0,
+"inverter40kw": 0
+},
+"ftsValue": 11,
+"revenueValue": 1,
+"pqmValue": 1,
+"locationCoordinates": {
+"latitude": 13.45613,
+"longitude": 101.0821
+}
+},
+{
+"projectName": "69 สถานีผลิตน้ำท่าโพธิ์ กปภ.สาขาพนัสนิคม",
+"address": "ต.กุฏโง้ง อ.พนัสนิคม จ.ชลบุรี 20140",
+"clientInfo": "69 สถานีผลิตน้ำท่าโพธิ์ กปภ.สาขาพนัสนิคม",
+"startDate": null,
+"estimatedEndDate": null,
+"projectManagerId":"4ffd1db8-ca56-4f5d-9b33-cc0cf12ba9a9",
+"team": "C",
+"connectionType": "MV",
+"connectionNotes": null,
+"totalCapacityKw": 269.04,
+"pvModuleCount": 472,
+"equipmentDetails": {
+"inverter125kw": 2,
+"inverter80kw": 0,
+"inverter60kw": 0,
+"inverter40kw": 0
+},
+"ftsValue": 8,
+"revenueValue": 1,
+"pqmValue": 1,
+"locationCoordinates": {
+"latitude": 13.43433,
+"longitude": 101.17682
+}
+},
+{
+"projectName": "70 สถานีผลิตน้ำหนองกลางดง กปภ.สาขาพัทยา",
+"address": "ต.บึง อ.ศรีราชา จ.ชลบุรี 20230",
+"clientInfo": "70 สถานีผลิตน้ำหนองกลางดง กปภ.สาขาพัทยา",
+"startDate": null,
+"estimatedEndDate": null,
+"projectManagerId":"4ffd1db8-ca56-4f5d-9b33-cc0cf12ba9a9",
+"team": "C",
+"connectionType": "MV",
+"connectionNotes": null,
+"totalCapacityKw": 999.78,
+"pvModuleCount": 1754,
+"equipmentDetails": {
+"inverter125kw": 5,
+"inverter80kw": 3,
+"inverter60kw": 1,
+"inverter40kw": 0
+},
+"ftsValue": 24,
+"revenueValue": 2,
+"pqmValue": 1,
+"locationCoordinates": {
+"latitude": 13.04942,
+"longitude": 100.99847
+}
+},
+{
+"projectName": "71 สถานีผลิตน้ำศรีราชา กปภ.สาขาศรีราชา",
+"address": "ต.หนองขาม อ.ศรีราชา จ.ชลบุรี 20110",
+"clientInfo": "71 สถานีผลิตน้ำศรีราชา กปภ.สาขาศรีราชา",
+"startDate": null,
+"estimatedEndDate": null,
+"projectManagerId":"4ffd1db8-ca56-4f5d-9b33-cc0cf12ba9a9",
+"team": "C",
+"connectionType": "MV",
+"connectionNotes": null,
+"totalCapacityKw": 191.52,
+"pvModuleCount": 336,
+"equipmentDetails": {
+"inverter125kw": 1,
+"inverter80kw": 1,
+"inverter60kw": 0,
+"inverter40kw": 0
+},
+"ftsValue": 5,
+"revenueValue": 1,
+"pqmValue": 1,
+"locationCoordinates": {
+"latitude": 13.14487,
+"longitude": 101.01761
+}
+},
+{
+"projectName": "75 สถานีผลิตน้ำโชคชัย กปภ.สาขาโชคชัย",
+"address": "ต.โชคชัย อ.โชคชัย จ.นครราชสีมา 30190",
+"clientInfo": "75 สถานีผลิตน้ำโชคชัย กปภ.สาขาโชคชัย",
+"startDate": null,
+"estimatedEndDate": null,
+"projectManagerId":"4ffd1db8-ca56-4f5d-9b33-cc0cf12ba9a9",
+"team": "E1",
+"connectionType": "LV",
+"connectionNotes": "เสาหม้อแปลงไม่มีพื้นที่ในการทำZero Export แรงสูง",
+"totalCapacityKw": 171.0,
+"pvModuleCount": 300,
+"equipmentDetails": {
+"inverter125kw": 1,
+"inverter80kw": 0,
+"inverter60kw": 1,
+"inverter40kw": 0
+},
+"ftsValue": 6,
+"revenueValue": 1,
+"pqmValue": 0,
+"locationCoordinates": {
+"latitude": 14.72746,
+"longitude": 102.16276
+}
+},
+{
+"projectName": "76 สถานีผลิตน้ำพลับพลา กปภ.สาขาโชคชัย",
+"address": "ต.พลับพลา อ.โชคชัย จ.นครราชสีมา 30190",
+"clientInfo": "76 สถานีผลิตน้ำพลับพลา กปภ.สาขาโชคชัย",
+"startDate": null,
+"estimatedEndDate": null,
+"projectManagerId":"4ffd1db8-ca56-4f5d-9b33-cc0cf12ba9a9",
+"team": "E1",
+"connectionType": "MV",
+"connectionNotes": null,
+"totalCapacityKw": 344.28,
+"pvModuleCount": 604,
+"equipmentDetails": {
+"inverter125kw": 2,
+"inverter80kw": 0,
+"inverter60kw": 1,
+"inverter40kw": 0
+},
+"ftsValue": 10,
+"revenueValue": 2,
+"pqmValue": 1,
+"locationCoordinates": {
+"latitude": 14.71361,
+"longitude": 102.16574
+}
+},
+{
+"projectName": "78 สถานีผลิตน้ำอ่างเก็บน้ำลำเชียงไกร(ตอนบน) กปภ.สาขาด่านขุนทด",
+"address": "ต.บ้านเก่า อ.ด่านขุนทด จ.นครราชสีมา 30210",
+"clientInfo": "78 สถานีผลิตน้ำอ่างเก็บน้ำลำเชียงไกร(ตอนบน) กปภ.สาขาด่านขุนทด",
+"startDate": null,
+"estimatedEndDate": null,
+"projectManagerId":"4ffd1db8-ca56-4f5d-9b33-cc0cf12ba9a9",
+"team": "E1",
+"connectionType": "MV",
+"connectionNotes": null,
+"totalCapacityKw": 129.96,
+"pvModuleCount": 228,
+"equipmentDetails": {
+"inverter125kw": 1,
+"inverter80kw": 0,
+"inverter60kw": 0,
+"inverter40kw": 0
+},
+"ftsValue": 4,
+"revenueValue": 1,
+"pqmValue": 1,
+"locationCoordinates": {
+"latitude": 15.1947,
+"longitude": 101.6457
+}
+},
+{
+"projectName": "81 สถานีจ่ายน้ำปักธงชัย กปภ.สาขาปักธงชัย",
+"address": "ต.งิ้ว อ.ปักธงชัย จ.นครราชสีมา 30150",
+"clientInfo": "81 สถานีจ่ายน้ำปักธงชัย กปภ.สาขาปักธงชัย",
+"startDate": null,
+"estimatedEndDate": null,
+"projectManagerId":"4ffd1db8-ca56-4f5d-9b33-cc0cf12ba9a9",
+"team": "E1",
+"connectionType": "MV",
+"connectionNotes": null,
+"totalCapacityKw": 216.6,
+"pvModuleCount": 380,
+"equipmentDetails": {
+"inverter125kw": 1,
+"inverter80kw": 0,
+"inverter60kw": 1,
+"inverter40kw": 0
+},
+"ftsValue": 7,
+"revenueValue": 1,
+"pqmValue": 1,
+"locationCoordinates": {
+"latitude": 14.69534,
+"longitude": 102.01376
+}
+},
+{
+"projectName": "82 สถานีผลิตน้ำราชประชา กปภ.สาขาปากช่อง",
+"address": "ต.ปากข่อง อ.ปากช่อง จ.นครราชสีมา 30130",
+"clientInfo": "82 สถานีผลิตน้ำราชประชา กปภ.สาขาปากช่อง",
+"startDate": null,
+"estimatedEndDate": null,
+"projectManagerId":"4ffd1db8-ca56-4f5d-9b33-cc0cf12ba9a9",
+"team": "E1",
+"connectionType": "MV",
+"connectionNotes": null,
+"totalCapacityKw": 312.36,
+"pvModuleCount": 548,
+"equipmentDetails": {
+"inverter125kw": 1,
+"inverter80kw": 2,
+"inverter60kw": 0,
+"inverter40kw": 0
+},
+"ftsValue": 9,
+"revenueValue": 1,
+"pqmValue": 1,
+"locationCoordinates": {
+"latitude": 14.688,
+"longitude": 101.40793
+}
+},
+{
+"projectName": "102 โรงกรองน้ำโนนจาน กปภ.สาขาจัตุรัส",
+"address": "ต.ละหาน อ.จัตุรัส จ.ชัยภูมิ 36130",
+"clientInfo": "102 โรงกรองน้ำโนนจาน กปภ.สาขาจัตุรัส",
+"startDate": null,
+"estimatedEndDate": null,
+"projectManagerId":"4ffd1db8-ca56-4f5d-9b33-cc0cf12ba9a9",
+"team": "E1",
+"connectionType": "MV",
+"connectionNotes": null,
+"totalCapacityKw": 139.08,
+"pvModuleCount": 244,
+"equipmentDetails": {
+"inverter125kw": 1,
+"inverter80kw": 0,
+"inverter60kw": 0,
+"inverter40kw": 0
+},
+"ftsValue": 4,
+"revenueValue": 1,
+"pqmValue": 1,
+"locationCoordinates": {
+"latitude": 15.63778,
+"longitude": 101.93905
+}
+},
+{
+"projectName": "103 โรงกรองน้ำนิเวศรัตน์ กปภ.สาขาชัยภูมิ",
+"address": "ต.ในเมือง อ.เมืองชัยภูมิ จ.ชัยภูมิ 36000",
+"clientInfo": "103 โรงกรองน้ำนิเวศรัตน์ กปภ.สาขาชัยภูมิ",
+"startDate": null,
+"estimatedEndDate": null,
+"projectManagerId":"4ffd1db8-ca56-4f5d-9b33-cc0cf12ba9a9",
+"team": "E1",
+"connectionType": "MV",
+"connectionNotes": null,
+"totalCapacityKw": 176.7,
+"pvModuleCount": 310,
+"equipmentDetails": {
+"inverter125kw": 1,
+"inverter80kw": 0,
+"inverter60kw": 0,
+"inverter40kw": 1
+},
+"ftsValue": 5,
+"revenueValue": 1,
+"pqmValue": 1,
+"locationCoordinates": {
+"latitude": 15.815,
+"longitude": 102.03722
+}
+},
+{
+"projectName": "104 โรงกรองน้ำบ้านเขว้า กปภ.สาขาชัยภูมิ",
+"address": "ต.บ้านเขว้า อ.บ้านเขว้า จ.ชัยภูมิ 36170",
+"clientInfo": "104 โรงกรองน้ำบ้านเขว้า กปภ.สาขาชัยภูมิ",
+"startDate": null,
+"estimatedEndDate": null,
+"projectManagerId":"4ffd1db8-ca56-4f5d-9b33-cc0cf12ba9a9",
+"team": "E1",
+"connectionType": "LV",
+"connectionNotes": null,
+"totalCapacityKw": 104.88,
+"pvModuleCount": 184,
+"equipmentDetails": {
+"inverter125kw": 1,
+"inverter80kw": 0,
+"inverter60kw": 0,
+"inverter40kw": 0
+},
+"ftsValue": 4,
+"revenueValue": 1,
+"pqmValue": 0,
+"locationCoordinates": {
+"latitude": 15.7766,
+"longitude": 101.90968
+}
+},
+{
+"projectName": "105 สถานีผลิตน้ำบ้านเล่า กปภ.สาขาชัยภูมิ",
+"address": "ต.บ้านเล่า อ.เมืองชัยภูมิ จ.ชัยภูมิ 36000",
+"clientInfo": "105 สถานีผลิตน้ำบ้านเล่า กปภ.สาขาชัยภูมิ",
+"startDate": null,
+"estimatedEndDate": null,
+"projectManagerId":"4ffd1db8-ca56-4f5d-9b33-cc0cf12ba9a9",
+"team": "E1",
+"connectionType": "LV",
+"connectionNotes": null,
+"totalCapacityKw": 84.36,
+"pvModuleCount": 148,
+"equipmentDetails": {
+"inverter125kw": 0,
+"inverter80kw": 1,
+"inverter60kw": 0,
+"inverter40kw": 0
+},
+"ftsValue": 4,
+"revenueValue": 1,
+"pqmValue": 0,
+"locationCoordinates": {
+"latitude": 15.86342,
+"longitude": 102.0601
+}
+},
+{
+"projectName": "106 สถานีผลิตน้ำหนองสังข์ กปภ.สาขาชัยภูมิ",
+"address": "ต.ในเมือง อ.เมืองชัยภูมิ จ.ชัยภูมิ 36000",
+"clientInfo": "106 สถานีผลิตน้ำหนองสังข์ กปภ.สาขาชัยภูมิ",
+"startDate": null,
+"estimatedEndDate": null,
+"projectManagerId":"4ffd1db8-ca56-4f5d-9b33-cc0cf12ba9a9",
+"team": "E1",
+"connectionType": "MV",
+"connectionNotes": "หม้อแปลง และมิเตอร์ อยู่บนเสาต้นเดียวกัน",
+"totalCapacityKw": 124.26,
+"pvModuleCount": 218,
+"equipmentDetails": {
+"inverter125kw": 1,
+"inverter80kw": 0,
+"inverter60kw": 0,
+"inverter40kw": 0
+},
+"ftsValue": 4,
+"revenueValue": 1,
+"pqmValue": 1,
+"locationCoordinates": {
+"latitude": 15.78925,
+"longitude": 102.02988
+}
+},
+{
+"projectName": "77 สำนักงานประปาโนนสูง กปภ.สาขาโนนสูง",
+"address": "ต.โนนสูง อ.โนนสูง จ.นครราชสีมา 30160",
+"clientInfo": "77 สำนักงานประปาโนนสูง กปภ.สาขาโนนสูง",
+"startDate": null,
+"estimatedEndDate": null,
+"projectManagerId":"4ffd1db8-ca56-4f5d-9b33-cc0cf12ba9a9",
+"team": "E2",
+"connectionType": "LV",
+"connectionNotes": null,
+"totalCapacityKw": 99.18,
+"pvModuleCount": 174,
+"equipmentDetails": {
+"inverter125kw": 1,
+"inverter80kw": 0,
+"inverter60kw": 0,
+"inverter40kw": 0
+},
+"ftsValue": 3,
+"revenueValue": 1,
+"pqmValue": 0,
+"locationCoordinates": {
+"latitude": 15.16528,
+"longitude": 102.24806
+}
+},
+{
+"projectName": "79 สถานีจ่ายน้ำรุ่งธนาแลนด์ กปภ.สาขานครราชสีมา",
+"address": "ต.หนองไข่น้ำ อ.เมืองนครราชสีมา จ.นครราชสีมา 30310",
+"clientInfo": "79 สถานีจ่ายน้ำรุ่งธนาแลนด์ กปภ.สาขานครราชสีมา",
+"startDate": null,
+"estimatedEndDate": null,
+"projectManagerId":"4ffd1db8-ca56-4f5d-9b33-cc0cf12ba9a9",
+"team": "E2",
+"connectionType": "LV",
+"connectionNotes": null,
+"totalCapacityKw": 153.9,
+"pvModuleCount": 270,
+"equipmentDetails": {
+"inverter125kw": 1,
+"inverter80kw": 0,
+"inverter60kw": 0,
+"inverter40kw": 0
+},
+"ftsValue": 4,
+"revenueValue": 1,
+"pqmValue": 0,
+"locationCoordinates": {
+"latitude": 15.08405,
+"longitude": 102.18779
+}
+},
+{
+"projectName": "80 สถานีจ่ายน้ำจอหอ กปภ.สาขานครราชสีมา",
+"address": "ต.จอหอ อ.เมืองนครราชสีมา จ.นครราชสีมา 30310",
+"clientInfo": "80 สถานีจ่ายน้ำจอหอ กปภ.สาขานครราชสีมา",
+"startDate": null,
+"estimatedEndDate": null,
+"projectManagerId":"4ffd1db8-ca56-4f5d-9b33-cc0cf12ba9a9",
+"team": "E2",
+"connectionType": "LV",
+"connectionNotes": null,
+"totalCapacityKw": 93.48,
+"pvModuleCount": 164,
+"equipmentDetails": {
+"inverter125kw": 0,
+"inverter80kw": 1,
+"inverter60kw": 0,
+"inverter40kw": 0
+},
+"ftsValue": 2,
+"revenueValue": 1,
+"pqmValue": 0,
+"locationCoordinates": {
+"latitude": 15.03017,
+"longitude": 102.14252
+}
+},
+{
+"projectName": "83 สำนักงานประปาพิมาย กปภ.สาขาพิมาย",
+"address": "ต.ในเมือง อ.พิมาย จ.นครราชสีมา 30130",
+"clientInfo": "83 สำนักงานประปาพิมาย กปภ.สาขาพิมาย",
+"startDate": null,
+"estimatedEndDate": null,
+"projectManagerId":"4ffd1db8-ca56-4f5d-9b33-cc0cf12ba9a9",
+"team": "E2",
+"connectionType": "LV",
+"connectionNotes": null,
+"totalCapacityKw": 70.68,
+"pvModuleCount": 124,
+"equipmentDetails": {
+"inverter125kw": 0,
+"inverter80kw": 1,
+"inverter60kw": 0,
+"inverter40kw": 0
+},
+"ftsValue": 3,
+"revenueValue": 1,
+"pqmValue": 0,
+"locationCoordinates": {
+"latitude": 15.22544,
+"longitude": 102.49364
+}
+},
+{
+"projectName": "107 สำนักงานประปาเขต 9 กปภ.เขต 9",
+"address": "ต.สันนาเม็ง อ.สันทราย จ.เชียงใหม่ 50210",
+"clientInfo": "107 สำนักงานประปาเขต 9 กปภ.เขต 9",
+"startDate": null,
+"estimatedEndDate": null,
+"projectManagerId":"4ffd1db8-ca56-4f5d-9b33-cc0cf12ba9a9",
+"team": "N",
+"connectionType": "MV",
+"connectionNotes": null,
+"totalCapacityKw": 125.4,
+"pvModuleCount": 220,
+"equipmentDetails": {
+"inverter125kw": 1,
+"inverter80kw": 0,
+"inverter60kw": 0,
+"inverter40kw": 0
+},
+"ftsValue": 4,
+"revenueValue": 1,
+"pqmValue": 1,
+"locationCoordinates": {
+"latitude": 18.82284,
+"longitude": 99.04928
+}
+},
+{
+"projectName": "108 สถานีผลิตน้ำแม่กวง กปภ.สาขาเชียงใหม่",
+"address": "ต.ลวงเหนือ อ.ดอยสะเก็ด จ.เชียงใหม่ 50220",
+"clientInfo": "108 สถานีผลิตน้ำแม่กวง กปภ.สาขาเชียงใหม่",
+"startDate": null,
+"estimatedEndDate": null,
+"projectManagerId":"4ffd1db8-ca56-4f5d-9b33-cc0cf12ba9a9",
+"team": "N",
+"connectionType": "MV",
+"connectionNotes": null,
+"totalCapacityKw": 112.86,
+"pvModuleCount": 198,
+"equipmentDetails": {
+"inverter125kw": 1,
+"inverter80kw": 0,
+"inverter60kw": 0,
+"inverter40kw": 0
+},
+"ftsValue": 3,
+"revenueValue": 1,
+"pqmValue": 1,
+"locationCoordinates": {
+"latitude": 18.93591,
+"longitude": 99.14026
+}
+},
+{
+"projectName": "109 สถานีผลิตน้ำแม่แฝก กปภ.สาขาเชียงใหม่",
+"address": "ต.แม่แฝก อ.สันทราย จ.เชียงใหม่ 50290",
+"clientInfo": "109 สถานีผลิตน้ำแม่แฝก กปภ.สาขาเชียงใหม่",
+"startDate": null,
+"estimatedEndDate": null,
+"projectManagerId":"4ffd1db8-ca56-4f5d-9b33-cc0cf12ba9a9",
+"team": "N",
+"connectionType": "MV",
+"connectionNotes": null,
+"totalCapacityKw": 314.64,
+"pvModuleCount": 552,
+"equipmentDetails": {
+"inverter125kw": 2,
+"inverter80kw": 0,
+"inverter60kw": 0,
+"inverter40kw": 1
+},
+"ftsValue": 8,
+"revenueValue": 1,
+"pqmValue": 1,
+"locationCoordinates": {
+"latitude": 19.01413,
+"longitude": 98.97117
+}
+},
+{
+"projectName": "110 สถานีจ่ายน้ำสันทราย กปภ.สาขาเชียงใหม่",
+"address": "ต.หนองจ๊อม อ.สันทราย จ.เชียงใหม่ 50210",
+"clientInfo": "110 สถานีจ่ายน้ำสันทราย กปภ.สาขาเชียงใหม่",
+"startDate": null,
+"estimatedEndDate": null,
+"projectManagerId":"4ffd1db8-ca56-4f5d-9b33-cc0cf12ba9a9",
+"team": "N",
+"connectionType": "LV",
+"connectionNotes": null,
+"totalCapacityKw": 102.6,
+"pvModuleCount": 180,
+"equipmentDetails": {
+"inverter125kw": 1,
+"inverter80kw": 0,
+"inverter60kw": 0,
+"inverter40kw": 0
+},
+"ftsValue": 3,
+"revenueValue": 1,
+"pqmValue": 0,
+"locationCoordinates": {
+"latitude": 18.8411346,
+"longitude": 99.0257477
+}
+},
+{
+"projectName": "111 สถานีผลิตน้ำแม่ริม กปภ.สาขาแม่ริม",
+"address": "ต.ริมใต้ อ.แม่ริม จ.เชียงใหม่ 50180",
+"clientInfo": "111 สถานีผลิตน้ำแม่ริม กปภ.สาขาแม่ริม",
+"startDate": null,
+"estimatedEndDate": null,
+"projectManagerId":"4ffd1db8-ca56-4f5d-9b33-cc0cf12ba9a9",
+"team": "N",
+"connectionType": "MV",
+"connectionNotes": null,
+"totalCapacityKw": 282.72,
+"pvModuleCount": 496,
+"equipmentDetails": {
+"inverter125kw": 2,
+"inverter80kw": 0,
+"inverter60kw": 0,
+"inverter40kw": 0
+},
+"ftsValue": 7,
+"revenueValue": 1,
+"pqmValue": 1,
+"locationCoordinates": {
+"latitude": 18.91163,
+"longitude": 98.9551
+}
+},
+{
+"projectName": "112 โรงสูบแรงสูงแม่สาย กปภ.สาขาแม่สาย",
+"address": "ต.เวียงพางคำ อ.แม่สาย จ.เชียงราย 57130",
+"clientInfo": "112 โรงสูบแรงสูงแม่สาย กปภ.สาขาแม่สาย",
+"startDate": null,
+"estimatedEndDate": null,
+"projectManagerId":"4ffd1db8-ca56-4f5d-9b33-cc0cf12ba9a9",
+"team": "N",
+"connectionType": "MV",
+"connectionNotes": null,
+"totalCapacityKw": 133.38,
+"pvModuleCount": 234,
+"equipmentDetails": {
+"inverter125kw": 0,
+"inverter80kw": 1,
+"inverter60kw": 1,
+"inverter40kw": 0
+},
+"ftsValue": 5,
+"revenueValue": 2,
+"pqmValue": 1,
+"locationCoordinates": {
+"latitude": 20.439479,
+"longitude": 99.880328
+}
+},
+{
+"projectName": "113 สถานีผลิตน้ำเกาะช้าง กปภ.สาขาแม่สาย",
+"address": "ต.เกาะช้าง อ.แม่สาย จ.เชียงราย 57130",
+"clientInfo": "113 สถานีผลิตน้ำเกาะช้าง กปภ.สาขาแม่สาย",
+"startDate": null,
+"estimatedEndDate": null,
+"projectManagerId":"4ffd1db8-ca56-4f5d-9b33-cc0cf12ba9a9",
+"team": "N",
+"connectionType": "LV",
+"connectionNotes": null,
+"totalCapacityKw": 102.6,
+"pvModuleCount": 180,
+"equipmentDetails": {
+"inverter125kw": 1,
+"inverter80kw": 0,
+"inverter60kw": 0,
+"inverter40kw": 0
+},
+"ftsValue": 3,
+"revenueValue": 1,
+"pqmValue": 0,
+"locationCoordinates": {
+"latitude": 20.454253,
+"longitude": 99.964188
+}
+},
+{
+"projectName": "114 สถานีผลิตน้ำดอยจอมทอง กปภ.สาขาพะเยา",
+"address": "ต.บ้านต๋อม อ.เมืองพะเยา จ.พะเยา 56000",
+"clientInfo": "114 สถานีผลิตน้ำดอยจอมทอง กปภ.สาขาพะเยา",
+"startDate": null,
+"estimatedEndDate": null,
+"projectManagerId":"4ffd1db8-ca56-4f5d-9b33-cc0cf12ba9a9",
+"team": "N",
+"connectionType": "MV",
+"connectionNotes": null,
+"totalCapacityKw": 435.48,
+"pvModuleCount": 764,
+"equipmentDetails": {
+"inverter125kw": 3,
+"inverter80kw": 0,
+"inverter60kw": 0,
+"inverter40kw": 1
+},
+"ftsValue": 11,
+"revenueValue": 1,
+"pqmValue": 1,
+"locationCoordinates": {
+"latitude": 19.1814,
+"longitude": 99.88883
+}
+},
+{
+"projectName": "115 สถานีผลิตน้ำพระบาท สระ 1 กปภ.สาขาลำปาง",
+"address": "ต.พระบาท อ.เมืองลำปาง จ.ลำปาง 52000",
+"clientInfo": "115 สถานีผลิตน้ำพระบาท สระ 1 กปภ.สาขาลำปาง",
+"startDate": null,
+"estimatedEndDate": null,
+"projectManagerId":"4ffd1db8-ca56-4f5d-9b33-cc0cf12ba9a9",
+"team": "N",
+"connectionType": "MV",
+"connectionNotes": null,
+"totalCapacityKw": 254.22,
+"pvModuleCount": 446,
+"equipmentDetails": {
+"inverter125kw": 2,
+"inverter80kw": 0,
+"inverter60kw": 0,
+"inverter40kw": 0
+},
+"ftsValue": 7,
+"revenueValue": 1,
+"pqmValue": 1,
+"locationCoordinates": {
+"latitude": 18.28596,
+"longitude": 99.51347
+}
+},
+{
+"projectName": "116 สำนักงานประปาแม่เมาะ กปภ.สาขาลำปาง",
+"address": "ต.แม่เมาะ อ.แม่เมาะ จ.ลำปาง 52220",
+"clientInfo": "116 สำนักงานประปาแม่เมาะ กปภ.สาขาลำปาง",
+"startDate": null,
+"estimatedEndDate": null,
+"projectManagerId":"4ffd1db8-ca56-4f5d-9b33-cc0cf12ba9a9",
+"team": "N",
+"connectionType": "LV",
+"connectionNotes": null,
+"totalCapacityKw": 102.6,
+"pvModuleCount": 180,
+"equipmentDetails": {
+"inverter125kw": 1,
+"inverter80kw": 0,
+"inverter60kw": 0,
+"inverter40kw": 0
+},
+"ftsValue": 3,
+"revenueValue": 1,
+"pqmValue": 0,
+"locationCoordinates": {
+"latitude": 18.28204,
+"longitude": 99.65996
+}
+},
+{
+"projectName": "117 โรงกรองน้ำแรงสูงริมปิง (ใหม่) กปภ.สาขาลำพูน",
+"address": "ต.ริมปิง อ.เมืองลำพูน จ.ลำพูน 51000",
+"clientInfo": "117 โรงกรองน้ำแรงสูงริมปิง (ใหม่) กปภ.สาขาลำพูน",
+"startDate": null,
+"estimatedEndDate": null,
+"projectManagerId":"4ffd1db8-ca56-4f5d-9b33-cc0cf12ba9a9",
+"team": "N",
+"connectionType": "MV",
+"connectionNotes": null,
+"totalCapacityKw": 181.26,
+"pvModuleCount": 318,
+"equipmentDetails": {
+"inverter125kw": 0,
+"inverter80kw": 2,
+"inverter60kw": 0,
+"inverter40kw": 0
+},
+"ftsValue": 5,
+"revenueValue": 1,
+"pqmValue": 1,
+"locationCoordinates": {
+"latitude": 18.58933,
+"longitude": 98.97808
+}
+},
+{
+"projectName": "118 สำนักงานการประปาส่วนภูมิภาคสาขาลำพูน กปภ.สาขาลำพูน",
+"address": "ต.ในเมือง อ.เมือง จ.ลำพูน 51000",
+"clientInfo": "118 สำนักงานการประปาส่วนภูมิภาคสาขาลำพูน กปภ.สาขาลำพูน",
+"startDate": null,
+"estimatedEndDate": null,
+"projectManagerId":"4ffd1db8-ca56-4f5d-9b33-cc0cf12ba9a9",
+"team": "N",
+"connectionType": "MV",
+"connectionNotes": "ติดตั้งยาก เนื่องจาก เสาหม้อแปลงอยู่ต้นถัดจากเสามิเตอร์และ มีช่องว่างน้อย",
+"totalCapacityKw": 94.62,
+"pvModuleCount": 166,
+"equipmentDetails": {
+"inverter125kw": 0,
+"inverter80kw": 1,
+"inverter60kw": 0,
+"inverter40kw": 0
+},
+"ftsValue": 3,
+"revenueValue": 1,
+"pqmValue": 1,
+"locationCoordinates": {
+"latitude": 18.57372,
+"longitude": 99.00893
+}
+},
+{
+"projectName": "119 สถานีผลิตน้ำประปาแพร่ กปภ.สาขาแพร่",
+"address": "ต.ในเวียง อ.เมืองแพร่ จ.แพร่ 54000",
+"clientInfo": "119 สถานีผลิตน้ำประปาแพร่ กปภ.สาขาแพร่",
+"startDate": null,
+"estimatedEndDate": null,
+"projectManagerId":"4ffd1db8-ca56-4f5d-9b33-cc0cf12ba9a9",
+"team": "N",
+"connectionType": "MV",
+"connectionNotes": null,
+"totalCapacityKw": 220.02,
+"pvModuleCount": 386,
+"equipmentDetails": {
+"inverter125kw": 2,
+"inverter80kw": 0,
+"inverter60kw": 0,
+"inverter40kw": 0
+},
+"ftsValue": 8,
+"revenueValue": 2,
+"pqmValue": 1,
+"locationCoordinates": {
+"latitude": 18.13364,
+"longitude": 100.14229
+}
+},
+{
+"projectName": "120 สถานีผลิตน้ำราษฎร์อำนวย กปภ.สาขาน่าน",
+"address": "ต.ในเวียง อ.เมืองน่าน จ.น่าน 55000",
+"clientInfo": "120 สถานีผลิตน้ำราษฎร์อำนวย กปภ.สาขาน่าน",
+"startDate": null,
+"estimatedEndDate": null,
+"projectManagerId":"4ffd1db8-ca56-4f5d-9b33-cc0cf12ba9a9",
+"team": "N",
+"connectionType": "MV",
+"connectionNotes": null,
+"totalCapacityKw": 143.64,
+"pvModuleCount": 252,
+"equipmentDetails": {
+"inverter125kw": 1,
+"inverter80kw": 0,
+"inverter60kw": 0,
+"inverter40kw": 0
+},
+"ftsValue": 3,
+"revenueValue": 1,
+"pqmValue": 1,
+"locationCoordinates": {
+"latitude": 18.79379,
+"longitude": 100.7837
+}
+},
+{
+"projectName": "121 สถานีผลิตน้ำพระธาตุผาแดง กปภ.สาขาแม่สอด",
+"address": "ต.พระธาตุผาแดง อ.แม่สอด จ.ตาก 63110",
+"clientInfo": "121 สถานีผลิตน้ำพระธาตุผาแดง กปภ.สาขาแม่สอด",
+"startDate": null,
+"estimatedEndDate": null,
+"projectManagerId":"4ffd1db8-ca56-4f5d-9b33-cc0cf12ba9a9",
+"team": "N",
+"connectionType": "MV",
+"connectionNotes": null,
+"totalCapacityKw": 184.68,
+"pvModuleCount": 324,
+"equipmentDetails": {
+"inverter125kw": 1,
+"inverter80kw": 0,
+"inverter60kw": 0,
+"inverter40kw": 1
+},
+"ftsValue": 4,
+"revenueValue": 1,
+"pqmValue": 1,
+"locationCoordinates": {
+"latitude": 16.7031358,
+"longitude": 98.6272327
+}
+},
+{
+"projectName": "122 สำนักงานประปาตะพานหิน กปภ.สาขาตะพานหิน",
+"address": "ต.งิ้วราย อ.ตะพานหิน จ.พิจิตร 66110",
+"clientInfo": "122 สำนักงานประปาตะพานหิน กปภ.สาขาตะพานหิน",
+"startDate": null,
+"estimatedEndDate": null,
+"projectManagerId":"4ffd1db8-ca56-4f5d-9b33-cc0cf12ba9a9",
+"team": "N",
+"connectionType": "MV",
+"connectionNotes": null,
+"totalCapacityKw": 305.52,
+"pvModuleCount": 536,
+"equipmentDetails": {
+"inverter125kw": 2,
+"inverter80kw": 0,
+"inverter60kw": 0,
+"inverter40kw": 1
+},
+"ftsValue": 8,
+"revenueValue": 1,
+"pqmValue": 1,
+"locationCoordinates": {
+"latitude": 16.22813,
+"longitude": 100.41939
+}
+},
+{
+"projectName": "123 สถานีผลิตน้ำประปาตาก กปภ.สาขาตาก",
+"address": "ต.เชียงเงิน อ.เมืองตาก จ.ตาก 63000",
+"clientInfo": "123 สถานีผลิตน้ำประปาตาก กปภ.สาขาตาก",
+"startDate": null,
+"estimatedEndDate": null,
+"projectManagerId":"4ffd1db8-ca56-4f5d-9b33-cc0cf12ba9a9",
+"team": "N",
+"connectionType": "MV",
+"connectionNotes": null,
+"totalCapacityKw": 233.7,
+"pvModuleCount": 410,
+"equipmentDetails": {
+"inverter125kw": 1,
+"inverter80kw": 1,
+"inverter60kw": 0,
+"inverter40kw": 0
+},
+"ftsValue": 7,
+"revenueValue": 1,
+"pqmValue": 1,
+"locationCoordinates": {
+"latitude": 16.88163,
+"longitude": 99.12606
+}
+},
+{
+"projectName": "124 สำนักงานประปาบางมูลนาก กปภ.สาขาบางมูลนาก",
+"address": "ต.บางมูลนาก อ.บางมูลนาก จ.พิจิตร 66120",
+"clientInfo": "124 สำนักงานประปาบางมูลนาก กปภ.สาขาบางมูลนาก",
+"startDate": null,
+"estimatedEndDate": null,
+"projectManagerId":"4ffd1db8-ca56-4f5d-9b33-cc0cf12ba9a9",
+"team": "N",
+"connectionType": "MV",
+"connectionNotes": null,
+"totalCapacityKw": 141.36,
+"pvModuleCount": 248,
+"equipmentDetails": {
+"inverter125kw": 1,
+"inverter80kw": 0,
+"inverter60kw": 0,
+"inverter40kw": 0
+},
+"ftsValue": 4,
+"revenueValue": 1,
+"pqmValue": 1,
+"locationCoordinates": {
+"latitude": 16.03846,
+"longitude": 100.37792
+}
+},
+{
+"projectName": "125 สถานีผลิตน้ำโคกสลุด กปภ.สาขาพิจิตร",
+"address": "ต.โคกสลุด อ.บางกระทุ่ม จ.พิษณุโลก 65110",
+"clientInfo": "125 สถานีผลิตน้ำโคกสลุด กปภ.สาขาพิจิตร",
+"startDate": null,
+"estimatedEndDate": null,
+"projectManagerId":"4ffd1db8-ca56-4f5d-9b33-cc0cf12ba9a9",
+"team": "N",
+"connectionType": "LV",
+"connectionNotes": null,
+"totalCapacityKw": 100.32,
+"pvModuleCount": 176,
+"equipmentDetails": {
+"inverter125kw": 1,
+"inverter80kw": 0,
+"inverter60kw": 0,
+"inverter40kw": 0
+},
+"ftsValue": 3,
+"revenueValue": 1,
+"pqmValue": 0,
+"locationCoordinates": {
+"latitude": 16.581,
+"longitude": 100.24555
+}
+},
+{
+"projectName": "126 หน่วยบริการหัวรอ กปภ.สาขาพิษณุโลก",
+"address": "ต.หัวรอ อ.เมืองพิษณุโลก จ.พิษณุโลก 65000",
+"clientInfo": "126 หน่วยบริการหัวรอ กปภ.สาขาพิษณุโลก",
+"startDate": null,
+"estimatedEndDate": null,
+"projectManagerId":"4ffd1db8-ca56-4f5d-9b33-cc0cf12ba9a9",
+"team": "N",
+"connectionType": "MV",
+"connectionNotes": null,
+"totalCapacityKw": 475.38,
+"pvModuleCount": 834,
+"equipmentDetails": {
+"inverter125kw": 3,
+"inverter80kw": 0,
+"inverter60kw": 1,
+"inverter40kw": 0
+},
+"ftsValue": 14,
+"revenueValue": 1,
+"pqmValue": 1,
+"locationCoordinates": {
+"latitude": 16.86005,
+"longitude": 100.24855
+}
+},
+{
+"projectName": "127 สถานีจ่ายน้ำสมอแข กปภ.สาขาพิษณุโลก",
+"address": "ต.สมอแข เมืองพิษณุโลก จ.พิษณุโลก 65000",
+"clientInfo": "127 สถานีจ่ายน้ำสมอแข กปภ.สาขาพิษณุโลก",
+"startDate": null,
+"estimatedEndDate": null,
+"projectManagerId":"4ffd1db8-ca56-4f5d-9b33-cc0cf12ba9a9",
+"team": "N",
+"connectionType": "LV",
+"connectionNotes": null,
+"totalCapacityKw": 123.12,
+"pvModuleCount": 216,
+"equipmentDetails": {
+"inverter125kw": 1,
+"inverter80kw": 0,
+"inverter60kw": 0,
+"inverter40kw": 0
+},
+"ftsValue": 3,
+"revenueValue": 1,
+"pqmValue": 0,
+"locationCoordinates": {
+"latitude": 16.82086,
+"longitude": 100.34109
+}
+},
+{
+"projectName": "128 สำนักงานประปาสวรรคโลก กปภ.สาขาสวรรคโลก",
+"address": "ต.ในเมือง อ.สวรรคโลก จ.สุโขทัย 64110",
+"clientInfo": "128 สำนักงานประปาสวรรคโลก กปภ.สาขาสวรรคโลก",
+"startDate": null,
+"estimatedEndDate": null,
+"projectManagerId":"4ffd1db8-ca56-4f5d-9b33-cc0cf12ba9a9",
+"team": "N",
+"connectionType": "MV",
+"connectionNotes": null,
+"totalCapacityKw": 159.6,
+"pvModuleCount": 280,
+"equipmentDetails": {
+"inverter125kw": 0,
+"inverter80kw": 1,
+"inverter60kw": 1,
+"inverter40kw": 0
+},
+"ftsValue": 5,
+"revenueValue": 1,
+"pqmValue": 1,
+"locationCoordinates": {
+"latitude": 17.34492,
+"longitude": 99.83183
+}
+},
+{
+"projectName": "129 สถานีผลิตน้ำปากแคว กปภ.สาขาสุโขทัย",
+"address": "ต.ปากแคว อ.เมืองสุโขทัย จ.สุโขทัย 64000",
+"clientInfo": "129 สถานีผลิตน้ำปากแคว กปภ.สาขาสุโขทัย",
+"startDate": null,
+"estimatedEndDate": null,
+"projectManagerId":"4ffd1db8-ca56-4f5d-9b33-cc0cf12ba9a9",
+"team": "N",
+"connectionType": "MV",
+"connectionNotes": null,
+"totalCapacityKw": 136.8,
+"pvModuleCount": 240,
+"equipmentDetails": {
+"inverter125kw": 1,
+"inverter80kw": 0,
+"inverter60kw": 0,
+"inverter40kw": 0
+},
+"ftsValue": 5,
+"revenueValue": 1,
+"pqmValue": 1,
+"locationCoordinates": {
+"latitude": 17.02887,
+"longitude": 99.8247
+}
+},
+{
+"projectName": "130 สถานีผลิตน้ำทุ่งทะเลหลวง กปภ.สาขาสุโขทัย",
+"address": "ต.บ้านกล้วย อ.เมืองสุโขทัย จ.สุโขทัย 64000",
+"clientInfo": "130 สถานีผลิตน้ำทุ่งทะเลหลวง กปภ.สาขาสุโขทัย",
+"startDate": null,
+"estimatedEndDate": null,
+"projectManagerId":"4ffd1db8-ca56-4f5d-9b33-cc0cf12ba9a9",
+"team": "N",
+"connectionType": "LV",
+"connectionNotes": null,
+"totalCapacityKw": 124.26,
+"pvModuleCount": 218,
+"equipmentDetails": {
+"inverter125kw": 1,
+"inverter80kw": 0,
+"inverter60kw": 0,
+"inverter40kw": 0
+},
+"ftsValue": 3,
+"revenueValue": 1,
+"pqmValue": 0,
+"locationCoordinates": {
+"latitude": 17.04526,
+"longitude": 99.804736
+}
+},
+{
+"projectName": "131 สถานีผลิตน้ำปากฝาง กปภ.สาขาอุตรดิตถ์",
+"address": "ต.ผาจุก อ.เมืองอุตรดิตถ์ จ.อุตรดิตถ์ 53000",
+"clientInfo": "131 สถานีผลิตน้ำปากฝาง กปภ.สาขาอุตรดิตถ์",
+"startDate": null,
+"estimatedEndDate": null,
+"projectManagerId":"4ffd1db8-ca56-4f5d-9b33-cc0cf12ba9a9",
+"team": "N",
+"connectionType": "LV",
+"connectionNotes": null,
+"totalCapacityKw": 104.88,
+"pvModuleCount": 184,
+"equipmentDetails": {
+"inverter125kw": 1,
+"inverter80kw": 0,
+"inverter60kw": 0,
+"inverter40kw": 0
+},
+"ftsValue": 4,
+"revenueValue": 1,
+"pqmValue": 0,
+"locationCoordinates": {
+"latitude": 17.65592,
+"longitude": 100.22224
+}
+},
+{
+"projectName": "94 สำนักงานประปากุยบุรี กปภ.สาขากุยบุรี",
+"address": "ต.กุยบุรี อ.กุยบุรี จ.ประจวบคีรีขันธ์ 77150",
+"clientInfo": "94 สำนักงานประปากุยบุรี กปภ.สาขากุยบุรี",
+"startDate": null,
+"estimatedEndDate": null,
+"projectManagerId":"4ffd1db8-ca56-4f5d-9b33-cc0cf12ba9a9",
+"team": "S",
+"connectionType": "MV",
+"connectionNotes": null,
+"totalCapacityKw": 305.52,
+"pvModuleCount": 536,
+"equipmentDetails": {
+"inverter125kw": 2,
+"inverter80kw": 0,
+"inverter60kw": 1,
+"inverter40kw": 0
+},
+"ftsValue": 8,
+"revenueValue": 2,
+"pqmValue": 1,
+"locationCoordinates": {
+"latitude": 12.07309,
+"longitude": 99.85819
+}
+},
+{
+"projectName": "95 สถานีผลิตน้ำ ไร่ใหม่-ไร่เก่า กปภ.สาขากุยบุรี",
+"address": "ต.ไร่ใหม่ อ.สามร้อยยอด จ.ประจวบคีรีขันธ์ 77180",
+"clientInfo": "95 สถานีผลิตน้ำ ไร่ใหม่-ไร่เก่า กปภ.สาขากุยบุรี",
+"startDate": null,
+"estimatedEndDate": null,
+"projectManagerId":"4ffd1db8-ca56-4f5d-9b33-cc0cf12ba9a9",
+"team": "S",
+"connectionType": "MV",
+"connectionNotes": null,
+"totalCapacityKw": 136.8,
+"pvModuleCount": 240,
+"equipmentDetails": {
+"inverter125kw": 1,
+"inverter80kw": 0,
+"inverter60kw": 0,
+"inverter40kw": 0
+},
+"ftsValue": 5,
+"revenueValue": 1,
+"pqmValue": 1,
+"locationCoordinates": {
+"latitude": 12.20109,
+"longitude": 99.85588
+}
+},
+{
+"projectName": "96 สำนักงานประปาประจวบคีรีขันธ์ กปภ.สาขาประจวบคีรีขันธ์",
+"address": "ต.ประจวบคีรีขันธ์ อ.เมืองประจวบคีรีขันธ์ จ.ประจวบคีรีขันธ์ 77000",
+"clientInfo": "96 สำนักงานประปาประจวบคีรีขันธ์ กปภ.สาขาประจวบคีรีขันธ์",
+"startDate": null,
+"estimatedEndDate": null,
+"projectManagerId":"4ffd1db8-ca56-4f5d-9b33-cc0cf12ba9a9",
+"team": "S",
+"connectionType": "MV",
+"connectionNotes": null,
+"totalCapacityKw": 164.16,
+"pvModuleCount": 288,
+"equipmentDetails": {
+"inverter125kw": 0,
+"inverter80kw": 2,
+"inverter60kw": 0,
+"inverter40kw": 0
+},
+"ftsValue": 5,
+"revenueValue": 1,
+"pqmValue": 1,
+"locationCoordinates": {
+"latitude": 11.81442,
+"longitude": 99.7926
+}
+},
+{
+"projectName": "97 สถานีผลิตน้ำเขาเสวยราชย์ กปภ.สาขาปราณบุรี",
+"address": "ต.ทับใต้ อ.หัวหิน จ.ประจวบคีรีขันธ์ 77110",
+"clientInfo": "97 สถานีผลิตน้ำเขาเสวยราชย์ กปภ.สาขาปราณบุรี",
+"startDate": null,
+"estimatedEndDate": null,
+"projectManagerId":"4ffd1db8-ca56-4f5d-9b33-cc0cf12ba9a9",
+"team": "S",
+"connectionType": "MV",
+"connectionNotes": null,
+"totalCapacityKw": 449.16,
+"pvModuleCount": 788,
+"equipmentDetails": {
+"inverter125kw": 3,
+"inverter80kw": 0,
+"inverter60kw": 0,
+"inverter40kw": 0
+},
+"ftsValue": 10,
+"revenueValue": 1,
+"pqmValue": 1,
+"locationCoordinates": {
+"latitude": 12.53505,
+"longitude": 99.88851
+}
+},
+{
+"projectName": "98 สถานีผลิตน้ำปราณบุรี กปภ.สาขาปราณบุรี",
+"address": "ต.เขาน้อย อ.ปราณบุรี จ.ประจวบคีรีขันธ์ 77120",
+"clientInfo": "98 สถานีผลิตน้ำปราณบุรี กปภ.สาขาปราณบุรี",
+"startDate": null,
+"estimatedEndDate": null,
+"projectManagerId":"4ffd1db8-ca56-4f5d-9b33-cc0cf12ba9a9",
+"team": "S",
+"connectionType": "MV",
+"connectionNotes": "หม้อแปลง และมิเตอร์ อยู่บนเสาต้นเดียวกัน",
+"totalCapacityKw": 185.82,
+"pvModuleCount": 326,
+"equipmentDetails": {
+"inverter125kw": 1,
+"inverter80kw": 0,
+"inverter60kw": 1,
+"inverter40kw": 0
+},
+"ftsValue": 6,
+"revenueValue": 1,
+"pqmValue": 1,
+"locationCoordinates": {
+"latitude": 12.3834308,
+"longitude": 99.90624
+}
+},
+{
+"projectName": "99 สถานีจ่ายน้ำประปาปากน้ำปราณ กปภ.สาขาปราณบุรี",
+"address": "ต.ปากน้ำปราณ อ.ปราณบุรี จ.ประจวบคีรีขันธ์ 77220",
+"clientInfo": "99 สถานีจ่ายน้ำประปาปากน้ำปราณ กปภ.สาขาปราณบุรี",
+"startDate": null,
+"estimatedEndDate": null,
+"projectManagerId":"4ffd1db8-ca56-4f5d-9b33-cc0cf12ba9a9",
+"team": "S",
+"connectionType": "MV",
+"connectionNotes": null,
+"totalCapacityKw": 132.24,
+"pvModuleCount": 232,
+"equipmentDetails": {
+"inverter125kw": 1,
+"inverter80kw": 0,
+"inverter60kw": 0,
+"inverter40kw": 0
+},
+"ftsValue": 3,
+"revenueValue": 1,
+"pqmValue": 1,
+"locationCoordinates": {
+"latitude": 12.39385,
+"longitude": 99.9888
+}
+},
+{
+"projectName": "72 สถานีผลิตและจ่ายน้ำบางบาล กปภ.สาขาเสนา",
+"address": "ต.บ้านใหม่ อ.พระนครศรีอยุธยา จ.พระนครศรีอยุธยา 13000",
+"clientInfo": "72 สถานีผลิตและจ่ายน้ำบางบาล กปภ.สาขาเสนา",
+"startDate": null,
+"estimatedEndDate": null,
+"projectManagerId":"4ffd1db8-ca56-4f5d-9b33-cc0cf12ba9a9",
+"team": "W",
+"connectionType": "MV",
+"connectionNotes": null,
+"totalCapacityKw": 150.48,
+"pvModuleCount": 264,
+"equipmentDetails": {
+"inverter125kw": 1,
+"inverter80kw": 0,
+"inverter60kw": 0,
+"inverter40kw": 0
+},
+"ftsValue": 4,
+"revenueValue": 1,
+"pqmValue": 1,
+"locationCoordinates": {
+"latitude": 14.37759,
+"longitude": 100.52141
+}
+},
+{
+"projectName": "73 สถานีผลิตน้ำไม้ตรา กปภ.สาขาปทุมธานี",
+"address": "ต.บางไทร อ.บางไทร จ.พระนครศรีอยุธยา 13190",
+"clientInfo": "73 สถานีผลิตน้ำไม้ตรา กปภ.สาขาปทุมธานี",
+"startDate": null,
+"estimatedEndDate": null,
+"projectManagerId":"4ffd1db8-ca56-4f5d-9b33-cc0cf12ba9a9",
+"team": "W",
+"connectionType": "MV",
+"connectionNotes": null,
+"totalCapacityKw": 474.24,
+"pvModuleCount": 832,
+"equipmentDetails": {
+"inverter125kw": 3,
+"inverter80kw": 0,
+"inverter60kw": 0,
+"inverter40kw": 1
+},
+"ftsValue": 11,
+"revenueValue": 1,
+"pqmValue": 1,
+"locationCoordinates": {
+"latitude": 14.181753,
+"longitude": 100.49946
+}
+},
+{
+"projectName": "74 สถานีผลิตน้ำประปาพระนครศรีอยุธยา 1 กปภ.สาขาพระนครศรีอยุธยา",
+"address": "ต.หันตรา อ.พระนครศรีอยุธยา จ.พระนครศรีอยุธยา 13000",
+"clientInfo": "74 สถานีผลิตน้ำประปาพระนครศรีอยุธยา 1 กปภ.สาขาพระนครศรีอยุธยา",
+"startDate": null,
+"estimatedEndDate": null,
+"projectManagerId":"4ffd1db8-ca56-4f5d-9b33-cc0cf12ba9a9",
+"team": "W",
+"connectionType": "MV",
+"connectionNotes": null,
+"totalCapacityKw": 304.38,
+"pvModuleCount": 534,
+"equipmentDetails": {
+"inverter125kw": 2,
+"inverter80kw": 0,
+"inverter60kw": 0,
+"inverter40kw": 0
+},
+"ftsValue": 7,
+"revenueValue": 1,
+"pqmValue": 1,
+"locationCoordinates": {
+"latitude": 14.37031,
+"longitude": 100.61337
+}
+},
+{
+"projectName": "84 สำนักงานประปาเดิมบางนางบวช กปภ.สาขาเดิมบางนางบวช",
+"address": "ต.เดิมบาง อ.เดิมบางนางบวช จ.สุพรรณบุรี 72120",
+"clientInfo": "84 สำนักงานประปาเดิมบางนางบวช กปภ.สาขาเดิมบางนางบวช",
+"startDate": null,
+"estimatedEndDate": null,
+"projectManagerId":"4ffd1db8-ca56-4f5d-9b33-cc0cf12ba9a9",
+"team": "W",
+"connectionType": "MV",
+"connectionNotes": null,
+"totalCapacityKw": 194.94,
+"pvModuleCount": 342,
+"equipmentDetails": {
+"inverter125kw": 1,
+"inverter80kw": 0,
+"inverter60kw": 1,
+"inverter40kw": 0
+},
+"ftsValue": 8,
+"revenueValue": 2,
+"pqmValue": 1,
+"locationCoordinates": {
+"latitude": 14.87964,
+"longitude": 100.07938
+}
+},
+{
+"projectName": "85 สำนักงานประปากาญจนบุรี กปภ.สาขากาญจนบุรี",
+"address": "ต.บ้านใต้ อ.เมืองกาญจนบุรี จ.กาญจนบุรี 71000",
+"clientInfo": "85 สำนักงานประปากาญจนบุรี กปภ.สาขากาญจนบุรี",
+"startDate": null,
+"estimatedEndDate": null,
+"projectManagerId":"4ffd1db8-ca56-4f5d-9b33-cc0cf12ba9a9",
+"team": "W",
+"connectionType": "MV",
+"connectionNotes": null,
+"totalCapacityKw": 258.21,
+"pvModuleCount": 453,
+"equipmentDetails": {
+"inverter125kw": 1,
+"inverter80kw": 0,
+"inverter60kw": 1,
+"inverter40kw": 1
+},
+"ftsValue": 9,
+"revenueValue": 2,
+"pqmValue": 1,
+"locationCoordinates": {
+"latitude": 14.03213,
+"longitude": 99.52185
+}
+},
+{
+"projectName": "86 สถานีจ่ายน้ำท่าล้อ กปภ.สาขากาญจนบุรี",
+"address": "ต.ท่าล้อ อ.ท่าม่วง จ.กาญจนบุรี 71110",
+"clientInfo": "86 สถานีจ่ายน้ำท่าล้อ กปภ.สาขากาญจนบุรี",
+"startDate": null,
+"estimatedEndDate": null,
+"projectManagerId":"4ffd1db8-ca56-4f5d-9b33-cc0cf12ba9a9",
+"team": "W",
+"connectionType": "MV",
+"connectionNotes": null,
+"totalCapacityKw": 209.76,
+"pvModuleCount": 368,
+"equipmentDetails": {
+"inverter125kw": 1,
+"inverter80kw": 0,
+"inverter60kw": 1,
+"inverter40kw": 0
+},
+"ftsValue": 5,
+"revenueValue": 1,
+"pqmValue": 1,
+"locationCoordinates": {
+"latitude": 13.979611,
+"longitude": 99.601532
+}
+},
+{
+"projectName": "87 สถานีจ่ายน้ำเขาหัวล้าน กปภ.สาขากาญจนบุรี",
+"address": "ต.ปากแพรก อ.เมืองกาญจนบุรี จ.กาญจนบุรี 71000",
+"clientInfo": "87 สถานีจ่ายน้ำเขาหัวล้าน กปภ.สาขากาญจนบุรี",
+"startDate": null,
+"estimatedEndDate": null,
+"projectManagerId":"4ffd1db8-ca56-4f5d-9b33-cc0cf12ba9a9",
+"team": "W",
+"connectionType": "MV",
+"connectionNotes": null,
+"totalCapacityKw": 185.82,
+"pvModuleCount": 326,
+"equipmentDetails": {
+"inverter125kw": 1,
+"inverter80kw": 0,
+"inverter60kw": 1,
+"inverter40kw": 0
+},
+"ftsValue": 6,
+"revenueValue": 1,
+"pqmValue": 1,
+"locationCoordinates": {
+"latitude": 14.040653,
+"longitude": 99.537284
+}
+},
+{
+"projectName": "88 สถานีผลิตน้ำท่าม่วง กปภ.สาขาท่ามะกา",
+"address": "ต.วังขนาย อ.ท่าม่วง จ.กาญจนบุรี 71110",
+"clientInfo": "88 สถานีผลิตน้ำท่าม่วง กปภ.สาขาท่ามะกา",
+"startDate": null,
+"estimatedEndDate": null,
+"projectManagerId":"4ffd1db8-ca56-4f5d-9b33-cc0cf12ba9a9",
+"team": "W",
+"connectionType": "MV",
+"connectionNotes": null,
+"totalCapacityKw": 595.08,
+"pvModuleCount": 1044,
+"equipmentDetails": {
+"inverter125kw": 4,
+"inverter80kw": 0,
+"inverter60kw": 0,
+"inverter40kw": 0
+},
+"ftsValue": 16,
+"revenueValue": 1,
+"pqmValue": 1,
+"locationCoordinates": {
+"latitude": 13.97752,
+"longitude": 99.67432
+}
+},
+{
+"projectName": "89 สถานีจ่ายน้ำนครชัยศรี กปภ.สาขานครปฐม",
+"address": "ต.วัดแค อ.นครชัยศรี จ.นครปฐม 73120",
+"clientInfo": "89 สถานีจ่ายน้ำนครชัยศรี กปภ.สาขานครปฐม",
+"startDate": null,
+"estimatedEndDate": null,
+"projectManagerId":"4ffd1db8-ca56-4f5d-9b33-cc0cf12ba9a9",
+"team": "W",
+"connectionType": "MV",
+"connectionNotes": "รถเข้าไปปักเสาไม่ได้",
+"totalCapacityKw": 389.88,
+"pvModuleCount": 684,
+"equipmentDetails": {
+"inverter125kw": 2,
+"inverter80kw": 1,
+"inverter60kw": 0,
+"inverter40kw": 0
+},
+"ftsValue": 9,
+"revenueValue": 2,
+"pqmValue": 1,
+"locationCoordinates": {
+"latitude": 13.81453,
+"longitude": 100.18388
+}
+},
+{
+"projectName": "90 สถานีผลิตน้ำพนมทวน กปภ.สาขาพนมทวน",
+"address": "ต.พนมทวน อ.พนมทวน จ.กาญจนบุรี 71140",
+"clientInfo": "90 สถานีผลิตน้ำพนมทวน กปภ.สาขาพนมทวน",
+"startDate": null,
+"estimatedEndDate": null,
+"projectManagerId":"4ffd1db8-ca56-4f5d-9b33-cc0cf12ba9a9",
+"team": "W",
+"connectionType": "LV",
+"connectionNotes": null,
+"totalCapacityKw": 140.22,
+"pvModuleCount": 246,
+"equipmentDetails": {
+"inverter125kw": 1,
+"inverter80kw": 0,
+"inverter60kw": 0,
+"inverter40kw": 0
+},
+"ftsValue": 5,
+"revenueValue": 1,
+"pqmValue": 0,
+"locationCoordinates": {
+"latitude": 14.12241,
+"longitude": 99.68596
+}
+},
+{
+"projectName": "91 สถานีผลิตน้ำวังยาง กปภ.สาขาสุพรรณบุรี",
+"address": "ต.วังยาง อ.ศรีประจันต์ จ.สุพรรณบุรี 72000",
+"clientInfo": "91 สถานีผลิตน้ำวังยาง กปภ.สาขาสุพรรณบุรี",
+"startDate": null,
+"estimatedEndDate": null,
+"projectManagerId":"4ffd1db8-ca56-4f5d-9b33-cc0cf12ba9a9",
+"team": "W",
+"connectionType": "MV",
+"connectionNotes": null,
+"totalCapacityKw": 499.32,
+"pvModuleCount": 876,
+"equipmentDetails": {
+"inverter125kw": 3,
+"inverter80kw": 0,
+"inverter60kw": 1,
+"inverter40kw": 0
+},
+"ftsValue": 13,
+"revenueValue": 1,
+"pqmValue": 1,
+"locationCoordinates": {
+"latitude": 14.554346,
+"longitude": 100.13787
+}
+},
+{
+"projectName": "92 สถานีผลิตน้ำบ้านลาด 2 กปภ.สาขาเพชรบุรี",
+"address": "ต.บ้านหม้อ .เมืองเพชรบุรี จ.เพชรบุรี 76000",
+"clientInfo": "92 สถานีผลิตน้ำบ้านลาด 2 กปภ.สาขาเพชรบุรี",
+"startDate": null,
+"estimatedEndDate": null,
+"projectManagerId":"4ffd1db8-ca56-4f5d-9b33-cc0cf12ba9a9",
+"team": "W",
+"connectionType": "MV",
+"connectionNotes": null,
+"totalCapacityKw": 805.98,
+"pvModuleCount": 1414,
+"equipmentDetails": {
+"inverter125kw": 6,
+"inverter80kw": 0,
+"inverter60kw": 0,
+"inverter40kw": 0
+},
+"ftsValue": 20,
+"revenueValue": 1,
+"pqmValue": 1,
+"locationCoordinates": {
+"latitude": 13.07483,
+"longitude": 99.93451
+}
+},
+{
+"projectName": "93 สถานีผลิตน้ำบ้านลาด 1 กปภ.สาขาเพชรบุรี",
+"address": "ต.บ้านหม้อ .เมืองเพชรบุรี จ.เพชรบุรี 76000",
+"clientInfo": "93 สถานีผลิตน้ำบ้านลาด 1 กปภ.สาขาเพชรบุรี",
+"startDate": null,
+"estimatedEndDate": null,
+"projectManagerId":"4ffd1db8-ca56-4f5d-9b33-cc0cf12ba9a9",
+"team": "W",
+"connectionType": "MV",
+"connectionNotes": null,
+"totalCapacityKw": 654.36,
+"pvModuleCount": 1148,
+"equipmentDetails": {
+"inverter125kw": 5,
+"inverter80kw": 0,
+"inverter60kw": 0,
+"inverter40kw": 0
+},
+"ftsValue": 16,
+"revenueValue": 1,
+"pqmValue": 1,
+"locationCoordinates": {
+"latitude": 13.07622,
+"longitude": 99.93828
+}
+},
+{
+"projectName": "100 สถานีจ่ายน้ำเขาย้อย กปภ.สาขาปากท่อ",
+"address": "ต.สระพัง อ.เขาย้อย จ.เพชรบุรี 76140",
+"clientInfo": "100 สถานีจ่ายน้ำเขาย้อย กปภ.สาขาปากท่อ",
+"startDate": null,
+"estimatedEndDate": null,
+"projectManagerId":"4ffd1db8-ca56-4f5d-9b33-cc0cf12ba9a9",
+"team": "W",
+"connectionType": "LV",
+"connectionNotes": null,
+"totalCapacityKw": 102.6,
+"pvModuleCount": 180,
+"equipmentDetails": {
+"inverter125kw": 1,
+"inverter80kw": 0,
+"inverter60kw": 0,
+"inverter40kw": 0
+},
+"ftsValue": 4,
+"revenueValue": 1,
+"pqmValue": 0,
+"locationCoordinates": {
+"latitude": 13.26062,
+"longitude": 99.82353
+}
+},
+{
+"projectName": "101 สำนักงานประปาสมุทรสงคราม กปภ.สาขาสมุทรสงคราม",
+"address": "ต.แม่กลอง อ.เมืองสมุทรสงคราม จ.สมุทรสงคราม 75000",
+"clientInfo": "101 สำนักงานประปาสมุทรสงคราม กปภ.สาขาสมุทรสงคราม",
+"startDate": null,
+"estimatedEndDate": null,
+"projectManagerId":"4ffd1db8-ca56-4f5d-9b33-cc0cf12ba9a9",
+"team": "W",
+"connectionType": "MV",
+"connectionNotes": null,
+"totalCapacityKw": 161.88,
+"pvModuleCount": 284,
+"equipmentDetails": {
+"inverter125kw": 0,
+"inverter80kw": 2,
+"inverter60kw": 0,
+"inverter40kw": 0
+},
+"ftsValue": 4,
+"revenueValue": 1,
+"pqmValue": 1,
+"locationCoordinates": {
+"latitude": 13.40108,
+"longitude": 99.998
+}
+}
+]

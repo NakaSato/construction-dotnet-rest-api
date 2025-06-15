@@ -69,7 +69,7 @@ public class MasterPlansController : BaseApiController
         {
             LogControllerAction(_logger, "GetMasterPlan", new { id });
 
-            var result = await _masterPlanService.GetMasterPlanByIdAsync(id);
+            var result = await _masterPlanService.GetMasterPlanDtoByIdAsync(id);
             return ToApiResponse(result);
         }
         catch (Exception ex)
@@ -527,7 +527,7 @@ public class MasterPlansController : BaseApiController
         {
             LogControllerAction(_logger, "DeleteMasterPlan", new { id });
 
-            var result = await _masterPlanService.DeleteMasterPlanAsync(id);
+            var result = await _masterPlanService.DeleteMasterPlanDtoAsync(id);
             return ToApiResponse(result);
         }
         catch (Exception ex)
