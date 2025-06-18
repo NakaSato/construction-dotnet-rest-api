@@ -39,7 +39,7 @@ public class WeeklyWorkRequestsController : BaseApiController
         LogControllerAction(_logger, "GetWeeklyWorkRequest", requestId);
 
         var result = await _weeklyWorkRequestService.GetWeeklyWorkRequestByIdAsync(requestId);
-        return result;
+        return ToApiResponse(result);
     }
 
     /// <summary>
@@ -59,7 +59,7 @@ public class WeeklyWorkRequestsController : BaseApiController
         ApplyFiltersFromQuery(parameters, filterString);
 
         var result = await _weeklyWorkRequestService.GetWeeklyWorkRequestsAsync(parameters);
-        return result;
+        return ToApiResponse(result);
     }
 
     /// <summary>
@@ -79,7 +79,7 @@ public class WeeklyWorkRequestsController : BaseApiController
         }
 
         var result = await _weeklyWorkRequestService.CreateWeeklyWorkRequestAsync(request);
-        return result;
+        return ToApiResponse(result);
     }
 
     /// <summary>
@@ -99,7 +99,7 @@ public class WeeklyWorkRequestsController : BaseApiController
         }
 
         var result = await _weeklyWorkRequestService.UpdateWeeklyWorkRequestAsync(requestId, request);
-        return result;
+        return ToApiResponse(result);
     }
 
     /// <summary>
@@ -114,7 +114,7 @@ public class WeeklyWorkRequestsController : BaseApiController
 
         var result = await _weeklyWorkRequestService.UpdateWeeklyWorkRequestStatusAsync(
             requestId, WeeklyRequestStatus.Submitted);
-        return result;
+        return ToApiResponse(result);
     }
 
     /// <summary>
@@ -129,7 +129,7 @@ public class WeeklyWorkRequestsController : BaseApiController
 
         var result = await _weeklyWorkRequestService.UpdateWeeklyWorkRequestStatusAsync(
             requestId, WeeklyRequestStatus.Approved);
-        return result;
+        return ToApiResponse(result);
     }
 
     /// <summary>
@@ -138,12 +138,13 @@ public class WeeklyWorkRequestsController : BaseApiController
     /// </summary>
     [HttpDelete("{requestId:guid}")]
     [Authorize(Roles = "Administrator")]
+    [CriticalDeleteRateLimit]
     public async Task<ActionResult<ApiResponse<bool>>> DeleteWeeklyWorkRequest(Guid requestId)
     {
         LogControllerAction(_logger, "DeleteWeeklyWorkRequest", requestId);
 
         var result = await _weeklyWorkRequestService.DeleteWeeklyWorkRequestAsync(requestId);
-        return result;
+        return ToApiResponse(result);
     }
 }
 
@@ -184,7 +185,7 @@ public class ProjectWeeklyWorkRequestsController : BaseApiController
         ApplyFiltersFromQuery(parameters, filterString);
 
         var result = await _weeklyWorkRequestService.GetProjectWeeklyWorkRequestsAsync(projectId, parameters);
-        return result;
+        return ToApiResponse(result);
     }
 
     /// <summary>
@@ -207,6 +208,6 @@ public class ProjectWeeklyWorkRequestsController : BaseApiController
         request.ProjectId = projectId;
 
         var result = await _weeklyWorkRequestService.CreateWeeklyWorkRequestAsync(request);
-        return result;
+        return ToApiResponse(result);
     }
 }

@@ -29,7 +29,7 @@ public interface ICacheService
 }
 
 /// <summary>
-/// Implementation of caching service with both memory and distributed caching
+/// Cache service implementation with memory and distributed caching
 /// </summary>
 public class CacheService : ICacheService
 {

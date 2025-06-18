@@ -2,6 +2,7 @@ using dotnet_rest_api.DTOs;
 using dotnet_rest_api.Data;
 using dotnet_rest_api.Models;
 using Microsoft.EntityFrameworkCore;
+using TaskEntity = dotnet_rest_api.Models.Task;
 
 namespace dotnet_rest_api.Services;
 
@@ -19,7 +20,7 @@ public class CachedTaskService : ITaskService
     private static readonly TimeSpan TaskDetailsCacheDuration = TimeSpan.FromMinutes(15);
     private static readonly TimeSpan TaskListCacheDuration = TimeSpan.FromMinutes(10);
     private static readonly TimeSpan TaskQueryCacheDuration = TimeSpan.FromMinutes(8);
-    private static readonly TimeSpan ProjectTasksCacheDuration = TimeSpan.FromMinutes(12);
+    private static readonly TimeSpan TasksCacheDuration = TimeSpan.FromMinutes(12);
 
     public CachedTaskService(
         ApplicationDbContext context, 
@@ -53,7 +54,7 @@ public class CachedTaskService : ITaskService
 
             _logger.LogDebug("Cache miss for task ID: {TaskId}", taskId);
 
-            var task = await _context.ProjectTasks
+            var task = await _context.Tasks
                 .Include(t => t.AssignedTechnician)
                 .ThenInclude(u => u!.Role)
                 .Include(t => t.Project)
@@ -110,7 +111,7 @@ public class CachedTaskService : ITaskService
 
             _logger.LogDebug("Cache miss for tasks list: {CacheKey}", cacheKey);
 
-            var query = _context.ProjectTasks
+            var query = _context.Tasks
                 .Include(t => t.AssignedTechnician)
                 .ThenInclude(u => u!.Role)
                 .Include(t => t.Project)
@@ -205,7 +206,7 @@ public class CachedTaskService : ITaskService
 
             _logger.LogDebug("Cache miss for tasks query: {CacheKey}", cacheKey);
 
-            var baseQuery = _context.ProjectTasks
+            var baseQuery = _context.Tasks
                 .Include(t => t.AssignedTechnician)
                 .ThenInclude(u => u!.Role)
                 .Include(t => t.Project)
@@ -268,7 +269,7 @@ public class CachedTaskService : ITaskService
         return await GetTasksAsync(pageNumber, pageSize, projectId, assignedTo);
     }
 
-    public async Task<ApiResponse<PagedResult<TaskDto>>> GetProjectTasksAsync(Guid projectId, int pageNumber = 1, int pageSize = 10)
+    public async Task<ApiResponse<PagedResult<TaskDto>>> GetTasksAsync(Guid projectId, int pageNumber = 1, int pageSize = 10)
     {
         try
         {
@@ -294,7 +295,7 @@ public class CachedTaskService : ITaskService
             if (result.Success && result.Data != null)
             {
                 // Cache project-specific tasks separately with longer duration
-                await _cacheService.SetAsync(cacheKey, result.Data, ProjectTasksCacheDuration);
+                await _cacheService.SetAsync(cacheKey, result.Data, TasksCacheDuration);
             }
 
             return result;
@@ -351,11 +352,11 @@ public class CachedTaskService : ITaskService
                 CreatedAt = DateTime.UtcNow
             };
 
-            _context.ProjectTasks.Add(task);
+            _context.Tasks.Add(task);
             await _context.SaveChangesAsync();
 
             // Load the task with related data
-            var createdTask = await _context.ProjectTasks
+            var createdTask = await _context.Tasks
                 .Include(t => t.AssignedTechnician)
                 .ThenInclude(u => u!.Role)
                 .Include(t => t.Project)
@@ -392,7 +393,7 @@ public class CachedTaskService : ITaskService
     {
         try
         {
-            var task = await _context.ProjectTasks.FindAsync(taskId);
+            var task = await _context.Tasks.FindAsync(taskId);
             if (task == null)
             {
                 return new ApiResponse<TaskDto>
@@ -437,7 +438,7 @@ public class CachedTaskService : ITaskService
             await _context.SaveChangesAsync();
 
             // Load the task with related data
-            var updatedTask = await _context.ProjectTasks
+            var updatedTask = await _context.Tasks
                 .Include(t => t.AssignedTechnician)
                 .ThenInclude(u => u!.Role)
                 .Include(t => t.Project)
@@ -482,7 +483,7 @@ public class CachedTaskService : ITaskService
     {
         try
         {
-            var task = await _context.ProjectTasks.FindAsync(taskId);
+            var task = await _context.Tasks.FindAsync(taskId);
             if (task == null)
             {
                 return new ApiResponse<TaskDto>
@@ -556,7 +557,7 @@ public class CachedTaskService : ITaskService
                 await _context.SaveChangesAsync();
 
                 // Load the task with related data
-                var updatedTask = await _context.ProjectTasks
+                var updatedTask = await _context.Tasks
                     .Include(t => t.AssignedTechnician)
                     .ThenInclude(u => u!.Role)
                     .Include(t => t.Project)
@@ -591,7 +592,7 @@ public class CachedTaskService : ITaskService
             else
             {
                 // No changes made, return current task
-                var currentTask = await _context.ProjectTasks
+                var currentTask = await _context.Tasks
                     .Include(t => t.AssignedTechnician)
                     .ThenInclude(u => u!.Role)
                     .Include(t => t.Project)
@@ -620,7 +621,7 @@ public class CachedTaskService : ITaskService
     {
         try
         {
-            var task = await _context.ProjectTasks.FindAsync(taskId);
+            var task = await _context.Tasks.FindAsync(taskId);
             if (task == null)
             {
                 return new ApiResponse<bool>
@@ -667,7 +668,7 @@ public class CachedTaskService : ITaskService
     {
         try
         {
-            var task = await _context.ProjectTasks.FindAsync(taskId);
+            var task = await _context.Tasks.FindAsync(taskId);
             if (task == null)
             {
                 return new ApiResponse<bool>
@@ -680,7 +681,7 @@ public class CachedTaskService : ITaskService
             var projectId = task.ProjectId;
             var assigneeId = task.AssignedTechnicianId;
 
-            _context.ProjectTasks.Remove(task);
+            _context.Tasks.Remove(task);
             await _context.SaveChangesAsync();
 
             // Remove from cache

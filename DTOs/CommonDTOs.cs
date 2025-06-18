@@ -98,6 +98,7 @@ public class ProjectDto
     public DateTime StartDate { get; set; }
     public DateTime? EstimatedEndDate { get; set; }
     public DateTime? ActualEndDate { get; set; }
+    public DateTime? UpdatedAt { get; set; }
     public UserDto ProjectManager { get; set; } = null!;
     public int TaskCount { get; set; }
     public int CompletedTaskCount { get; set; }
@@ -391,262 +392,6 @@ public class ApiError
     public Dictionary<string, object> Extensions { get; set; } = new();
 }
 
-// Common DTOs
-public class ApiResponse<T>
-{
-    public bool Success { get; set; }
-    public string Message { get; set; } = string.Empty;
-    public T? Data { get; set; }
-    public List<string> Errors { get; set; } = new();
-    public ApiError? Error { get; set; }
-
-    // Factory methods for creating consistent responses
-    public static ApiResponse<T> SuccessResponse(T data, string message = "Operation completed successfully")
-    {
-        return new ApiResponse<T>
-        {
-            Success = true,
-            Message = message,
-            Data = data
-        };
-    }
-
-    public static ApiResponse<T> ErrorResponse(string message, List<string>? errors = null)
-    {
-        return new ApiResponse<T>
-        {
-            Success = false,
-            Message = message,
-            Errors = errors ?? new List<string>()
-        };
-    }
-
-    public static ApiResponse<T> ValidationErrorResponse(List<ValidationError> validationErrors, string? instance = null, string? traceId = null)
-    {
-        var errorDetail = new ErrorDetail
-        {
-            Code = "VALIDATION_FAILED",
-            Message = "One or more validation errors occurred.",
-            Details = validationErrors
-        };
-
-        var apiError = new ApiError
-        {
-            Type = "ValidationError",
-            Title = "Validation Failed",
-            Status = 400,
-            Detail = "The request contains invalid data. Please check the errors and try again.",
-            Instance = instance,
-            TraceId = traceId,
-            Errors = new List<ErrorDetail> { errorDetail }
-        };
-
-        return new ApiResponse<T>
-        {
-            Success = false,
-            Message = "Validation failed",
-            Error = apiError,
-            Errors = validationErrors.Select(v => $"{v.Field}: {v.Message}").ToList()
-        };
-    }
-
-    public static ApiResponse<T> BusinessLogicErrorResponse(string code, string message, string? target = null, string? instance = null, string? traceId = null)
-    {
-        var errorDetail = new ErrorDetail
-        {
-            Code = code,
-            Message = message,
-            Target = target
-        };
-
-        var apiError = new ApiError
-        {
-            Type = "BusinessLogicError",
-            Title = "Business Logic Error",
-            Status = 400,
-            Detail = message,
-            Instance = instance,
-            TraceId = traceId,
-            Errors = new List<ErrorDetail> { errorDetail }
-        };
-
-        return new ApiResponse<T>
-        {
-            Success = false,
-            Message = message,
-            Error = apiError,
-            Errors = new List<string> { message }
-        };
-    }
-
-    public static ApiResponse<T> NotFoundErrorResponse(string resource, string identifier, string? instance = null, string? traceId = null)
-    {
-        var message = $"{resource} with identifier '{identifier}' was not found.";
-        
-        var errorDetail = new ErrorDetail
-        {
-            Code = "RESOURCE_NOT_FOUND",
-            Message = message,
-            Target = resource
-        };
-
-        var apiError = new ApiError
-        {
-            Type = "NotFoundError",
-            Title = "Resource Not Found",
-            Status = 404,
-            Detail = message,
-            Instance = instance,
-            TraceId = traceId,
-            Errors = new List<ErrorDetail> { errorDetail }
-        };
-
-        return new ApiResponse<T>
-        {
-            Success = false,
-            Message = message,
-            Error = apiError,
-            Errors = new List<string> { message }
-        };
-    }
-
-    public static ApiResponse<T> UnauthorizedErrorResponse(string? instance = null, string? traceId = null)
-    {
-        var message = "Authentication is required to access this resource.";
-        
-        var errorDetail = new ErrorDetail
-        {
-            Code = "UNAUTHORIZED",
-            Message = message
-        };
-
-        var apiError = new ApiError
-        {
-            Type = "AuthenticationError",
-            Title = "Unauthorized",
-            Status = 401,
-            Detail = message,
-            Instance = instance,
-            TraceId = traceId,
-            Errors = new List<ErrorDetail> { errorDetail }
-        };
-
-        return new ApiResponse<T>
-        {
-            Success = false,
-            Message = message,
-            Error = apiError,
-            Errors = new List<string> { message }
-        };
-    }
-
-    public static ApiResponse<T> ForbiddenErrorResponse(string? instance = null, string? traceId = null)
-    {
-        var message = "You do not have permission to access this resource.";
-        
-        var errorDetail = new ErrorDetail
-        {
-            Code = "FORBIDDEN",
-            Message = message
-        };
-
-        var apiError = new ApiError
-        {
-            Type = "AuthorizationError",
-            Title = "Forbidden",
-            Status = 403,
-            Detail = message,
-            Instance = instance,
-            TraceId = traceId,
-            Errors = new List<ErrorDetail> { errorDetail }
-        };
-
-        return new ApiResponse<T>
-        {
-            Success = false,
-            Message = message,
-            Error = apiError,
-            Errors = new List<string> { message }
-        };
-    }
-
-    public static ApiResponse<T> ServerErrorResponse(string? instance = null, string? traceId = null)
-    {
-        var message = "An internal server error occurred. Please try again later.";
-        
-        var errorDetail = new ErrorDetail
-        {
-            Code = "INTERNAL_SERVER_ERROR",
-            Message = message
-        };
-
-        var apiError = new ApiError
-        {
-            Type = "SystemError",
-            Title = "Internal Server Error",
-            Status = 500,
-            Detail = message,
-            Instance = instance,
-            TraceId = traceId,
-            Errors = new List<ErrorDetail> { errorDetail }
-        };
-
-        return new ApiResponse<T>
-        {
-            Success = false,
-            Message = message,
-            Error = apiError,
-            Errors = new List<string> { message }
-        };
-    }
-
-    public static ApiResponse<T> CreateRateLimitErrorResponse(int limit, DateTime resetTime, TimeSpan retryAfter, string? instance = null, string? traceId = null)
-    {
-        var message = $"Too many requests. You have exceeded the rate limit of {limit} requests. Please try again later.";
-        
-        var errorDetail = new ErrorDetail
-        {
-            Code = "RATE_LIMIT_EXCEEDED",
-            Message = message,
-            AdditionalInfo = new Dictionary<string, object>
-            {
-                { "limit", limit },
-                { "resetTime", resetTime },
-                { "retryAfterSeconds", (int)retryAfter.TotalSeconds }
-            }
-        };
-
-        var apiError = new ApiError
-        {
-            Type = "RateLimitError",
-            Title = "Too Many Requests",
-            Status = 429,
-            Detail = message,
-            Instance = instance,
-            TraceId = traceId,
-            Errors = new List<ErrorDetail> { errorDetail },
-            Extensions = new Dictionary<string, object>
-            {
-                { "rateLimit", new
-                    {
-                        limit = limit,
-                        resetTime = resetTime,
-                        retryAfterSeconds = (int)retryAfter.TotalSeconds
-                    }
-                }
-            }
-        };
-
-        return new ApiResponse<T>
-        {
-            Success = false,
-            Message = message,
-            Error = apiError,
-            Errors = new List<string> { message }
-        };
-    }
-}
-
 // HATEOAS-style pagination links
 public class PaginationLinks
 {
@@ -920,6 +665,33 @@ public class CreateWorkProgressItemRequest
 
     [StringLength(500, ErrorMessage = "Next steps cannot exceed 500 characters")]
     public string? NextSteps { get; set; } = string.Empty;
+}
+
+public class UpdateWorkProgressItemRequest
+{
+    [StringLength(200, MinimumLength = 3, ErrorMessage = "Activity must be between 3 and 200 characters")]
+    public string? Activity { get; set; }
+
+    [StringLength(1000, ErrorMessage = "Description cannot exceed 1000 characters")]
+    public string? Description { get; set; }
+
+    [Range(0, 24, ErrorMessage = "Hours worked must be between 0 and 24")]
+    public double? HoursWorked { get; set; }
+
+    [Range(0, 100, ErrorMessage = "Percent complete must be between 0 and 100")]
+    public int? PercentageComplete { get; set; }
+
+    [Range(0, int.MaxValue, ErrorMessage = "Workers assigned must be non-negative")]
+    public int? WorkersAssigned { get; set; }
+
+    [StringLength(1000, ErrorMessage = "Notes cannot exceed 1000 characters")]
+    public string? Notes { get; set; }
+
+    [StringLength(500, ErrorMessage = "Issues cannot exceed 500 characters")]
+    public string? Issues { get; set; }
+
+    [StringLength(500, ErrorMessage = "Next steps cannot exceed 500 characters")]
+    public string? NextSteps { get; set; }
 }
 
 public class PersonnelLogDto

@@ -25,6 +25,7 @@ public interface IMasterPlanService
     
     // Phase Management
     Task<Result<ProjectPhaseDto>> AddPhaseToMasterPlanAsync(Guid masterPlanId, CreateProjectPhaseRequest request);
+    Task<Result<ProjectPhaseDto>> GetPhaseByIdAsync(Guid phaseId);
     Task<Result<ProjectPhaseDto>> UpdatePhaseAsync(Guid phaseId, UpdateProjectPhaseRequest request);
     Task<Result<bool>> DeletePhaseAsync(Guid phaseId);
     Task<Result<List<ProjectPhaseDto>>> GetPhasesByMasterPlanAsync(Guid masterPlanId);

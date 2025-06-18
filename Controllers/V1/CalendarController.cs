@@ -108,9 +108,6 @@ public class CalendarController : BaseApiController
     /// <summary>
     /// Update an existing calendar event
     /// </summary>
-    /// <param name="id">The calendar event ID</param>
-    /// <param name="request">Calendar event update request</param>
-    /// <returns>Updated calendar event</returns>
     [HttpPut("{id:guid}")]
     [ProducesResponseType(typeof(ApiResponse<CalendarEventResponseDto>), 200)]
     [ProducesResponseType(typeof(ApiResponse<CalendarEventResponseDto>), 400)]
@@ -118,23 +115,26 @@ public class CalendarController : BaseApiController
     [ProducesResponseType(typeof(ApiResponse<CalendarEventResponseDto>), 500)]
     public async Task<ActionResult<ApiResponse<CalendarEventResponseDto>>> UpdateEvent(Guid id, [FromBody] UpdateCalendarEventDto request)
     {
-        if (!ModelState.IsValid)
+        try
         {
-            return BadRequest(new ApiResponse<CalendarEventResponseDto>
-            {
-                Success = false,
-                Message = "Invalid request data",
-                Data = null,
-                Errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage).ToList()
-            });
-        }
+            if (!ModelState.IsValid)
+                return CreateErrorResponse("Invalid input data", 400);
 
-        var result = await _calendarService.UpdateEventAsync(id, request);
-        
-        if (result.Success)
-            return Ok(result);
-        
-        return result.Message.Contains("not found") ? NotFound(result) : BadRequest(result);
+            var result = await _calendarService.UpdateEventAsync(id, request);
+            
+            if (!result.Success)
+            {
+                return result.Message.Contains("not found") 
+                    ? CreateNotFoundResponse(result.Message)
+                    : CreateErrorResponse(result.Message, 400);
+            }
+
+            return CreateSuccessResponse(result.Data!, "Calendar event updated successfully");
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, CreateErrorResponse("An error occurred while updating the calendar event", 500));
+        }
     }
 
     /// <summary>

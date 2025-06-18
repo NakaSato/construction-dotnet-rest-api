@@ -1,310 +1,273 @@
 using Microsoft.AspNetCore.Mvc;
 using dotnet_rest_api.DTOs;
-using dotnet_rest_api.Services;
-using dotnet_rest_api.Common;
+using Microsoft.Extensions.Logging;
 
 namespace dotnet_rest_api.Controllers;
 
 /// <summary>
-/// Base API controller providing common functionality for all API controllers
+/// Base controller for all API controllers
 /// </summary>
 [ApiController]
+[Route("api/v1/[controller]")]
+[Produces("application/json")]
 public abstract class BaseApiController : ControllerBase
 {
-    /// <summary>
-    /// Parses filter parameters from query string
-    /// </summary>
-    /// <param name="filterString">Filter string from query parameters</param>
-    /// <returns>List of parsed filter parameters</returns>
-    protected List<FilterParameter> ParseFiltersFromQuery(string? filterString)
+    private readonly ILogger<BaseApiController>? _logger;
+
+    protected BaseApiController(ILogger<BaseApiController>? logger = null)
     {
-        if (string.IsNullOrEmpty(filterString))
-            return new List<FilterParameter>();
-        
-        var filters = new List<FilterParameter>();
-        var filterPairs = filterString.Split('&');
-        
-        foreach (var pair in filterPairs)
-        {
-            var parts = pair.Split('=');
-            if (parts.Length != 2) continue;
-            
-            var fieldAndOperator = parts[0].Split("__");
-            var field = fieldAndOperator[0];
-            var operatorName = fieldAndOperator.Length > 1 ? fieldAndOperator[1] : "eq";
-            var value = Uri.UnescapeDataString(parts[1]);
-            
-            filters.Add(new FilterParameter
-            {
-                Field = field,
-                Operator = operatorName,
-                Value = value
-            });
-        }
-        
-        return filters;
+        _logger = logger;
     }
 
     /// <summary>
-    /// Parses filter parameters from query string and applies them to query parameters
+    /// Logs controller action
     /// </summary>
-    /// <typeparam name="T">Type of query parameters that implements IFilterableQuery</typeparam>
-    /// <param name="queryParameters">Query parameters to apply filters to</param>
-    /// <param name="filterString">Filter string from query parameters</param>
-    protected void ApplyFiltersFromQuery<T>(T queryParameters, string? filterString) 
-        where T : BaseQueryParameters, IFilterableQuery
+    /// <param name="action">The action being performed</param>
+    /// <param name="parameters">Optional parameters</param>
+    protected void LogControllerAction(string action, object? parameters = null)
     {
-        if (!string.IsNullOrEmpty(filterString))
+        _logger?.LogInformation("Controller Action: {Action}, Parameters: {Parameters}", action, parameters);
+    }
+
+    /// <summary>
+    /// Logs controller action with custom logger
+    /// </summary>
+    /// <param name="logger">Custom logger</param>
+    /// <param name="action">The action being performed</param>
+    /// <param name="parameters">Optional parameters</param>
+    protected void LogControllerAction(ILogger logger, string action, object? parameters = null)
+    {
+        logger.LogInformation("Controller Action: {Action}, Parameters: {Parameters}", action, parameters);
+    }
+
+    /// <summary>
+    /// Handles exceptions and returns appropriate error response
+    /// </summary>
+    /// <typeparam name="T">Response type</typeparam>
+    /// <param name="ex">The exception</param>
+    /// <param name="action">The action that failed</param>
+    /// <returns>Error response</returns>
+    protected ActionResult<ApiResponse<T>> HandleException<T>(Exception ex, string action)
+    {
+        _logger?.LogError(ex, "Error in {Action}: {Message}", action, ex.Message);
+        return StatusCode(500, new ApiResponse<T>
         {
-            var parsedFilters = ParseFiltersFromQuery(filterString);
-            queryParameters.Filters.AddRange(parsedFilters);
+            Success = false,
+            Message = "An internal error occurred",
+            Errors = new List<string> { ex.Message }
+        });
+    }
+
+    /// <summary>
+    /// Handles exceptions and returns appropriate error response with custom logger
+    /// </summary>
+    /// <typeparam name="T">Response type</typeparam>
+    /// <param name="logger">Custom logger</param>
+    /// <param name="ex">The exception</param>
+    /// <param name="action">The action that failed</param>
+    /// <returns>Error response</returns>
+    protected ActionResult<ApiResponse<T>> HandleException<T>(ILogger logger, Exception ex, string action)
+    {
+        logger.LogError(ex, "Error in {Action}: {Message}", action, ex.Message);
+        return StatusCode(500, new ApiResponse<T>
+        {
+            Success = false,
+            Message = "An internal error occurred",
+            Errors = new List<string> { ex.Message }
+        });
+    }
+
+    /// <summary>
+    /// Handles exceptions and returns appropriate error response (non-generic)
+    /// </summary>
+    /// <param name="logger">Custom logger</param>
+    /// <param name="ex">The exception</param>
+    /// <param name="action">The action that failed</param>
+    /// <returns>Error response</returns>
+    protected IActionResult HandleException(ILogger logger, Exception ex, string action)
+    {
+        logger.LogError(ex, "Error in {Action}: {Message}", action, ex.Message);
+        return StatusCode(500, new
+        {
+            Success = false,
+            Message = "An internal error occurred",
+            Data = (object?)null,
+            Errors = new List<string> { ex.Message }
+        });
+    }
+
+    /// <summary>
+    /// Converts service result to API response
+    /// </summary>
+    /// <typeparam name="T">Response type</typeparam>
+    /// <param name="serviceResult">Service result</param>
+    /// <returns>API response</returns>
+    protected ActionResult<ApiResponse<T>> ToApiResponse<T>(ServiceResult<T> serviceResult)
+    {
+        if (serviceResult.Success)
+        {
+            return Ok(new ApiResponse<T>
+            {
+                Success = true,
+                Data = serviceResult.Data,
+                Message = serviceResult.Message ?? "Success"
+            });
         }
+
+        return BadRequest(new ApiResponse<T>
+        {
+            Success = false,
+            Message = serviceResult.Message ?? "Operation failed",
+            Errors = serviceResult.Errors ?? new List<string>()
+        });
+    }
+
+    /// <summary>
+    /// Creates a success response
+    /// </summary>
+    /// <typeparam name="T">Response type</typeparam>
+    /// <param name="data">Data to return</param>
+    /// <param name="message">Success message</param>
+    /// <returns>Success response</returns>
+    protected ActionResult<ApiResponse<T>> CreateSuccessResponse<T>(T data, string? message = null)
+    {
+        return Ok(new ApiResponse<T>
+        {
+            Success = true,
+            Data = data,
+            Message = message ?? "Success"
+        });
+    }
+
+    /// <summary>
+    /// Creates an error response
+    /// </summary>
+    /// <typeparam name="T">Response type</typeparam>
+    /// <param name="message">Error message</param>
+    /// <param name="statusCode">HTTP status code</param>
+    /// <returns>Error response</returns>
+    protected ActionResult<ApiResponse<T>> CreateErrorResponse<T>(string message, int statusCode = 400)
+    {
+        var response = new ApiResponse<T>
+        {
+            Success = false,
+            Message = message
+        };
+
+        return statusCode switch
+        {
+            404 => NotFound(response),
+            401 => Unauthorized(response),
+            403 => StatusCode(403, response),
+            500 => StatusCode(500, response),
+            _ => BadRequest(response)
+        };
+    }
+
+    /// <summary>
+    /// Creates an error response (non-generic)
+    /// </summary>
+    /// <param name="message">Error message</param>
+    /// <param name="statusCode">HTTP status code</param>
+    /// <returns>Error response</returns>
+    protected IActionResult CreateErrorResponse(string message, int statusCode = 400)
+    {
+        var response = new
+        {
+            Success = false,
+            Message = message,
+            Data = (object?)null,
+            Errors = new List<string>()
+        };
+
+        return statusCode switch
+        {
+            404 => NotFound(response),
+            401 => Unauthorized(response),
+            403 => StatusCode(403, response),
+            500 => StatusCode(500, response),
+            _ => BadRequest(response)
+        };
+    }
+
+    /// <summary>
+    /// Creates a not found response
+    /// </summary>
+    /// <typeparam name="T">Response type</typeparam>
+    /// <param name="message">Not found message</param>
+    /// <returns>Not found response</returns>
+    protected ActionResult<ApiResponse<T>> CreateNotFoundResponse<T>(string message = "Resource not found")
+    {
+        return NotFound(new ApiResponse<T>
+        {
+            Success = false,
+            Message = message
+        });
+    }
+
+    /// <summary>
+    /// Creates a not found response (non-generic)
+    /// </summary>
+    /// <param name="message">Not found message</param>
+    /// <returns>Not found response</returns>
+    protected IActionResult CreateNotFoundResponse(string message = "Resource not found")
+    {
+        return NotFound(new
+        {
+            Success = false,
+            Message = message,
+            Data = (object?)null,
+            Errors = new List<string>()
+        });
     }
 
     /// <summary>
     /// Validates pagination parameters
     /// </summary>
-    /// <param name="pageNumber">Page number</param>
+    /// <param name="page">Page number</param>
     /// <param name="pageSize">Page size</param>
-    /// <param name="maxPageSize">Maximum allowed page size (default: 100)</param>
-    /// <returns>Validation result with error message if invalid</returns>
-    protected ActionResult? ValidatePaginationParameters(int pageNumber, int pageSize, int maxPageSize = 100)
+    /// <returns>Validation error message or null if valid</returns>
+    protected string? ValidatePaginationParameters(int page, int pageSize)
     {
-        if (pageNumber < 1)
-            return BadRequest("Page number must be greater than 0.");
-
-        if (pageSize < 1)
-            return BadRequest("Page size must be greater than 0.");
-
-        if (pageSize > maxPageSize)
-            return BadRequest($"Page size must not exceed {maxPageSize}.");
-
+        if (page < 1)
+            return "Page number must be greater than 0";
+        
+        if (pageSize < 1 || pageSize > 100)
+            return "Page size must be between 1 and 100";
+        
         return null;
     }
 
     /// <summary>
-    /// Creates a standardized error response
+    /// Validates pagination parameters (generic version)
     /// </summary>
-    /// <param name="message">Error message</param>
-    /// <param name="statusCode">HTTP status code</param>
-    /// <returns>Error response</returns>
-    protected ActionResult CreateErrorResponse(string message, int statusCode = 500)
+    /// <typeparam name="T">Response type</typeparam>
+    /// <param name="page">Page number</param>
+    /// <param name="pageSize">Page size</param>
+    /// <returns>Validation error message or null if valid</returns>
+    protected string? ValidatePaginationParameters<T>(int page, int pageSize)
     {
-        var response = new ApiResponse<object>
-        {
-            Success = false,
-            Message = message,
-            Data = null
-        };
-
-        return StatusCode(statusCode, response);
+        return ValidatePaginationParameters(page, pageSize);
     }
 
     /// <summary>
-    /// Creates a standardized success response
+    /// Applies filters from query parameters (stub implementation)
     /// </summary>
-    /// <typeparam name="T">Type of response data</typeparam>
-    /// <param name="data">Response data</param>
-    /// <param name="message">Success message</param>
-    /// <returns>Success response</returns>
-    protected ActionResult<ApiResponse<T>> CreateSuccessResponse<T>(T data, string message = "Operation completed successfully")
+    /// <param name="query">Query parameters</param>
+    protected void ApplyFiltersFromQuery(object query)
     {
-        var response = new ApiResponse<T>
-        {
-            Success = true,
-            Message = message,
-            Data = data
-        };
-
-        return Ok(response);
+        // Stub implementation - to be implemented as needed
+        _logger?.LogDebug("Applying filters from query: {Query}", query);
     }
 
     /// <summary>
-    /// Creates a standardized not found response
+    /// Applies filters from query parameters with filter string (stub implementation)
     /// </summary>
-    /// <param name="message">Not found message</param>
-    /// <returns>Not found response</returns>
-    protected ActionResult CreateNotFoundResponse(string message = "Resource not found")
+    /// <param name="query">Query parameters</param>
+    /// <param name="filterString">Filter string</param>
+    protected void ApplyFiltersFromQuery(object query, string? filterString)
     {
-        var response = new ApiResponse<object>
-        {
-            Success = false,
-            Message = message,
-            Data = null
-        };
-
-        return NotFound(response);
-    }
-
-    /// <summary>
-    /// Gets the base URL for the current request
-    /// </summary>
-    /// <returns>Base URL string</returns>
-    protected string GetBaseUrl()
-    {
-        return $"{Request.Scheme}://{Request.Host}{Request.Path}";
-    }
-
-    /// <summary>
-    /// Extracts query parameters from the current request
-    /// </summary>
-    /// <returns>Dictionary of query parameters</returns>
-    protected Dictionary<string, string> GetQueryParameters()
-    {
-        var queryParams = new Dictionary<string, string>();
-        
-        foreach (var param in Request.Query)
-        {
-            if (!string.IsNullOrEmpty(param.Value))
-            {
-                queryParams[param.Key] = param.Value.ToString();
-            }
-        }
-        
-        return queryParams;
-    }
-
-    /// <summary>
-    /// Logs controller action information for debugging
-    /// </summary>
-    /// <param name="logger">Logger instance</param>
-    /// <param name="action">Action name</param>
-    /// <param name="parameters">Action parameters (optional)</param>
-    protected void LogControllerAction(ILogger logger, string action, object? parameters = null)
-    {
-        var controllerName = GetType().Name;
-        var logMessage = $"Controller: {controllerName}, Action: {action}";
-        
-        if (parameters != null)
-        {
-            logMessage += $", Parameters: {System.Text.Json.JsonSerializer.Serialize(parameters)}";
-        }
-        
-        logger.LogInformation(logMessage);
-    }
-
-    /// <summary>
-    /// Handles exceptions and returns appropriate error responses
-    /// </summary>
-    /// <param name="logger">Logger instance</param>
-    /// <param name="ex">Exception to handle</param>
-    /// <param name="action">Action name where exception occurred</param>
-    /// <returns>Error response</returns>
-    protected ActionResult HandleException(ILogger logger, Exception ex, string action)
-    {
-        var controllerName = GetType().Name;
-        logger.LogError(ex, "Error in {Controller}.{Action}: {Message}", controllerName, action, ex.Message);
-        
-        return CreateErrorResponse($"An error occurred while {action.ToLower()}.");
-    }
-
-    /// <summary>
-    /// Handles exceptions and returns appropriate typed error responses for ApiResponse methods
-    /// </summary>
-    /// <typeparam name="T">The type parameter for the ApiResponse</typeparam>
-    /// <param name="logger">Logger instance</param>
-    /// <param name="ex">Exception to handle</param>
-    /// <param name="action">Action name where exception occurred</param>
-    /// <returns>Typed error response</returns>
-    protected ActionResult<ApiResponse<T>> HandleException<T>(ILogger logger, Exception ex, string action)
-    {
-        var controllerName = GetType().Name;
-        logger.LogError(ex, "Error in {Controller}.{Action}: {Message}", controllerName, action, ex.Message);
-        
-        return CreateErrorResponse($"An error occurred while {action.ToLower()}.");
-    }
-
-    /// <summary>
-    /// Converts a Result<T> from the service layer to an ApiResponse<T> and appropriate HTTP status code
-    /// </summary>
-    /// <typeparam name="T">Type of data in the result</typeparam>
-    /// <param name="result">Result from service layer</param>
-    /// <returns>ActionResult with appropriate HTTP status code and ApiResponse<T></returns>
-    protected ActionResult<ApiResponse<T>> ToApiResponse<T>(Result<T> result)
-    {
-        var apiResponse = new ApiResponse<T>
-        {
-            Success = result.IsSuccess,
-            Message = result.Message,
-            Data = result.Data,
-            Errors = result.Errors
-        };
-
-        // Map to appropriate HTTP status codes based on error type
-        if (result.IsSuccess)
-        {
-            return Ok(apiResponse);
-        }
-
-        return result.ErrorType switch
-        {
-            ResultErrorType.NotFound => NotFound(apiResponse),
-            ResultErrorType.Unauthorized => Unauthorized(apiResponse),
-            ResultErrorType.Forbidden => StatusCode(403, apiResponse),
-            ResultErrorType.Validation => BadRequest(apiResponse),
-            ResultErrorType.BusinessLogic => BadRequest(apiResponse),
-            ResultErrorType.RateLimit => StatusCode(429, apiResponse),
-            ResultErrorType.ServerError => StatusCode(500, apiResponse),
-            _ => StatusCode(500, apiResponse)
-        };
-    }
-
-    /// <summary>
-    /// Converts a non-generic Result from the service layer to an ApiResponse<bool> and appropriate HTTP status code
-    /// </summary>
-    /// <param name="result">Result from service layer</param>
-    /// <returns>ActionResult with appropriate HTTP status code and ApiResponse<bool></returns>
-    protected ActionResult<ApiResponse<bool>> ToApiResponse(Result result)
-    {
-        var apiResponse = new ApiResponse<bool>
-        {
-            Success = result.IsSuccess,
-            Message = result.Message,
-            Data = result.IsSuccess,
-            Errors = result.Errors
-        };
-
-        // Map to appropriate HTTP status codes based on error type
-        if (result.IsSuccess)
-        {
-            return Ok(apiResponse);
-        }
-
-        return result.ErrorType switch
-        {
-            ResultErrorType.NotFound => NotFound(apiResponse),
-            ResultErrorType.Unauthorized => Unauthorized(apiResponse),
-            ResultErrorType.Forbidden => StatusCode(403, apiResponse),
-            ResultErrorType.Validation => BadRequest(apiResponse),
-            ResultErrorType.BusinessLogic => BadRequest(apiResponse),
-            ResultErrorType.RateLimit => StatusCode(429, apiResponse),
-            ResultErrorType.ServerError => StatusCode(500, apiResponse),
-            _ => StatusCode(500, apiResponse)
-        };
-    }
-
-    /// <summary>
-    /// Enhanced ToApiResponse with validation error mapping for paginated results
-    /// </summary>
-    /// <typeparam name="T">Type of data in the result</typeparam>
-    /// <param name="result">Result from service layer</param>
-    /// <returns>ActionResult with appropriate HTTP status code and ApiResponse<T></returns>
-    protected ActionResult<ApiResponse<T>> ToApiResponseWithValidation<T>(Result<T> result)
-    {
-        var apiResponse = new ApiResponse<T>
-        {
-            Success = result.IsSuccess,
-            Message = result.Message,
-            Data = result.Data,
-            Errors = result.Errors
-        };
-
-        // Add validation-specific error mapping if needed
-        if (result.IsFailure && result.ErrorType == ResultErrorType.Validation && result.ValidationErrors.Any())
-        {
-            apiResponse.Error = ApiResponse<T>.ValidationErrorResponse(result.ValidationErrors).Error;
-        }
-
-        return ToApiResponse(result);
+        // Stub implementation - to be implemented as needed
+        _logger?.LogDebug("Applying filters from query: {Query}, FilterString: {FilterString}", query, filterString);
     }
 }

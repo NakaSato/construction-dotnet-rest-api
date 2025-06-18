@@ -79,4 +79,7 @@ public class Project
     public virtual User ProjectManager { get; set; } = null!;
     public virtual ICollection<ProjectTask> Tasks { get; set; } = new List<ProjectTask>();
     public virtual ICollection<ImageMetadata> Images { get; set; } = new List<ImageMetadata>();
+    
+    // Master Plan Navigation (One-to-One relationship)
+    public virtual MasterPlan? MasterPlan { get; set; }
 }

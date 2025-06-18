@@ -1,15 +1,5 @@
 namespace dotnet_rest_api.DTOs;
 
-// Base query parameters for all collection endpoints
-public class BaseQueryParameters
-{
-    public int PageNumber { get; set; } = 1;
-    public int PageSize { get; set; } = 10;
-    public string? SortBy { get; set; }
-    public string? SortOrder { get; set; } = "asc"; // asc or desc
-    public string? Fields { get; set; } // Comma-separated list of fields for sparse fieldsets
-}
-
 // Advanced filtering parameters
 public class FilterParameter
 {

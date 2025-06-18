@@ -375,4 +375,65 @@ public class TasksController : BaseApiController
             return HandleException(_logger, ex, "retrieving tasks with rich pagination");
         }
     }
+
+    /// <summary>
+    /// Get progress reports for a specific task (limited nesting)
+    /// Available to: All authenticated users
+    /// </summary>
+    [HttpGet("{taskId:guid}/progress-reports")]
+    [ShortCache] // 5 minute cache
+    public async Task<ActionResult<ApiResponse<PagedResult<TaskProgressReportDto>>>> GetTaskProgressReports(
+        Guid taskId,
+        [FromQuery] int pageNumber = 1,
+        [FromQuery] int pageSize = 10)
+    {
+        try
+        {
+            LogControllerAction(_logger, "GetTaskProgressReports", new { taskId, pageNumber, pageSize });
+
+            var validationResult = ValidatePaginationParameters(pageNumber, pageSize);
+            if (validationResult != null)
+                return validationResult;
+
+            var result = await _taskService.GetTaskProgressReportsAsync(taskId, pageNumber, pageSize);
+            if (!result.Success)
+                return CreateErrorResponse(result.Message, 400);
+
+            return CreateSuccessResponse(result.Data!, "Task progress reports retrieved successfully");
+        }
+        catch (Exception ex)
+        {
+            return HandleException(_logger, ex, $"retrieving progress reports for task {taskId}");
+        }
+    }
+
+    /// <summary>
+    /// Create a progress report for a specific task
+    /// Available to: Administrator, ProjectManager, Technician
+    /// </summary>
+    [HttpPost("{taskId:guid}/progress-reports")]
+    [Authorize(Roles = "Administrator,ProjectManager,Technician")]
+    [NoCache]
+    public async Task<ActionResult<ApiResponse<TaskProgressReportDto>>> CreateTaskProgressReport(
+        Guid taskId, 
+        [FromBody] CreateTaskProgressReportRequest request)
+    {
+        try
+        {
+            LogControllerAction(_logger, "CreateTaskProgressReport", new { taskId, request });
+
+            if (!ModelState.IsValid)
+                return CreateErrorResponse("Invalid input data", 400);
+
+            var result = await _taskService.CreateTaskProgressReportAsync(taskId, request);
+            if (!result.Success)
+                return CreateErrorResponse(result.Message, 400);
+
+            return CreateSuccessResponse(result.Data!, "Task progress report created successfully");
+        }
+        catch (Exception ex)
+        {
+            return HandleException(_logger, ex, $"creating progress report for task {taskId}");
+        }
+    }
 }

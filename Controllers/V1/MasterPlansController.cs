@@ -43,18 +43,34 @@ public class MasterPlansController : BaseApiController
             LogControllerAction(_logger, "CreateMasterPlan", request);
 
             if (!ModelState.IsValid)
-                return CreateErrorResponse("Invalid input data", 400);
+            {
+                var errors = ModelState.Values
+                    .SelectMany(v => v.Errors)
+                    .Select(e => e.ErrorMessage)
+                    .ToList();
+                return CreateErrorResponse<MasterPlanDto>("Invalid input data", 400, errors);
+            }
 
             var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (!Guid.TryParse(userIdClaim, out var userId))
-                return CreateErrorResponse("Invalid user ID in token", 401);
+                return CreateErrorResponse<MasterPlanDto>("Invalid user ID in token", 401);
 
             var result = await _masterPlanService.CreateMasterPlanAsync(request, userId);
             return ToApiResponse(result);
         }
+        catch (ArgumentException ex)
+        {
+            _logger.LogWarning(ex, "Invalid argument while creating master plan");
+            return CreateErrorResponse<MasterPlanDto>($"Invalid input: {ex.Message}", 400);
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            _logger.LogWarning(ex, "Unauthorized access while creating master plan");
+            return CreateErrorResponse<MasterPlanDto>("Access denied", 403);
+        }
         catch (Exception ex)
         {
-            return HandleException(_logger, ex, "creating master plan");
+            return HandleException<MasterPlanDto>(_logger, ex, "creating master plan");
         }
     }
 
@@ -74,7 +90,7 @@ public class MasterPlansController : BaseApiController
         }
         catch (Exception ex)
         {
-            return HandleException(_logger, ex, "retrieving master plan");
+            return HandleException<MasterPlanDto>(_logger, ex, "retrieving master plan");
         }
     }
 
@@ -94,7 +110,7 @@ public class MasterPlansController : BaseApiController
         }
         catch (Exception ex)
         {
-            return HandleException(_logger, ex, "retrieving master plan by project");
+            return HandleException<MasterPlanDto>(_logger, ex, "retrieving master plan by project");
         }
     }
 
@@ -112,14 +128,14 @@ public class MasterPlansController : BaseApiController
             LogControllerAction(_logger, "UpdateMasterPlan", new { id, request });
 
             if (!ModelState.IsValid)
-                return CreateErrorResponse("Invalid input data", 400);
+                return CreateErrorResponse<MasterPlanDto>("Invalid input data", 400);
 
             var result = await _masterPlanService.UpdateMasterPlanAsync(id, request);
             return ToApiResponse(result);
         }
         catch (Exception ex)
         {
-            return HandleException(_logger, ex, "updating master plan");
+            return HandleException<MasterPlanDto>(_logger, ex, "updating master plan");
         }
     }
 
@@ -138,14 +154,14 @@ public class MasterPlansController : BaseApiController
 
             var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (!Guid.TryParse(userIdClaim, out var userId))
-                return CreateErrorResponse("Invalid user ID in token", 401);
+                return CreateErrorResponse<bool>("Invalid user ID in token", 401);
 
             var result = await _masterPlanService.ApproveMasterPlanAsync(id, userId, notes);
             return ToApiResponse(result);
         }
         catch (Exception ex)
         {
-            return HandleException(_logger, ex, "approving master plan");
+            return HandleException<bool>(_logger, ex, "approving master plan");
         }
     }
 
@@ -167,7 +183,7 @@ public class MasterPlansController : BaseApiController
         }
         catch (Exception ex)
         {
-            return HandleException(_logger, ex, "activating master plan");
+            return HandleException<bool>(_logger, ex, "activating master plan");
         }
     }
 
@@ -187,7 +203,7 @@ public class MasterPlansController : BaseApiController
         }
         catch (Exception ex)
         {
-            return HandleException(_logger, ex, "retrieving progress summary");
+            return HandleException<ProgressSummaryDto>(_logger, ex, "retrieving progress summary");
         }
     }
 
@@ -207,7 +223,7 @@ public class MasterPlansController : BaseApiController
         }
         catch (Exception ex)
         {
-            return HandleException(_logger, ex, "calculating overall progress");
+            return HandleException<decimal>(_logger, ex, "calculating overall progress");
         }
     }
 
@@ -227,7 +243,7 @@ public class MasterPlansController : BaseApiController
         }
         catch (Exception ex)
         {
-            return HandleException(_logger, ex, "retrieving phases");
+            return HandleException<List<ProjectPhaseDto>>(_logger, ex, "retrieving phases");
         }
     }
 
@@ -245,14 +261,20 @@ public class MasterPlansController : BaseApiController
             LogControllerAction(_logger, "AddPhase", new { id, request });
 
             if (!ModelState.IsValid)
-                return CreateErrorResponse("Invalid input data", 400);
+            {
+                var errors = ModelState.Values
+                    .SelectMany(v => v.Errors)
+                    .Select(e => e.ErrorMessage)
+                    .ToList();
+                return CreateErrorResponse<ProjectPhaseDto>("Invalid input data", 400, errors);
+            }
 
             var result = await _masterPlanService.AddPhaseToMasterPlanAsync(id, request);
             return ToApiResponse(result);
         }
         catch (Exception ex)
         {
-            return HandleException(_logger, ex, "adding phase");
+            return HandleException<ProjectPhaseDto>(_logger, ex, "adding phase");
         }
     }
 
@@ -273,14 +295,43 @@ public class MasterPlansController : BaseApiController
             LogControllerAction(_logger, "UpdatePhaseProgress", new { masterPlanId, phaseId, request });
 
             if (!ModelState.IsValid)
-                return CreateErrorResponse("Invalid input data", 400);
+            {
+                var errors = ModelState.Values
+                    .SelectMany(v => v.Errors)
+                    .Select(e => e.ErrorMessage)
+                    .ToList();
+                return CreateErrorResponse<bool>("Invalid input data", 400, errors);
+            }
+
+            // Validate percentage range
+            if (request.CompletionPercentage < 0 || request.CompletionPercentage > 100)
+            {
+                return CreateErrorResponse<bool>("Completion percentage must be between 0 and 100", 400);
+            }
+
+            // Validate status
+            var validStatuses = new[] { "NotStarted", "InProgress", "Completed", "OnHold", "Cancelled" };
+            if (!validStatuses.Contains(request.Status))
+            {
+                return CreateErrorResponse<bool>($"Invalid status. Valid statuses are: {string.Join(", ", validStatuses)}", 400);
+            }
 
             var result = await _masterPlanService.UpdatePhaseProgressAsync(phaseId, request.CompletionPercentage, request.Status);
             return ToApiResponse(result);
         }
+        catch (ArgumentException ex)
+        {
+            _logger.LogWarning(ex, "Invalid argument while updating phase progress");
+            return CreateErrorResponse<bool>($"Invalid input: {ex.Message}", 400);
+        }
+        catch (KeyNotFoundException ex)
+        {
+            _logger.LogWarning(ex, "Phase not found while updating progress");
+            return CreateErrorResponse<bool>($"Phase with ID {phaseId} not found", 404);
+        }
         catch (Exception ex)
         {
-            return HandleException(_logger, ex, "updating phase progress");
+            return HandleException<bool>(_logger, ex, "updating phase progress");
         }
     }
 
@@ -300,7 +351,7 @@ public class MasterPlansController : BaseApiController
         }
         catch (Exception ex)
         {
-            return HandleException(_logger, ex, "retrieving milestones");
+            return HandleException<List<ProjectMilestoneDto>>(_logger, ex, "retrieving milestones");
         }
     }
 
@@ -318,14 +369,14 @@ public class MasterPlansController : BaseApiController
             LogControllerAction(_logger, "AddMilestone", new { id, request });
 
             if (!ModelState.IsValid)
-                return CreateErrorResponse("Invalid input data", 400);
+                return CreateErrorResponse<ProjectMilestoneDto>("Invalid input data", 400);
 
             var result = await _masterPlanService.AddMilestoneToMasterPlanAsync(id, request);
             return ToApiResponse(result);
         }
         catch (Exception ex)
         {
-            return HandleException(_logger, ex, "adding milestone");
+            return HandleException<ProjectMilestoneDto>(_logger, ex, "adding milestone");
         }
     }
 
@@ -347,14 +398,14 @@ public class MasterPlansController : BaseApiController
 
             var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (!Guid.TryParse(userIdClaim, out var userId))
-                return CreateErrorResponse("Invalid user ID in token", 401);
+                return CreateErrorResponse<bool>("Invalid user ID in token", 401);
 
             var result = await _masterPlanService.CompleteMilestoneAsync(milestoneId, userId, evidence);
             return ToApiResponse(result);
         }
         catch (Exception ex)
         {
-            return HandleException(_logger, ex, "completing milestone");
+            return HandleException<bool>(_logger, ex, "completing milestone");
         }
     }
 
@@ -374,7 +425,7 @@ public class MasterPlansController : BaseApiController
         }
         catch (Exception ex)
         {
-            return HandleException(_logger, ex, "retrieving upcoming milestones");
+            return HandleException<List<ProjectMilestoneDto>>(_logger, ex, "retrieving upcoming milestones");
         }
     }
 
@@ -392,18 +443,18 @@ public class MasterPlansController : BaseApiController
             LogControllerAction(_logger, "CreateProgressReport", new { id, request });
 
             if (!ModelState.IsValid)
-                return CreateErrorResponse("Invalid input data", 400);
+                return CreateErrorResponse<ProgressReportDto>("Invalid input data", 400);
 
             var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (!Guid.TryParse(userIdClaim, out var userId))
-                return CreateErrorResponse("Invalid user ID in token", 401);
+                return CreateErrorResponse<ProgressReportDto>("Invalid user ID in token", 401);
 
             var result = await _masterPlanService.CreateProgressReportAsync(id, request, userId);
             return ToApiResponse(result);
         }
         catch (Exception ex)
         {
-            return HandleException(_logger, ex, "creating progress report");
+            return HandleException<ProgressReportDto>(_logger, ex, "creating progress report");
         }
     }
 
@@ -421,7 +472,7 @@ public class MasterPlansController : BaseApiController
         {
             LogControllerAction(_logger, "GetProgressReports", new { id, pageNumber, pageSize });
 
-            var validationResult = ValidatePaginationParameters(pageNumber, pageSize);
+            var validationResult = ValidatePaginationParameters<List<ProgressReportDto>>(pageNumber, pageSize);
             if (validationResult != null)
                 return validationResult;
 
@@ -430,7 +481,7 @@ public class MasterPlansController : BaseApiController
         }
         catch (Exception ex)
         {
-            return HandleException(_logger, ex, "retrieving progress reports");
+            return HandleException<List<ProgressReportDto>>(_logger, ex, "retrieving progress reports");
         }
     }
 
@@ -450,7 +501,7 @@ public class MasterPlansController : BaseApiController
         }
         catch (Exception ex)
         {
-            return HandleException(_logger, ex, "retrieving latest progress report");
+            return HandleException<ProgressReportDto>(_logger, ex, "retrieving latest progress report");
         }
     }
 
@@ -470,7 +521,7 @@ public class MasterPlansController : BaseApiController
         }
         catch (Exception ex)
         {
-            return HandleException(_logger, ex, "retrieving delayed phases");
+            return HandleException<List<ProjectPhaseDto>>(_logger, ex, "retrieving delayed phases");
         }
     }
 
@@ -490,7 +541,7 @@ public class MasterPlansController : BaseApiController
         }
         catch (Exception ex)
         {
-            return HandleException(_logger, ex, "retrieving project metrics");
+            return HandleException<Dictionary<string, object>>(_logger, ex, "retrieving project metrics");
         }
     }
 
@@ -510,7 +561,7 @@ public class MasterPlansController : BaseApiController
         }
         catch (Exception ex)
         {
-            return HandleException(_logger, ex, "validating master plan");
+            return HandleException<List<string>>(_logger, ex, "validating master plan");
         }
     }
 
@@ -527,12 +578,61 @@ public class MasterPlansController : BaseApiController
         {
             LogControllerAction(_logger, "DeleteMasterPlan", new { id });
 
-            var result = await _masterPlanService.DeleteMasterPlanDtoAsync(id);
+            var result = await _masterPlanService.DeleteMasterPlanAsync(id);
             return ToApiResponse(result);
         }
         catch (Exception ex)
         {
-            return HandleException(_logger, ex, "deleting master plan");
+            return HandleException<bool>(_logger, ex, "deleting master plan");
+        }
+    }
+
+    /// <summary>
+    /// Get real-time status for a master plan
+    /// </summary>
+    [HttpGet("{planId:guid}/status")]
+    [ShortCache] // 5 minute cache for real-time data
+    public async Task<ActionResult<ApiResponse<MasterPlanStatusDto>>> GetMasterPlanStatus(Guid planId)
+    {
+        try
+        {
+            LogControllerAction(_logger, "GetMasterPlanStatus", new { planId });
+
+            if (planId == Guid.Empty)
+            {
+                return CreateErrorResponse<MasterPlanStatusDto>("Invalid master plan ID", 400);
+            }
+
+            // Calculate real-time status
+            var progressResult = await _masterPlanService.GetProgressSummaryAsync(planId);
+            if (!progressResult.IsSuccess)
+                return ToApiResponse(progressResult);
+
+            var statusDto = new MasterPlanStatusDto
+            {
+                MasterPlanId = planId,
+                OverallCompletionPercentage = progressResult.Data!.OverallCompletion,
+                HealthStatus = progressResult.Data.HealthStatus,
+                IsOnSchedule = progressResult.Data.IsOnSchedule,
+                IsOnBudget = progressResult.Data.IsOnBudget,
+                CompletedPhases = progressResult.Data.CompletedPhases,
+                TotalPhases = progressResult.Data.TotalPhases,
+                CompletedMilestones = progressResult.Data.CompletedMilestones,
+                TotalMilestones = progressResult.Data.TotalMilestones,
+                DaysRemaining = progressResult.Data.DaysRemaining,
+                LastUpdated = progressResult.Data.LastUpdated
+            };
+
+            return CreateSuccessResponse(statusDto, "Master plan status retrieved successfully");
+        }
+        catch (KeyNotFoundException ex)
+        {
+            _logger.LogWarning(ex, "Master plan not found while retrieving status");
+            return CreateErrorResponse<MasterPlanStatusDto>($"Master plan with ID {planId} not found", 404);
+        }
+        catch (Exception ex)
+        {
+            return HandleException<MasterPlanStatusDto>(_logger, ex, "retrieving master plan status");
         }
     }
 }

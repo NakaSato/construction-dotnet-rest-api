@@ -56,12 +56,23 @@ public class RateLimitMiddleware
         var endpoint = context.Request.Path.Value ?? "/";
         var method = context.Request.Method;
 
+        // Check for custom rate limit rule from attribute
+        var customRule = context.Items["RateLimit.Rule"] as string;
+        var ruleToUse = customRule ?? _rateLimitService.GetApplicableRule(endpoint, method);
+
         try
         {
             var rateLimitResult = await _rateLimitService.CheckRateLimit(clientId, endpoint, method);
 
             // Record metrics
-            await _monitoringService.RecordRateLimitHit(clientId, rateLimitResult.Rule, endpoint, rateLimitResult.IsAllowed);
+            if (rateLimitResult.IsAllowed)
+            {
+                await _monitoringService.RecordRequest(clientId, endpoint, method, DateTime.UtcNow);
+            }
+            else
+            {
+                await _monitoringService.RecordRateLimitExceeded(clientId, endpoint, method, DateTime.UtcNow);
+            }
 
             // Add rate limit headers
             AddRateLimitHeaders(context, rateLimitResult);
@@ -203,6 +214,22 @@ public static class RateLimitExtensions
                 Period = TimeSpan.FromMinutes(1),
                 Endpoints = new List<string> { "/api/v1/images" },
                 HttpMethods = new List<string> { "POST" }
+            };
+
+            // Rate limiting for DELETE operations
+            options.Rules["delete-operations"] = new RateLimitRule
+            {
+                Limit = 10,  // Only 10 delete operations per minute
+                Period = TimeSpan.FromMinutes(1),
+                HttpMethods = new List<string> { "DELETE" }
+            };
+
+            // Very restrictive rate limiting for critical DELETE operations
+            options.Rules["critical-delete"] = new RateLimitRule
+            {
+                Limit = 3,   // Only 3 critical deletes per 5 minutes
+                Period = TimeSpan.FromMinutes(5),
+                HttpMethods = new List<string> { "DELETE" }
             };
         }
 

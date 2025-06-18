@@ -1,202 +1,219 @@
 using dotnet_rest_api.DTOs;
-using dotnet_rest_api.Models;
-using dotnet_rest_api.Common;
 
 namespace dotnet_rest_api.Services;
 
-public interface IAuthService
-{
-    Task<ApiResponse<LoginResponse>> LoginAsync(LoginRequest request);
-    Task<ApiResponse<UserDto>> RegisterAsync(RegisterRequest request);
-    Task<ApiResponse<string>> RefreshTokenAsync(string refreshToken);
-    bool ValidateTokenAsync(string token);
-}
+
 
 public interface IUserService
 {
-    Task<ApiResponse<UserDto>> GetUserByIdAsync(Guid userId);
-    Task<ApiResponse<UserDto>> GetUserByUsernameAsync(string username);
-    Task<ApiResponse<PagedResult<UserDto>>> GetUsersAsync(int pageNumber = 1, int pageSize = 10, string? role = null);
-    Task<ApiResponse<EnhancedPagedResult<UserDto>>> GetUsersAsync(UserQueryParameters parameters);
-    Task<ApiResponse<PagedResult<UserDto>>> GetUsersLegacyAsync(int pageNumber = 1, int pageSize = 10, string? role = null);
-    Task<ApiResponse<UserDto>> CreateUserAsync(CreateUserRequest request);
-    Task<ApiResponse<UserDto>> UpdateUserAsync(Guid userId, CreateUserRequest request);
-    Task<ApiResponse<UserDto>> PatchUserAsync(Guid userId, PatchUserRequest request);
-    Task<ApiResponse<bool>> DeleteUserAsync(Guid userId);
-    Task<ApiResponse<bool>> ActivateUserAsync(Guid userId, bool isActive);
-}
-
-public interface IProjectService
-{
-    Task<Result<ProjectDto>> GetProjectByIdAsync(Guid projectId);
-    Task<Result<PagedResult<ProjectDto>>> GetProjectsAsync(int pageNumber = 1, int pageSize = 10, Guid? managerId = null);
-    Task<Result<EnhancedPagedResult<ProjectDto>>> GetProjectsAsync(ProjectQueryParameters parameters);
-    Task<Result<PagedResult<ProjectDto>>> GetProjectsLegacyAsync(int pageNumber = 1, int pageSize = 10, Guid? managerId = null);
-    Task<Result<ProjectDto>> CreateProjectAsync(CreateProjectRequest request);
-    Task<Result<ProjectDto>> UpdateProjectAsync(Guid projectId, UpdateProjectRequest request);
-    Task<Result<ProjectDto>> PatchProjectAsync(Guid projectId, PatchProjectRequest request);
-    Task<Result<bool>> DeleteProjectAsync(Guid projectId);
-    Task<Result<PagedResult<ProjectDto>>> GetUserProjectsAsync(Guid userId, int pageNumber = 1, int pageSize = 10);
+    Task<ServiceResult<PagedResult<UserDto>>> GetUsersAsync(int pageNumber, int pageSize, string? role);
+    Task<ServiceResult<UserDto>> GetUserByIdAsync(Guid id);
+    Task<ServiceResult<UserDto>> GetUserByUsernameAsync(string username);
+    Task<ServiceResult<UserDto>> CreateUserAsync(CreateUserRequest request);
+    Task<ServiceResult<UserDto>> UpdateUserAsync(Guid id, UpdateUserRequest request);
+    Task<ServiceResult<UserDto>> PatchUserAsync(Guid id, PatchUserRequest request);
+    Task<ServiceResult<bool>> ActivateUserAsync(Guid id, bool isActive);
+    Task<ServiceResult<bool>> DeleteUserAsync(Guid id);
+    Task<ServiceResult<EnhancedPagedResult<UserDto>>> GetUsersAsync(UserQueryParameters parameters);
 }
 
 public interface ITaskService
 {
-    Task<ApiResponse<TaskDto>> GetTaskByIdAsync(Guid taskId);
-    Task<ApiResponse<PagedResult<TaskDto>>> GetTasksAsync(int pageNumber = 1, int pageSize = 10, Guid? projectId = null, Guid? assignedTo = null);
-    Task<ApiResponse<EnhancedPagedResult<TaskDto>>> GetTasksAsync(TaskQueryParameters parameters);
-    Task<ApiResponse<PagedResult<TaskDto>>> GetTasksLegacyAsync(int pageNumber = 1, int pageSize = 10, Guid? projectId = null, Guid? assignedTo = null);
-    Task<ApiResponse<PagedResult<TaskDto>>> GetProjectTasksAsync(Guid projectId, int pageNumber = 1, int pageSize = 10);
-    Task<ApiResponse<TaskDto>> CreateTaskAsync(Guid projectId, CreateTaskRequest request);
-    Task<ApiResponse<TaskDto>> UpdateTaskAsync(Guid taskId, UpdateTaskRequest request);
-    Task<ApiResponse<TaskDto>> PatchTaskAsync(Guid taskId, PatchTaskRequest request);
-    Task<ApiResponse<bool>> DeleteTaskAsync(Guid taskId);
-    Task<ApiResponse<bool>> UpdateTaskStatusAsync(Guid taskId, dotnet_rest_api.Models.TaskStatus status);
+    Task<ServiceResult<PagedResult<TaskDto>>> GetTasksAsync(int pageNumber, int pageSize, Guid? projectId, Guid? assigneeId);
+    Task<ServiceResult<TaskDto>> GetTaskByIdAsync(Guid id);
+    Task<ServiceResult<PagedResult<TaskDto>>> GetProjectTasksAsync(Guid projectId, int pageNumber = 1, int pageSize = 10);
+    Task<ServiceResult<TaskDto>> CreateTaskAsync(Guid projectId, CreateTaskRequest request);
+    Task<ServiceResult<TaskDto>> UpdateTaskAsync(Guid id, UpdateTaskRequest request);
+    Task<ServiceResult<TaskDto>> PatchTaskAsync(Guid id, PatchTaskRequest request);
+    Task<ServiceResult<bool>> UpdateTaskStatusAsync(Guid id, dotnet_rest_api.Models.TaskStatus status);
+    Task<ServiceResult<bool>> DeleteTaskAsync(Guid id);
+    Task<ServiceResult<EnhancedPagedResult<TaskDto>>> GetTasksAsync(TaskQueryParameters parameters);
+    Task<ServiceResult<PagedResult<TaskDto>>> GetPhaseTasksAsync(Guid phaseId, int pageNumber, int pageSize);
+    Task<ServiceResult<TaskDto>> CreatePhaseTaskAsync(Guid phaseId, CreateTaskRequest request);
+    Task<ServiceResult<PagedResult<TaskProgressReportDto>>> GetTaskProgressReportsAsync(Guid taskId, int pageNumber, int pageSize);
+    Task<ServiceResult<TaskProgressReportDto>> CreateTaskProgressReportAsync(Guid taskId, CreateTaskProgressReportRequest request);
 }
 
 public interface IImageService
 {
-    Task<ApiResponse<ImageMetadataDto>> UploadImageAsync(IFormFile file, ImageUploadRequest request, Guid uploadedByUserId);
-    Task<ApiResponse<ImageMetadataDto>> GetImageMetadataAsync(Guid imageId);
-    Task<ApiResponse<PagedResult<ImageMetadataDto>>> GetProjectImagesAsync(Guid projectId, int pageNumber = 1, int pageSize = 10);
-    Task<ApiResponse<EnhancedPagedResult<ImageMetadataDto>>> GetProjectImagesAsync(Guid projectId, ImageQueryParameters parameters);
-    Task<ApiResponse<PagedResult<ImageMetadataDto>>> GetTaskImagesAsync(Guid taskId, int pageNumber = 1, int pageSize = 10);
-    Task<ApiResponse<string>> GetImageUrlAsync(Guid imageId);
-    Task<ApiResponse<bool>> DeleteImageAsync(Guid imageId);
-}
-
-public interface IDailyReportService
-{
-    Task<ApiResponse<DailyReportDto>> GetDailyReportByIdAsync(Guid reportId);
-    Task<ApiResponse<EnhancedPagedResult<DailyReportDto>>> GetDailyReportsAsync(DailyReportQueryParameters parameters);
-    Task<ApiResponse<PagedResult<DailyReportDto>>> GetProjectDailyReportsAsync(Guid projectId, int pageNumber = 1, int pageSize = 10);
-    Task<ApiResponse<DailyReportDto>> CreateDailyReportAsync(CreateDailyReportRequest request, Guid reporterId);
-    Task<ApiResponse<DailyReportDto>> UpdateDailyReportAsync(Guid reportId, UpdateDailyReportRequest request);
-    Task<ApiResponse<bool>> DeleteDailyReportAsync(Guid reportId);
-    Task<ApiResponse<bool>> SubmitDailyReportAsync(Guid reportId);
-    Task<ApiResponse<bool>> ApproveDailyReportAsync(Guid reportId);
-    Task<ApiResponse<bool>> RejectDailyReportAsync(Guid reportId, string? rejectionReason);
-
-    // Work Progress Items
-    Task<ApiResponse<WorkProgressItemDto>> AddWorkProgressItemAsync(Guid reportId, CreateWorkProgressItemRequest request);
-    Task<ApiResponse<WorkProgressItemDto>> UpdateWorkProgressItemAsync(Guid itemId, CreateWorkProgressItemRequest request);
-    Task<ApiResponse<bool>> DeleteWorkProgressItemAsync(Guid itemId);
-
-    // Personnel Logs
-    Task<ApiResponse<PersonnelLogDto>> AddPersonnelLogAsync(Guid reportId, PersonnelLogDto request);
-    Task<ApiResponse<bool>> DeletePersonnelLogAsync(Guid logId);
-
-    // Material Usage
-    Task<ApiResponse<MaterialUsageDto>> AddMaterialUsageAsync(Guid reportId, MaterialUsageDto request);
-    Task<ApiResponse<bool>> DeleteMaterialUsageAsync(Guid usageId);
-
-    // Equipment Logs
-    Task<ApiResponse<EquipmentLogDto>> AddEquipmentLogAsync(Guid reportId, EquipmentLogDto request);
-    Task<ApiResponse<bool>> DeleteEquipmentLogAsync(Guid logId);
+    Task<ServiceResult<ImageMetadataDto>> UploadImageAsync(IFormFile file, ImageUploadRequest request, Guid userId);
+    Task<ServiceResult<ImageMetadataDto>> GetImageMetadataAsync(Guid id);
+    Task<ServiceResult<string>> GetImageUrlAsync(Guid id);
+    Task<ServiceResult<PagedResult<ImageMetadataDto>>> GetProjectImagesAsync(Guid projectId, int pageNumber, int pageSize);
+    Task<ServiceResult<PagedResult<ImageMetadataDto>>> GetTaskImagesAsync(Guid taskId, int pageNumber, int pageSize);
+    Task<ServiceResult<bool>> DeleteImageAsync(Guid id);
+    Task<ServiceResult<EnhancedPagedResult<ImageMetadataDto>>> GetProjectImagesAsync(Guid projectId, ImageQueryParameters parameters);
 }
 
 public interface IWorkRequestService
 {
-    Task<ApiResponse<WorkRequestDto>> GetWorkRequestByIdAsync(Guid requestId);
-    Task<ApiResponse<EnhancedPagedResult<WorkRequestDto>>> GetWorkRequestsAsync(WorkRequestQueryParameters parameters);
-    Task<ApiResponse<PagedResult<WorkRequestDto>>> GetProjectWorkRequestsAsync(Guid projectId, int pageNumber = 1, int pageSize = 10);
-    Task<ApiResponse<PagedResult<WorkRequestDto>>> GetUserWorkRequestsAsync(Guid userId, int pageNumber = 1, int pageSize = 10);
-    Task<ApiResponse<PagedResult<WorkRequestDto>>> GetAssignedWorkRequestsAsync(Guid userId, int pageNumber = 1, int pageSize = 10);
-    Task<ApiResponse<WorkRequestDto>> CreateWorkRequestAsync(CreateWorkRequestRequest request, Guid requestedById);
-    Task<ApiResponse<WorkRequestDto>> UpdateWorkRequestAsync(Guid requestId, UpdateWorkRequestRequest request);
-    Task<ApiResponse<bool>> DeleteWorkRequestAsync(Guid requestId);
-    Task<ApiResponse<bool>> AssignWorkRequestAsync(Guid requestId, Guid assignedToId);
-    Task<ApiResponse<bool>> UpdateWorkRequestStatusAsync(Guid requestId, dotnet_rest_api.Models.WorkRequestStatus status);
-    Task<ApiResponse<bool>> UpdateWorkRequestPriorityAsync(Guid requestId, dotnet_rest_api.Models.WorkRequestPriority priority);
-    Task<ApiResponse<WorkRequestDto>> CompleteWorkRequestAsync(Guid requestId);
-
-    // Work Request Tasks
-    Task<ApiResponse<WorkRequestTaskDto>> AddWorkRequestTaskAsync(Guid requestId, CreateWorkRequestTaskRequest request);
-    Task<ApiResponse<WorkRequestTaskDto>> UpdateWorkRequestTaskAsync(Guid taskId, UpdateWorkRequestTaskRequest request);
-    Task<ApiResponse<bool>> DeleteWorkRequestTaskAsync(Guid taskId);
-    Task<ApiResponse<bool>> UpdateWorkRequestTaskStatusAsync(Guid taskId, dotnet_rest_api.Models.WorkRequestStatus status);
-
-    // Work Request Comments
-    Task<ApiResponse<WorkRequestCommentDto>> AddWorkRequestCommentAsync(Guid requestId, CreateWorkRequestCommentRequest request, Guid authorId);
-    Task<ApiResponse<bool>> DeleteWorkRequestCommentAsync(Guid commentId);
-}
-
-public interface ICloudStorageService
-{
-    Task<string> UploadFileAsync(Stream fileStream, string fileName, string contentType);
-    Task<string> GetFileUrlAsync(string key, TimeSpan? expiration = null);
-    Task<bool> DeleteFileAsync(string key);
-}
-
-public interface ICalendarService
-{
-    Task<ApiResponse<CalendarEventResponseDto>> GetEventByIdAsync(Guid eventId);
-    Task<ApiResponse<PaginatedCalendarEventsDto>> GetEventsAsync(CalendarQueryDto query);
-    Task<ApiResponse<PagedResult<CalendarEventSummaryDto>>> GetProjectEventsAsync(Guid projectId, int pageNumber = 1, int pageSize = 20);
-    Task<ApiResponse<PagedResult<CalendarEventSummaryDto>>> GetTaskEventsAsync(Guid taskId, int pageNumber = 1, int pageSize = 20);
-    Task<ApiResponse<PagedResult<CalendarEventSummaryDto>>> GetUserEventsAsync(Guid userId, int pageNumber = 1, int pageSize = 20);
-    Task<ApiResponse<CalendarEventResponseDto>> CreateEventAsync(CreateCalendarEventDto request, Guid createdByUserId);
-    Task<ApiResponse<CalendarEventResponseDto>> UpdateEventAsync(Guid eventId, UpdateCalendarEventDto request);
-    Task<ApiResponse<bool>> DeleteEventAsync(Guid eventId);
-    Task<ApiResponse<bool>> UpdateEventStatusAsync(Guid eventId, dotnet_rest_api.Models.CalendarEventStatus status);
-    Task<ApiResponse<IEnumerable<CalendarEventSummaryDto>>> GetUpcomingEventsAsync(int days = 7, Guid? userId = null);
-    Task<ApiResponse<IEnumerable<CalendarEventSummaryDto>>> GetTodayEventsAsync(Guid userId);
-    Task<ApiResponse<IEnumerable<CalendarEventSummaryDto>>> GetConflictingEventsAsync(DateTime startDateTime, DateTime endDateTime, Guid? excludeEventId = null);
-    Task<ApiResponse<ConflictCheckResult>> CheckConflictsAsync(DateTime startDateTime, DateTime endDateTime, Guid? userId = null, Guid? excludeEventId = null);
-    
-    // Recurring events
-    Task<ApiResponse<IEnumerable<CalendarEventSummaryDto>>> GetRecurringEventsAsync();
-    Task<ApiResponse<IEnumerable<CalendarEventSummaryDto>>> GetRecurringEventInstancesAsync(Guid eventId, DateTime startDate, DateTime endDate);
-    Task<ApiResponse<CalendarEventResponseDto>> CreateRecurringEventAsync(CreateCalendarEventDto request, Guid createdByUserId);
-    Task<ApiResponse<bool>> UpdateRecurringEventAsync(Guid eventId, UpdateCalendarEventDto request, bool updateAllInstances = false);
-    Task<ApiResponse<bool>> DeleteRecurringEventAsync(Guid eventId, bool deleteAllInstances = false);
-}
-
-public interface INotificationService
-{
-    Task<ApiResponse<bool>> SendWorkRequestNotificationAsync(Guid workRequestId, Guid recipientId, NotificationType type, string? customMessage = null, Guid? senderId = null);
-    Task<ApiResponse<bool>> SendBulkNotificationsAsync(List<Guid> workRequestIds, List<Guid> recipientIds, NotificationType type, string? customMessage = null, Guid? senderId = null);
-    Task<ApiResponse<PagedResult<NotificationDto>>> GetUserNotificationsAsync(Guid userId, int pageNumber = 1, int pageSize = 20, bool unreadOnly = false);
-    Task<ApiResponse<bool>> MarkNotificationAsReadAsync(Guid notificationId, Guid userId);
-    Task<ApiResponse<bool>> MarkAllNotificationsAsReadAsync(Guid userId);
-}
-
-public interface IEmailService
-{
-    Task<ApiResponse<bool>> SendEmailAsync(string to, string subject, string body, string? cc = null);
-    Task<ApiResponse<bool>> SendBulkEmailAsync(List<string> recipients, string subject, string body);
-}
-
-public interface IWorkRequestApprovalService
-{
-    Task<ApiResponse<bool>> SubmitForApprovalAsync(Guid workRequestId, SubmitForApprovalRequest request, Guid submitterId);
-    Task<ApiResponse<bool>> ProcessApprovalAsync(Guid workRequestId, ApprovalRequest request, Guid approverId);
-    Task<ApiResponse<bool>> BulkApprovalAsync(BulkApprovalRequest request, Guid approverId);
-    Task<ApiResponse<ApprovalWorkflowStatusDto>> GetApprovalStatusAsync(Guid workRequestId);
-    Task<ApiResponse<PagedResult<WorkRequestDto>>> GetPendingApprovalsAsync(Guid approverId, int pageNumber = 1, int pageSize = 20);
-    Task<ApiResponse<ApprovalStatisticsDto>> GetApprovalStatisticsAsync(Guid? userId = null);
-    Task<ApiResponse<PagedResult<WorkRequestApprovalDto>>> GetApprovalHistoryAsync(Guid workRequestId, int pageNumber = 1, int pageSize = 20);
-    Task<ApiResponse<bool>> EscalateApprovalAsync(Guid workRequestId, Guid escalateToUserId, string reason, Guid escalatedById);
-    Task<ApiResponse<bool>> SendApprovalRemindersAsync();
+    Task<ServiceResult<EnhancedPagedResult<WorkRequestDto>>> GetWorkRequestsAsync(WorkRequestQueryParameters parameters);
+    Task<ServiceResult<WorkRequestDto>> GetWorkRequestByIdAsync(Guid id);
+    Task<ServiceResult<PagedResult<WorkRequestDto>>> GetProjectWorkRequestsAsync(Guid projectId, int pageNumber, int pageSize);
+    Task<ServiceResult<PagedResult<WorkRequestDto>>> GetAssignedWorkRequestsAsync(Guid userId, int pageNumber, int pageSize);
+    Task<ServiceResult<WorkRequestDto>> CreateWorkRequestAsync(CreateWorkRequestRequest request, Guid userId);
+    Task<ServiceResult<WorkRequestDto>> UpdateWorkRequestAsync(Guid id, UpdateWorkRequestRequest request);
+    Task<ServiceResult<bool>> DeleteWorkRequestAsync(Guid id);
+    Task<ServiceResult<bool>> AssignWorkRequestAsync(Guid id, Guid userId);
+    Task<ServiceResult<WorkRequestDto>> CompleteWorkRequestAsync(Guid id);
+    Task<ServiceResult<WorkRequestTaskDto>> AddWorkRequestTaskAsync(Guid workRequestId, CreateWorkRequestTaskRequest request);
+    Task<ServiceResult<WorkRequestTaskDto>> UpdateWorkRequestTaskAsync(Guid taskId, UpdateWorkRequestTaskRequest request);
+    Task<ServiceResult<bool>> DeleteWorkRequestTaskAsync(Guid taskId);
+    Task<ServiceResult<WorkRequestCommentDto>> AddWorkRequestCommentAsync(Guid workRequestId, CreateWorkRequestCommentRequest request, Guid userId);
+    Task<ServiceResult<bool>> DeleteWorkRequestCommentAsync(Guid commentId);
 }
 
 public interface IWeeklyWorkRequestService
 {
-    Task<ApiResponse<WeeklyWorkRequestDto>> GetWeeklyWorkRequestByIdAsync(Guid requestId);
-    Task<ApiResponse<EnhancedPagedResult<WeeklyWorkRequestDto>>> GetWeeklyWorkRequestsAsync(WeeklyWorkRequestQueryParameters parameters);
-    Task<ApiResponse<WeeklyWorkRequestDto>> CreateWeeklyWorkRequestAsync(CreateWeeklyWorkRequestDto request);
-    Task<ApiResponse<WeeklyWorkRequestDto>> UpdateWeeklyWorkRequestAsync(Guid requestId, UpdateWeeklyWorkRequestDto request);
-    Task<ApiResponse<WeeklyWorkRequestDto>> UpdateWeeklyWorkRequestStatusAsync(Guid requestId, WeeklyRequestStatus status);
-    Task<ApiResponse<bool>> DeleteWeeklyWorkRequestAsync(Guid requestId);
-    Task<ApiResponse<EnhancedPagedResult<WeeklyWorkRequestDto>>> GetProjectWeeklyWorkRequestsAsync(Guid projectId, WeeklyWorkRequestQueryParameters parameters);
+    Task<ServiceResult<WeeklyWorkRequestDto>> GetWeeklyWorkRequestByIdAsync(Guid id);
+    Task<ServiceResult<EnhancedPagedResult<WeeklyWorkRequestDto>>> GetWeeklyWorkRequestsAsync(WeeklyWorkRequestQueryParameters parameters);
+    Task<ServiceResult<WeeklyWorkRequestDto>> CreateWeeklyWorkRequestAsync(CreateWeeklyWorkRequestDto request);
+    Task<ServiceResult<WeeklyWorkRequestDto>> UpdateWeeklyWorkRequestAsync(Guid id, UpdateWeeklyWorkRequestDto request);
+    Task<ServiceResult<WeeklyWorkRequestDto>> UpdateWeeklyWorkRequestStatusAsync(Guid id, dotnet_rest_api.Models.WeeklyRequestStatus status);
+    Task<ServiceResult<bool>> DeleteWeeklyWorkRequestAsync(Guid id);
+    Task<ServiceResult<EnhancedPagedResult<WeeklyWorkRequestDto>>> GetProjectWeeklyWorkRequestsAsync(Guid projectId, WeeklyWorkRequestQueryParameters parameters);
 }
 
 public interface IWeeklyReportService
 {
-    Task<ApiResponse<WeeklyReportDto>> GetWeeklyReportByIdAsync(Guid reportId);
-    Task<ApiResponse<EnhancedPagedResult<WeeklyReportDto>>> GetWeeklyReportsAsync(WeeklyReportQueryParameters parameters);
-    Task<ApiResponse<WeeklyReportDto>> CreateWeeklyReportAsync(CreateWeeklyReportDto request);
-    Task<ApiResponse<WeeklyReportDto>> UpdateWeeklyReportAsync(Guid reportId, UpdateWeeklyReportDto request);
-    Task<ApiResponse<WeeklyReportDto>> UpdateWeeklyReportStatusAsync(Guid reportId, WeeklyReportStatus status);
-    Task<ApiResponse<bool>> DeleteWeeklyReportAsync(Guid reportId);
-    Task<ApiResponse<EnhancedPagedResult<WeeklyReportDto>>> GetProjectWeeklyReportsAsync(Guid projectId, WeeklyReportQueryParameters parameters);
+    Task<ServiceResult<WeeklyReportDto>> GetWeeklyReportByIdAsync(Guid id);
+    Task<ServiceResult<EnhancedPagedResult<WeeklyReportDto>>> GetWeeklyReportsAsync(WeeklyReportQueryParameters parameters);
+    Task<ServiceResult<WeeklyReportDto>> CreateWeeklyReportAsync(CreateWeeklyReportDto request);
+    Task<ServiceResult<WeeklyReportDto>> UpdateWeeklyReportAsync(Guid id, UpdateWeeklyReportDto request);
+    Task<ServiceResult<WeeklyReportDto>> UpdateWeeklyReportStatusAsync(Guid id, dotnet_rest_api.Models.WeeklyReportStatus status);
+    Task<ServiceResult<bool>> DeleteWeeklyReportAsync(Guid id);
+    Task<ServiceResult<EnhancedPagedResult<WeeklyReportDto>>> GetProjectWeeklyReportsAsync(Guid projectId, WeeklyReportQueryParameters parameters);
+}
+
+public interface IWorkRequestApprovalService
+{
+    Task<ServiceResult<bool>> SubmitForApprovalAsync(Guid workRequestId, SubmitForApprovalRequest request, Guid userId);
+    Task<ServiceResult<bool>> ProcessApprovalAsync(Guid workRequestId, ApprovalRequest request, Guid userId);
+    Task<ServiceResult<ApprovalWorkflowStatusDto>> GetApprovalStatusAsync(Guid workRequestId);
+    Task<ServiceResult<PagedResult<WorkRequestApprovalDto>>> GetApprovalHistoryAsync(Guid workRequestId, int pageNumber, int pageSize);
+    Task<ServiceResult<bool>> EscalateApprovalAsync(Guid workRequestId, Guid escalateToUserId, string reason, Guid userId);
+    Task<ServiceResult<PagedResult<WorkRequestDto>>> GetPendingApprovalsAsync(Guid userId, int pageNumber, int pageSize);
+    Task<ServiceResult<ApprovalStatisticsDto>> GetApprovalStatisticsAsync(Guid? userId);
+    Task<ServiceResult<bool>> BulkApprovalAsync(BulkApprovalRequest request, Guid userId);
+    Task<ServiceResult<bool>> SendApprovalRemindersAsync();
+}
+
+public interface INotificationService
+{
+    Task SendNotificationAsync(string message, Guid userId);
+}
+
+public interface IEmailService
+{
+    Task SendEmailAsync(string to, string subject, string body);
+}
+
+public interface ICalendarService
+{
+    Task<ServiceResult<PaginatedCalendarEventsDto>> GetEventsAsync(CalendarQueryDto query);
+    Task<ServiceResult<CalendarEventResponseDto>> GetEventByIdAsync(Guid id);
+    Task<ServiceResult<CalendarEventResponseDto>> CreateEventAsync(CreateCalendarEventDto request, Guid userId);
+    Task<ServiceResult<CalendarEventResponseDto>> UpdateEventAsync(Guid id, UpdateCalendarEventDto request);
+    Task<ServiceResult<bool>> DeleteEventAsync(Guid id);
+    Task<ServiceResult<PagedResult<CalendarEventSummaryDto>>> GetProjectEventsAsync(Guid projectId, int pageNumber, int pageSize);
+    Task<ServiceResult<PagedResult<CalendarEventSummaryDto>>> GetTaskEventsAsync(Guid taskId, int pageNumber, int pageSize);
+    Task<ServiceResult<PagedResult<CalendarEventSummaryDto>>> GetUserEventsAsync(Guid userId, int pageNumber, int pageSize);
+    Task<ServiceResult<IEnumerable<CalendarEventSummaryDto>>> GetUpcomingEventsAsync(int days, Guid? userId);
+    Task<ServiceResult<ConflictCheckResult>> CheckConflictsAsync(DateTime startDateTime, DateTime endDateTime, Guid userId, Guid? excludeEventId);
+    Task<ServiceResult<IEnumerable<CalendarEventSummaryDto>>> GetRecurringEventsAsync();
+    Task<ServiceResult<CalendarEventResponseDto>> CreateRecurringEventAsync(CreateCalendarEventDto request, Guid userId);
+    Task<ServiceResult<bool>> UpdateRecurringEventAsync(Guid seriesId, UpdateCalendarEventDto request, bool updateAll);
+    Task<ServiceResult<bool>> DeleteRecurringEventAsync(Guid seriesId, bool deleteAll);
+}
+
+
+
+
+
+public interface ICloudStorageService
+{
+    Task<string> UploadFileAsync(Stream fileStream, string fileName, string contentType);
+    Task<bool> DeleteFileAsync(string fileName);
+    Task<string> GetFileUrlAsync(string fileName);
+}
+
+public interface IDataSeeder
+{
+    Task SeedSampleDataAsync();
+}
+
+public interface IAuthService
+{
+    Task<ServiceResult<LoginResponse>> LoginAsync(LoginRequest request);
+    Task<ServiceResult<UserDto>> RegisterAsync(RegisterRequest request);
+    Task<ServiceResult<string>> RefreshTokenAsync(string refreshToken);
+    bool ValidateTokenAsync(string token);
+}
+
+public interface IRateLimitService
+{
+    string GetClientIdentifier(HttpContext context);
+    Task<RateLimitResult> CheckRateLimit(string clientId, string endpoint, string method);
+}
+
+public interface IRateLimitMonitoringService
+{
+    Task RecordRateLimitHit(string clientId, string rule, string endpoint, bool isAllowed);
+    Task<RateLimitStatistics> GetStatistics(TimeSpan period);
+    Task<List<ClientRateLimitInfo>> GetTopClients(int count);
+    Task<List<RateLimitViolation>> GetRecentViolations(TimeSpan period);
+    Task<Dictionary<string, RateLimitRule>> GetActiveRules();
+    Task ClearClientLimits(string clientId);
+    Task ClearAllLimits();
+    Task UpdateRuleConfiguration(string ruleName, RateLimitRule rule);
+}
+
+public interface IRateLimitStorage
+{
+    Task<int> GetRequestCountAsync(string key);
+    Task IncrementRequestCountAsync(string key, TimeSpan expiration);
+    Task ResetRequestCountAsync(string key);
+}
+
+public interface IResourceService
+{
+    Task<ServiceResult<EnhancedPagedResult<ResourceDto>>> GetResourcesAsync(ResourceQueryParameters parameters);
+    Task<ServiceResult<ResourceDto>> GetResourceByIdAsync(Guid id);
+    Task<ServiceResult<ResourceDto>> CreateResourceAsync(CreateResourceRequest request);
+    Task<ServiceResult<ResourceDto>> UpdateResourceAsync(Guid id, UpdateResourceRequest request);
+    Task<ServiceResult<bool>> DeleteResourceAsync(Guid id);
+}
+
+public interface IDocumentService
+{
+    Task<ServiceResult<EnhancedPagedResult<DocumentDto>>> GetDocumentsAsync(DocumentQueryParameters parameters);
+    Task<ServiceResult<DocumentDto>> GetDocumentByIdAsync(Guid id);
+    Task<ServiceResult<DocumentDto>> CreateDocumentAsync(CreateDocumentRequest request);
+    Task<ServiceResult<DocumentDto>> UpdateDocumentAsync(Guid id, UpdateDocumentRequest request);
+    Task<ServiceResult<bool>> DeleteDocumentAsync(Guid id);
+}
+
+public interface IDailyReportService
+{
+    Task<ServiceResult<EnhancedPagedResult<DailyReportDto>>> GetDailyReportsAsync(DailyReportQueryParameters parameters);
+    Task<ServiceResult<DailyReportDto>> GetDailyReportByIdAsync(Guid id);
+    Task<ServiceResult<DailyReportDto>> CreateDailyReportAsync(CreateDailyReportRequest request, Guid userId);
+    Task<ServiceResult<DailyReportDto>> UpdateDailyReportAsync(Guid id, UpdateDailyReportRequest request);
+    Task<ServiceResult<DailyReportDto>> UpdateDailyReportAsync(Guid id, UpdateDailyReportRequest request, Guid userId, string token);
+    Task<ServiceResult<bool>> DeleteDailyReportAsync(Guid id);
+    Task<ServiceResult<EnhancedPagedResult<DailyReportDto>>> GetProjectDailyReportsAsync(Guid projectId, DailyReportQueryParameters parameters);
+    Task<ServiceResult<DailyReportDto>> SubmitDailyReportAsync(Guid id);
+    Task<ServiceResult<DailyReportDto>> ApproveDailyReportAsync(Guid id, Guid approverId);
+    Task<ServiceResult<DailyReportDto>> RejectDailyReportAsync(Guid id, Guid approverId, string reason);
+    Task<ServiceResult<List<DailyReportAttachmentDto>>> GetDailyReportAttachmentsAsync(Guid reportId);
+    Task<ServiceResult<DailyReportAttachmentDto>> AddDailyReportAttachmentAsync(Guid reportId, string fileName, string filePath, string fileType, long fileSize, Guid userId);
+    Task<ServiceResult<DailyReportAttachmentDto>> AddAttachmentAsync(Guid reportId, IFormFile file, Guid userId);
+    Task<ServiceResult<bool>> RemoveDailyReportAttachmentAsync(Guid attachmentId);
+    Task<ServiceResult<WeeklySummaryDto>> GetWeeklySummaryAsync(Guid projectId, DateTime weekStartDate);
+    Task<ServiceResult<List<DailyReportDto>>> GetUserDailyReportsAsync(Guid userId, DateTime? startDate, DateTime? endDate);
+    Task<ServiceResult<string>> ExportDailyReportsAsync(DailyReportQueryParameters parameters);
+    Task<ServiceResult<DailyReportDto>> GetDailyReportByUserAndDateAsync(Guid userId, DateTime date);
+    Task<ServiceResult<WorkProgressItemDto>> AddWorkProgressItemAsync(Guid reportId, CreateWorkProgressItemRequest request);
+    Task<ServiceResult<WorkProgressItemDto>> UpdateWorkProgressItemAsync(Guid itemId, UpdateWorkProgressItemRequest request);
+    Task<ServiceResult<bool>> DeleteWorkProgressItemAsync(Guid itemId);
 }

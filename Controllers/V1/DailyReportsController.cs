@@ -1,20 +1,20 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using dotnet_rest_api.Services;
+using System.Security.Claims;
 using dotnet_rest_api.DTOs;
+using dotnet_rest_api.Services;
 using dotnet_rest_api.Attributes;
 using dotnet_rest_api.Controllers;
-using System.Security.Claims;
 using Asp.Versioning;
 
 namespace dotnet_rest_api.Controllers.V1;
 
 /// <summary>
-/// Controller for managing daily construction reports
+/// API controller for managing daily reports
 /// </summary>
-[Route("api/v{version:apiVersion}/daily-reports")]
 [ApiController]
 [ApiVersion("1.0")]
+[Route("api/v{version:apiVersion}/daily-reports")]
 [Authorize]
 public class DailyReportsController : BaseApiController
 {
@@ -30,256 +30,232 @@ public class DailyReportsController : BaseApiController
     }
 
     /// <summary>
-    /// Get all daily reports with filtering and pagination
-    /// Available to: All authenticated users (view reports)
+    /// Get all daily reports with filtering
+    /// Available to: All authenticated users
     /// </summary>
-    /// <param name="parameters">Query parameters for filtering and pagination</param>
-    /// <returns>Paginated list of daily reports</returns>
     [HttpGet]
-    [Cache(300)] // Cache for 5 minutes
-    [ProducesResponseType(typeof(ApiResponse<EnhancedPagedResult<DailyReportDto>>), StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [MediumCache] // 15 minute cache
     public async Task<ActionResult<ApiResponse<EnhancedPagedResult<DailyReportDto>>>> GetDailyReports([FromQuery] DailyReportQueryParameters parameters)
     {
         try
         {
-            // Log controller action for debugging
             LogControllerAction(_logger, "GetDailyReports", parameters);
 
-            // Apply dynamic filters from query string using base controller method
+            // Apply dynamic filters from query string
             var filterString = Request.Query["filter"].FirstOrDefault();
             ApplyFiltersFromQuery(parameters, filterString);
 
             var result = await _dailyReportService.GetDailyReportsAsync(parameters);
-
-            if (!result.Success)
-            {
-                return CreateErrorResponse(result.Message, 400);
-            }
-
-            // Add HATEOAS links
-            if (result.Data != null)
-            {
-                foreach (var report in result.Data.Items)
-                {
-                    AddHateoasLinks(report);
-                }
-            }
-
-            return CreateSuccessResponse(result.Data!, "Daily reports retrieved successfully");
+            return ToApiResponse(result);
         }
         catch (Exception ex)
         {
-            return HandleException(_logger, ex, "retrieving daily reports");
+            return HandleException<EnhancedPagedResult<DailyReportDto>>(_logger, ex, "retrieving daily reports");
         }
     }
 
     /// <summary>
-    /// Get a specific daily report by ID
+    /// Get daily report by ID
+    /// Available to: All authenticated users
     /// </summary>
-    /// <param name="id">The daily report ID</param>
-    /// <returns>Daily report details</returns>
     [HttpGet("{id:guid}")]
-    [Cache(300)] // Cache for 5 minutes
-    [ProducesResponseType(typeof(ApiResponse<DailyReportDto>), StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status404NotFound)]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [LongCache] // 1 hour cache
     public async Task<ActionResult<ApiResponse<DailyReportDto>>> GetDailyReport(Guid id)
     {
         try
         {
-            // Log controller action for debugging
             LogControllerAction(_logger, "GetDailyReport", new { id });
 
             var result = await _dailyReportService.GetDailyReportByIdAsync(id);
-
-            if (!result.Success)
-            {
-                return CreateNotFoundResponse(result.Message);
-            }
-
-            // Add HATEOAS links
-            if (result.Data != null)
-            {
-                AddHateoasLinks(result.Data);
-            }
-
-            return CreateSuccessResponse(result.Data!, "Daily report retrieved successfully");
+            return ToApiResponse(result);
         }
         catch (Exception ex)
         {
-            return HandleException(_logger, ex, $"retrieving daily report {id}");
-        }
-    }
-
-    /// <summary>
-    /// Get daily reports for a specific project
-    /// </summary>
-    /// <param name="projectId">The project ID</param>
-    /// <param name="pageNumber">Page number (default: 1)</param>
-    /// <param name="pageSize">Page size (default: 10)</param>
-    /// <returns>Paginated list of daily reports for the project</returns>
-    [HttpGet("project/{projectId:guid}")]
-    [Cache(300)] // Cache for 5 minutes
-    [ProducesResponseType(typeof(ApiResponse<PagedResult<DailyReportDto>>), StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status404NotFound)]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    public async Task<ActionResult<ApiResponse<PagedResult<DailyReportDto>>>> GetProjectDailyReports(
-        Guid projectId,
-        [FromQuery] int pageNumber = 1,
-        [FromQuery] int pageSize = 10)
-    {
-        try
-        {
-            // Log controller action for debugging
-            LogControllerAction(_logger, "GetProjectDailyReports", new { projectId, pageNumber, pageSize });
-
-            var result = await _dailyReportService.GetProjectDailyReportsAsync(projectId, pageNumber, pageSize);
-
-            if (!result.Success)
-            {
-                return CreateNotFoundResponse(result.Message);
-            }
-
-            // Add HATEOAS links
-            if (result.Data?.Items != null)
-            {
-                foreach (var report in result.Data.Items)
-                {
-                    AddHateoasLinks(report);
-                }
-            }
-
-            return CreateSuccessResponse(result.Data!, "Project daily reports retrieved successfully");
-        }
-        catch (Exception ex)
-        {
-            return HandleException(_logger, ex, $"retrieving daily reports for project {projectId}");
+            return HandleException<DailyReportDto>(_logger, ex, "retrieving daily report");
         }
     }
 
     /// <summary>
     /// Create a new daily report
-    /// Available to: Administrator, ProjectManager, Technician (Technicians log their daily work)
+    /// Available to: All authenticated users
     /// </summary>
-    /// <param name="request">Daily report creation request</param>
-    /// <returns>Created daily report</returns>
     [HttpPost]
-    [Authorize(Roles = "Administrator,ProjectManager,Technician")]
-    [ProducesResponseType(typeof(ApiResponse<DailyReportDto>), StatusCodes.Status201Created)]
-    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [NoCache]
     public async Task<ActionResult<ApiResponse<DailyReportDto>>> CreateDailyReport([FromBody] CreateDailyReportRequest request)
     {
         try
         {
-            // Log controller action for debugging
             LogControllerAction(_logger, "CreateDailyReport", request);
 
             if (!ModelState.IsValid)
             {
-                return CreateErrorResponse("Invalid request data", 400);
+                var errors = ModelState.Values
+                    .SelectMany(v => v.Errors)
+                    .Select(e => e.ErrorMessage)
+                    .ToList();
+                return CreateErrorResponse<DailyReportDto>("Invalid input data", 400, errors);
             }
 
-            var userId = GetCurrentUserId();
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (!Guid.TryParse(userIdClaim, out var userId))
+                return CreateErrorResponse<DailyReportDto>("Invalid user ID in token", 401);
+
             var result = await _dailyReportService.CreateDailyReportAsync(request, userId);
-
-            if (!result.Success)
-            {
-                return CreateErrorResponse(result.Message, 400);
-            }
-
-            // Add HATEOAS links
-            if (result.Data != null)
-            {
-                AddHateoasLinks(result.Data);
-            }
-
-            return CreateSuccessResponse(result.Data!, "Daily report created successfully");
+            return ToApiResponse(result);
         }
         catch (Exception ex)
         {
-            return HandleException(_logger, ex, "creating daily report");
+            return HandleException<DailyReportDto>(_logger, ex, "creating daily report");
         }
     }
 
     /// <summary>
-    /// Update an existing daily report
-    /// Available to: Administrator, ProjectManager, Technician (Technicians can edit their daily work)
+    /// Update daily report
+    /// Available to: Admin, Manager, or report creator (within 24h)
     /// </summary>
-    /// <param name="id">The daily report ID</param>
-    /// <param name="request">Daily report update request</param>
-    /// <returns>Updated daily report</returns>
     [HttpPut("{id:guid}")]
-    [Authorize(Roles = "Administrator,ProjectManager,Technician")]
-    [ProducesResponseType(typeof(ApiResponse<DailyReportDto>), StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status404NotFound)]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [NoCache]
     public async Task<ActionResult<ApiResponse<DailyReportDto>>> UpdateDailyReport(Guid id, [FromBody] UpdateDailyReportRequest request)
     {
         try
         {
-            // Log controller action for debugging
             LogControllerAction(_logger, "UpdateDailyReport", new { id, request });
 
             if (!ModelState.IsValid)
             {
-                return CreateErrorResponse("Invalid request data", 400);
+                var errors = ModelState.Values
+                    .SelectMany(v => v.Errors)
+                    .Select(e => e.ErrorMessage)
+                    .ToList();
+                return CreateErrorResponse<DailyReportDto>("Invalid input data", 400, errors);
             }
 
-            var result = await _dailyReportService.UpdateDailyReportAsync(id, request);
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (!Guid.TryParse(userIdClaim, out var userId))
+                return CreateErrorResponse<DailyReportDto>("Invalid user ID in token", 401);
 
-            if (!result.Success)
-            {
-                return result.Message == "Daily report not found" ? CreateNotFoundResponse(result.Message) : CreateErrorResponse(result.Message, 400);
-            }
-
-            // Add HATEOAS links
-            if (result.Data != null)
-            {
-                AddHateoasLinks(result.Data);
-            }
-
-            return CreateSuccessResponse(result.Data!, "Daily report updated successfully");
+            var userRole = User.FindFirst(ClaimTypes.Role)?.Value;
+            var result = await _dailyReportService.UpdateDailyReportAsync(id, request, userId, userRole);
+            return ToApiResponse(result);
         }
         catch (Exception ex)
         {
-            return HandleException(_logger, ex, $"updating daily report {id}");
+            return HandleException<DailyReportDto>(_logger, ex, "updating daily report");
         }
     }
 
     /// <summary>
-    /// Delete a daily report
-    /// Available to: Administrator only (full system access)
+    /// Delete daily report
+    /// Available to: Administrator, Manager only
     /// </summary>
-    /// <param name="id">The daily report ID</param>
-    /// <returns>Success status</returns>
     [HttpDelete("{id:guid}")]
-    [Authorize(Roles = "Administrator")]
-    [ProducesResponseType(typeof(ApiResponse<bool>), StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status404NotFound)]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [Authorize(Roles = "Administrator,Manager")]
+    [DeleteRateLimit]
+    [NoCache]
     public async Task<ActionResult<ApiResponse<bool>>> DeleteDailyReport(Guid id)
     {
         try
         {
-            // Log controller action for debugging
             LogControllerAction(_logger, "DeleteDailyReport", new { id });
 
             var result = await _dailyReportService.DeleteDailyReportAsync(id);
-
-            if (!result.Success)
-            {
-                return result.Message == "Daily report not found" ? CreateNotFoundResponse(result.Message) : CreateErrorResponse(result.Message, 400);
-            }
-
-            return CreateSuccessResponse(result.Data, "Daily report deleted successfully");
+            return ToApiResponse(result);
         }
         catch (Exception ex)
         {
-            return HandleException(_logger, ex, $"deleting daily report {id}");
+            return HandleException<bool>(_logger, ex, "deleting daily report");
+        }
+    }
+
+    /// <summary>
+    /// Add attachment to daily report
+    /// Available to: Admin, Manager, or report creator
+    /// </summary>
+    [HttpPost("{id:guid}/attachments")]
+    [NoCache]
+    public async Task<ActionResult<ApiResponse<DailyReportAttachmentDto>>> AddAttachment(Guid id, IFormFile file)
+    {
+        try
+        {
+            LogControllerAction(_logger, "AddAttachment", new { id, fileName = file.FileName });
+
+            if (file == null || file.Length == 0)
+                return CreateErrorResponse<DailyReportAttachmentDto>("No file provided", 400);
+
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (!Guid.TryParse(userIdClaim, out var userId))
+                return CreateErrorResponse<DailyReportAttachmentDto>("Invalid user ID in token", 401);
+
+            var userRole = User.FindFirst(ClaimTypes.Role)?.Value;
+            var result = await _dailyReportService.AddAttachmentAsync(id, file, userId, userRole);
+            return ToApiResponse(result);
+        }
+        catch (Exception ex)
+        {
+            return HandleException<DailyReportAttachmentDto>(_logger, ex, "adding attachment");
+        }
+    }
+
+    /// <summary>
+    /// Get weekly summary report
+    /// Available to: Administrator, Manager
+    /// </summary>
+    [HttpGet("weekly-summary")]
+    [Authorize(Roles = "Administrator,Manager")]
+    [ShortCache] // 5 minute cache
+    public async Task<ActionResult<ApiResponse<WeeklySummaryDto>>> GetWeeklySummary(
+        [FromQuery] Guid? projectId = null,
+        [FromQuery] DateTime? weekStartDate = null)
+    {
+        try
+        {
+            LogControllerAction(_logger, "GetWeeklySummary", new { projectId, weekStartDate });
+
+            var result = await _dailyReportService.GetWeeklySummaryAsync(projectId, weekStartDate);
+            return ToApiResponse(result);
+        }
+        catch (Exception ex)
+        {
+            return HandleException<WeeklySummaryDto>(_logger, ex, "retrieving weekly summary");
+        }
+    }
+
+    /// <summary>
+    /// Export daily reports
+    /// Available to: Administrator, Manager
+    /// </summary>
+    [HttpGet("export")]
+    [Authorize(Roles = "Administrator,Manager")]
+    [NoCache]
+    public async Task<IActionResult> ExportDailyReports(
+        [FromQuery] Guid? projectId = null,
+        [FromQuery] DateTime? startDate = null,
+        [FromQuery] DateTime? endDate = null,
+        [FromQuery] string format = "csv")
+    {
+        try
+        {
+            LogControllerAction(_logger, "ExportDailyReports", new { projectId, startDate, endDate, format });
+
+            var result = await _dailyReportService.ExportDailyReportsAsync(projectId, startDate, endDate, format);
+            
+            if (!result.IsSuccess)
+                return BadRequest(result.Message);
+
+            var contentType = format.ToLower() switch
+            {
+                "excel" => "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                "pdf" => "application/pdf",
+                _ => "text/csv"
+            };
+
+            var fileName = $"daily-reports-{DateTime.UtcNow:yyyyMMdd}.{format}";
+            return File(result.Data!, contentType, fileName);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error exporting daily reports");
+            return StatusCode(500, "Error exporting daily reports");
         }
     }
 

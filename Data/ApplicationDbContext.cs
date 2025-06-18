@@ -4,7 +4,7 @@ using dotnet_rest_api.Models;
 namespace dotnet_rest_api.Data;
 
 /// <summary>
-/// Main database context for the Solar Projects API application
+/// Application database context for PostgreSQL
 /// </summary>
 public class ApplicationDbContext : DbContext
 {
@@ -12,102 +12,30 @@ public class ApplicationDbContext : DbContext
     {
     }
 
-    // Entity sets for all models
-    public DbSet<Role> Roles { get; set; }
-    public DbSet<User> Users { get; set; }
+    // DbSets for main entities
     public DbSet<Project> Projects { get; set; }
-    public DbSet<ProjectTask> ProjectTasks { get; set; }
-    public DbSet<ImageMetadata> ImageMetadata { get; set; }
-    
-    // Master Plan and Progress Tracking entities
+    public DbSet<User> Users { get; set; }
+    public DbSet<DailyReport> DailyReports { get; set; }
+    public DbSet<DailyReportAttachment> DailyReportAttachments { get; set; }
     public DbSet<MasterPlan> MasterPlans { get; set; }
     public DbSet<ProjectPhase> ProjectPhases { get; set; }
     public DbSet<ProjectMilestone> ProjectMilestones { get; set; }
+    public DbSet<Models.Task> Tasks { get; set; }
+    public DbSet<WorkRequest> WorkRequests { get; set; }
+    
+    // Missing DbSets
     public DbSet<ProgressReport> ProgressReports { get; set; }
     public DbSet<PhaseProgress> PhaseProgresses { get; set; }
-    public DbSet<PhaseResource> PhaseResources { get; set; }
-    
-    // Daily Reports entities
-    public DbSet<DailyReport> DailyReports { get; set; }
     public DbSet<WorkProgressItem> WorkProgressItems { get; set; }
     public DbSet<PersonnelLog> PersonnelLogs { get; set; }
     public DbSet<MaterialUsage> MaterialUsages { get; set; }
     public DbSet<EquipmentLog> EquipmentLogs { get; set; }
-    
-    // Work Requests entities
-    public DbSet<WorkRequest> WorkRequests { get; set; }
     public DbSet<WorkRequestTask> WorkRequestTasks { get; set; }
     public DbSet<WorkRequestComment> WorkRequestComments { get; set; }
-    
-    // Calendar entities
-    public DbSet<CalendarEvent> CalendarEvents { get; set; }
+    public DbSet<ProjectTask> ProjectTasks { get; set; }
 
-    // Work Request Approval entities
-    public DbSet<WorkRequestApproval> WorkRequestApprovals { get; set; }
-    public DbSet<WorkRequestNotification> WorkRequestNotifications { get; set; }
-
-    // Weekly Planning entities
-    public DbSet<WeeklyWorkRequest> WeeklyWorkRequests { get; set; }
-    public DbSet<WeeklyReport> WeeklyReports { get; set; }
-
-    protected override void OnModelCreating(ModelBuilder modelBuilder)
+  protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        base.OnModelCreating(modelBuilder);
-
-        // Configure Role entity
-        modelBuilder.Entity<Role>(entity =>
-        {
-            entity.HasKey(r => r.RoleId);
-            entity.Property(r => r.RoleName)
-                .IsRequired()
-                .HasMaxLength(50);
-            
-            // Create unique index on RoleName
-            entity.HasIndex(r => r.RoleName)
-                .IsUnique();
-        });
-
-        // Configure User entity
-        modelBuilder.Entity<User>(entity =>
-        {
-            entity.HasKey(u => u.UserId);
-            
-            entity.Property(u => u.Username)
-                .IsRequired()
-                .HasMaxLength(100);
-            
-            entity.Property(u => u.Email)
-                .IsRequired()
-                .HasMaxLength(255);
-            
-            entity.Property(u => u.PasswordHash)
-                .IsRequired()
-                .HasMaxLength(255);
-            
-            entity.Property(u => u.FullName)
-                .IsRequired()
-                .HasMaxLength(255);
-            
-            entity.Property(u => u.IsActive)
-                .HasDefaultValue(true);
-            
-            entity.Property(u => u.CreatedAt)
-                .HasDefaultValueSql("CURRENT_TIMESTAMP");
-
-            // Create unique indexes
-            entity.HasIndex(u => u.Username)
-                .IsUnique();
-            
-            entity.HasIndex(u => u.Email)
-                .IsUnique();
-
-            // Configure relationship with Role
-            entity.HasOne(u => u.Role)
-                .WithMany(r => r.Users)
-                .HasForeignKey(u => u.RoleId)
-                .OnDelete(DeleteBehavior.Restrict);
-        });
-
         // Configure Project entity
         modelBuilder.Entity<Project>(entity =>
         {
@@ -768,8 +696,8 @@ public class ApplicationDbContext : DbContext
 
             // Foreign key relationships
             entity.HasOne(mp => mp.Project)
-                .WithMany()
-                .HasForeignKey(mp => mp.ProjectId)
+                .WithOne(p => p.MasterPlan)
+                .HasForeignKey<MasterPlan>(mp => mp.ProjectId)
                 .OnDelete(DeleteBehavior.Cascade);
 
             entity.HasOne(mp => mp.CreatedBy)
@@ -1042,6 +970,51 @@ public class ApplicationDbContext : DbContext
             entity.HasIndex(t => t.PhaseId);
             entity.HasIndex(t => t.Priority);
             entity.HasIndex(t => t.CompletionPercentage);
+        });
+
+        // DailyReport configuration
+        modelBuilder.Entity<DailyReport>(entity =>
+        {
+            entity.HasKey(e => e.DailyReportId);
+            
+            entity.Property(e => e.DailyReportId)
+                .HasDefaultValueSql("gen_random_uuid()");
+
+            entity.Property(e => e.CreatedAt)
+                .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+            entity.HasIndex(e => new { e.ProjectId, e.ReportDate })
+                .HasDatabaseName("IX_DailyReports_ProjectId_ReportDate");
+
+            entity.HasIndex(e => new { e.ReporterId, e.ReportDate })
+                .HasDatabaseName("IX_DailyReports_ReporterId_ReportDate");
+
+            entity.HasOne(e => e.Project)
+                .WithMany()
+                .HasForeignKey(e => e.ProjectId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(e => e.Reporter)
+                .WithMany()
+                .HasForeignKey(e => e.ReporterId)
+                .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        // DailyReportAttachment configuration
+        modelBuilder.Entity<DailyReportAttachment>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            
+            entity.Property(e => e.Id)
+                .HasDefaultValueSql("gen_random_uuid()");
+
+            entity.Property(e => e.CreatedAt)
+                .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+            entity.HasOne(e => e.DailyReport)
+                .WithMany()
+                .HasForeignKey(e => e.DailyReportId)
+                .OnDelete(DeleteBehavior.Cascade);
         });
     }
 }

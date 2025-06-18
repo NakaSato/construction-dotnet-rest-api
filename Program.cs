@@ -2,12 +2,12 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using Microsoft.Extensions.FileProviders;
 using System.Text;
 using System.Reflection;
 using dotnet_rest_api.Data;
 using dotnet_rest_api.Services;
 using dotnet_rest_api.Middleware;
-using Microsoft.Extensions.FileProviders;
 using Asp.Versioning;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -21,9 +21,9 @@ builder.Services.AddSwaggerGen(options =>
 {
     options.SwaggerDoc("v1", new OpenApiInfo 
     { 
-        Title = "PROJECT_API", 
+        Title = "Solar Project Management API", 
         Version = "v1",
-        Description = "RESTful API for managing solar projects, tasks, and images"
+        Description = "RESTful API for managing solar projects, tasks, and daily reports"
     });
 
     // Add JWT authentication to Swagger
@@ -50,43 +50,26 @@ builder.Services.AddSwaggerGen(options =>
             Array.Empty<string>()
         }
     });
-
-    // Include XML comments
-    var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
-    var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
-    if (File.Exists(xmlPath))
-    {
-        options.IncludeXmlComments(xmlPath);
-    }
 });
 
 // Configure Database
-var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
-if (string.IsNullOrEmpty(connectionString))
-{
-    throw new InvalidOperationException("DefaultConnection string is not configured. Please set up PostgreSQL connection string.");
-}
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") 
+    ?? "Host=localhost;Database=SolarProjectsDb;Username=postgres;Password=postgres";
 
-// Use PostgreSQL for main application data
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
 {
     options.UseNpgsql(connectionString);
     
-    // Enable detailed errors in development
     if (builder.Environment.IsDevelopment())
     {
         options.EnableDetailedErrors();
         options.EnableSensitiveDataLogging();
+        options.LogTo(Console.WriteLine, LogLevel.Information);
     }
-    
-    // Enable logging for debugging connection issues
-    options.LogTo(Console.WriteLine, LogLevel.Information);
-    options.EnableDetailedErrors();
-    options.EnableSensitiveDataLogging();
 });
 
 // Configure JWT Authentication
-var jwtKey = builder.Configuration["Jwt:Key"] ?? "DefaultSecretKeyForDevelopmentOnlyNotForProduction";
+var jwtKey = builder.Configuration["Jwt:Key"] ?? "DefaultSecretKeyForDevelopmentOnlyNotForProduction123456789";
 var jwtIssuer = builder.Configuration["Jwt:Issuer"] ?? "SolarProjectsAPI";
 var jwtAudience = builder.Configuration["Jwt:Audience"] ?? "SolarProjectsClient";
 
@@ -128,93 +111,11 @@ builder.Services.AddApiVersioning(options =>
     options.SubstituteApiVersionInUrl = true;
 });
 
-// Configure AutoMapper
-builder.Services.AddAutoMapper(typeof(Program));
-
 // Add caching services
 builder.Services.AddMemoryCache();
+builder.Services.AddDistributedMemoryCache();
 
-// Configure Redis distributed cache (optional - will fallback to memory cache if not available)
-var redisConnection = builder.Configuration.GetConnectionString("Redis");
-if (!string.IsNullOrEmpty(redisConnection))
-{
-    builder.Services.AddStackExchangeRedisCache(options =>
-    {
-        options.Configuration = redisConnection;
-        options.InstanceName = "SolarProjectsAPI";
-    });
-}
-else
-{
-    // Fallback to distributed memory cache when Redis is not available
-    builder.Services.AddDistributedMemoryCache();
-}
-
-// Register caching services
-builder.Services.Configure<CacheOptions>(builder.Configuration.GetSection("Caching"));
-builder.Services.AddSingleton<ICacheService, CacheService>();
-
-// Register application services
-builder.Services.AddScoped<IAuthService, AuthService>();
-builder.Services.AddScoped<IQueryService, QueryService>();
-
-// Use cached versions of services for better performance
-builder.Services.AddScoped<IProjectService>(provider =>
-{
-    var context = provider.GetRequiredService<ApplicationDbContext>();
-    var queryService = provider.GetRequiredService<IQueryService>();
-    // Temporarily use ProjectService instead of CachedProjectService while migrating to Result<T>
-    return new ProjectService(context, queryService);
-    
-    // TODO: Re-enable CachedProjectService after updating it to use Result<T>
-    // var cacheService = provider.GetRequiredService<ICacheService>();
-    // var logger = provider.GetRequiredService<ILogger<CachedProjectService>>();
-    // return new CachedProjectService(context, queryService, cacheService, logger);
-});
-
-builder.Services.AddScoped<IUserService>(provider =>
-{
-    var context = provider.GetRequiredService<ApplicationDbContext>();
-    var queryService = provider.GetRequiredService<IQueryService>();
-    var cacheService = provider.GetRequiredService<ICacheService>();
-    var logger = provider.GetRequiredService<ILogger<CachedUserService>>();
-    return new CachedUserService(context, queryService, cacheService, logger);
-});
-
-builder.Services.AddScoped<ITaskService>(provider =>
-{
-    var context = provider.GetRequiredService<ApplicationDbContext>();
-    var queryService = provider.GetRequiredService<IQueryService>();
-    var cacheService = provider.GetRequiredService<ICacheService>();
-    var logger = provider.GetRequiredService<ILogger<CachedTaskService>>();
-    return new CachedTaskService(context, queryService, cacheService, logger);
-});
-builder.Services.AddScoped<IImageService, ImageService>();
-builder.Services.AddScoped<ICloudStorageService, CloudStorageService>();
-
-// Register Daily Report and Work Request services
-builder.Services.AddScoped<IDailyReportService, DailyReportService>();
-builder.Services.AddScoped<IWorkRequestService, WorkRequestService>();
-
-// Register Weekly Planning services
-builder.Services.AddScoped<IWeeklyWorkRequestService, WeeklyWorkRequestService>();
-builder.Services.AddScoped<IWeeklyReportService, WeeklyReportService>();
-
-// Register Master Plan services
-builder.Services.AddScoped<IMasterPlanService, MasterPlanService>();
-
-// Approval workflow services
-builder.Services.AddScoped<IWorkRequestApprovalService, WorkRequestApprovalService>();
-builder.Services.AddScoped<INotificationService, NotificationService>();
-builder.Services.AddScoped<IEmailService, EmailService>();
-
-// Register Calendar service
-builder.Services.AddScoped<ICalendarService, CalendarService>();
-
-// Register Data Seeder service
-builder.Services.AddScoped<DataSeeder>();
-
-// Add rate limiting services
+// Configure Rate Limiting
 builder.Services.AddRateLimit(builder.Configuration);
 
 // Configure CORS
@@ -228,6 +129,11 @@ builder.Services.AddCors(options =>
     });
 });
 
+// Register services
+builder.Services.AddScoped<IDailyReportService, StubDailyReportService>();
+builder.Services.AddScoped<ICacheService, CacheService>();
+// Add other service registrations as needed
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline
@@ -237,7 +143,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI(options =>
     {
         options.SwaggerEndpoint("/swagger/v1/swagger.json", "Solar Projects API V1");
-        options.RoutePrefix = string.Empty; // Serve Swagger at root
+        options.RoutePrefix = string.Empty;
     });
 }
 
@@ -250,23 +156,24 @@ if (!app.Environment.IsDevelopment() ||
 
 app.UseCors();
 
-// Add HTTP caching middleware for ETag and Cache-Control headers
-app.UseMiddleware<HttpCacheMiddleware>();
-
-// Add rate limiting middleware (before authentication)
+// Add Rate Limiting Middleware (before authentication)
 app.UseRateLimit();
 
 // Serve static files for uploaded images
+var uploadsPath = Path.Combine(builder.Environment.ContentRootPath, "uploads");
+if (!Directory.Exists(uploadsPath))
+{
+    Directory.CreateDirectory(uploadsPath);
+}
+
 app.UseStaticFiles(new StaticFileOptions
 {
-    FileProvider = new PhysicalFileProvider(
-        Path.Combine(builder.Environment.ContentRootPath, "uploads")),
+    FileProvider = new PhysicalFileProvider(uploadsPath),
     RequestPath = "/files"
 });
 
 app.UseAuthentication();
 app.UseAuthorization();
-
 app.MapControllers();
 
 // Initialize database
@@ -277,37 +184,19 @@ using (var scope = app.Services.CreateScope())
     
     try
     {
-        // Apply migrations for PostgreSQL (ApplicationDbContext)
         var context = services.GetRequiredService<ApplicationDbContext>();
         
-        if (app.Environment.IsDevelopment() || Environment.GetEnvironmentVariable("APPLY_MIGRATIONS") == "true")
+        if (app.Environment.IsDevelopment())
         {
-            logger.LogInformation("Applying database migrations...");
-            await context.Database.MigrateAsync();
-            logger.LogInformation("Database migrations applied successfully.");
-            
-            // Seed sample data in development
-            if (app.Environment.IsDevelopment())
-            {
-                logger.LogInformation("Seeding sample data...");
-                var dataSeeder = services.GetRequiredService<DataSeeder>();
-                await dataSeeder.SeedSampleDataAsync();
-                logger.LogInformation("Sample data seeded successfully.");
-            }
-        }
-        else
-        {
-            // In production, ensure database exists but don't auto-migrate
+            logger.LogInformation("Ensuring database exists...");
             await context.Database.EnsureCreatedAsync();
+            logger.LogInformation("Database initialization completed.");
         }
-        
-        logger.LogInformation("Database initialization completed.");
     }
     catch (Exception ex)
     {
         logger.LogError(ex, "An error occurred while initializing the database.");
         
-        // In development, we might want to continue even if DB is not available
         if (!app.Environment.IsDevelopment())
         {
             throw;

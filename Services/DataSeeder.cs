@@ -21,7 +21,7 @@ public class DataSeeder
     /// <summary>
     /// Seeds sample data if database is empty
     /// </summary>
-    public async Task SeedSampleDataAsync()
+    public async System.Threading.Tasks.Task SeedSampleDataAsync()
     {
         try
         {

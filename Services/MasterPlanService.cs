@@ -3,6 +3,7 @@ using dotnet_rest_api.Common;
 using dotnet_rest_api.Data;
 using dotnet_rest_api.DTOs;
 using dotnet_rest_api.Models;
+using TaskAsync = System.Threading.Tasks.Task;
 using AutoMapper;
 using System.Collections.Generic;
 
@@ -98,21 +99,27 @@ public class MasterPlanService : IMasterPlanService
     {
         try
         {
-            var projectId = Guid.Parse(request.ProjectId.ToString());
-            var project = await _context.Projects.FindAsync(projectId);
+            // Validate project exists
+            var project = await _context.Projects.FindAsync(request.ProjectId);
             if (project == null)
-                return Result<MasterPlanDto>.Failure($"Project with ID {projectId} not found");
+                return Result<MasterPlanDto>.Failure($"Project with ID {request.ProjectId} not found");
+
+            // Check if project already has a master plan (one-to-one relationship)
+            var existingPlan = await _context.MasterPlans
+                .FirstOrDefaultAsync(mp => mp.ProjectId == request.ProjectId);
+            if (existingPlan != null)
+                return Result<MasterPlanDto>.Failure($"Project already has a master plan. Use update instead.");
 
             var masterPlan = new MasterPlan
             {
                 MasterPlanId = Guid.NewGuid(),
-                ProjectId = projectId,
+                ProjectId = request.ProjectId,
                 PlanName = request.Title,
                 Description = request.Description,
                 PlannedStartDate = request.StartDate,
                 PlannedEndDate = request.EndDate,
                 TotalPlannedDays = (request.EndDate - request.StartDate).Days,
-                TotalEstimatedBudget = request.Budget,
+                TotalEstimatedBudget = request.Budget ?? 0,
                 Version = 1,
                 Status = MasterPlanStatus.Draft,
                 CreatedAt = DateTime.UtcNow,
@@ -191,13 +198,27 @@ public class MasterPlanService : IMasterPlanService
                 return Result<MasterPlanDto>.Failure($"Master plan with ID {masterPlanId} not found");
 
             // Update only the properties that should be updated
-            masterPlan.PlanName = request.Title;
-            masterPlan.Description = request.Description;
-            masterPlan.PlannedStartDate = request.StartDate;
-            masterPlan.PlannedEndDate = request.EndDate;
-            masterPlan.TotalPlannedDays = (request.EndDate - request.StartDate).Days;
-            masterPlan.Status = (MasterPlanStatus)Enum.Parse(typeof(MasterPlanStatus), request.Status);
-            masterPlan.TotalEstimatedBudget = request.Budget;
+            if (!string.IsNullOrEmpty(request.Title))
+                masterPlan.PlanName = request.Title;
+            
+            if (!string.IsNullOrEmpty(request.Description))
+                masterPlan.Description = request.Description;
+            
+            if (request.StartDate.HasValue)
+                masterPlan.PlannedStartDate = request.StartDate.Value;
+            
+            if (request.EndDate.HasValue)
+                masterPlan.PlannedEndDate = request.EndDate.Value;
+            
+            if (request.StartDate.HasValue && request.EndDate.HasValue)
+                masterPlan.TotalPlannedDays = (request.EndDate.Value - request.StartDate.Value).Days;
+            
+            if (!string.IsNullOrEmpty(request.Status) && Enum.TryParse<MasterPlanStatus>(request.Status, out var statusEnum))
+                masterPlan.Status = statusEnum;
+            
+            if (request.Budget.HasValue)
+                masterPlan.TotalEstimatedBudget = request.Budget.Value;
+            
             masterPlan.UpdatedAt = DateTime.UtcNow;
 
             await _context.SaveChangesAsync();
@@ -336,6 +357,27 @@ public class MasterPlanService : IMasterPlanService
         {
             _logger.LogError(ex, "Error adding phase to master plan {MasterPlanId}", masterPlanId);
             return Result<ProjectPhaseDto>.Failure($"Error adding phase: {ex.Message}");
+        }
+    }
+
+    public async Task<Result<ProjectPhaseDto>> GetPhaseByIdAsync(Guid phaseId)
+    {
+        try
+        {
+            var phase = await _context.ProjectPhases
+                .Include(p => p.MasterPlan)
+                .FirstOrDefaultAsync(p => p.PhaseId == phaseId);
+
+            if (phase == null)
+                return Result<ProjectPhaseDto>.Failure($"Phase with ID {phaseId} not found");
+
+            var dto = _mapper.Map<ProjectPhaseDto>(phase);
+            return Result<ProjectPhaseDto>.Success(dto);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error getting phase {PhaseId}", phaseId);
+            return Result<ProjectPhaseDto>.Failure($"Error getting phase: {ex.Message}");
         }
     }
 
@@ -629,11 +671,13 @@ public class MasterPlanService : IMasterPlanService
             _context.ProgressReports.Add(progressReport);
             
             // Add phase progress details
-            foreach (var phaseUpdate in request.PhaseUpdates)
+            if (request.PhaseUpdates != null)
             {
-                var phase = await _context.ProjectPhases.FindAsync(phaseUpdate.PhaseId);
-                if (phase != null)
+                foreach (var phaseUpdate in request.PhaseUpdates)
                 {
+                    var phase = await _context.ProjectPhases.FindAsync(phaseUpdate.PhaseId);
+                    if (phase != null)
+                    {
                     var phaseProgress = new PhaseProgress
                     {
                         PhaseProgressId = Guid.NewGuid(),
@@ -655,6 +699,7 @@ public class MasterPlanService : IMasterPlanService
                     
                     _context.PhaseProgresses.Add(phaseProgress);
                 }
+            }
             }
 
             await _context.SaveChangesAsync();
@@ -1134,12 +1179,12 @@ public class MasterPlanService : IMasterPlanService
         {
             // In a real app, templates would be stored in the database or configuration
             List<string> templates = new() { "Solar Installation", "Maintenance" };
-            return Task.FromResult(Result<List<string>>.Success(templates));
+            return TaskAsync.FromResult(Result<List<string>>.Success(templates));
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error retrieving available templates");
-            return Task.FromResult(Result<List<string>>.Failure($"Error retrieving available templates: {ex.Message}"));
+            return TaskAsync.FromResult(Result<List<string>>.Failure($"Error retrieving available templates: {ex.Message}"));
         }
     }
 

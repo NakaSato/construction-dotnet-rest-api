@@ -6,42 +6,6 @@ using System.Diagnostics;
 
 namespace dotnet_rest_api.Services;
 
-public interface IQueryService
-{
-    Task<EnhancedPagedResult<T>> ExecuteQueryAsync<T>(
-        IQueryable<T> query,
-        BaseQueryParameters parameters) where T : class;
-    
-    IQueryable<T> ApplyFilters<T>(
-        IQueryable<T> query,
-        List<FilterParameter> filters) where T : class;
-    
-    IQueryable<T> ApplySorting<T>(
-        IQueryable<T> query,
-        string? sortBy,
-        string? sortOrder) where T : class;
-    
-    List<object> ApplyFieldSelection<T>(
-        List<T> items,
-        string? fields) where T : class;
-    
-    PaginationLinks GeneratePaginationLinks(
-        string baseUrl,
-        int currentPage,
-        int totalPages,
-        int pageSize,
-        Dictionary<string, string>? queryParams = null);
-    
-    ApiResponseWithPagination<T> CreateRichPaginatedResponse<T>(
-        List<T> items,
-        int totalCount,
-        int pageNumber,
-        int pageSize,
-        string baseUrl,
-        Dictionary<string, string>? queryParams = null,
-        string message = "Data retrieved successfully") where T : class;
-}
-
 public class QueryService : IQueryService
 {
     public async Task<EnhancedPagedResult<T>> ExecuteQueryAsync<T>(
@@ -329,8 +293,8 @@ public class QueryService : IQueryService
         int pageNumber,
         int pageSize,
         string baseUrl,
-        Dictionary<string, string>? queryParams = null,
-        string message = "Data retrieved successfully") where T : class
+        Dictionary<string, string> queryParams,
+        string message = "Data retrieved successfully")
     {
         var totalPages = (int)Math.Ceiling((double)totalCount / pageSize);
         

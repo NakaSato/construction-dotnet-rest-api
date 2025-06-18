@@ -23,29 +23,7 @@ public class MasterPlanDto
     public string? ApprovedByName { get; set; }
 }
 
-public class CreateMasterPlanRequest
-{
-    public string Title { get; set; } = string.Empty;
-    public string? Description { get; set; }
-    public int ProjectId { get; set; }
-    public DateTime StartDate { get; set; }
-    public DateTime EndDate { get; set; }
-    public decimal Budget { get; set; }
-    public string? Priority { get; set; }
-    public string? Notes { get; set; }
-}
 
-public class UpdateMasterPlanRequest
-{
-    public string Title { get; set; } = string.Empty;
-    public string? Description { get; set; }
-    public DateTime StartDate { get; set; }
-    public DateTime EndDate { get; set; }
-    public string Status { get; set; } = string.Empty;
-    public decimal Budget { get; set; }
-    public string? Priority { get; set; }
-    public string? Notes { get; set; }
-}
 
 // Project Phase DTOs
 public class ProjectPhaseDto
@@ -172,28 +150,7 @@ public class PhaseProgressDto
     public string? Issues { get; set; }
 }
 
-public class CreateProgressReportRequest
-{
-    public string? KeyAccomplishments { get; set; }
-    public string? CurrentChallenges { get; set; }
-    public string? UpcomingActivities { get; set; }
-    public string? RiskSummary { get; set; }
-    public string? QualityNotes { get; set; }
-    public string? WeatherImpact { get; set; }
-    public string? ResourceNotes { get; set; }
-    public string? ExecutiveSummary { get; set; }
-    public List<UpdatePhaseProgressRequest> PhaseUpdates { get; set; } = new();
-}
 
-public class UpdatePhaseProgressRequest
-{
-    public Guid PhaseId { get; set; }
-    public decimal CompletionPercentage { get; set; }
-    public PhaseStatus Status { get; set; }
-    public string? Notes { get; set; }
-    public string? ActivitiesCompleted { get; set; }
-    public string? Issues { get; set; }
-}
 
 // Phase Resource DTOs
 public class PhaseResourceDto
@@ -232,7 +189,36 @@ public class CreatePhaseResourceRequest
     public string? Notes { get; set; }
 }
 
-// Summary DTOs
+
+
+
+
+public class TaskProgressReportDto
+{
+    public Guid ProgressReportId { get; set; }
+    public Guid TaskId { get; set; }
+    public DateTime ReportDate { get; set; }
+    public decimal CompletionPercentage { get; set; }
+    public decimal PlannedCompletionPercentage { get; set; }
+    public string Status { get; set; } = string.Empty;
+    public string? WorkCompleted { get; set; }
+    public string? Issues { get; set; }
+    public string? NextSteps { get; set; }
+    public decimal HoursWorked { get; set; }
+    public DateTime CreatedAt { get; set; }
+    public Guid CreatedById { get; set; }
+    public string CreatedByName { get; set; } = string.Empty;
+}
+
+public class CreateTaskProgressReportRequest
+{
+    public decimal CompletionPercentage { get; set; }
+    public string? WorkCompleted { get; set; }
+    public string? Issues { get; set; }
+    public string? NextSteps { get; set; }
+    public decimal HoursWorked { get; set; }
+}
+
 public class ProgressSummaryDto
 {
     public decimal OverallCompletion { get; set; }

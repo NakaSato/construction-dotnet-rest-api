@@ -37,20 +37,22 @@ public class UsersController : BaseApiController
     /// <returns>Paginated list of users</returns>
     [HttpGet]
     [MediumCache] // 15 minute cache for user lists
-    public async Task<ActionResult<PagedResult<UserDto>>> GetUsers(
+    public async Task<ActionResult<ApiResponse<PagedResult<UserDto>>>> GetUsers(
         [FromQuery] int pageNumber = 1,
         [FromQuery] int pageSize = 10,
         [FromQuery] string? role = null)
     {
         try
         {
-            // Validate pagination parameters using base controller method
             var validationResult = ValidatePaginationParameters(pageNumber, pageSize);
             if (validationResult != null)
                 return validationResult;
 
             var result = await _userService.GetUsersAsync(pageNumber, pageSize, role);
-            return Ok(result);
+            if (!result.Success)
+                return CreateErrorResponse(result.Message, 400);
+
+            return CreateSuccessResponse(result.Data!, "Users retrieved successfully");
         }
         catch (Exception ex)
         {
@@ -65,7 +67,7 @@ public class UsersController : BaseApiController
     /// <returns>User details</returns>
     [HttpGet("{id:guid}")]
     [LongCache] // 1 hour cache for individual user details
-    public async Task<ActionResult<UserDto>> GetUser(Guid id)
+    public async Task<ActionResult<ApiResponse<UserDto>>> GetUser(Guid id)
     {
         try
         {
@@ -73,7 +75,7 @@ public class UsersController : BaseApiController
             if (!result.Success)
                 return CreateNotFoundResponse(result.Message);
             
-            return Ok(result.Data);
+            return CreateSuccessResponse(result.Data!, "User retrieved successfully");
         }
         catch (Exception ex)
         {
@@ -88,19 +90,18 @@ public class UsersController : BaseApiController
     /// <returns>User details</returns>
     [HttpGet("username/{username}")]
     [LongCache] // 1 hour cache for user lookups by username
-    public async Task<ActionResult<UserDto>> GetUserByUsername(string username)
+    public async Task<ActionResult<ApiResponse<UserDto>>> GetUserByUsername(string username)
     {
         try
         {
             if (string.IsNullOrWhiteSpace(username))
                 return CreateErrorResponse("Username cannot be empty", 400);
 
-            var user = await _userService.GetUserByUsernameAsync(username);
-            return Ok(user);
-        }
-        catch (KeyNotFoundException)
-        {
-            return CreateNotFoundResponse($"User with username '{username}' not found");
+            var result = await _userService.GetUserByUsernameAsync(username);
+            if (!result.Success)
+                return CreateNotFoundResponse($"User with username '{username}' not found");
+
+            return CreateSuccessResponse(result.Data!, "User retrieved successfully");
         }
         catch (Exception ex)
         {
@@ -114,9 +115,9 @@ public class UsersController : BaseApiController
     /// <param name="createUserRequest">User creation data</param>
     /// <returns>Created user</returns>
     [HttpPost]
-    [Authorize(Roles = "Admin")]
+    [Authorize(Roles = "Administrator")]
     [NoCache] // No caching for write operations
-    public async Task<ActionResult<UserDto>> CreateUser([FromBody] CreateUserRequest createUserRequest)
+    public async Task<ActionResult<ApiResponse<UserDto>>> CreateUser([FromBody] CreateUserRequest createUserRequest)
     {
         try
         {
@@ -127,7 +128,7 @@ public class UsersController : BaseApiController
             if (!result.Success)
                 return CreateErrorResponse(result.Message, 400);
 
-            return CreatedAtAction(nameof(GetUser), new { id = result.Data!.UserId }, result.Data);
+            return StatusCode(201, CreateSuccessResponse(result.Data!, "User created successfully"));
         }
         catch (Exception ex)
         {
@@ -142,9 +143,9 @@ public class UsersController : BaseApiController
     /// <param name="updateUserRequest">User update data</param>
     /// <returns>Updated user</returns>
     [HttpPut("{id:guid}")]
-    [Authorize(Roles = "Admin")]
+    [Authorize(Roles = "Administrator")]
     [NoCache] // No caching for write operations
-    public async Task<ActionResult<UserDto>> UpdateUser(Guid id, [FromBody] CreateUserRequest updateUserRequest)
+    public async Task<ActionResult<ApiResponse<UserDto>>> UpdateUser(Guid id, [FromBody] UpdateUserRequest updateUserRequest)
     {
         try
         {
@@ -155,7 +156,7 @@ public class UsersController : BaseApiController
             if (!result.Success)
                 return CreateNotFoundResponse(result.Message);
             
-            return Ok(result.Data);
+            return CreateSuccessResponse(result.Data!, "User updated successfully");
         }
         catch (Exception ex)
         {
@@ -170,9 +171,9 @@ public class UsersController : BaseApiController
     /// <param name="patchUserRequest">User partial update data</param>
     /// <returns>Updated user</returns>
     [HttpPatch("{id:guid}")]
-    [Authorize(Roles = "Admin")]
+    [Authorize(Roles = "Administrator")]
     [NoCache] // No caching for write operations
-    public async Task<ActionResult<UserDto>> PatchUser(Guid id, [FromBody] PatchUserRequest patchUserRequest)
+    public async Task<ActionResult<ApiResponse<UserDto>>> PatchUser(Guid id, [FromBody] PatchUserRequest patchUserRequest)
     {
         try
         {
@@ -183,7 +184,7 @@ public class UsersController : BaseApiController
             if (!result.Success)
                 return CreateNotFoundResponse(result.Message);
             
-            return Ok(result.Data);
+            return CreateSuccessResponse(result.Data!, "User updated successfully");
         }
         catch (Exception ex)
         {
@@ -197,17 +198,17 @@ public class UsersController : BaseApiController
     /// <param name="id">User ID</param>
     /// <returns>Updated user</returns>
     [HttpPatch("{id:guid}/activate")]
-    [Authorize(Roles = "Admin")]
+    [Authorize(Roles = "Administrator")]
     [NoCache] // No caching for write operations
-    public async Task<ActionResult<bool>> ActivateUser(Guid id)
+    public async Task<ActionResult<ApiResponse<bool>>> ActivateUser(Guid id)
     {
         try
         {
             var result = await _userService.ActivateUserAsync(id, true);
             if (!result.Success)
-                return NotFound(result.Message);
+                return CreateNotFoundResponse(result.Message);
             
-            return Ok(result.Data);
+            return CreateSuccessResponse(result.Data, "User activated successfully");
         }
         catch (Exception ex)
         {
@@ -221,17 +222,17 @@ public class UsersController : BaseApiController
     /// <param name="id">User ID</param>
     /// <returns>Updated user</returns>
     [HttpPatch("{id:guid}/deactivate")]
-    [Authorize(Roles = "Admin")]
+    [Authorize(Roles = "Administrator")]
     [NoCache] // No caching for write operations
-    public async Task<ActionResult<bool>> DeactivateUser(Guid id)
+    public async Task<ActionResult<ApiResponse<bool>>> DeactivateUser(Guid id)
     {
         try
         {
             var result = await _userService.ActivateUserAsync(id, false);
             if (!result.Success)
-                return NotFound(result.Message);
+                return CreateNotFoundResponse(result.Message);
             
-            return Ok(result.Data);
+            return CreateSuccessResponse(result.Data, "User deactivated successfully");
         }
         catch (Exception ex)
         {
@@ -245,9 +246,9 @@ public class UsersController : BaseApiController
     /// <param name="id">User ID</param>
     /// <returns>No content if successful</returns>
     [HttpDelete("{id:guid}")]
-    [Authorize(Roles = "Admin")]
+    [Authorize(Roles = "Administrator")]
     [NoCache] // No caching for write operations
-    public async Task<IActionResult> DeleteUser(Guid id)
+    public async Task<ActionResult<ApiResponse<bool>>> DeleteUser(Guid id)
     {
         try
         {
@@ -255,7 +256,7 @@ public class UsersController : BaseApiController
             if (!result.Success)
                 return CreateNotFoundResponse(result.Message);
             
-            return NoContent();
+            return CreateSuccessResponse(result.Data, "User deleted successfully");
         }
         catch (Exception ex)
         {

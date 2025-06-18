@@ -78,10 +78,10 @@ public class ProjectsController : BaseApiController
 
     /// <summary>
     /// Create a new project
-    /// Available to: Admin, Manager (can manage projects)
+    /// Available to: Administrator, ProjectManager (can manage projects)
     /// </summary>
     [HttpPost]
-    [Authorize(Roles = "Admin,Manager")]
+    [Authorize(Roles = "Administrator,ProjectManager")]
     [NoCache] // No caching for write operations
     public async Task<ActionResult<ApiResponse<ProjectDto>>> CreateProject([FromBody] CreateProjectRequest request)
     {
@@ -97,8 +97,7 @@ public class ProjectsController : BaseApiController
         
         if (result.IsSuccess)
         {
-            return CreatedAtAction(nameof(GetProject), new { id = result.Data!.ProjectId }, 
-                ToApiResponse(result).Value);
+            return StatusCode(201, CreateSuccessResponse(result.Data!, "Project created successfully"));
         }
 
         return ToApiResponse(result);
@@ -106,10 +105,10 @@ public class ProjectsController : BaseApiController
 
     /// <summary>
     /// Update an existing project
-    /// Available to: Admin, Manager (can manage projects)
+    /// Available to: Administrator, ProjectManager (can manage projects)
     /// </summary>
     [HttpPut("{id:guid}")]
-    [Authorize(Roles = "Admin,Manager")]
+    [Authorize(Roles = "Administrator,ProjectManager")]
     [NoCache] // No caching for write operations
     public async Task<ActionResult<ApiResponse<ProjectDto>>> UpdateProject(Guid id, [FromBody] UpdateProjectRequest request)
     {
@@ -127,10 +126,10 @@ public class ProjectsController : BaseApiController
 
     /// <summary>
     /// Partially update a project
-    /// Available to: Admin, Manager (can manage projects)
+    /// Available to: Administrator, ProjectManager (can manage projects)
     /// </summary>
     [HttpPatch("{id:guid}")]
-    [Authorize(Roles = "Admin,Manager")]
+    [Authorize(Roles = "Administrator,ProjectManager")]
     [NoCache] // No caching for write operations
     public async Task<ActionResult<ApiResponse<ProjectDto>>> PatchProject(Guid id, [FromBody] PatchProjectRequest request)
     {
@@ -148,10 +147,11 @@ public class ProjectsController : BaseApiController
 
     /// <summary>
     /// Delete a project
-    /// Available to: Admin only (full system access)
+    /// Available to: Administrator only (full system access)
     /// </summary>
     [HttpDelete("{id:guid}")]
-    [Authorize(Roles = "Admin")]
+    [Authorize(Roles = "Administrator")]
+    [CriticalDeleteRateLimit]
     [NoCache] // No caching for write operations
     public async Task<ActionResult<ApiResponse<bool>>> DeleteProject(Guid id)
     {
@@ -249,6 +249,58 @@ public class ProjectsController : BaseApiController
         catch (Exception ex)
         {
             return HandleException(_logger, ex, "retrieving projects with rich pagination");
+        }
+    }
+
+    /// <summary>
+    /// Get real-time status for a specific project
+    /// Available to: All authenticated users
+    /// </summary>
+    [HttpGet("{id:guid}/status")]
+    [ShortCache] // 5 minute cache for real-time status
+    public async Task<ActionResult<ApiResponse<ProjectStatusDto>>> GetProjectStatus(Guid id)
+    {
+        try
+        {
+            LogControllerAction(_logger, "GetProjectStatus", new { id });
+
+            // Get project basic info
+            var projectResult = await _projectService.GetProjectByIdAsync(id);
+            if (!projectResult.IsSuccess)
+                return ToApiResponse(projectResult);
+
+            // Calculate project status from master plan progress
+            var statusDto = new ProjectStatusDto
+            {
+                ProjectId = id,
+                ProjectName = projectResult.Data!.ProjectName,
+                Status = projectResult.Data.Status,
+                PlannedStartDate = projectResult.Data.StartDate,
+                PlannedEndDate = projectResult.Data.EstimatedEndDate,
+                ActualStartDate = projectResult.Data.StartDate, // TODO: Get from master plan
+                OverallCompletionPercentage = 0, // TODO: Calculate from master plan
+                IsOnSchedule = true, // TODO: Calculate from master plan
+                IsOnBudget = true, // TODO: Calculate from master plan
+                ActiveTasks = 0, // TODO: Get from task service
+                CompletedTasks = 0, // TODO: Get from task service
+                TotalTasks = 0, // TODO: Get from task service
+                LastUpdated = projectResult.Data.UpdatedAt ?? projectResult.Data.CreatedAt
+            };
+
+            // Add HATEOAS links for related resources
+            statusDto.Links = new List<LinkDto>
+            {
+                new LinkDto { Href = Url.Action(nameof(GetProject), new { id }), Rel = "project", Method = "GET" },
+                new LinkDto { Href = $"/api/v1/master-plans?projectId={id}", Rel = "master-plans", Method = "GET" },
+                new LinkDto { Href = $"/api/v1/tasks?projectId={id}", Rel = "tasks", Method = "GET" },
+                new LinkDto { Href = $"/api/v1/documents?projectId={id}", Rel = "documents", Method = "GET" }
+            };
+
+            return CreateSuccessResponse(statusDto, "Project status retrieved successfully");
+        }
+        catch (Exception ex)
+        {
+            return HandleException(_logger, ex, $"retrieving project status for {id}");
         }
     }
 }

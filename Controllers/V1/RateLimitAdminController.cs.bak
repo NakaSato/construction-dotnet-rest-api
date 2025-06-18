@@ -3,7 +3,20 @@ using Microsoft.AspNetCore.Authorization;
 using dotnet_rest_api.DTOs;
 using dotnet_rest_api.Services;
 using dotnet_rest_api.Controllers;
-using dotnet_rest_api.Middleware;
+u            if (rule.RequestLimit <= 0)
+            {
+                return CreateErrorResponse("Limit must be greater than 0", 400);
+            }
+
+            if (rule.TimeWindow <= TimeSpan.Zero)
+            {
+                return CreateErrorResponse("Period must be greater than 0", 400);
+            }
+
+            await _monitoringService.UpdateRuleConfiguration(ruleName, rule);
+
+            _logger.LogInformation("Rate limiting rule updated: {RuleName} by {User} with limit {Limit} and period {Period}",
+                ruleName, User.Identity?.Name ?? "Unknown", rule.RequestLimit, rule.TimeWindow);st_api.Middleware;
 using Asp.Versioning;
 
 namespace dotnet_rest_api.Controllers.V1;
@@ -91,7 +104,7 @@ public class RateLimitAdminController : BaseApiController
     /// Get active rate limiting rules
     /// </summary>
     [HttpGet("rules")]
-    public async Task<ActionResult<ApiResponse<Dictionary<string, RateLimitRule>>>> GetRules()
+    public async Task<ActionResult<ApiResponse<Dictionary<string, dotnet_rest_api.Services.RateLimitRule>>>> GetRules()
     {
         try
         {
@@ -159,7 +172,7 @@ public class RateLimitAdminController : BaseApiController
     /// <param name="ruleName">Name of the rule to update</param>
     /// <param name="rule">New rule configuration</param>
     [HttpPut("rules/{ruleName}")]
-    public async Task<ActionResult<ApiResponse<object>>> UpdateRule(string ruleName, [FromBody] RateLimitRule rule)
+    public async Task<ActionResult<ApiResponse<object>>> UpdateRule(string ruleName, [FromBody] dotnet_rest_api.Services.RateLimitRule rule)
     {
         try
         {
