@@ -95,7 +95,7 @@ jobs:
         fail_ci_if_error: false
         verbose: true
 
-  docker-build:
+  ci-docker-build:
     runs-on: ubuntu-latest
     needs: build-and-test
     if: success()

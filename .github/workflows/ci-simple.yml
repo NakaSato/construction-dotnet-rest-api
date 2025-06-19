@@ -72,7 +72,7 @@ jobs:
         file: ./coverage.xml
         fail_ci_if_error: false
 
-  docker-build:
+  simple-docker-build:
     runs-on: ubuntu-latest
     needs: simple-build-test
     

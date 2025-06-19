@@ -32,14 +32,18 @@ except Exception as e:
 # Function to check for duplicate job names
 check_duplicate_jobs() {
     echo "🔍 Checking for duplicate job names..."
-    local duplicates=$(grep -h "^  [a-zA-Z_-]*:$" $WORKFLOWS_DIR/*.yml | sort | uniq -d)
+    # Get actual job names by looking for patterns under jobs: section
+    local job_names=$(grep -A 100 "^jobs:" $WORKFLOWS_DIR/*.yml | grep -E "^[^-]*-  [a-zA-Z_-]+:$" | sed 's/.*-  //' | sed 's/:$//' | sort)
+    local duplicates=$(echo "$job_names" | uniq -d)
     
-    if [ -n "$duplicates" ]; then
+    if [ -n "$duplicates" ] && [ "$duplicates" != "" ]; then
         echo "  ❌ Duplicate job names found:"
         echo "$duplicates" | sed 's/^/    /'
         ((ERRORS++))
     else
-        echo "  ✅ No duplicate job names"
+        echo "  ✅ No duplicate job names found"
+        echo "  📋 Unique job names:"
+        echo "$job_names" | uniq | sed 's/^/    /'
     fi
 }
 
