@@ -118,22 +118,16 @@ public class CalendarController : BaseApiController
         try
         {
             if (!ModelState.IsValid)
-                return CreateErrorResponse("Invalid input data", 400);
+                return BadRequest(new ApiResponse<CalendarEventResponseDto> { Success = false, Message = "Invalid input data" });
 
             var result = await _calendarService.UpdateEventAsync(id, request);
-            
-            if (!result.Success)
-            {
-                return result.Message.Contains("not found") 
-                    ? CreateNotFoundResponse(result.Message)
-                    : CreateErrorResponse(result.Message, 400);
-            }
 
-            return CreateSuccessResponse(result.Data!, "Calendar event updated successfully");
+
+            return ToApiResponse(result);
         }
         catch (Exception ex)
         {
-            return StatusCode(500, CreateErrorResponse("An error occurred while updating the calendar event", 500));
+            return StatusCode(500, new ApiResponse<CalendarEventResponseDto> { Success = false, Message = "An error occurred while updating the calendar event" });
         }
     }
 
@@ -283,7 +277,7 @@ public class CalendarController : BaseApiController
             });
         }
 
-        var result = await _calendarService.CheckConflictsAsync(request.StartDateTime, request.EndDateTime, request.UserId, request.ExcludeEventId);
+        var result = await _calendarService.CheckConflictsAsync(request.StartDateTime, request.EndDateTime, request.UserId ?? Guid.Empty, request.ExcludeEventId);
         
         if (result.Success)
             return Ok(result);

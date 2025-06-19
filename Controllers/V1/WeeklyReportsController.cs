@@ -39,7 +39,7 @@ public class WeeklyReportsController : BaseApiController
         LogControllerAction(_logger, "GetWeeklyReport", reportId);
 
         var result = await _weeklyReportService.GetWeeklyReportByIdAsync(reportId);
-        return result;
+        return ToApiResponse(result);
     }
 
     /// <summary>
@@ -59,7 +59,7 @@ public class WeeklyReportsController : BaseApiController
         ApplyFiltersFromQuery(parameters, filterString);
 
         var result = await _weeklyReportService.GetWeeklyReportsAsync(parameters);
-        return result;
+        return ToApiResponse(result);
     }
 
     /// <summary>
@@ -79,7 +79,7 @@ public class WeeklyReportsController : BaseApiController
         }
 
         var result = await _weeklyReportService.CreateWeeklyReportAsync(request);
-        return result;
+        return ToApiResponse(result);
     }
 
     /// <summary>
@@ -99,7 +99,7 @@ public class WeeklyReportsController : BaseApiController
         }
 
         var result = await _weeklyReportService.UpdateWeeklyReportAsync(reportId, request);
-        return result;
+        return ToApiResponse(result);
     }
 
     /// <summary>
@@ -114,7 +114,7 @@ public class WeeklyReportsController : BaseApiController
 
         var result = await _weeklyReportService.UpdateWeeklyReportStatusAsync(
             reportId, WeeklyReportStatus.Submitted);
-        return result;
+        return ToApiResponse(result);
     }
 
     /// <summary>
@@ -129,7 +129,7 @@ public class WeeklyReportsController : BaseApiController
 
         var result = await _weeklyReportService.UpdateWeeklyReportStatusAsync(
             reportId, WeeklyReportStatus.Approved);
-        return result;
+        return ToApiResponse(result);
     }
 
     /// <summary>
@@ -143,7 +143,7 @@ public class WeeklyReportsController : BaseApiController
         LogControllerAction(_logger, "DeleteWeeklyReport", reportId);
 
         var result = await _weeklyReportService.DeleteWeeklyReportAsync(reportId);
-        return result;
+        return ToApiResponse(result);
     }
 }
 
@@ -184,7 +184,7 @@ public class ProjectWeeklyReportsController : BaseApiController
         ApplyFiltersFromQuery(parameters, filterString);
 
         var result = await _weeklyReportService.GetProjectWeeklyReportsAsync(projectId, parameters);
-        return result;
+        return ToApiResponse(result);
     }
 
     /// <summary>
@@ -207,6 +207,6 @@ public class ProjectWeeklyReportsController : BaseApiController
         request.ProjectId = projectId;
 
         var result = await _weeklyReportService.CreateWeeklyReportAsync(request);
-        return result;
+        return ToApiResponse(result);
     }
 }

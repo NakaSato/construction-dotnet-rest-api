@@ -46,17 +46,14 @@ public class UsersController : BaseApiController
         {
             var validationResult = ValidatePaginationParameters(pageNumber, pageSize);
             if (validationResult != null)
-                return validationResult;
+                return BadRequest(new ApiResponse<PagedResult<UserDto>> { Success = false, Message = validationResult });
 
             var result = await _userService.GetUsersAsync(pageNumber, pageSize, role);
-            if (!result.Success)
-                return CreateErrorResponse(result.Message, 400);
-
-            return CreateSuccessResponse(result.Data!, "Users retrieved successfully");
+            return ToApiResponse(result);
         }
         catch (Exception ex)
         {
-            return HandleException(_logger, ex, "retrieving users");
+            return HandleException<PagedResult<UserDto>>(_logger, ex, "retrieving users");
         }
     }
 
@@ -68,18 +65,14 @@ public class UsersController : BaseApiController
     [HttpGet("{id:guid}")]
     [LongCache] // 1 hour cache for individual user details
     public async Task<ActionResult<ApiResponse<UserDto>>> GetUser(Guid id)
-    {
-        try
+    {        try
         {
             var result = await _userService.GetUserByIdAsync(id);
-            if (!result.Success)
-                return CreateNotFoundResponse(result.Message);
-            
-            return CreateSuccessResponse(result.Data!, "User retrieved successfully");
+            return ToApiResponse(result);
         }
         catch (Exception ex)
         {
-            return HandleException(_logger, ex, $"retrieving user {id}");
+            return HandleException<UserDto>(_logger, ex, $"retrieving user {id}");
         }
     }
 
@@ -95,17 +88,14 @@ public class UsersController : BaseApiController
         try
         {
             if (string.IsNullOrWhiteSpace(username))
-                return CreateErrorResponse("Username cannot be empty", 400);
+                return BadRequest(new ApiResponse<UserDto> { Success = false, Message = "Username cannot be empty" });
 
             var result = await _userService.GetUserByUsernameAsync(username);
-            if (!result.Success)
-                return CreateNotFoundResponse($"User with username '{username}' not found");
-
-            return CreateSuccessResponse(result.Data!, "User retrieved successfully");
+            return ToApiResponse(result);
         }
         catch (Exception ex)
         {
-            return HandleException(_logger, ex, $"retrieving user by username {username}");
+            return HandleException<UserDto>(_logger, ex, $"retrieving user by username {username}");
         }
     }
 
@@ -122,17 +112,14 @@ public class UsersController : BaseApiController
         try
         {
             if (!ModelState.IsValid)
-                return CreateErrorResponse("Invalid input data", 400);
+                return BadRequest(new ApiResponse<UserDto> { Success = false, Message = "Invalid input data" });
 
             var result = await _userService.CreateUserAsync(createUserRequest);
-            if (!result.Success)
-                return CreateErrorResponse(result.Message, 400);
-
-            return StatusCode(201, CreateSuccessResponse(result.Data!, "User created successfully"));
+            return ToApiResponse(result);
         }
         catch (Exception ex)
         {
-            return HandleException(_logger, ex, "creating user");
+            return HandleException<UserDto>(_logger, ex, "creating user");
         }
     }
 
@@ -150,17 +137,14 @@ public class UsersController : BaseApiController
         try
         {
             if (!ModelState.IsValid)
-                return CreateErrorResponse("Invalid input data", 400);
+                return BadRequest(new ApiResponse<UserDto> { Success = false, Message = "Invalid input data" });
 
             var result = await _userService.UpdateUserAsync(id, updateUserRequest);
-            if (!result.Success)
-                return CreateNotFoundResponse(result.Message);
-            
-            return CreateSuccessResponse(result.Data!, "User updated successfully");
+            return ToApiResponse(result);
         }
         catch (Exception ex)
         {
-            return HandleException(_logger, ex, $"updating user {id}");
+            return HandleException<UserDto>(_logger, ex, $"updating user {id}");
         }
     }
 
@@ -178,13 +162,10 @@ public class UsersController : BaseApiController
         try
         {
             if (!ModelState.IsValid)
-                return CreateErrorResponse("Invalid input data", 400);
+                return BadRequest(new ApiResponse<UserDto> { Success = false, Message = "Invalid input data" });
 
             var result = await _userService.PatchUserAsync(id, patchUserRequest);
-            if (!result.Success)
-                return CreateNotFoundResponse(result.Message);
-            
-            return CreateSuccessResponse(result.Data!, "User updated successfully");
+            return ToApiResponse(result);
         }
         catch (Exception ex)
         {
@@ -205,10 +186,7 @@ public class UsersController : BaseApiController
         try
         {
             var result = await _userService.ActivateUserAsync(id, true);
-            if (!result.Success)
-                return CreateNotFoundResponse(result.Message);
-            
-            return CreateSuccessResponse(result.Data, "User activated successfully");
+            return ToApiResponse(result);
         }
         catch (Exception ex)
         {
@@ -229,10 +207,7 @@ public class UsersController : BaseApiController
         try
         {
             var result = await _userService.ActivateUserAsync(id, false);
-            if (!result.Success)
-                return CreateNotFoundResponse(result.Message);
-            
-            return CreateSuccessResponse(result.Data, "User deactivated successfully");
+            return ToApiResponse(result);
         }
         catch (Exception ex)
         {
@@ -253,10 +228,7 @@ public class UsersController : BaseApiController
         try
         {
             var result = await _userService.DeleteUserAsync(id);
-            if (!result.Success)
-                return CreateNotFoundResponse(result.Message);
-            
-            return CreateSuccessResponse(result.Data, "User deleted successfully");
+            return ToApiResponse(result);
         }
         catch (Exception ex)
         {
@@ -271,7 +243,7 @@ public class UsersController : BaseApiController
     /// <returns>Enhanced paginated list of users with metadata</returns>
     [HttpGet("advanced")]
     [ShortCache] // 5 minute cache for advanced user queries
-    public async Task<ActionResult<EnhancedPagedResult<UserDto>>> GetUsersAdvanced([FromQuery] UserQueryParameters parameters)
+    public async Task<ActionResult<ApiResponse<EnhancedPagedResult<UserDto>>>> GetUsersAdvanced([FromQuery] UserQueryParameters parameters)
     {
         try
         {
@@ -287,10 +259,7 @@ public class UsersController : BaseApiController
             ApplyFiltersFromQuery(parameters, filtersString);
 
             var result = await _userService.GetUsersAsync(parameters);
-            if (!result.Success)
-                return BadRequest(result.Message);
-
-            return Ok(result.Data);
+            return ToApiResponse(result);
         }
         catch (Exception ex)
         {
@@ -313,26 +282,18 @@ public class UsersController : BaseApiController
     {
         try
         {
+            // Log controller action for debugging
+            LogControllerAction(_logger, "GetUsersWithRichPagination", new { page, pageSize, role, isActive, sortBy, sortOrder });
+
             // Validate pagination parameters using base controller method
             var validationResult = ValidatePaginationParameters(page, pageSize);
             if (validationResult != null)
-                return validationResult;
+                return BadRequest(CreateErrorResponse(validationResult));
 
-            // Create query parameters
-            var parameters = new UserQueryParameters
-            {
-                PageNumber = page,
-                PageSize = pageSize,
-                Role = role,
-                IsActive = isActive,
-                SortBy = sortBy,
-                SortOrder = sortOrder
-            };
-
-            // Get data using existing service
-            var serviceResult = await _userService.GetUsersAsync(parameters);
-            if (!serviceResult.Success)
-                return BadRequest(serviceResult.Message);
+            // Get users from service
+            var serviceResult = await _userService.GetUsersAsync(page, pageSize, role);
+            if (!serviceResult.IsSuccess)
+                return BadRequest(CreateErrorResponse("Failed to retrieve users"));
 
             // Build base URL for HATEOAS links
             var baseUrl = $"{Request.Scheme}://{Request.Host}{Request.Path}";

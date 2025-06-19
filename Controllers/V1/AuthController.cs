@@ -30,21 +30,17 @@ public class AuthController : BaseApiController
         {
             if (!ModelState.IsValid)
             {
-                return CreateErrorResponse("Invalid input data", 400);
+                return BadRequest(new ApiResponse<LoginResponse> { Success = false, Message = "Invalid input data" });
             }
 
             var result = await _authService.LoginAsync(request);
-            
-            if (!result.Success)
-            {
-                return CreateErrorResponse(result.Message, 401);
-            }
 
-            return CreateSuccessResponse(result.Data!, "Login successful");
+
+            return ToApiResponse(result);
         }
         catch (Exception ex)
         {
-            return HandleException(_logger, ex, "user login");
+            return HandleException<LoginResponse>(_logger, ex, "user login");
         }
     }
 
@@ -58,21 +54,17 @@ public class AuthController : BaseApiController
         {
             if (!ModelState.IsValid)
             {
-                return CreateErrorResponse("Invalid request data", 400);
+                return BadRequest(new ApiResponse<UserDto> { Success = false, Message = "Invalid request data" });
             }
 
             var result = await _authService.RegisterAsync(request);
-            
-            if (!result.Success)
-            {
-                return CreateErrorResponse(result.Message, 400);
-            }
 
-            return CreateSuccessResponse(result.Data!, "User registered successfully");
+
+            return ToApiResponse(result);
         }
         catch (Exception ex)
         {
-            return HandleException(_logger, ex, "user registration");
+            return HandleException<UserDto>(_logger, ex, "user registration");
         }
     }
 
@@ -85,17 +77,12 @@ public class AuthController : BaseApiController
         try
         {
             var result = await _authService.RefreshTokenAsync(refreshToken);
-            
-            if (!result.Success)
-            {
-                return CreateErrorResponse(result.Message, 401);
-            }
 
-            return CreateSuccessResponse(result.Data!, "Token refreshed successfully");
+            return ToApiResponse(result);
         }
         catch (Exception ex)
         {
-            return HandleException(_logger, ex, "token refresh");
+            return HandleException<string>(_logger, ex, "token refresh");
         }
     }
 }

@@ -1,4 +1,14 @@
-using Microsoft.AspNetCore.Authorization;
+#!/usr/bin/env python3
+"""
+Script to restore the corrupted WorkRequestsController
+"""
+
+import os
+
+def restore_work_requests_controller():
+    """Restore the WorkRequestsController.cs with proper structure"""
+    
+    controller_content = '''using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using dotnet_rest_api.Services;
 using dotnet_rest_api.DTOs;
@@ -203,13 +213,7 @@ public class WorkRequestsController : BaseApiController
                 return BadRequest(CreateErrorResponse("Invalid input data"));
             }
 
-            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            if (!Guid.TryParse(userIdClaim, out var userId))
-            {
-                return BadRequest(CreateErrorResponse("Invalid user ID in token"));
-            }
-
-            var result = await _approvalService.SubmitForApprovalAsync(id, request, userId);
+            var result = await _approvalService.SubmitForApprovalAsync(id, request);
             return ToApiResponse(result);
         }
         catch (Exception ex)
@@ -235,13 +239,7 @@ public class WorkRequestsController : BaseApiController
                 return BadRequest(CreateErrorResponse("Invalid input data"));
             }
 
-            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            if (!Guid.TryParse(userIdClaim, out var userId))
-            {
-                return BadRequest(CreateErrorResponse("Invalid user ID in token"));
-            }
-
-            var result = await _approvalService.ProcessApprovalAsync(id, request, userId);
+            var result = await _approvalService.ProcessApprovalAsync(id, request);
             return ToApiResponse(result);
         }
         catch (Exception ex)
@@ -269,3 +267,19 @@ public class WorkRequestsController : BaseApiController
         }
     }
 }
+'''
+    
+    with open("Controllers/V1/WorkRequestsController.cs", 'w', encoding='utf-8') as f:
+        f.write(controller_content)
+    
+    print("WorkRequestsController.cs has been restored")
+
+def main():
+    """Main function to restore corrupted controller"""
+    
+    print("Restoring corrupted WorkRequestsController...")
+    restore_work_requests_controller()
+    print("Controller restoration complete!")
+
+if __name__ == "__main__":
+    main()

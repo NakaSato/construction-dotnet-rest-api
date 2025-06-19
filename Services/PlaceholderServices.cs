@@ -353,7 +353,7 @@ public class PlaceholderRateLimitMonitoringService : IRateLimitMonitoringService
             TotalRequests = 0,
             AllowedRequests = 0,
             BlockedRequests = 0,
-            Period = period
+            Period = period.ToString()
         };
     }
 

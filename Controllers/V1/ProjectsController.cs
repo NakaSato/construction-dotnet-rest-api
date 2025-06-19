@@ -90,7 +90,7 @@ public class ProjectsController : BaseApiController
 
         if (!ModelState.IsValid)
         {
-            return CreateErrorResponse("Invalid input data", 400);
+            return BadRequest(new ApiResponse<ProjectDto> { Success = false, Message = "Invalid input data" });
         }
 
         var result = await _projectService.CreateProjectAsync(request);
@@ -117,7 +117,7 @@ public class ProjectsController : BaseApiController
 
         if (!ModelState.IsValid)
         {
-            return CreateErrorResponse("Invalid input data", 400);
+            return BadRequest(new ApiResponse<ProjectDto> { Success = false, Message = "Invalid input data" });
         }
 
         var result = await _projectService.UpdateProjectAsync(id, request);
@@ -138,7 +138,7 @@ public class ProjectsController : BaseApiController
 
         if (!ModelState.IsValid)
         {
-            return CreateErrorResponse("Invalid input data", 400);
+            return BadRequest(new ApiResponse<ProjectDto> { Success = false, Message = "Invalid input data" });
         }
 
         var result = await _projectService.PatchProjectAsync(id, request);
@@ -177,7 +177,7 @@ public class ProjectsController : BaseApiController
         var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
         if (!Guid.TryParse(userIdClaim, out var userId))
         {
-            return CreateErrorResponse("Invalid user ID in token", 401);
+            return BadRequest(new ApiResponse<PagedResult<ProjectDto>> { Success = false, Message = "Invalid user ID in token" });
         }
 
         var result = await _projectService.GetUserProjectsAsync(userId, pageNumber, pageSize);
@@ -205,26 +205,7 @@ public class ProjectsController : BaseApiController
             // Validate pagination parameters using base controller method
             var validationResult = ValidatePaginationParameters(page, pageSize);
             if (validationResult != null)
-                return validationResult;
-
-            // Create query parameters
-            var parameters = new ProjectQueryParameters
-            {
-                PageNumber = page,
-                PageSize = pageSize,
-                ManagerId = managerId,
-                Status = status,
-                SortBy = sortBy,
-                SortOrder = sortOrder
-            };
-
-            // Get data using existing service
-            var serviceResult = await _projectService.GetProjectsAsync(parameters);
-            if (!serviceResult.IsSuccess)
-                return BadRequest(serviceResult.Message);
-
-            // Build base URL for HATEOAS links
-            var baseUrl = $"{Request.Scheme}://{Request.Host}{Request.Path}";
+                return BadRequest(CreateErrorResponse(validationResult));
             
             // Build query parameters for HATEOAS links
             var queryParams = new Dictionary<string, string>();

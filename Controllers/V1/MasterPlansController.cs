@@ -157,7 +157,9 @@ public class MasterPlansController : BaseApiController
                 return CreateErrorResponse<bool>("Invalid user ID in token", 401);
 
             var result = await _masterPlanService.ApproveMasterPlanAsync(id, userId, notes);
-            return ToApiResponse(result);
+            return result.IsSuccess ? 
+                Ok(new ApiResponse<bool> { Success = true, Data = result.Data, Message = result.Message }) : 
+                BadRequest(new ApiResponse<bool> { Success = false, Message = result.Message });
         }
         catch (Exception ex)
         {
@@ -179,7 +181,9 @@ public class MasterPlansController : BaseApiController
             LogControllerAction(_logger, "ActivateMasterPlan", new { id });
 
             var result = await _masterPlanService.ActivateMasterPlanAsync(id);
-            return ToApiResponse(result);
+            return result.IsSuccess ? 
+                Ok(new ApiResponse<bool> { Success = true, Data = result.Data, Message = result.Message }) : 
+                BadRequest(new ApiResponse<bool> { Success = false, Message = result.Message });
         }
         catch (Exception ex)
         {
@@ -199,7 +203,9 @@ public class MasterPlansController : BaseApiController
             LogControllerAction(_logger, "GetProgressSummary", new { id });
 
             var result = await _masterPlanService.GetProgressSummaryAsync(id);
-            return ToApiResponse(result);
+            return result.IsSuccess ? 
+                Ok(new ApiResponse<ProgressSummaryDto> { Success = true, Data = result.Data, Message = result.Message }) : 
+                BadRequest(new ApiResponse<ProgressSummaryDto> { Success = false, Message = result.Message });
         }
         catch (Exception ex)
         {
@@ -219,7 +225,9 @@ public class MasterPlansController : BaseApiController
             LogControllerAction(_logger, "GetOverallProgress", new { id });
 
             var result = await _masterPlanService.CalculateOverallProgressAsync(id);
-            return ToApiResponse(result);
+            return result.IsSuccess ? 
+                Ok(new ApiResponse<decimal> { Success = true, Data = result.Data, Message = result.Message }) : 
+                BadRequest(new ApiResponse<decimal> { Success = false, Message = result.Message });
         }
         catch (Exception ex)
         {
@@ -401,7 +409,9 @@ public class MasterPlansController : BaseApiController
                 return CreateErrorResponse<bool>("Invalid user ID in token", 401);
 
             var result = await _masterPlanService.CompleteMilestoneAsync(milestoneId, userId, evidence);
-            return ToApiResponse(result);
+            return result.IsSuccess ? 
+                Ok(new ApiResponse<bool> { Success = true, Data = result.Data, Message = result.Message }) : 
+                BadRequest(new ApiResponse<bool> { Success = false, Message = result.Message });
         }
         catch (Exception ex)
         {
@@ -421,7 +431,9 @@ public class MasterPlansController : BaseApiController
             LogControllerAction(_logger, "GetUpcomingMilestones", new { id, days });
 
             var result = await _masterPlanService.GetUpcomingMilestonesAsync(id, days);
-            return ToApiResponse(result);
+            return result.IsSuccess ? 
+                Ok(new ApiResponse<List<ProjectMilestoneDto>> { Success = true, Data = result.Data, Message = result.Message }) : 
+                BadRequest(new ApiResponse<List<ProjectMilestoneDto>> { Success = false, Message = result.Message });
         }
         catch (Exception ex)
         {
@@ -450,7 +462,9 @@ public class MasterPlansController : BaseApiController
                 return CreateErrorResponse<ProgressReportDto>("Invalid user ID in token", 401);
 
             var result = await _masterPlanService.CreateProgressReportAsync(id, request, userId);
-            return ToApiResponse(result);
+            return result.IsSuccess ? 
+                Ok(new ApiResponse<ProgressReportDto> { Success = true, Data = result.Data, Message = result.Message }) : 
+                BadRequest(new ApiResponse<ProgressReportDto> { Success = false, Message = result.Message });
         }
         catch (Exception ex)
         {
@@ -472,167 +486,23 @@ public class MasterPlansController : BaseApiController
         {
             LogControllerAction(_logger, "GetProgressReports", new { id, pageNumber, pageSize });
 
-            var validationResult = ValidatePaginationParameters<List<ProgressReportDto>>(pageNumber, pageSize);
+            var validationResult = ValidatePaginationParameters(pageNumber, pageSize);
             if (validationResult != null)
-                return validationResult;
+                return BadRequest(CreateErrorResponse(validationResult));
 
             var result = await _masterPlanService.GetProgressReportsAsync(id, pageNumber, pageSize);
-            return ToApiResponse(result);
+            return result.IsSuccess ? 
+                Ok(new ApiResponse<List<ProgressReportDto>> { Success = true, Data = result.Data }) : 
+                BadRequest(new ApiResponse<List<ProgressReportDto>> { Success = false, Message = "Failed to retrieve progress reports" });
+        }
+        catch (KeyNotFoundException ex)
+        {
+            _logger.LogWarning(ex, "Master plan not found while retrieving progress reports");
+            return NotFound(new ApiResponse<List<ProgressReportDto>> { Success = false, Message = $"Master plan with ID {id} not found" });
         }
         catch (Exception ex)
         {
             return HandleException<List<ProgressReportDto>>(_logger, ex, "retrieving progress reports");
-        }
-    }
-
-    /// <summary>
-    /// Get latest progress report
-    /// </summary>
-    [HttpGet("{id:guid}/progress-reports/latest")]
-    [ShortCache] // 5 minute cache
-    public async Task<ActionResult<ApiResponse<ProgressReportDto>>> GetLatestProgressReport(Guid id)
-    {
-        try
-        {
-            LogControllerAction(_logger, "GetLatestProgressReport", new { id });
-
-            var result = await _masterPlanService.GetLatestProgressReportAsync(id);
-            return ToApiResponse(result);
-        }
-        catch (Exception ex)
-        {
-            return HandleException<ProgressReportDto>(_logger, ex, "retrieving latest progress report");
-        }
-    }
-
-    /// <summary>
-    /// Get phases that are behind schedule
-    /// </summary>
-    [HttpGet("{id:guid}/phases/delayed")]
-    [ShortCache] // 5 minute cache
-    public async Task<ActionResult<ApiResponse<List<ProjectPhaseDto>>>> GetDelayedPhases(Guid id)
-    {
-        try
-        {
-            LogControllerAction(_logger, "GetDelayedPhases", new { id });
-
-            var result = await _masterPlanService.GetDelayedPhasesAsync(id);
-            return ToApiResponse(result);
-        }
-        catch (Exception ex)
-        {
-            return HandleException<List<ProjectPhaseDto>>(_logger, ex, "retrieving delayed phases");
-        }
-    }
-
-    /// <summary>
-    /// Get project metrics and KPIs
-    /// </summary>
-    [HttpGet("{id:guid}/metrics")]
-    [ShortCache] // 5 minute cache
-    public async Task<ActionResult<ApiResponse<Dictionary<string, object>>>> GetProjectMetrics(Guid id)
-    {
-        try
-        {
-            LogControllerAction(_logger, "GetProjectMetrics", new { id });
-
-            var result = await _masterPlanService.GetProjectMetricsAsync(id);
-            return ToApiResponse(result);
-        }
-        catch (Exception ex)
-        {
-            return HandleException<Dictionary<string, object>>(_logger, ex, "retrieving project metrics");
-        }
-    }
-
-    /// <summary>
-    /// Validate master plan structure and dependencies
-    /// </summary>
-    [HttpGet("{id:guid}/validate")]
-    [NoCache]
-    public async Task<ActionResult<ApiResponse<List<string>>>> ValidateMasterPlan(Guid id)
-    {
-        try
-        {
-            LogControllerAction(_logger, "ValidateMasterPlan", new { id });
-
-            var result = await _masterPlanService.GetValidationErrorsAsync(id);
-            return ToApiResponse(result);
-        }
-        catch (Exception ex)
-        {
-            return HandleException<List<string>>(_logger, ex, "validating master plan");
-        }
-    }
-
-    /// <summary>
-    /// Delete master plan
-    /// Available to: Administrators
-    /// </summary>
-    [HttpDelete("{id:guid}")]
-    [Authorize(Roles = "Administrator")]
-    [NoCache]
-    public async Task<ActionResult<ApiResponse<bool>>> DeleteMasterPlan(Guid id)
-    {
-        try
-        {
-            LogControllerAction(_logger, "DeleteMasterPlan", new { id });
-
-            var result = await _masterPlanService.DeleteMasterPlanAsync(id);
-            return ToApiResponse(result);
-        }
-        catch (Exception ex)
-        {
-            return HandleException<bool>(_logger, ex, "deleting master plan");
-        }
-    }
-
-    /// <summary>
-    /// Get real-time status for a master plan
-    /// </summary>
-    [HttpGet("{planId:guid}/status")]
-    [ShortCache] // 5 minute cache for real-time data
-    public async Task<ActionResult<ApiResponse<MasterPlanStatusDto>>> GetMasterPlanStatus(Guid planId)
-    {
-        try
-        {
-            LogControllerAction(_logger, "GetMasterPlanStatus", new { planId });
-
-            if (planId == Guid.Empty)
-            {
-                return CreateErrorResponse<MasterPlanStatusDto>("Invalid master plan ID", 400);
-            }
-
-            // Calculate real-time status
-            var progressResult = await _masterPlanService.GetProgressSummaryAsync(planId);
-            if (!progressResult.IsSuccess)
-                return ToApiResponse(progressResult);
-
-            var statusDto = new MasterPlanStatusDto
-            {
-                MasterPlanId = planId,
-                OverallCompletionPercentage = progressResult.Data!.OverallCompletion,
-                HealthStatus = progressResult.Data.HealthStatus,
-                IsOnSchedule = progressResult.Data.IsOnSchedule,
-                IsOnBudget = progressResult.Data.IsOnBudget,
-                CompletedPhases = progressResult.Data.CompletedPhases,
-                TotalPhases = progressResult.Data.TotalPhases,
-                CompletedMilestones = progressResult.Data.CompletedMilestones,
-                TotalMilestones = progressResult.Data.TotalMilestones,
-                DaysRemaining = progressResult.Data.DaysRemaining,
-                LastUpdated = progressResult.Data.LastUpdated
-            };
-
-            return CreateSuccessResponse(statusDto, "Master plan status retrieved successfully");
-        }
-        catch (KeyNotFoundException ex)
-        {
-            _logger.LogWarning(ex, "Master plan not found while retrieving status");
-            return CreateErrorResponse<MasterPlanStatusDto>($"Master plan with ID {planId} not found", 404);
-        }
-        catch (Exception ex)
-        {
-            return HandleException<MasterPlanStatusDto>(_logger, ex, "retrieving master plan status");
         }
     }
 }

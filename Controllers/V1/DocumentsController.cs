@@ -3,7 +3,6 @@ using Microsoft.AspNetCore.Mvc;
 using dotnet_rest_api.DTOs;
 using dotnet_rest_api.Services;
 using dotnet_rest_api.Attributes;
-using dotnet_rest_api.Controllers;
 using Asp.Versioning;
 
 namespace dotnet_rest_api.Controllers.V1;
@@ -52,7 +51,7 @@ public class DocumentsController : BaseApiController
         }
         catch (Exception ex)
         {
-            return HandleException(_logger, ex, "retrieving documents");
+            return HandleException<EnhancedPagedResult<DocumentDto>>(_logger, ex, "retrieving documents");
         }
     }
 
@@ -72,7 +71,7 @@ public class DocumentsController : BaseApiController
         }
         catch (Exception ex)
         {
-            return HandleException(_logger, ex, "retrieving document");
+            return HandleException<DocumentDto>(_logger, ex, "retrieving document");
         }
     }
 
@@ -90,14 +89,14 @@ public class DocumentsController : BaseApiController
             LogControllerAction(_logger, "CreateDocument", request);
 
             if (!ModelState.IsValid)
-                return CreateErrorResponse("Invalid input data", 400);
+                return BadRequest(new ApiResponse<DocumentDto> { Success = false, Message = "Invalid input data" });
 
             var result = await _documentService.CreateDocumentAsync(request);
             return ToApiResponse(result);
         }
         catch (Exception ex)
         {
-            return HandleException(_logger, ex, "creating document");
+            return HandleException<DocumentDto>(_logger, ex, "creating document");
         }
     }
 
@@ -115,14 +114,14 @@ public class DocumentsController : BaseApiController
             LogControllerAction(_logger, "UpdateDocument", new { documentId, request });
 
             if (!ModelState.IsValid)
-                return CreateErrorResponse("Invalid input data", 400);
+                return BadRequest(new ApiResponse<DocumentDto> { Success = false, Message = "Invalid input data" });
 
             var result = await _documentService.UpdateDocumentAsync(documentId, request);
             return ToApiResponse(result);
         }
         catch (Exception ex)
         {
-            return HandleException(_logger, ex, "updating document");
+            return HandleException<DocumentDto>(_logger, ex, "updating document");
         }
     }
 
@@ -144,7 +143,7 @@ public class DocumentsController : BaseApiController
         }
         catch (Exception ex)
         {
-            return HandleException(_logger, ex, "deleting document");
+            return HandleException<bool>(_logger, ex, "deleting document");
         }
     }
 }

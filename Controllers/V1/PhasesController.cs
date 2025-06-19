@@ -65,7 +65,7 @@ public class PhasesController : BaseApiController
             LogControllerAction(_logger, "UpdatePhase", new { phaseId, request });
 
             if (!ModelState.IsValid)
-                return CreateErrorResponse("Invalid input data", 400);
+                return BadRequest(new ApiResponse<TaskDto> { Success = false, Message = "Invalid input data" });
 
             var result = await _masterPlanService.UpdatePhaseAsync(phaseId, request);
             return ToApiResponse(result);
@@ -114,32 +114,7 @@ public class PhasesController : BaseApiController
 
             var validationResult = ValidatePaginationParameters(pageNumber, pageSize);
             if (validationResult != null)
-                return validationResult;
-
-            var result = await _taskService.GetPhaseTasksAsync(phaseId, pageNumber, pageSize);
-            return ToApiResponse(result);
-        }
-        catch (Exception ex)
-        {
-            return HandleException(_logger, ex, "retrieving phase tasks");
-        }
-    }
-
-    /// <summary>
-    /// Create a task within a phase (limited nesting: one level)
-    /// Available to: Administrator, ProjectManager
-    /// </summary>
-    [HttpPost("{phaseId:guid}/tasks")]
-    [Authorize(Roles = "Administrator,ProjectManager")]
-    [NoCache]
-    public async Task<ActionResult<ApiResponse<TaskDto>>> CreatePhaseTask(Guid phaseId, [FromBody] CreateTaskRequest request)
-    {
-        try
-        {
-            LogControllerAction(_logger, "CreatePhaseTask", new { phaseId, request });
-
-            if (!ModelState.IsValid)
-                return CreateErrorResponse("Invalid input data", 400);
+                return BadRequest(CreateErrorResponse("Error"));
 
             var result = await _taskService.CreatePhaseTaskAsync(phaseId, request);
             return ToApiResponse(result);

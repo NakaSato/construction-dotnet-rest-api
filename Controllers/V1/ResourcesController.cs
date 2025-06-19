@@ -52,7 +52,7 @@ public class ResourcesController : BaseApiController
         }
         catch (Exception ex)
         {
-            return HandleException(_logger, ex, "retrieving resources");
+            return HandleException<EnhancedPagedResult<ResourceDto>>(_logger, ex, "retrieving resources");
         }
     }
 
@@ -90,14 +90,14 @@ public class ResourcesController : BaseApiController
             LogControllerAction(_logger, "CreateResource", request);
 
             if (!ModelState.IsValid)
-                return CreateErrorResponse("Invalid input data", 400);
+                return BadRequest(new ApiResponse<ResourceDto> { Success = false, Message = "Invalid input data" });
 
             var result = await _resourceService.CreateResourceAsync(request);
             return ToApiResponse(result);
         }
         catch (Exception ex)
         {
-            return HandleException(_logger, ex, "creating resource");
+            return HandleException<ResourceDto>(_logger, ex, "creating resource");
         }
     }
 
@@ -115,7 +115,7 @@ public class ResourcesController : BaseApiController
             LogControllerAction(_logger, "UpdateResource", new { resourceId, request });
 
             if (!ModelState.IsValid)
-                return CreateErrorResponse("Invalid input data", 400);
+                return BadRequest(new ApiResponse<ResourceDto> { Success = false, Message = "Invalid input data" });
 
             var result = await _resourceService.UpdateResourceAsync(resourceId, request);
             return ToApiResponse(result);

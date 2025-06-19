@@ -93,7 +93,7 @@ public class DailyReportsController : BaseApiController
                     .SelectMany(v => v.Errors)
                     .Select(e => e.ErrorMessage)
                     .ToList();
-                return CreateErrorResponse<DailyReportDto>("Invalid input data", 400, errors);
+                return CreateErrorResponse<DailyReportDto>("Invalid input data", 400);
             }
 
             var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
@@ -127,7 +127,7 @@ public class DailyReportsController : BaseApiController
                     .SelectMany(v => v.Errors)
                     .Select(e => e.ErrorMessage)
                     .ToList();
-                return CreateErrorResponse<DailyReportDto>("Invalid input data", 400, errors);
+                return CreateErrorResponse<DailyReportDto>("Invalid input data", 400);
             }
 
             var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
@@ -135,7 +135,7 @@ public class DailyReportsController : BaseApiController
                 return CreateErrorResponse<DailyReportDto>("Invalid user ID in token", 401);
 
             var userRole = User.FindFirst(ClaimTypes.Role)?.Value;
-            var result = await _dailyReportService.UpdateDailyReportAsync(id, request, userId, userRole);
+            var result = await _dailyReportService.UpdateDailyReportAsync(id, request, userId, userRole ?? "");
             return ToApiResponse(result);
         }
         catch (Exception ex)
@@ -187,7 +187,7 @@ public class DailyReportsController : BaseApiController
                 return CreateErrorResponse<DailyReportAttachmentDto>("Invalid user ID in token", 401);
 
             var userRole = User.FindFirst(ClaimTypes.Role)?.Value;
-            var result = await _dailyReportService.AddAttachmentAsync(id, file, userId, userRole);
+            var result = await _dailyReportService.AddAttachmentAsync(id, file, userId);
             return ToApiResponse(result);
         }
         catch (Exception ex)
@@ -211,7 +211,7 @@ public class DailyReportsController : BaseApiController
         {
             LogControllerAction(_logger, "GetWeeklySummary", new { projectId, weekStartDate });
 
-            var result = await _dailyReportService.GetWeeklySummaryAsync(projectId, weekStartDate);
+            var result = await _dailyReportService.GetWeeklySummaryAsync(projectId ?? Guid.Empty, weekStartDate ?? DateTime.UtcNow.Date);
             return ToApiResponse(result);
         }
         catch (Exception ex)
@@ -237,7 +237,11 @@ public class DailyReportsController : BaseApiController
         {
             LogControllerAction(_logger, "ExportDailyReports", new { projectId, startDate, endDate, format });
 
-            var result = await _dailyReportService.ExportDailyReportsAsync(projectId, startDate, endDate, format);
+            var parameters = new DailyReportQueryParameters();
+            if (projectId.HasValue)
+                parameters.ProjectId = projectId.Value;
+            
+            var result = await _dailyReportService.ExportDailyReportsAsync(parameters);
             
             if (!result.IsSuccess)
                 return BadRequest(result.Message);
@@ -265,11 +269,11 @@ public class DailyReportsController : BaseApiController
     /// <param name="id">The daily report ID</param>
     /// <returns>Success status</returns>
     [HttpPost("{id:guid}/submit")]
-    [ProducesResponseType(typeof(ApiResponse<bool>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse<DailyReportDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    public async Task<ActionResult<ApiResponse<bool>>> SubmitDailyReport(Guid id)
+    public async Task<ActionResult<ApiResponse<DailyReportDto>>> SubmitDailyReport(Guid id)
     {
         try
         {
@@ -278,16 +282,12 @@ public class DailyReportsController : BaseApiController
 
             var result = await _dailyReportService.SubmitDailyReportAsync(id);
 
-            if (!result.Success)
-            {
-                return result.Message == "Daily report not found" ? CreateNotFoundResponse(result.Message) : CreateErrorResponse(result.Message, 400);
-            }
 
-            return CreateSuccessResponse(result.Data, "Daily report submitted successfully");
+            return ToApiResponse(result);
         }
         catch (Exception ex)
         {
-            return HandleException(_logger, ex, $"submitting daily report {id}");
+            return HandleException<DailyReportDto>(_logger, ex, $"submitting daily report {id}");
         }
     }
 
@@ -299,30 +299,30 @@ public class DailyReportsController : BaseApiController
     /// <returns>Success status</returns>
     [HttpPost("{id:guid}/approve")]
     [Authorize(Roles = "Administrator,ProjectManager")]
-    [ProducesResponseType(typeof(ApiResponse<bool>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse<DailyReportDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
-    public async Task<ActionResult<ApiResponse<bool>>> ApproveDailyReport(Guid id)
+    public async Task<ActionResult<ApiResponse<DailyReportDto>>> ApproveDailyReport(Guid id)
     {
         try
         {
             // Log controller action for debugging
             LogControllerAction(_logger, "ApproveDailyReport", new { id });
 
-            var result = await _dailyReportService.ApproveDailyReportAsync(id);
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (!Guid.TryParse(userIdClaim, out var userId))
+                return CreateErrorResponse<DailyReportDto>("Invalid user ID in token", 401);
 
-            if (!result.Success)
-            {
-                return result.Message == "Daily report not found" ? CreateNotFoundResponse(result.Message) : CreateErrorResponse(result.Message, 400);
-            }
+            var result = await _dailyReportService.ApproveDailyReportAsync(id, userId);
 
-            return CreateSuccessResponse(result.Data, "Daily report approved successfully");
+
+            return ToApiResponse(result);
         }
         catch (Exception ex)
         {
-            return HandleException(_logger, ex, $"approving daily report {id}");
+            return HandleException<DailyReportDto>(_logger, ex, $"approving daily report {id}");
         }
     }
 
@@ -335,30 +335,29 @@ public class DailyReportsController : BaseApiController
     /// <returns>Success status</returns>
     [HttpPost("{id:guid}/reject")]
     [Authorize(Roles = "Administrator,ProjectManager")]
-    [ProducesResponseType(typeof(ApiResponse<bool>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse<DailyReportDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
-    public async Task<ActionResult<ApiResponse<bool>>> RejectDailyReport(Guid id, [FromBody] string? rejectionReason)
+    public async Task<ActionResult<ApiResponse<DailyReportDto>>> RejectDailyReport(Guid id, [FromBody] string? rejectionReason)
     {
         try
         {
             // Log controller action for debugging
             LogControllerAction(_logger, "RejectDailyReport", new { id, rejectionReason });
 
-            var result = await _dailyReportService.RejectDailyReportAsync(id, rejectionReason);
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (!Guid.TryParse(userIdClaim, out var userId))
+                return CreateErrorResponse<DailyReportDto>("Invalid user ID in token", 401);
 
-            if (!result.Success)
-            {
-                return result.Message == "Daily report not found" ? CreateNotFoundResponse(result.Message) : CreateErrorResponse(result.Message, 400);
-            }
+            var result = await _dailyReportService.RejectDailyReportAsync(id, userId, rejectionReason ?? "No reason provided");
 
-            return CreateSuccessResponse(result.Data, "Daily report rejected successfully");
+            return ToApiResponse(result);
         }
         catch (Exception ex)
         {
-            return HandleException(_logger, ex, $"rejecting daily report {id}");
+            return HandleException<DailyReportDto>(_logger, ex, $"rejecting daily report {id}");
         }
     }
 
@@ -384,21 +383,17 @@ public class DailyReportsController : BaseApiController
 
             if (!ModelState.IsValid)
             {
-                return CreateErrorResponse("Invalid request data", 400);
+                return BadRequest(new ApiResponse<WorkProgressItemDto> { Success = false, Message = "Invalid request data" });
             }
 
             var result = await _dailyReportService.AddWorkProgressItemAsync(reportId, request);
 
-            if (!result.Success)
-            {
-                return result.Message == "Daily report not found" ? CreateNotFoundResponse(result.Message) : CreateErrorResponse(result.Message, 400);
-            }
 
-            return CreateSuccessResponse(result.Data!, "Work progress item added successfully");
+            return ToApiResponse(result);
         }
         catch (Exception ex)
         {
-            return HandleException(_logger, ex, $"adding work progress item to daily report {reportId}");
+            return HandleException<WorkProgressItemDto>(_logger, ex, $"adding work progress item to daily report {reportId}");
         }
     }
 
@@ -414,7 +409,7 @@ public class DailyReportsController : BaseApiController
     [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    public async Task<ActionResult<ApiResponse<WorkProgressItemDto>>> UpdateWorkProgressItem(Guid reportId, Guid itemId, [FromBody] CreateWorkProgressItemRequest request)
+    public async Task<ActionResult<ApiResponse<WorkProgressItemDto>>> UpdateWorkProgressItem(Guid reportId, Guid itemId, [FromBody] UpdateWorkProgressItemRequest request)
     {
         try
         {
@@ -423,21 +418,17 @@ public class DailyReportsController : BaseApiController
 
             if (!ModelState.IsValid)
             {
-                return CreateErrorResponse("Invalid request data", 400);
+                return BadRequest(new ApiResponse<WorkProgressItemDto> { Success = false, Message = "Invalid request data" });
             }
 
             var result = await _dailyReportService.UpdateWorkProgressItemAsync(itemId, request);
 
-            if (!result.Success)
-            {
-                return result.Message == "Work progress item not found" ? CreateNotFoundResponse(result.Message) : CreateErrorResponse(result.Message, 400);
-            }
 
-            return CreateSuccessResponse(result.Data!, "Work progress item updated successfully");
+            return ToApiResponse(result);
         }
         catch (Exception ex)
         {
-            return HandleException(_logger, ex, $"updating work progress item {itemId}");
+            return HandleException<WorkProgressItemDto>(_logger, ex, $"updating work progress item {itemId}");
         }
     }
 
@@ -460,16 +451,12 @@ public class DailyReportsController : BaseApiController
 
             var result = await _dailyReportService.DeleteWorkProgressItemAsync(itemId);
 
-            if (!result.Success)
-            {
-                return result.Message == "Work progress item not found" ? CreateNotFoundResponse(result.Message) : CreateErrorResponse(result.Message, 400);
-            }
 
-            return CreateSuccessResponse(result.Data, "Work progress item deleted successfully");
+            return ToApiResponse(result);
         }
         catch (Exception ex)
         {
-            return HandleException(_logger, ex, $"deleting work progress item {itemId}");
+            return HandleException<bool>(_logger, ex, $"deleting work progress item {itemId}");
         }
     }
 
