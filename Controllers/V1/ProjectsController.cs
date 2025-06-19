@@ -311,4 +311,31 @@ public class ProjectsController : BaseApiController
             return HandleException<ProjectStatusDto>(_logger, ex, $"retrieving project status for {id}");
         }
     }
+
+    /// <summary>
+    /// Test endpoint for API health check - no authentication required
+    /// </summary>
+    /// <returns>Test data to verify the Projects API is working</returns>
+    [HttpGet("test")]
+    [AllowAnonymous]
+    public ActionResult<object> GetTestProjects()
+    {
+        var testData = new
+        {
+            message = "Projects API is working",
+            timestamp = DateTime.UtcNow,
+            environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? "Unknown",
+            apiVersion = "v1.0",
+            sampleProjects = new[]
+            {
+                new { id = 1, name = "Solar Farm Project A", status = "Active", location = "California" },
+                new { id = 2, name = "Solar Installation B", status = "Planning", location = "Texas" },
+                new { id = 3, name = "Residential Solar C", status = "Completed", location = "Florida" }
+            }
+        };
+
+        _logger.LogInformation("Test endpoint accessed at {Timestamp}", testData.timestamp);
+        
+        return Ok(testData);
+    }
 }

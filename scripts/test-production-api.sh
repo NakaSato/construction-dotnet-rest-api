@@ -69,7 +69,7 @@ test_endpoint() {
     
     # Extract HTTP status code (last line)
     status_code=$(echo "$response" | tail -n1)
-    body=$(echo "$response" | head -n -1)
+    body=$(echo "$response" | sed '$d')
     
     if [ "$status_code" = "$expected_status" ]; then
         print_success "$description - Status: $status_code"

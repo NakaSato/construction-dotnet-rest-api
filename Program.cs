@@ -157,14 +157,14 @@ builder.Services.AddScoped<IQueryService, PlaceholderQueryService>();
 
 var app = builder.Build();
 
-// Development Environment Configuration
+// Swagger Configuration (enabled in Development for API documentation)
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI(options =>
     {
         options.SwaggerEndpoint("/swagger/v1/swagger.json", "Solar Projects API V1");
-        options.RoutePrefix = string.Empty;
+        options.RoutePrefix = string.Empty; // Makes Swagger UI available at root URL
     });
 }
 
