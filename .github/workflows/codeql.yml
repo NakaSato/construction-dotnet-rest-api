@@ -33,6 +33,7 @@ jobs:
       uses: github/codeql-action/init@v3
       with:
         languages: csharp
+        config-file: ./.github/codeql/codeql-config.yml
         build-mode: manual
 
     - name: Restore dependencies

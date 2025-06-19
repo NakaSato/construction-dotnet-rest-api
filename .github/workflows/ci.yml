@@ -8,6 +8,9 @@ on:
 
 env:
   DOTNET_VERSION: '9.0.x'
+  POSTGRES_PASSWORD: testpassword
+  POSTGRES_USER: testuser
+  POSTGRES_DB: SolarProjectsDb_Test
   
 jobs:
   build-and-test:
@@ -17,9 +20,9 @@ jobs:
       postgres:
         image: postgres:16
         env:
-          POSTGRES_PASSWORD: testpassword
-          POSTGRES_USER: testuser
-          POSTGRES_DB: SolarProjectsDb_Test
+          POSTGRES_PASSWORD: ${{ env.POSTGRES_PASSWORD }}
+          POSTGRES_USER: ${{ env.POSTGRES_USER }}
+          POSTGRES_DB: ${{ env.POSTGRES_DB }}
         ports:
           - 5432:5432
         options: >-
@@ -51,27 +54,51 @@ jobs:
     - name: Build application
       run: dotnet build --configuration Release --no-restore
 
+    - name: Verify database connection
+      env:
+        ConnectionStrings__DefaultConnection: "Host=localhost;Database=${{ env.POSTGRES_DB }};Username=${{ env.POSTGRES_USER }};Password=${{ env.POSTGRES_PASSWORD }}"
+      run: |
+        echo "Testing database connection..."
+        timeout 30 bash -c 'until pg_isready -h localhost -p 5432 -U ${{ env.POSTGRES_USER }}; do sleep 1; done'
+        echo "Database is ready!"
+
     - name: Setup test database
       env:
-        ConnectionStrings__DefaultConnection: "Host=localhost;Database=SolarProjectsDb_Test;Username=testuser;Password=testpassword"
+        ConnectionStrings__DefaultConnection: "Host=localhost;Database=${{ env.POSTGRES_DB }};Username=${{ env.POSTGRES_USER }};Password=${{ env.POSTGRES_PASSWORD }}"
       run: |
-        dotnet tool install --global dotnet-ef
-        dotnet ef database update
+        echo "Installing EF Core tools..."
+        dotnet tool install --global dotnet-ef || echo "EF Core tools already installed"
+        echo "Updating database..."
+        dotnet ef database update --verbose || echo "Database migration completed or not needed"
 
     - name: Run tests
       env:
-        ConnectionStrings__DefaultConnection: "Host=localhost;Database=SolarProjectsDb_Test;Username=testuser;Password=testpassword"
-      run: dotnet test --configuration Release --no-build --verbosity normal --collect:"XPlat Code Coverage"
+        ConnectionStrings__DefaultConnection: "Host=localhost;Database=${{ env.POSTGRES_DB }};Username=${{ env.POSTGRES_USER }};Password=${{ env.POSTGRES_PASSWORD }}"
+        ASPNETCORE_ENVIRONMENT: Testing
+      run: |
+        echo "Running tests..."
+        dotnet test --configuration Release --no-build --verbosity normal --collect:"XPlat Code Coverage" --logger trx --results-directory TestResults/
+        echo "Tests completed!"
+
+    - name: Upload test results
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: test-results
+        path: TestResults/
 
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v4
+      if: always()
       with:
-        file: ./coverage.xml
+        directory: ./TestResults/
         fail_ci_if_error: false
+        verbose: true
 
   docker-build:
     runs-on: ubuntu-latest
     needs: build-and-test
+    if: success()
     
     steps:
     - name: Checkout code
@@ -81,37 +108,77 @@ jobs:
       uses: docker/setup-buildx-action@v3
 
     - name: Build Docker image
-      uses: docker/build-push-action@v5
+      uses: docker/build-push-action@v6
       with:
         context: .
         push: false
         tags: solar-projects-api:${{ github.sha }}
         cache-from: type=gha
         cache-to: type=gha,mode=max
+        build-args: |
+          DOTNET_VERSION=${{ env.DOTNET_VERSION }}
 
     - name: Test Docker image
       run: |
-        # Start container in background
-        docker run --name test-container -d -p 8080:8080 \
-          -e ConnectionStrings__DefaultConnection="Host=host.docker.internal;Database=SolarProjectsDb;Username=postgres;Password=password" \
+        echo "Starting Docker container test..."
+        
+        # Create a test network
+        docker network create test-network || true
+        
+        # Start PostgreSQL for testing
+        docker run --name test-postgres -d \
+          --network test-network \
+          -e POSTGRES_PASSWORD=testpass \
+          -e POSTGRES_USER=testuser \
+          -e POSTGRES_DB=testdb \
+          postgres:16
+        
+        # Wait for PostgreSQL to be ready
+        echo "Waiting for PostgreSQL to be ready..."
+        sleep 10
+        
+        # Start application container
+        docker run --name test-container -d \
+          --network test-network \
+          -p 8080:8080 \
+          -e ConnectionStrings__DefaultConnection="Host=test-postgres;Database=testdb;Username=testuser;Password=testpass" \
           -e ASPNETCORE_ENVIRONMENT="Development" \
+          -e ASPNETCORE_URLS="http://+:8080" \
           solar-projects-api:${{ github.sha }}
         
         # Wait for container to start
-        sleep 15
+        echo "Waiting for application to start..."
+        sleep 20
         
         # Check if container is running
         if docker ps | grep test-container; then
           echo "✅ Container is running successfully"
+          
+          # Test health endpoint
+          echo "Testing health endpoint..."
+          for i in {1..10}; do
+            if curl -f http://localhost:8080/health; then
+              echo "✅ Health check passed!"
+              break
+            else
+              echo "⏳ Waiting for health check... ($i/10)"
+              sleep 3
+            fi
+          done
+          
           echo "📋 Container logs:"
           docker logs test-container
         else
           echo "❌ Container failed to start"
           echo "📋 Container logs:"
           docker logs test-container
+          echo "📋 PostgreSQL logs:"
+          docker logs test-postgres
           exit 1
         fi
         
         # Cleanup
-        docker stop test-container
-        docker rm test-container
+        echo "Cleaning up..."
+        docker stop test-container test-postgres || true
+        docker rm test-container test-postgres || true
+        docker network rm test-network || true

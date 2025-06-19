@@ -2,12 +2,15 @@ name: CI - Build and Test (Simple)
 
 on:
   push:
-    branches: [ main, develop ]
+    branches: [ main, develop, feature/* ]
   pull_request:
-    branches: [ main ]
+    branches: [ main, develop ]
 
 env:
   DOTNET_VERSION: '9.0.x'
+  POSTGRES_PASSWORD: testpassword
+  POSTGRES_USER: testuser
+  POSTGRES_DB: SolarProjectsDb_Test
   
 jobs:
   build-and-test:
@@ -17,9 +20,9 @@ jobs:
       postgres:
         image: postgres:16
         env:
-          POSTGRES_PASSWORD: testpassword
-          POSTGRES_USER: testuser
-          POSTGRES_DB: SolarProjectsDb_Test
+          POSTGRES_PASSWORD: ${{ env.POSTGRES_PASSWORD }}
+          POSTGRES_USER: ${{ env.POSTGRES_USER }}
+          POSTGRES_DB: ${{ env.POSTGRES_DB }}
         ports:
           - 5432:5432
         options: >-
