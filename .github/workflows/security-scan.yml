@@ -34,6 +34,13 @@ jobs:
       uses: github/codeql-action/init@v3
       with:
         languages: csharp
+        config: |
+          paths:
+            - '**/*.cs'
+          paths-ignore:
+            - '**/bin/**'
+            - '**/obj/**'
+            - '**/Migrations/**'
 
     - name: Build application
       run: dotnet build --configuration Release --no-restore
