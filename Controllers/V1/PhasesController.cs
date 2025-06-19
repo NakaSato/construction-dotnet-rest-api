@@ -43,11 +43,13 @@ public class PhasesController : BaseApiController
             LogControllerAction(_logger, "GetPhase", new { phaseId });
 
             var result = await _masterPlanService.GetPhaseByIdAsync(phaseId);
-            return ToApiResponse(result);
+            return result.IsSuccess ? 
+                Ok(new ApiResponse<ProjectPhaseDto> { Success = true, Data = result.Data, Message = result.Message }) : 
+                BadRequest(new ApiResponse<ProjectPhaseDto> { Success = false, Message = result.Message });
         }
         catch (Exception ex)
         {
-            return HandleException(_logger, ex, "retrieving phase");
+            return HandleException<ProjectPhaseDto>(_logger, ex, "retrieving phase");
         }
     }
 
@@ -68,11 +70,13 @@ public class PhasesController : BaseApiController
                 return BadRequest(new ApiResponse<TaskDto> { Success = false, Message = "Invalid input data" });
 
             var result = await _masterPlanService.UpdatePhaseAsync(phaseId, request);
-            return ToApiResponse(result);
+            return result.IsSuccess ? 
+                Ok(new ApiResponse<ProjectPhaseDto> { Success = true, Data = result.Data, Message = result.Message }) : 
+                BadRequest(new ApiResponse<ProjectPhaseDto> { Success = false, Message = result.Message });
         }
         catch (Exception ex)
         {
-            return HandleException(_logger, ex, "updating phase");
+            return HandleException<ProjectPhaseDto>(_logger, ex, "updating phase");
         }
     }
 
@@ -90,11 +94,13 @@ public class PhasesController : BaseApiController
             LogControllerAction(_logger, "DeletePhase", new { phaseId });
 
             var result = await _masterPlanService.DeletePhaseAsync(phaseId);
-            return ToApiResponse(result);
+            return result.IsSuccess ? 
+                Ok(new ApiResponse<bool> { Success = true, Data = result.Data, Message = result.Message }) : 
+                BadRequest(new ApiResponse<bool> { Success = false, Message = result.Message });
         }
         catch (Exception ex)
         {
-            return HandleException(_logger, ex, "deleting phase");
+            return HandleException<bool>(_logger, ex, "deleting phase");
         }
     }
 
@@ -116,12 +122,12 @@ public class PhasesController : BaseApiController
             if (validationResult != null)
                 return BadRequest(CreateErrorResponse("Error"));
 
-            var result = await _taskService.CreatePhaseTaskAsync(phaseId, request);
-            return ToApiResponse(result);
+            var result = await _taskService.GetPhaseTasksAsync(phaseId, pageNumber, pageSize);
+            return ToApiResponse<PagedResult<TaskDto>>(result);
         }
         catch (Exception ex)
         {
-            return HandleException(_logger, ex, "creating phase task");
+            return HandleException<PagedResult<TaskDto>>(_logger, ex, "retrieving phase tasks");
         }
     }
 }

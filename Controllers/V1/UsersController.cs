@@ -169,7 +169,7 @@ public class UsersController : BaseApiController
         }
         catch (Exception ex)
         {
-            return HandleException(_logger, ex, $"patching user {id}");
+            return HandleException<UserDto>(_logger, ex, $"patching user {id}");
         }
     }
 
@@ -190,7 +190,7 @@ public class UsersController : BaseApiController
         }
         catch (Exception ex)
         {
-            return HandleException(_logger, ex, $"activating user {id}");
+            return HandleException<bool>(_logger, ex, $"activating user {id}");
         }
     }
 
@@ -211,7 +211,7 @@ public class UsersController : BaseApiController
         }
         catch (Exception ex)
         {
-            return HandleException(_logger, ex, $"deactivating user {id}");
+            return HandleException<bool>(_logger, ex, $"deactivating user {id}");
         }
     }
 
@@ -232,7 +232,7 @@ public class UsersController : BaseApiController
         }
         catch (Exception ex)
         {
-            return HandleException(_logger, ex, $"deleting user {id}");
+            return HandleException<bool>(_logger, ex, $"deleting user {id}");
         }
     }
 
@@ -263,7 +263,7 @@ public class UsersController : BaseApiController
         }
         catch (Exception ex)
         {
-            return HandleException(_logger, ex, "GetUsersAdvanced");
+            return HandleException<EnhancedPagedResult<UserDto>>(_logger, ex, "GetUsersAdvanced");
         }
     }
 

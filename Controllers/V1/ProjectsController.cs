@@ -214,6 +214,23 @@ public class ProjectsController : BaseApiController
             if (!string.IsNullOrEmpty(sortBy)) queryParams.Add("sortBy", sortBy);
             if (!string.IsNullOrEmpty(sortOrder)) queryParams.Add("sortOrder", sortOrder);
 
+            // Get projects from service
+            var parameters = new ProjectQueryParameters
+            {
+                PageNumber = page,
+                PageSize = pageSize,
+                ManagerId = managerId,
+                Status = status,
+                SortBy = sortBy,
+                SortOrder = sortOrder
+            };
+            var serviceResult = await _projectService.GetProjectsAsync(parameters);
+            if (!serviceResult.Success)
+                return BadRequest(new ApiResponseWithPagination<ProjectDto> { Success = false, Message = serviceResult.Message });
+
+            // Create base URL for HATEOAS links
+            var baseUrl = $"{Request.Scheme}://{Request.Host}{Request.Path}";
+
             // Create rich paginated response using QueryService
             var response = _queryService.CreateRichPaginatedResponse(
                 serviceResult.Data!.Items,
@@ -229,7 +246,17 @@ public class ProjectsController : BaseApiController
         }
         catch (Exception ex)
         {
-            return HandleException(_logger, ex, "retrieving projects with rich pagination");
+            _logger.LogError(ex, "Error retrieving projects with rich pagination");
+            return StatusCode(500, new ApiResponseWithPagination<ProjectDto> 
+            { 
+                Success = false, 
+                Message = "An internal error occurred",
+                Data = new ApiDataWithPagination<ProjectDto> 
+                { 
+                    Items = new List<ProjectDto>(),
+                    Pagination = new PaginationInfo()
+                }
+            });
         }
     }
 
@@ -248,7 +275,7 @@ public class ProjectsController : BaseApiController
             // Get project basic info
             var projectResult = await _projectService.GetProjectByIdAsync(id);
             if (!projectResult.IsSuccess)
-                return ToApiResponse(projectResult);
+                return BadRequest(new ApiResponse<ProjectStatusDto> { Success = false, Message = projectResult.Message });
 
             // Calculate project status from master plan progress
             var statusDto = new ProjectStatusDto
@@ -281,7 +308,7 @@ public class ProjectsController : BaseApiController
         }
         catch (Exception ex)
         {
-            return HandleException(_logger, ex, $"retrieving project status for {id}");
+            return HandleException<ProjectStatusDto>(_logger, ex, $"retrieving project status for {id}");
         }
     }
 }

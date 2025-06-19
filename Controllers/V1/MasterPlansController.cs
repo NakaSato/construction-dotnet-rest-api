@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 using dotnet_rest_api.DTOs;
+using dotnet_rest_api.Models;
 using dotnet_rest_api.Services;
 using dotnet_rest_api.Attributes;
 using dotnet_rest_api.Controllers;
@@ -48,7 +49,7 @@ public class MasterPlansController : BaseApiController
                     .SelectMany(v => v.Errors)
                     .Select(e => e.ErrorMessage)
                     .ToList();
-                return CreateErrorResponse<MasterPlanDto>("Invalid input data", 400, errors);
+                return CreateErrorResponse<MasterPlanDto>("Invalid input data");
             }
 
             var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
@@ -56,7 +57,9 @@ public class MasterPlansController : BaseApiController
                 return CreateErrorResponse<MasterPlanDto>("Invalid user ID in token", 401);
 
             var result = await _masterPlanService.CreateMasterPlanAsync(request, userId);
-            return ToApiResponse(result);
+            return result.IsSuccess ? 
+                Ok(new ApiResponse<MasterPlanDto> { Success = true, Data = result.Data, Message = result.Message }) : 
+                BadRequest(new ApiResponse<MasterPlanDto> { Success = false, Message = result.Message });
         }
         catch (ArgumentException ex)
         {
@@ -86,7 +89,9 @@ public class MasterPlansController : BaseApiController
             LogControllerAction(_logger, "GetMasterPlan", new { id });
 
             var result = await _masterPlanService.GetMasterPlanDtoByIdAsync(id);
-            return ToApiResponse(result);
+            return result.IsSuccess ? 
+                Ok(new ApiResponse<MasterPlanDto> { Success = true, Data = result.Data, Message = result.Message }) : 
+                BadRequest(new ApiResponse<MasterPlanDto> { Success = false, Message = result.Message });
         }
         catch (Exception ex)
         {
@@ -106,7 +111,9 @@ public class MasterPlansController : BaseApiController
             LogControllerAction(_logger, "GetMasterPlanByProject", new { projectId });
 
             var result = await _masterPlanService.GetMasterPlanByProjectIdAsync(projectId);
-            return ToApiResponse(result);
+            return result.IsSuccess ? 
+                Ok(new ApiResponse<MasterPlanDto> { Success = true, Data = result.Data, Message = result.Message }) : 
+                BadRequest(new ApiResponse<MasterPlanDto> { Success = false, Message = result.Message });
         }
         catch (Exception ex)
         {
@@ -128,10 +135,12 @@ public class MasterPlansController : BaseApiController
             LogControllerAction(_logger, "UpdateMasterPlan", new { id, request });
 
             if (!ModelState.IsValid)
-                return CreateErrorResponse<MasterPlanDto>("Invalid input data", 400);
+                return CreateErrorResponse<MasterPlanDto>("Invalid input data");
 
             var result = await _masterPlanService.UpdateMasterPlanAsync(id, request);
-            return ToApiResponse(result);
+            return result.IsSuccess ? 
+                Ok(new ApiResponse<MasterPlanDto> { Success = true, Data = result.Data, Message = result.Message }) : 
+                BadRequest(new ApiResponse<MasterPlanDto> { Success = false, Message = result.Message });
         }
         catch (Exception ex)
         {
@@ -247,7 +256,9 @@ public class MasterPlansController : BaseApiController
             LogControllerAction(_logger, "GetPhases", new { id });
 
             var result = await _masterPlanService.GetPhasesByMasterPlanAsync(id);
-            return ToApiResponse(result);
+            return result.IsSuccess ? 
+                Ok(new ApiResponse<List<ProjectPhaseDto>> { Success = true, Data = result.Data, Message = result.Message }) : 
+                BadRequest(new ApiResponse<List<ProjectPhaseDto>> { Success = false, Message = result.Message });
         }
         catch (Exception ex)
         {
@@ -274,11 +285,13 @@ public class MasterPlansController : BaseApiController
                     .SelectMany(v => v.Errors)
                     .Select(e => e.ErrorMessage)
                     .ToList();
-                return CreateErrorResponse<ProjectPhaseDto>("Invalid input data", 400, errors);
+                return CreateErrorResponse<ProjectPhaseDto>("Invalid input data");
             }
 
             var result = await _masterPlanService.AddPhaseToMasterPlanAsync(id, request);
-            return ToApiResponse(result);
+            return result.IsSuccess ? 
+                Ok(new ApiResponse<ProjectPhaseDto> { Success = true, Data = result.Data, Message = result.Message }) : 
+                BadRequest(new ApiResponse<ProjectPhaseDto> { Success = false, Message = result.Message });
         }
         catch (Exception ex)
         {
@@ -308,7 +321,7 @@ public class MasterPlansController : BaseApiController
                     .SelectMany(v => v.Errors)
                     .Select(e => e.ErrorMessage)
                     .ToList();
-                return CreateErrorResponse<bool>("Invalid input data", 400, errors);
+                return CreateErrorResponse<bool>("Invalid input data");
             }
 
             // Validate percentage range
@@ -317,15 +330,13 @@ public class MasterPlansController : BaseApiController
                 return CreateErrorResponse<bool>("Completion percentage must be between 0 and 100", 400);
             }
 
-            // Validate status
-            var validStatuses = new[] { "NotStarted", "InProgress", "Completed", "OnHold", "Cancelled" };
-            if (!validStatuses.Contains(request.Status))
-            {
-                return CreateErrorResponse<bool>($"Invalid status. Valid statuses are: {string.Join(", ", validStatuses)}", 400);
-            }
+            // Validate status (it's already validated by model binding for enum)
+            // Additional validation can be added here if needed
 
             var result = await _masterPlanService.UpdatePhaseProgressAsync(phaseId, request.CompletionPercentage, request.Status);
-            return ToApiResponse(result);
+            return result.IsSuccess ? 
+                Ok(new ApiResponse<bool> { Success = true, Data = result.Data, Message = result.Message }) : 
+                BadRequest(new ApiResponse<bool> { Success = false, Message = result.Message });
         }
         catch (ArgumentException ex)
         {
@@ -355,7 +366,9 @@ public class MasterPlansController : BaseApiController
             LogControllerAction(_logger, "GetMilestones", new { id });
 
             var result = await _masterPlanService.GetMilestonesByMasterPlanAsync(id);
-            return ToApiResponse(result);
+            return result.IsSuccess ? 
+                Ok(new ApiResponse<List<ProjectMilestoneDto>> { Success = true, Data = result.Data, Message = result.Message }) : 
+                BadRequest(new ApiResponse<List<ProjectMilestoneDto>> { Success = false, Message = result.Message });
         }
         catch (Exception ex)
         {
@@ -380,7 +393,9 @@ public class MasterPlansController : BaseApiController
                 return CreateErrorResponse<ProjectMilestoneDto>("Invalid input data", 400);
 
             var result = await _masterPlanService.AddMilestoneToMasterPlanAsync(id, request);
-            return ToApiResponse(result);
+            return result.IsSuccess ? 
+                Ok(new ApiResponse<ProjectMilestoneDto> { Success = true, Data = result.Data, Message = result.Message }) : 
+                BadRequest(new ApiResponse<ProjectMilestoneDto> { Success = false, Message = result.Message });
         }
         catch (Exception ex)
         {

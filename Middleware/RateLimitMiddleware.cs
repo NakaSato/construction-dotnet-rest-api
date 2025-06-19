@@ -123,15 +123,23 @@ public class RateLimitMiddleware
 
     private bool IsWhitelistedClient(string clientId)
     {
+        _logger.LogInformation("IsWhitelistedClient check: EnableIpWhitelist={EnableIpWhitelist}, IpWhitelist.Count={Count}, ClientId={ClientId}", 
+            _options.EnableIpWhitelist, _options.IpWhitelist.Count, clientId);
+            
         if (!_options.EnableIpWhitelist || !_options.IpWhitelist.Any())
+        {
+            _logger.LogInformation("IP whitelist disabled or empty, allowing rate limiting");
             return false;
+        }
 
         // Extract IP from client ID if it's an IP-based identifier
         if (clientId.StartsWith("ip:"))
         {
             var ip = clientId.Substring(3);
-            return _options.IpWhitelist.Contains(ip) || 
-                   _options.IpWhitelist.Contains("127.0.0.1") && IsLocalhost(ip);
+            bool isWhitelisted = _options.IpWhitelist.Contains(ip) || 
+                   (_options.IpWhitelist.Contains("127.0.0.1") && IsLocalhost(ip));
+            _logger.LogInformation("IP {IP} whitelist check result: {IsWhitelisted}", ip, isWhitelisted);
+            return isWhitelisted;
         }
 
         return false;
@@ -192,25 +200,32 @@ public static class RateLimitExtensions
         var options = new RateLimitOptions();
         rateLimitSection.Bind(options);
 
+        // Debug logging to see what was actually loaded
+        Console.WriteLine($"[DEBUG] Rate limiting configuration loaded:");
+        Console.WriteLine($"[DEBUG] EnableIpWhitelist: {options.EnableIpWhitelist}");
+        Console.WriteLine($"[DEBUG] IpWhitelist count: {options.IpWhitelist.Count}");
+        Console.WriteLine($"[DEBUG] IpWhitelist items: [{string.Join(", ", options.IpWhitelist)}]");
+        Console.WriteLine($"[DEBUG] Rules count: {options.Rules.Count}");
+
         // Set up default rules if none are configured
         if (!options.Rules.Any())
         {
             options.Rules["default"] = new RateLimitRule
             {
-                Limit = 100,
+                Limit = 2000,
                 Period = TimeSpan.FromMinutes(1)
             };
 
             options.Rules["auth"] = new RateLimitRule
             {
-                Limit = 10,
+                Limit = 100,
                 Period = TimeSpan.FromMinutes(1),
                 Endpoints = new List<string> { "/api/v1/auth" }
             };
 
             options.Rules["upload"] = new RateLimitRule
             {
-                Limit = 20,
+                Limit = 200,
                 Period = TimeSpan.FromMinutes(1),
                 Endpoints = new List<string> { "/api/v1/images" },
                 HttpMethods = new List<string> { "POST" }
@@ -219,7 +234,7 @@ public static class RateLimitExtensions
             // Rate limiting for DELETE operations
             options.Rules["delete-operations"] = new RateLimitRule
             {
-                Limit = 10,  // Only 10 delete operations per minute
+                Limit = 50,  // Increased from 10 to 50 delete operations per minute
                 Period = TimeSpan.FromMinutes(1),
                 HttpMethods = new List<string> { "DELETE" }
             };
@@ -227,7 +242,7 @@ public static class RateLimitExtensions
             // Very restrictive rate limiting for critical DELETE operations
             options.Rules["critical-delete"] = new RateLimitRule
             {
-                Limit = 3,   // Only 3 critical deletes per 5 minutes
+                Limit = 20,   // Increased from 3 to 20 critical deletes per 5 minutes
                 Period = TimeSpan.FromMinutes(5),
                 HttpMethods = new List<string> { "DELETE" }
             };

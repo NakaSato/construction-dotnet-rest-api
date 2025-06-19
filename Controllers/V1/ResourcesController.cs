@@ -72,7 +72,7 @@ public class ResourcesController : BaseApiController
         }
         catch (Exception ex)
         {
-            return HandleException(_logger, ex, "retrieving resource");
+            return HandleException<ResourceDto>(_logger, ex, "retrieving resource");
         }
     }
 
@@ -122,7 +122,7 @@ public class ResourcesController : BaseApiController
         }
         catch (Exception ex)
         {
-            return HandleException(_logger, ex, "updating resource");
+            return HandleException<ResourceDto>(_logger, ex, "updating resource");
         }
     }
 
@@ -144,7 +144,7 @@ public class ResourcesController : BaseApiController
         }
         catch (Exception ex)
         {
-            return HandleException(_logger, ex, "deleting resource");
+            return HandleException<bool>(_logger, ex, "deleting resource");
         }
     }
 }

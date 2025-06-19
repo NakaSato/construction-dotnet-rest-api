@@ -4,7 +4,6 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Microsoft.Extensions.FileProviders;
 using System.Text;
-using System.Reflection;
 using dotnet_rest_api.Data;
 using dotnet_rest_api.Services;
 using dotnet_rest_api.Middleware;
@@ -12,11 +11,15 @@ using Asp.Versioning;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container
+// ===================================
+// SERVICE REGISTRATION
+// ===================================
+
+// Basic Services
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 
-// Configure Swagger with JWT support
+// Swagger Configuration
 builder.Services.AddSwaggerGen(options =>
 {
     options.SwaggerDoc("v1", new OpenApiInfo 
@@ -26,7 +29,7 @@ builder.Services.AddSwaggerGen(options =>
         Description = "RESTful API for managing solar projects, tasks, and daily reports"
     });
 
-    // Add JWT authentication to Swagger
+    // JWT authentication for Swagger
     options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
         Description = "JWT Authorization header using the Bearer scheme. Enter 'Bearer' [space] and then your token in the text input below.",
@@ -52,7 +55,7 @@ builder.Services.AddSwaggerGen(options =>
     });
 });
 
-// Configure Database
+// Database Configuration
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") 
     ?? "Host=localhost;Database=SolarProjectsDb;Username=postgres;Password=postgres";
 
@@ -68,7 +71,7 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
     }
 });
 
-// Configure JWT Authentication
+// Authentication & Authorization Configuration
 var jwtKey = builder.Configuration["Jwt:Key"] ?? "DefaultSecretKeyForDevelopmentOnlyNotForProduction123456789";
 var jwtIssuer = builder.Configuration["Jwt:Issuer"] ?? "SolarProjectsAPI";
 var jwtAudience = builder.Configuration["Jwt:Audience"] ?? "SolarProjectsClient";
@@ -95,7 +98,7 @@ builder.Services.AddAuthentication(options =>
 
 builder.Services.AddAuthorization();
 
-// Configure API Versioning
+// API Versioning Configuration
 builder.Services.AddApiVersioning(options =>
 {
     options.DefaultApiVersion = new ApiVersion(1, 0);
@@ -111,14 +114,12 @@ builder.Services.AddApiVersioning(options =>
     options.SubstituteApiVersionInUrl = true;
 });
 
-// Add caching services
+// Caching & Performance Services
 builder.Services.AddMemoryCache();
 builder.Services.AddDistributedMemoryCache();
-
-// Configure Rate Limiting
 builder.Services.AddRateLimit(builder.Configuration);
 
-// Configure CORS
+// CORS Configuration
 builder.Services.AddCors(options =>
 {
     options.AddDefaultPolicy(policy =>
@@ -129,14 +130,34 @@ builder.Services.AddCors(options =>
     });
 });
 
-// Register services
+// Business Services Registration
 builder.Services.AddScoped<IDailyReportService, StubDailyReportService>();
 builder.Services.AddScoped<ICacheService, CacheService>();
-// Add other service registrations as needed
+builder.Services.AddScoped<IAuthService, AuthService>();
+
+// Placeholder Services (temporary implementations)
+builder.Services.AddScoped<IUserService, PlaceholderUserService>();
+builder.Services.AddScoped<IProjectService, PlaceholderProjectService>();
+builder.Services.AddScoped<IWorkRequestService, PlaceholderWorkRequestService>();
+builder.Services.AddScoped<IResourceService, PlaceholderResourceService>();
+builder.Services.AddScoped<IDocumentService, PlaceholderDocumentService>();
+builder.Services.AddScoped<IImageService, PlaceholderImageService>();
+builder.Services.AddScoped<ICalendarService, PlaceholderCalendarService>();
+builder.Services.AddScoped<IWeeklyReportService, PlaceholderWeeklyReportService>();
+builder.Services.AddScoped<IWeeklyWorkRequestService, PlaceholderWeeklyWorkRequestService>();
+builder.Services.AddScoped<IWorkRequestApprovalService, PlaceholderWorkRequestApprovalService>();
+builder.Services.AddScoped<INotificationService, PlaceholderNotificationService>();
+builder.Services.AddScoped<IEmailService, PlaceholderEmailService>();
+builder.Services.AddScoped<ICloudStorageService, PlaceholderCloudStorageService>();
+builder.Services.AddScoped<IQueryService, PlaceholderQueryService>();
+
+// ===================================
+// APPLICATION PIPELINE CONFIGURATION
+// ===================================
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline
+// Development Environment Configuration
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
@@ -147,19 +168,18 @@ if (app.Environment.IsDevelopment())
     });
 }
 
-// Configure HTTPS redirection based on environment and configuration
+// HTTPS Redirection (conditional)
 if (!app.Environment.IsDevelopment() || 
     builder.Configuration.GetValue<bool>("ForceHttpsRedirection", false))
 {
     app.UseHttpsRedirection();
 }
 
+// Middleware Pipeline
 app.UseCors();
+app.UseRateLimit(); // Before authentication
 
-// Add Rate Limiting Middleware (before authentication)
-app.UseRateLimit();
-
-// Serve static files for uploaded images
+// Static Files Configuration
 var uploadsPath = Path.Combine(builder.Environment.ContentRootPath, "uploads");
 if (!Directory.Exists(uploadsPath))
 {
@@ -172,11 +192,15 @@ app.UseStaticFiles(new StaticFileOptions
     RequestPath = "/files"
 });
 
+// Authentication & Authorization
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
 
-// Initialize database
+// ===================================
+// DATABASE INITIALIZATION
+// ===================================
+
 using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;
@@ -203,5 +227,9 @@ using (var scope = app.Services.CreateScope())
         }
     }
 }
+
+// ===================================
+// APPLICATION STARTUP
+// ===================================
 
 await app.RunAsync();

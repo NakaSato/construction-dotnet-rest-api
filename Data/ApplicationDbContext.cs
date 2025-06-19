@@ -15,6 +15,7 @@ public class ApplicationDbContext : DbContext
     // DbSets for main entities
     public DbSet<Project> Projects { get; set; }
     public DbSet<User> Users { get; set; }
+    public DbSet<Role> Roles { get; set; }
     public DbSet<DailyReport> DailyReports { get; set; }
     public DbSet<DailyReportAttachment> DailyReportAttachments { get; set; }
     public DbSet<MasterPlan> MasterPlans { get; set; }
