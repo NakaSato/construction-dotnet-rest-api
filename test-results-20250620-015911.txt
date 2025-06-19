@@ -1,0 +1,30 @@
+Production API Test Results - Fri Jun 20 01:59:11 +07 2025
+=========================================
+Total Tests: 19
+Passed: 13
+Failed: 5
+Warnings: 3
+Success Rate: 68.4%
+
+Detailed Results:
+PASS: Health Check - Status: 200, Time: 1.405138s, Size: 108 bytes
+PASS: Projects Test Endpoint - Status: 200, Time: 1.685811s, Size: 385 bytes
+PASS: API Version Check - Status: 200, Time: 1.400201s, Size: 385 bytes
+FAIL: Swagger UI - Expected: 200, Got: 404
+FAIL: Swagger JSON - Expected: 200, Got: 404
+FAIL: Root Endpoint - Expected: 200, Got: 404
+PASS: Projects List (No Auth) - Status: 401, Time: 1.300522s, Size: 0 bytes
+PASS: Users List (No Auth) - Status: 401, Time: 1.413056s, Size: 0 bytes
+PASS: Daily Reports (No Auth) - Status: 401, Time: 1.653311s, Size: 0 bytes
+PASS: Work Requests (No Auth) - Status: 401, Time: 1.459299s, Size: 0 bytes
+PASS: HTTP handling - Status: 200
+PASS: DELETE on Health (Method Not Allowed) - Status: 405, Time: 1.323051s, Size: 0 bytes
+WARN: Health check did not return expected 'Healthy' status
+PASS: PUT on Health (Method Not Allowed) - Status: 405, Time: 1.872466s, Size: 0 bytes
+WARN: Health check did not return expected 'Healthy' status
+PASS: CORS preflight - Status: 204
+PASS: Performance Analysis Complete
+WARN: Average response time is acceptable (1-2s)
+PASS: Non-existent Endpoint - Status: 404, Time: 1.655492s, Size: 0 bytes
+FAIL: Invalid Project ID - Expected: 400, Got: 404
+FAIL: Malformed JSON POST - Expected: 400, Got: 401

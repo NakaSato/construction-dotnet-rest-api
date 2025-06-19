@@ -1,6 +1,8 @@
 using Microsoft.AspNetCore.Mvc;
 using dotnet_rest_api.Services;
 using dotnet_rest_api.Attributes;
+using dotnet_rest_api.Data;
+using Microsoft.EntityFrameworkCore;
 
 namespace dotnet_rest_api.Controllers;
 
@@ -10,11 +12,13 @@ public class DebugController : ControllerBase
 {
     private readonly IConfiguration _configuration;
     private readonly ICacheService _cacheService;
+    private readonly ApplicationDbContext _context;
 
-    public DebugController(IConfiguration configuration, ICacheService cacheService)
+    public DebugController(IConfiguration configuration, ICacheService cacheService, ApplicationDbContext context)
     {
         _configuration = configuration;
         _cacheService = cacheService;
+        _context = context;
     }
 
     [HttpGet("config")]
@@ -35,7 +39,7 @@ public class DebugController : ControllerBase
 
     [HttpGet("cache-stats")]
     [NoCache] // No caching for debug endpoints
-    public async Task<ActionResult> GetCacheStats()
+    public ActionResult GetCacheStats()
     {
         try
         {
@@ -72,6 +76,67 @@ public class DebugController : ControllerBase
         catch (Exception ex)
         {
             return StatusCode(500, new { Error = ex.Message });
+        }
+    }
+
+    [HttpGet("database")]
+    [NoCache] // No caching for debug endpoints
+    public async Task<ActionResult> GetDatabaseStatus()
+    {
+        try
+        {
+            var connectionString = _configuration.GetConnectionString("DefaultConnection");
+            var environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
+            
+            // Test database connectivity
+            var canConnect = await _context.Database.CanConnectAsync();
+            
+            // Get database info
+            var dbInfo = new
+            {
+                CanConnect = canConnect,
+                DatabaseProvider = _context.Database.ProviderName,
+                ConnectionString = connectionString?.Substring(0, Math.Min(50, connectionString.Length)) + "...",
+                Environment = environment
+            };
+
+            if (canConnect)
+            {
+                // Test basic operations
+                var projectCount = await _context.Projects.CountAsync();
+                var userCount = await _context.Users.CountAsync();
+                
+                return Ok(new
+                {
+                    Status = "Connected",
+                    DatabaseInfo = dbInfo,
+                    TableCounts = new
+                    {
+                        Projects = projectCount,
+                        Users = userCount
+                    },
+                    Timestamp = DateTime.UtcNow
+                });
+            }
+            else
+            {
+                return Ok(new
+                {
+                    Status = "Cannot Connect",
+                    DatabaseInfo = dbInfo,
+                    Timestamp = DateTime.UtcNow
+                });
+            }
+        }
+        catch (Exception ex)
+        {
+            return Ok(new
+            {
+                Status = "Error",
+                Error = ex.Message,
+                InnerError = ex.InnerException?.Message,
+                Timestamp = DateTime.UtcNow
+            });
         }
     }
 }

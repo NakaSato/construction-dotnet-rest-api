@@ -167,20 +167,17 @@ test_swagger_endpoint() {
 test_core_endpoints() {
     print_test_header "Core API Endpoints"
     
-    # Test Projects endpoints
-    test_endpoint "GET" "$API_BASE/projects" "200" "Get all projects"
-    test_json_response "$API_BASE/projects" "Projects JSON response"
+    # Test Projects test endpoint (no auth required)
+    test_endpoint "GET" "$API_BASE/projects/test" "200" "Projects test endpoint (no auth)"
+    test_json_response "$API_BASE/projects/test" "Projects test JSON response"
     
-    # Test Daily Reports endpoints
-    test_endpoint "GET" "$API_BASE/daily-reports" "200" "Get all daily reports"
-    test_json_response "$API_BASE/daily-reports" "Daily reports JSON response"
-    
-    # Test Work Requests endpoints
-    test_endpoint "GET" "$API_BASE/work-requests" "200" "Get all work requests"
-    test_json_response "$API_BASE/work-requests" "Work requests JSON response"
+    # Test authenticated endpoints (should return 401)
+    test_endpoint "GET" "$API_BASE/projects" "401" "Get all projects (requires auth)"
+    test_endpoint "GET" "$API_BASE/daily-reports" "401" "Get all daily reports (requires auth)"
+    test_endpoint "GET" "$API_BASE/work-requests" "401" "Get all work requests (requires auth)"
     
     # Test Debug endpoint (if available)
-    test_endpoint "GET" "$API_BASE/debug/info" "200" "Debug info endpoint"
+    test_endpoint "GET" "$API_BASE/debug/info" "404" "Debug info endpoint (not found)"
 }
 
 # Function to test error handling

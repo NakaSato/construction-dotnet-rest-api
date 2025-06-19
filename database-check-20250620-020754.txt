@@ -1,0 +1,11 @@
+Azure Database Health Check Results - Fri Jun 20 02:07:54 +07 2025
+=============================================
+Total Checks: 13
+Passed: 6
+Failed: 0
+Warnings: 7
+Success Rate: 46.1%
+
+Production API: https://solar-projects-api.azurewebsites.net
+Health Endpoint: https://solar-projects-api.azurewebsites.net/health
+Test Endpoint: https://solar-projects-api.azurewebsites.net/api/v1/projects/test
