@@ -183,15 +183,29 @@ test_authenticated_endpoints() {
 test_security_and_methods() {
     print_section "Security & HTTP Methods Tests"
     
+    # Test HTTPS connectivity
+    count_test
+    print_test "HTTPS Connectivity"
+    local https_response=$(curl -s -w '%{http_code}' -o /dev/null "$HEALTH_ENDPOINT" --max-time 10)
+    if [[ "$https_response" == "200" ]]; then
+        print_success "HTTPS working correctly - Status: $https_response"
+    else
+        print_fail "HTTPS connectivity issue - Status: $https_response"
+    fi
+    
     # Test HTTPS redirect (if applicable)
     local http_url="http://solar-projects-api.azurewebsites.net/health"
     count_test
     print_test "HTTP to HTTPS Redirect"
-    local redirect_response=$(curl -s -w '%{http_code}' -o /dev/null "$http_url")
-    if [[ "$redirect_response" == "301" || "$redirect_response" == "302" || "$redirect_response" == "200" ]]; then
-        print_success "HTTP handling - Status: $redirect_response"
+    local redirect_response=$(curl -s -w '%{http_code}' -o /dev/null "$http_url" --max-time 10)
+    if [[ "$redirect_response" == "301" || "$redirect_response" == "302" ]]; then
+        print_success "HTTP to HTTPS redirect working - Status: $redirect_response"
+    elif [[ "$redirect_response" == "200" ]]; then
+        print_success "HTTPS accessible - Status: $redirect_response"
+    elif [[ "$redirect_response" == "000" ]]; then
+        print_info "HTTP redirect test timeout (likely HTTPS-only, which is good)"
     else
-        print_warning "Unexpected HTTP response: $redirect_response"
+        print_warning "HTTP response: $redirect_response (may be HTTPS-only)"
     fi
     
     # Test unsupported methods

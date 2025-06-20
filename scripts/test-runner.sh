@@ -98,15 +98,18 @@ show_menu() {
     echo -e "${GREEN}4)${NC} Database Connectivity Check ${YELLOW}(🗃️  Azure Database)${NC}"
     echo "   Test Azure PostgreSQL database connectivity and health"
     echo ""
-    echo -e "${GREEN}5)${NC} View API Documentation ${YELLOW}(📚 Information)${NC}"
+    echo -e "${GREEN}5)${NC} User Registration ${YELLOW}(👤 Create Test Users)${NC}"
+    echo "   Register new users in the production API"
+    echo ""
+    echo -e "${GREEN}6)${NC} View API Documentation ${YELLOW}(📚 Information)${NC}"
     echo "   Open production API testing documentation"
     echo ""
-    echo -e "${GREEN}6)${NC} Check API Status ${YELLOW}(🌐 Browser)${NC}"
+    echo -e "${GREEN}7)${NC} Check API Status ${YELLOW}(🌐 Browser)${NC}"
     echo "   Open production API in browser"
     echo ""
     echo -e "${GREEN}q)${NC} Quit"
     echo ""
-    echo -n "Select an option [1-6, q]: "
+    echo -n "Select an option [1-7, q]: "
 }
 
 # Function to open documentation
@@ -168,6 +171,60 @@ open_api_browser() {
     
     echo ""
     read -p "Press Enter to continue..."
+}
+
+# Function to handle user registration
+run_user_registration() {
+    echo -e "${CYAN}👤 User Registration Options${NC}"
+    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    echo ""
+    echo "Available registration options:"
+    echo ""
+    echo "1) Interactive Registration (Full featured)"
+    echo "2) Quick Registration (Command line)"
+    echo "3) Batch Registration (Multiple users)"
+    echo "4) Cancel"
+    echo ""
+    echo -n "Select option [1-4]: "
+    
+    read -r reg_choice
+    
+    case $reg_choice in
+        1)
+            echo "Running interactive registration..."
+            run_test "scripts/register-production-user.sh" "Interactive User Registration"
+            ;;
+        2)
+            echo ""
+            echo "Quick registration requires basic user information:"
+            echo -n "Username: "
+            read -r username
+            echo -n "Email: "
+            read -r email
+            echo -n "Full Name: "
+            read -r fullname
+            echo -n "Password: "
+            read -s password
+            echo ""
+            echo ""
+            echo "Registering user: $username ($email)"
+            run_test "scripts/quick-register.sh \"$username\" \"$email\" \"$password\" \"$fullname\"" "Quick User Registration"
+            ;;
+        3)
+            echo "Running batch registration (interactive mode)..."
+            run_test "scripts/register-production-user.sh batch" "Batch User Registration"
+            ;;
+        4)
+            echo "Cancelled user registration."
+            echo ""
+            read -p "Press Enter to continue..."
+            ;;
+        *)
+            echo -e "${RED}Invalid option. Cancelling user registration.${NC}"
+            echo ""
+            read -p "Press Enter to continue..."
+            ;;
+    esac
 }
 
 # Function to get authentication credentials
@@ -236,9 +293,12 @@ main() {
                 run_test "scripts/test-db-connectivity.sh" "Database Connectivity Check"
                 ;;
             5)
-                view_documentation
+                run_user_registration
                 ;;
             6)
+                view_documentation
+                ;;
+            7)
                 open_api_browser
                 ;;
             q|Q)
@@ -249,7 +309,7 @@ main() {
                 ;;
             *)
                 echo ""
-                echo -e "${RED}❌ Invalid option. Please select 1-6 or 'q' to quit.${NC}"
+                echo -e "${RED}❌ Invalid option. Please select 1-7 or 'q' to quit.${NC}"
                 echo ""
                 read -p "Press Enter to continue..."
                 ;;
