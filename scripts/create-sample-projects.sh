@@ -72,7 +72,6 @@ PROJECT1='{
   "projectName": "Residential Solar - Green Valley",
   "address": "123 Green Valley Road, Bangkok 10110",
   "clientInfo": "Smith Family Residence",
-  "status": "Planning",
   "startDate": "2025-07-01",
   "estimatedEndDate": "2025-08-15",
   "projectManagerId": "1734cf14-23dc-4567-93b8-ec6f8a808f30",
@@ -81,12 +80,16 @@ PROJECT1='{
   "ftsValue": 450000,
   "revenueValue": 540000,
   "pqmValue": 90000,
-  "inverter125Kw": 0,
-  "inverter80Kw": 0,
-  "inverter60Kw": 0,
-  "inverter40Kw": 1,
-  "latitude": 13.7563,
-  "longitude": 100.5018,
+  "equipmentDetails": {
+    "inverter125kw": 0,
+    "inverter80kw": 0,
+    "inverter60kw": 0,
+    "inverter40kw": 1
+  },
+  "locationCoordinates": {
+    "latitude": 13.7563,
+    "longitude": 100.5018
+  },
   "connectionType": "LV",
   "connectionNotes": "Single-phase residential connection"
 }'
@@ -96,7 +99,6 @@ PROJECT2='{
   "projectName": "Office Complex Solar - Sathorn Plaza",
   "address": "456 Sathorn Road, Silom, Bangkok 10500",
   "clientInfo": "Sathorn Plaza Management Co., Ltd.",
-  "status": "Active",
   "startDate": "2025-06-15",
   "estimatedEndDate": "2025-09-30",
   "projectManagerId": "1734cf14-23dc-4567-93b8-ec6f8a808f30",
@@ -105,12 +107,16 @@ PROJECT2='{
   "ftsValue": 2700000,
   "revenueValue": 3240000,
   "pqmValue": 540000,
-  "inverter125Kw": 1,
-  "inverter80Kw": 0,
-  "inverter60Kw": 1,
-  "inverter40Kw": 0,
-  "latitude": 13.7248,
-  "longitude": 100.5346,
+  "equipmentDetails": {
+    "inverter125kw": 1,
+    "inverter80kw": 0,
+    "inverter60kw": 1,
+    "inverter40kw": 0
+  },
+  "locationCoordinates": {
+    "latitude": 13.7248,
+    "longitude": 100.5346
+  },
   "connectionType": "MV",
   "connectionNotes": "Three-phase commercial connection 22kV"
 }'
@@ -120,7 +126,6 @@ PROJECT3='{
   "projectName": "Industrial Solar Farm - Eastern Seaboard",
   "address": "789 Industrial Estate, Rayong 21140",
   "clientInfo": "Eastern Industrial Development Corporation",
-  "status": "Planning",
   "startDate": "2025-08-01",
   "estimatedEndDate": "2025-12-15",
   "projectManagerId": "1734cf14-23dc-4567-93b8-ec6f8a808f30",
@@ -129,12 +134,16 @@ PROJECT3='{
   "ftsValue": 9000000,
   "revenueValue": 10800000,
   "pqmValue": 1800000,
-  "inverter125Kw": 4,
-  "inverter80Kw": 0,
-  "inverter60Kw": 0,
-  "inverter40Kw": 0,
-  "latitude": 12.6819,
-  "longitude": 101.2843,
+  "equipmentDetails": {
+    "inverter125kw": 4,
+    "inverter80kw": 0,
+    "inverter60kw": 0,
+    "inverter40kw": 0
+  },
+  "locationCoordinates": {
+    "latitude": 12.6819,
+    "longitude": 101.2843
+  },
   "connectionType": "HV",
   "connectionNotes": "High voltage industrial connection 115kV"
 }'

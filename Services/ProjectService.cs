@@ -265,6 +265,14 @@ public class ProjectService : IProjectService
                 FtsValue = request.FtsValue,
                 RevenueValue = request.RevenueValue,
                 PqmValue = request.PqmValue,
+                // Map equipment details
+                Inverter125kw = request.EquipmentDetails?.Inverter125kw ?? 0,
+                Inverter80kw = request.EquipmentDetails?.Inverter80kw ?? 0,
+                Inverter60kw = request.EquipmentDetails?.Inverter60kw ?? 0,
+                Inverter40kw = request.EquipmentDetails?.Inverter40kw ?? 0,
+                // Map location coordinates
+                Latitude = request.LocationCoordinates?.Latitude,
+                Longitude = request.LocationCoordinates?.Longitude,
                 CreatedAt = DateTime.UtcNow
             };
 
