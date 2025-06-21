@@ -136,6 +136,7 @@ builder.Services.AddScoped<IDailyReportService, StubDailyReportService>();
 builder.Services.AddScoped<ICacheService, CacheService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IProjectService, ProjectService>(); // Real implementation
+builder.Services.AddScoped<ITaskService, TaskService>(); // Real implementation
 
 // Placeholder Services (temporary implementations)
 builder.Services.AddScoped<IUserService, PlaceholderUserService>();
