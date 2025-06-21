@@ -319,7 +319,10 @@ public class ProjectService : IProjectService
         }
         catch (Exception ex)
         {
-            return ServiceResult<ProjectDto>.ErrorResult($"Error creating project: {ex.Message}");
+            // Log detailed exception information for debugging
+            var innerException = ex.InnerException?.Message ?? "No inner exception";
+            var fullMessage = $"Error creating project: {ex.Message}. Inner exception: {innerException}";
+            return ServiceResult<ProjectDto>.ErrorResult(fullMessage);
         }
     }
 
