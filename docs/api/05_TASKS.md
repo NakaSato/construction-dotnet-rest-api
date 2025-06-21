@@ -1,47 +1,51 @@
 # ✅ Task Management
 
+**Base URL**: `/api/v1/tasks`
+
 **🔒 Authentication Required**  
-**🎯 Role Required**: Admin, Manager (full CRUD access), Task Assignees (can update assigned tasks), All authenticated users (view only)
+**🎯 Status**: ✅ Available
 
 Task management provides the ability to create, assign, and track specific work items for solar installation projects.
 
-## ⚡ Task Management Capabilities
+## ⚡ Authorization & Access Control
 
-### Admin & Manager
+### Admin & Manager Roles
 - ✅ Create tasks for any project
-- ✅ Assign tasks to team members
+- ✅ Assign tasks to team members  
 - ✅ Update task status and details
-- ✅ Set priority and due dates
-- ✅ Track progress and completion
 - ✅ Delete tasks when needed
+- ✅ View all tasks across projects
+
+### Supervisor Roles
+- ✅ Create tasks for managed projects
+- ✅ Update tasks in managed projects
+- ✅ View tasks in managed projects
+- ❌ Cannot delete tasks
 
 ### Task Assignees
 - ✅ Update status of assigned tasks
-- ✅ Record actual hours worked
-- ✅ Update progress percentage
-- ✅ Add comments and notes
+- ✅ View assigned tasks
 - ❌ Cannot reassign tasks to others
 - ❌ Cannot delete tasks
 
-### All Users
+### All Authenticated Users
 - ✅ View tasks they have access to
 - ✅ Filter and search for tasks
-- ❌ Cannot modify task data
+- ❌ Cannot modify task data unless assigned
 
 ## 📋 Get All Tasks
 
 **GET** `/api/v1/tasks`
 
-Retrieve a list of tasks with filtering options.
+Get all tasks with pagination and filtering.
+
+**Authorization**: Required (All authenticated users)
 
 **Query Parameters**:
-- `projectId` (Guid): Filter tasks by project
-- `assignedToUserId` (Guid): Filter tasks by assigned user
-- `status` (string): Filter by status
-- `priority` (string): Filter by priority
-- `dueDate` (DateTime): Filter by due date
-- `pageNumber` (int): Page number
-- `pageSize` (int): Items per page
+- `pageNumber` (optional, default: 1) - Page number
+- `pageSize` (optional, default: 10, max: 100) - Items per page
+- `projectId` (optional) - Filter by project ID
+- `assigneeId` (optional) - Filter by assigned user ID
 
 **Success Response (200)**:
 ```json
@@ -49,35 +53,31 @@ Retrieve a list of tasks with filtering options.
   "success": true,
   "message": "Tasks retrieved successfully",
   "data": {
-    "tasks": [
+    "items": [
       {
-        "id": "123e4567-e89b-12d3-a456-426614174000",
-        "title": "Install Solar Panels - Section A",
-        "description": "Install 24 solar panels on the south-facing roof section",
-        "status": "InProgress",
-        "priority": "High",
-        "dueDate": "2025-06-20",
-        "projectId": "456e7890-e89b-12d3-a456-426614174001",
-        "projectName": "Solar Installation Project Alpha",
-        "assignedToUserId": "789e0123-e89b-12d3-a456-426614174002",
-        "assignedToUserName": "John Technician",
-        "estimatedHours": 16.0,
-        "actualHours": 12.5,
-        "progressPercentage": 75.0,
-        "createdAt": "2025-06-01T10:00:00Z",
-        "updatedAt": "2025-06-14T14:30:00Z"
+        "taskId": "guid",
+        "projectId": "guid",
+        "projectName": "string",
+        "title": "string",
+        "description": "string",
+        "status": "NotStarted|InProgress|Completed|OnHold|Cancelled",
+        "dueDate": "datetime",
+        "assignedTechnician": {
+          "userId": "guid",
+          "username": "string",
+          "firstName": "string",
+          "lastName": "string",
+          "email": "string",
+          "role": "string"
+        },
+        "completionDate": "datetime",
+        "createdAt": "datetime"
       }
     ],
-    "pagination": {
-      "totalCount": 15,
-      "pageNumber": 1,
-      "pageSize": 10,
-      "totalPages": 2,
-      "hasPreviousPage": false,
-      "hasNextPage": true
-    }
-  },
-  "errors": []
+    "totalCount": 0,
+    "pageNumber": 1,
+    "pageSize": 10
+  }
 }
 ```
 
@@ -85,168 +85,108 @@ Retrieve a list of tasks with filtering options.
 
 **GET** `/api/v1/tasks/{id}`
 
-Retrieve detailed information about a specific task.
+Get a specific task by ID.
+
+**Authorization**: Required (All authenticated users)
 
 **Path Parameters**:
-- `id` (Guid): Task ID
+- `id` (path) - Task ID
 
-**Success Response (200)**:
-```json
-{
-  "success": true,
-  "message": "Task retrieved successfully",
-  "data": {
-    "id": "123e4567-e89b-12d3-a456-426614174000",
-    "title": "Install Solar Panels - Section A",
-    "description": "Install 24 solar panels on the south-facing roof section",
-    "status": "InProgress",
-    "priority": "High",
-    "dueDate": "2025-06-20",
-    "projectId": "456e7890-e89b-12d3-a456-426614174001",
-    "projectName": "Solar Installation Project Alpha",
-    "assignedToUserId": "789e0123-e89b-12d3-a456-426614174002",
-    "assignedToUserName": "John Technician",
-    "estimatedHours": 16.0,
-    "actualHours": 12.5,
-    "progressPercentage": 75.0,
-    "comments": [
-      {
-        "id": "aaa12345-e89b-12d3-a456-426614174000",
-        "text": "Weather delay on Tuesday, rescheduled for Thursday",
-        "createdBy": "John Technician",
-        "createdAt": "2025-06-10T09:15:00Z"
-      }
-    ],
-    "attachments": [
-      {
-        "id": "bbb12345-e89b-12d3-a456-426614174000",
-        "fileName": "site_layout.pdf",
-        "fileSize": 1024000,
-        "uploadedBy": "Sarah Manager",
-        "uploadedAt": "2025-06-01T14:30:00Z"
-      }
-    ],
-    "createdAt": "2025-06-01T10:00:00Z",
-    "createdBy": "Sarah Manager",
-    "updatedAt": "2025-06-14T14:30:00Z",
-    "updatedBy": "John Technician"
-  },
-  "errors": []
-}
-```
+**Success Response (200)**: Same structure as task item above
 
 ## 📝 Create Task
 
 **POST** `/api/v1/tasks`
 
-**🔒 Required Roles**: Admin, Manager
+Create a new task.
 
-Create a new task assigned to a team member.
+**Authorization**: Required (Admin, Manager, Supervisor roles)
+
+**Query Parameters**:
+- `projectId` (required) - Project ID to create the task for
 
 **Request Body**:
 ```json
 {
-  "title": "Install Electrical Panel",
-  "description": "Install and configure the main electrical panel for solar system integration",
-  "priority": "High",
-  "dueDate": "2025-06-25T00:00:00Z",
-  "projectId": "456e7890-e89b-12d3-a456-426614174001",
-  "assignedToUserId": "789e0123-e89b-12d3-a456-426614174002",
-  "estimatedHours": 8.0,
-  "status": "NotStarted"
+  "title": "string", // Required, 3-200 characters
+  "description": "string", // Optional, max 2000 characters
+  "dueDate": "datetime", // Optional
+  "assignedTechnicianId": "guid" // Optional
 }
 ```
 
-**Success Response (201)**:
-```json
-{
-  "success": true,
-  "message": "Task created successfully",
-  "data": {
-    "id": "789e0123-e89b-12d3-a456-426614174003",
-    "title": "Install Electrical Panel",
-    "status": "NotStarted",
-    "assignedToUserName": "John Technician",
-    "createdAt": "2025-06-15T11:00:00Z"
-  },
-  "errors": []
-}
-```
+**Success Response (201)**: Same structure as task item above
 
-## 🔄 Update Task
+## 🔄 Update Task (Full Update)
 
 **PUT** `/api/v1/tasks/{id}`
 
-**🔒 Requires**: Admin, Manager, or task assignee
+Update an existing task.
 
-Update all fields of an existing task.
+**Authorization**: Required (Admin, Manager, Supervisor roles)
 
 **Path Parameters**:
-- `id` (Guid): Task ID
+- `id` (path) - Task ID
 
 **Request Body**:
 ```json
 {
-  "title": "Install Electrical Panel - Updated",
-  "description": "Install and configure the main electrical panel for solar system integration with additional safety checks",
-  "priority": "High",
-  "dueDate": "2025-06-26T00:00:00Z",
-  "assignedToUserId": "789e0123-e89b-12d3-a456-426614174002",
-  "estimatedHours": 10.0,
-  "actualHours": 5.0,
-  "status": "InProgress",
-  "progressPercentage": 50.0
+  "title": "string", // Required, 3-200 characters
+  "description": "string", // Optional, max 2000 characters
+  "status": "NotStarted|InProgress|Completed|OnHold|Cancelled", // Required
+  "dueDate": "datetime", // Optional
+  "assignedTechnicianId": "guid" // Optional
 }
 ```
 
-**Success Response (200)**:
-```json
-{
-  "success": true,
-  "message": "Task updated successfully",
-  "data": {
-    "id": "789e0123-e89b-12d3-a456-426614174003",
-    "title": "Install Electrical Panel - Updated",
-    "status": "InProgress",
-    "progressPercentage": 50.0,
-    "updatedAt": "2025-06-15T12:00:00Z"
-  },
-  "errors": []
-}
-```
+**Success Response (200)**: Same structure as task item above
 
 ## 🔄 Partially Update Task
 
 **PATCH** `/api/v1/tasks/{id}`
 
-**🔒 Requires**: Admin, Manager, or task assignee
+Partially update an existing task.
 
-Update specific fields of an existing task without affecting other fields.
+**Authorization**: Required (Admin, Manager, Supervisor roles)
 
 **Path Parameters**:
-- `id` (Guid): Task ID
+- `id` (path) - Task ID
+
+**Request Body** (all fields optional):
+```json
+{
+  "title": "string",
+  "description": "string", 
+  "status": "NotStarted|InProgress|Completed|OnHold|Cancelled",
+  "dueDate": "datetime",
+  "assignedTechnicianId": "guid"
+}
+```
+
+**Success Response (200)**: Same structure as task item above
+
+## 🏷️ Update Task Status
+
+**PATCH** `/api/v1/tasks/{id}/status`
+
+Update only the status of a task.
+
+**Authorization**: Required (All authenticated users for own tasks, Admin/Manager/Supervisor for all tasks)
+
+**Path Parameters**:
+- `id` (path) - Task ID
 
 **Request Body**:
 ```json
-{
-  "status": "Completed",
-  "progressPercentage": 100.0,
-  "actualHours": 9.5
-}
+"NotStarted" // or "InProgress", "Completed", "OnHold", "Cancelled"
 ```
 
 **Success Response (200)**:
 ```json
 {
   "success": true,
-  "message": "Task updated successfully",
-  "data": {
-    "id": "789e0123-e89b-12d3-a456-426614174003",
-    "status": "Completed",
-    "progressPercentage": 100.0,
-    "updatedAt": "2025-06-15T15:30:00Z"
-  },
-  "errors": []
+  "message": "Task status updated successfully",
+  "data": true
 }
 ```
 
@@ -254,88 +194,120 @@ Update specific fields of an existing task without affecting other fields.
 
 **DELETE** `/api/v1/tasks/{id}`
 
-**🔒 Required Roles**: Admin, Manager
+Delete a task.
 
-Delete a task from the system.
+**Authorization**: Required (Admin, Manager roles only)
 
 **Path Parameters**:
-- `id` (Guid): Task ID
+- `id` (path) - Task ID
 
 **Success Response (200)**:
 ```json
 {
   "success": true,
   "message": "Task deleted successfully",
-  "data": null,
-  "errors": []
+  "data": true
 }
 ```
 
-## 💬 Add Comment to Task
+## � Advanced Task Search
 
-**POST** `/api/v1/tasks/{id}/comments`
+**GET** `/api/v1/tasks/advanced`
 
-**🔒 Requires**: Admin, Manager, or task assignee
+Get tasks with advanced filtering, sorting, and pagination.
 
-Add a comment to an existing task.
+**Authorization**: Required (All authenticated users)
+
+**Query Parameters**: Extended filtering and sorting options including date ranges, status filters, sorting by multiple fields.
+
+**Success Response (200)**: Enhanced paginated response with metadata and navigation links.
+
+## 📊 Task Progress Reports
+
+### Get Progress Reports
+
+**GET** `/api/v1/tasks/{taskId}/progress-reports`
+
+Get progress reports for a specific task.
+
+**Authorization**: Required (All authenticated users)
 
 **Path Parameters**:
-- `id` (Guid): Task ID
+- `taskId` (path) - Task ID
+
+**Query Parameters**:
+- `pageNumber`, `pageSize` - Standard pagination
+
+**Success Response (200)**: Paginated list of task progress reports with completion percentages, status updates, and work logs.
+
+### Create Progress Report
+
+**POST** `/api/v1/tasks/{taskId}/progress-reports`
+
+Create a progress report for a task.
+
+**Authorization**: Required (All authenticated users for assigned tasks, Admin/Manager/Supervisor for all tasks)
+
+**Path Parameters**:
+- `taskId` (path) - Task ID
 
 **Request Body**:
 ```json
 {
-  "text": "Completed wiring of the main panel, ready for inspection before connecting inverters"
+  "completionPercentage": 0.0,
+  "status": "string",
+  "workCompleted": "string",
+  "issues": "string",
+  "nextSteps": "string",
+  "hoursWorked": 0.0
 }
 ```
 
-**Success Response (201)**:
-```json
-{
-  "success": true,
-  "message": "Comment added successfully",
-  "data": {
-    "id": "comment-uuid-here",
-    "text": "Completed wiring of the main panel, ready for inspection before connecting inverters",
-    "createdAt": "2025-06-15T16:45:00Z",
-    "createdBy": "John Technician"
-  },
-  "errors": []
-}
-```
+**Success Response (201)**: Created progress report details
 
-## 📊 Task Status Workflow
+## 📊 Task Status Values
 
-Tasks follow a defined status workflow:
+Tasks support the following status values:
 
-| Status | Description | Completion % | Next Status |
-|--------|-------------|--------------|-------------|
-| **NotStarted** | Task created but no work begun | 0% | InProgress |
-| **InProgress** | Work has started | 1-99% | OnHold, Completed |
-| **OnHold** | Temporarily paused | Same as before | InProgress, Cancelled |
-| **Completed** | Task finished successfully | 100% | Verified |
-| **Verified** | Quality check completed | 100% | (Final state) |
-| **Cancelled** | Task was cancelled | N/A | (Final state) |
+| Status | Description | Typical Usage |
+|--------|-------------|---------------|
+| **NotStarted** | Task created but no work begun | Initial state when task is created |
+| **InProgress** | Work has started | Active work in progress |
+| **Completed** | Task finished successfully | Work completed successfully |
+| **OnHold** | Temporarily paused | Waiting for dependencies or resources |
+| **Cancelled** | Task was cancelled | Task no longer needed or feasible |
 
-## 🔧 Task Priority Levels
+## 🔧 Common Use Cases
 
-| Priority | Description | Default SLA |
-|----------|-------------|-------------|
-| **Critical** | Blocking project progress, safety issues | 24 hours |
-| **High** | Important task on critical path | 3 days |
-| **Medium** | Standard importance task | 5 days |
-| **Low** | Non-critical task | 10 days |
+### Creating a Task
+1. Use `POST /api/v1/tasks` with `projectId` parameter
+2. Provide title (required) and optional description, due date, and assignee
+3. Task starts in "NotStarted" status by default
 
-## ❌ Task Error Codes
+### Updating Task Progress
+1. Use `PATCH /api/v1/tasks/{id}/status` for quick status updates
+2. Use `PATCH /api/v1/tasks/{id}` for partial field updates
+3. Use `PUT /api/v1/tasks/{id}` for complete task updates
 
-| Error Code | Description | Resolution |
-|------------|-------------|------------|
-| **TSK001** | Task not found | Verify task ID exists |
-| **TSK002** | Insufficient permissions | Check user role or assignment |
-| **TSK003** | Invalid task data | Check request body for required fields |
-| **TSK004** | Invalid status transition | Follow the defined workflow sequence |
-| **TSK005** | Assigned user not found | Verify user ID exists |
-| **TSK006** | Project not found | Verify project ID exists |
+### Task Assignment
+- Tasks can be assigned to technicians using `assignedTechnicianId`
+- Assigned users can update their own task status
+- Managers can reassign tasks to other users
+
+### Progress Tracking
+- Use progress reports to track detailed work completion
+- Include hours worked, completion percentage, and notes
+- Track issues and next steps for better project management
+
+## ❌ Common Error Responses
+
+| Status Code | Error Message | Resolution |
+|-------------|---------------|------------|
+| **400** | Invalid task data | Check request body format and required fields |
+| **401** | Authentication required | Provide valid authentication token |
+| **403** | Insufficient permissions | Check user role and task assignment |
+| **404** | Task not found | Verify task ID exists |
+| **404** | Project not found | Verify project ID when creating tasks |
 
 ---
-*Last Updated: June 15, 2025*
+*Last Updated: June 21, 2025*
