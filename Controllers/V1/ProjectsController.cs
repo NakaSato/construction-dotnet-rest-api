@@ -81,7 +81,7 @@ public class ProjectsController : BaseApiController
     /// Available to: Administrator, ProjectManager (can manage projects)
     /// </summary>
     [HttpPost]
-    [Authorize(Roles = "Administrator,ProjectManager")]
+    [Authorize(Roles = "Admin,Manager")]
     [NoCache] // No caching for write operations
     public async Task<ActionResult<ApiResponse<ProjectDto>>> CreateProject([FromBody] CreateProjectRequest request)
     {
@@ -108,7 +108,7 @@ public class ProjectsController : BaseApiController
     /// Available to: Administrator, ProjectManager (can manage projects)
     /// </summary>
     [HttpPut("{id:guid}")]
-    [Authorize(Roles = "Administrator,ProjectManager")]
+    [Authorize(Roles = "Admin,Manager")]
     [NoCache] // No caching for write operations
     public async Task<ActionResult<ApiResponse<ProjectDto>>> UpdateProject(Guid id, [FromBody] UpdateProjectRequest request)
     {
@@ -129,7 +129,7 @@ public class ProjectsController : BaseApiController
     /// Available to: Administrator, ProjectManager (can manage projects)
     /// </summary>
     [HttpPatch("{id:guid}")]
-    [Authorize(Roles = "Administrator,ProjectManager")]
+    [Authorize(Roles = "Admin,Manager")]
     [NoCache] // No caching for write operations
     public async Task<ActionResult<ApiResponse<ProjectDto>>> PatchProject(Guid id, [FromBody] PatchProjectRequest request)
     {
@@ -150,7 +150,7 @@ public class ProjectsController : BaseApiController
     /// Available to: Administrator only (full system access)
     /// </summary>
     [HttpDelete("{id:guid}")]
-    [Authorize(Roles = "Administrator")]
+    [Authorize(Roles = "Admin")]
     [CriticalDeleteRateLimit]
     [NoCache] // No caching for write operations
     public async Task<ActionResult<ApiResponse<bool>>> DeleteProject(Guid id)

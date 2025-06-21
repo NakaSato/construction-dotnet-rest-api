@@ -132,12 +132,13 @@ builder.Services.AddCors(options =>
 
 // Business Services Registration
 builder.Services.AddScoped<IDailyReportService, StubDailyReportService>();
+// Service implementations
 builder.Services.AddScoped<ICacheService, CacheService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<IProjectService, ProjectService>(); // Real implementation
 
 // Placeholder Services (temporary implementations)
 builder.Services.AddScoped<IUserService, PlaceholderUserService>();
-builder.Services.AddScoped<IProjectService, PlaceholderProjectService>();
 builder.Services.AddScoped<IWorkRequestService, PlaceholderWorkRequestService>();
 builder.Services.AddScoped<IResourceService, PlaceholderResourceService>();
 builder.Services.AddScoped<IDocumentService, PlaceholderDocumentService>();

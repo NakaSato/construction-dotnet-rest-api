@@ -139,4 +139,127 @@ public class DebugController : ControllerBase
             });
         }
     }
+
+    [HttpPost("migrate-database")]
+    [NoCache]
+    public async Task<ActionResult> MigrateDatabase()
+    {
+        try
+        {
+            var startTime = DateTime.UtcNow;
+            
+            // Check if migrations are needed
+            var pendingMigrations = await _context.Database.GetPendingMigrationsAsync();
+            var appliedMigrations = await _context.Database.GetAppliedMigrationsAsync();
+            
+            if (!pendingMigrations.Any())
+            {
+                return Ok(new
+                {
+                    success = true,
+                    message = "Database is already up to date",
+                    appliedMigrations = appliedMigrations.ToList(),
+                    pendingMigrations = new List<string>(),
+                    timestamp = DateTime.UtcNow,
+                    duration = TimeSpan.Zero
+                });
+            }
+            
+            // Run migrations
+            await _context.Database.MigrateAsync();
+            
+            var endTime = DateTime.UtcNow;
+            var duration = endTime - startTime;
+            
+            // Get updated migration status
+            var finalAppliedMigrations = await _context.Database.GetAppliedMigrationsAsync();
+            
+            return Ok(new
+            {
+                success = true,
+                message = "Database migrations completed successfully",
+                appliedMigrations = finalAppliedMigrations.ToList(),
+                newlyAppliedMigrations = pendingMigrations.ToList(),
+                timestamp = endTime,
+                duration = duration.TotalSeconds
+            });
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(new
+            {
+                success = false,
+                message = "Database migration failed",
+                error = ex.Message,
+                stackTrace = ex.StackTrace,
+                timestamp = DateTime.UtcNow
+            });
+        }
+    }
+
+    [HttpGet("database-info")]
+    [NoCache]
+    public async Task<ActionResult> GetDatabaseInfo()
+    {
+        try
+        {
+            var connectionString = _context.Database.GetConnectionString();
+            var databaseProvider = _context.Database.ProviderName;
+            
+            // Test connection
+            var canConnect = await _context.Database.CanConnectAsync();
+            
+            if (!canConnect)
+            {
+                return Ok(new
+                {
+                    success = false,
+                    message = "Cannot connect to database",
+                    connectionString = connectionString?.Substring(0, Math.Min(50, connectionString.Length)) + "...",
+                    provider = databaseProvider,
+                    canConnect = false,
+                    timestamp = DateTime.UtcNow
+                });
+            }
+            
+            var appliedMigrations = await _context.Database.GetAppliedMigrationsAsync();
+            var pendingMigrations = await _context.Database.GetPendingMigrationsAsync();
+            
+            // Test a simple query
+            string databaseVersion = "Unknown";
+            try
+            {
+                var versionResult = await _context.Database.SqlQueryRaw<string>("SELECT version()").FirstOrDefaultAsync();
+                databaseVersion = versionResult ?? "Unknown";
+            }
+            catch (Exception ex)
+            {
+                databaseVersion = $"Error: {ex.Message}";
+            }
+            
+            return Ok(new
+            {
+                success = true,
+                message = "Database connection successful",
+                connectionString = connectionString?.Substring(0, Math.Min(50, connectionString.Length)) + "...",
+                provider = databaseProvider,
+                canConnect = true,
+                databaseVersion = databaseVersion,
+                appliedMigrations = appliedMigrations.ToList(),
+                pendingMigrations = pendingMigrations.ToList(),
+                needsMigration = pendingMigrations.Any(),
+                timestamp = DateTime.UtcNow
+            });
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(new
+            {
+                success = false,
+                message = "Database info retrieval failed",
+                error = ex.Message,
+                timestamp = DateTime.UtcNow
+            });
+        }
+    }
 }

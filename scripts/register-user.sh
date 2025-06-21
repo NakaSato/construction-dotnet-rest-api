@@ -158,6 +158,20 @@ EOF
     echo "Response: $response"
     echo ""
     
+    # Check if response indicates success regardless of status code
+    local success_check=$(echo "$response" | grep -o '"success"[[:space:]]*:[[:space:]]*true' || echo "")
+    
+    if [[ -n "$success_check" ]]; then
+        echo -e "${GREEN}🎉 Registration successful!${NC}"
+        echo -e "${GREEN}✅ User '$username' has been created${NC}"
+        echo ""
+        echo "Next steps:"
+        echo "• You can now login with these credentials"
+        echo "• Test the login at: $AUTH_ENDPOINT/login"
+        echo "• Access protected endpoints with the JWT token"
+        return 0
+    fi
+    
     case "$status_code" in
         200|201)
             echo -e "${GREEN}🎉 Registration successful!${NC}"

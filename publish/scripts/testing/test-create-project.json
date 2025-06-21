@@ -1,0 +1,26 @@
+{
+  "projectName": "New Solar Installation Project",
+  "address": "456 Oak Ave, Another City, State 67890",
+  "clientInfo": "XYZ Corp - Contact: Sarah Johnson (555-987-6543)",
+  "startDate": "2025-07-01T00:00:00Z",
+  "estimatedEndDate": "2025-09-30T00:00:00Z",
+  "projectManagerId": "123e4567-e89b-12d3-a456-426614174000",
+  "team": "E2",
+  "connectionType": "LV",
+  "connectionNotes": "เสาหม้อแปลงไม่มีพื้นที่ในการทำZero Export แรงสูง",
+  "totalCapacityKw": 171.0,
+  "pvModuleCount": 300,
+  "equipmentDetails": {
+    "inverter125kw": 1,
+    "inverter80kw": 0,
+    "inverter60kw": 1,
+    "inverter40kw": 0
+  },
+  "ftsValue": 6,
+  "revenueValue": 1,
+  "pqmValue": 0,
+  "locationCoordinates": {
+    "latitude": 14.72746,
+    "longitude": 102.16276
+  }
+}
