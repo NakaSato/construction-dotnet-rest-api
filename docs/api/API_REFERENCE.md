@@ -2046,10 +2046,12 @@ Get all progress reports for a master plan.
 
 ---
 
-## ⚠️ Task Management (Coming Soon)
+## Task Management
+
+**Base URL**: `/api/v1/tasks`
 
 **🔒 Authentication Required**  
-**🎯 Status**: Under Development
+**🎯 Status**: ✅ Available
 
 The Task Management endpoints are currently under development. While the TasksController exists in the codebase, it has not yet been implemented.
 
