@@ -117,7 +117,13 @@ builder.Services.AddApiVersioning(options =>
 // Caching & Performance Services
 builder.Services.AddMemoryCache();
 builder.Services.AddDistributedMemoryCache();
-builder.Services.AddRateLimit(builder.Configuration);
+
+// Rate Limiting (conditionally enabled)
+var rateLimitEnabled = builder.Configuration.GetValue<bool>("RateLimit:Enabled", true);
+if (rateLimitEnabled)
+{
+    builder.Services.AddRateLimit(builder.Configuration);
+}
 
 // CORS Configuration
 builder.Services.AddCors(options =>
@@ -179,7 +185,12 @@ if (!app.Environment.IsDevelopment() ||
 
 // Middleware Pipeline
 app.UseCors();
-app.UseRateLimit(); // Before authentication
+
+// Rate Limiting Middleware (conditionally enabled)
+if (rateLimitEnabled)
+{
+    app.UseRateLimit(); // Before authentication
+}
 
 // Static Files Configuration
 var uploadsPath = Path.Combine(builder.Environment.ContentRootPath, "uploads");
