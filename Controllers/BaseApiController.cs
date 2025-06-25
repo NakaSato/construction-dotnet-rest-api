@@ -1,6 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
 using dotnet_rest_api.DTOs;
-using Microsoft.Extensions.Logging;
 
 namespace dotnet_rest_api.Controllers;
 

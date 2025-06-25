@@ -2,10 +2,8 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 using dotnet_rest_api.DTOs;
-using dotnet_rest_api.Models;
 using dotnet_rest_api.Services;
 using dotnet_rest_api.Attributes;
-using dotnet_rest_api.Controllers;
 using Asp.Versioning;
 
 namespace dotnet_rest_api.Controllers.V1;
