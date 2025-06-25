@@ -118,6 +118,9 @@ builder.Services.AddApiVersioning(options =>
 builder.Services.AddMemoryCache();
 builder.Services.AddDistributedMemoryCache();
 
+// AutoMapper Configuration
+builder.Services.AddAutoMapper(typeof(Program));
+
 // Rate Limiting (conditionally enabled)
 var rateLimitEnabled = builder.Configuration.GetValue<bool>("RateLimit:Enabled", true);
 if (rateLimitEnabled)
