@@ -33,14 +33,14 @@ services:
       - ASPNETCORE_URLS=http://+:8080
       - ConnectionStrings__DefaultConnection=Host=postgres;Database=SolarProjectsDb;Username=postgres;Password=postgres;Port=5432
       - JwtSettings__SecretKey=SolarProjects2024-SuperSecretKey-ForJWT-Authentication-Security-32Plus-Characters!
-      - JwtSettings__Issuer=http://localhost:5002
-      - JwtSettings__Audience=http://localhost:5002
+      - JwtSettings__Issuer=http://localhost:5001
+      - JwtSettings__Audience=http://localhost:5001
       - JwtSettings__ExpirationMinutes=60
       - CloudinarySettings__CloudName=
       - CloudinarySettings__ApiKey=
       - CloudinarySettings__ApiSecret=
     ports:
-      - "5002:8080"
+      - "5001:8080"
     volumes:
       - ./uploads:/app/uploads
       - ./temp:/app/temp

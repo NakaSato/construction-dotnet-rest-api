@@ -44,7 +44,7 @@ services:
     environment:
       - ASPNETCORE_ENVIRONMENT=Docker
     ports:
-      - "5002:8080"
+      - "5001:8080"
     depends_on:
       postgres-dev:
         condition: service_healthy

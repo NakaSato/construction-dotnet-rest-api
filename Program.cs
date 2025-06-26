@@ -11,6 +11,9 @@ using Asp.Versioning;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Configure Kestrel to listen on port 5001
+builder.WebHost.UseUrls("http://localhost:5001");
+
 // ===================================
 // SERVICE REGISTRATION
 // ===================================
