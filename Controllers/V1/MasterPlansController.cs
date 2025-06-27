@@ -3,6 +3,8 @@ using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 using dotnet_rest_api.DTOs;
 using dotnet_rest_api.Services;
+using dotnet_rest_api.Services.Commands;
+using dotnet_rest_api.Services.Interfaces;
 using dotnet_rest_api.Attributes;
 using Asp.Versioning;
 
@@ -22,7 +24,11 @@ public class MasterPlansController : BaseApiController
 
     public MasterPlansController(
         IMasterPlanService masterPlanService,
-        ILogger<MasterPlansController> logger)
+        ILogger<MasterPlansController> logger,
+        IUserContextService userContextService,
+        IResponseBuilderService responseBuilderService,
+        IValidationHelperService validationHelperService)
+        : base(logger, userContextService, responseBuilderService)
     {
         _masterPlanService = masterPlanService;
         _logger = logger;
@@ -37,42 +43,27 @@ public class MasterPlansController : BaseApiController
     [NoCache]
     public async Task<ActionResult<ApiResponse<MasterPlanDto>>> CreateMasterPlan([FromBody] CreateMasterPlanRequest request)
     {
-        try
-        {
-            LogControllerAction(_logger, "CreateMasterPlan", request);
+        LogControllerAction(_logger, "CreateMasterPlan", request);
 
-            if (!ModelState.IsValid)
-            {
-                var errors = ModelState.Values
-                    .SelectMany(v => v.Errors)
-                    .Select(e => e.ErrorMessage)
-                    .ToList();
-                return CreateErrorResponse<MasterPlanDto>("Invalid input data");
-            }
+        if (!ModelState.IsValid)
+            return CreateValidationErrorResponse<MasterPlanDto>();
 
-            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            if (!Guid.TryParse(userIdClaim, out var userId))
-                return CreateErrorResponse<MasterPlanDto>("Invalid user ID in token", 401);
+        var userId = GetCurrentUserId();
+        if (userId == null)
+            return CreateErrorResponse<MasterPlanDto>("User not authenticated", 401);
 
-            var result = await _masterPlanService.CreateMasterPlanAsync(request, userId);
-            return result.IsSuccess ? 
-                Ok(new ApiResponse<MasterPlanDto> { Success = true, Data = result.Data, Message = result.Message }) : 
-                BadRequest(new ApiResponse<MasterPlanDto> { Success = false, Message = result.Message });
-        }
-        catch (ArgumentException ex)
+        var command = new CreateMasterPlanCommand
         {
-            _logger.LogWarning(ex, "Invalid argument while creating master plan");
-            return CreateErrorResponse<MasterPlanDto>($"Invalid input: {ex.Message}", 400);
-        }
-        catch (UnauthorizedAccessException ex)
-        {
-            _logger.LogWarning(ex, "Unauthorized access while creating master plan");
-            return CreateErrorResponse<MasterPlanDto>("Access denied", 403);
-        }
-        catch (Exception ex)
-        {
-            return HandleException<MasterPlanDto>(_logger, ex, "creating master plan");
-        }
+            Request = request,
+            CreatedById = userId.Value
+        };
+
+        var handler = HttpContext.RequestServices.GetRequiredService<ICommandHandler<CreateMasterPlanCommand, MasterPlanDto>>();
+        var result = await handler.HandleAsync(command);
+
+        return result.IsSuccess ? 
+            CreateSuccessResponse(result.Data!, result.Message) : 
+            CreateErrorResponse<MasterPlanDto>(result.Message ?? "Operation failed", 400);
     }
 
     /// <summary>
@@ -82,19 +73,15 @@ public class MasterPlansController : BaseApiController
     [LongCache] // 1 hour cache
     public async Task<ActionResult<ApiResponse<MasterPlanDto>>> GetMasterPlan(Guid id)
     {
-        try
-        {
-            LogControllerAction(_logger, "GetMasterPlan", new { id });
+        LogControllerAction(_logger, "GetMasterPlan", new { id });
 
-            var result = await _masterPlanService.GetMasterPlanDtoByIdAsync(id);
-            return result.IsSuccess ? 
-                Ok(new ApiResponse<MasterPlanDto> { Success = true, Data = result.Data, Message = result.Message }) : 
-                BadRequest(new ApiResponse<MasterPlanDto> { Success = false, Message = result.Message });
-        }
-        catch (Exception ex)
-        {
-            return HandleException<MasterPlanDto>(_logger, ex, "retrieving master plan");
-        }
+        var query = new GetMasterPlanQuery { MasterPlanId = id };
+        var handler = HttpContext.RequestServices.GetRequiredService<IQueryHandler<GetMasterPlanQuery, MasterPlanDto>>();
+        var result = await handler.HandleAsync(query);
+
+        return result.IsSuccess ? 
+            Ok(new ApiResponse<MasterPlanDto> { Success = true, Data = result.Data, Message = result.Message }) : 
+            BadRequest(new ApiResponse<MasterPlanDto> { Success = false, Message = result.Message });
     }
 
     /// <summary>
@@ -104,19 +91,15 @@ public class MasterPlansController : BaseApiController
     [LongCache] // 1 hour cache
     public async Task<ActionResult<ApiResponse<MasterPlanDto>>> GetMasterPlanByProject(Guid projectId)
     {
-        try
-        {
-            LogControllerAction(_logger, "GetMasterPlanByProject", new { projectId });
+        LogControllerAction(_logger, "GetMasterPlanByProject", new { projectId });
 
-            var result = await _masterPlanService.GetMasterPlanByProjectIdAsync(projectId);
-            return result.IsSuccess ? 
-                Ok(new ApiResponse<MasterPlanDto> { Success = true, Data = result.Data, Message = result.Message }) : 
-                BadRequest(new ApiResponse<MasterPlanDto> { Success = false, Message = result.Message });
-        }
-        catch (Exception ex)
-        {
-            return HandleException<MasterPlanDto>(_logger, ex, "retrieving master plan by project");
-        }
+        var query = new GetMasterPlanByProjectQuery { ProjectId = projectId };
+        var handler = HttpContext.RequestServices.GetRequiredService<IQueryHandler<GetMasterPlanByProjectQuery, MasterPlanDto>>();
+        var result = await handler.HandleAsync(query);
+
+        return result.IsSuccess ? 
+            Ok(new ApiResponse<MasterPlanDto> { Success = true, Data = result.Data, Message = result.Message }) : 
+            BadRequest(new ApiResponse<MasterPlanDto> { Success = false, Message = result.Message });
     }
 
     /// <summary>
@@ -128,22 +111,23 @@ public class MasterPlansController : BaseApiController
     [NoCache]
     public async Task<ActionResult<ApiResponse<MasterPlanDto>>> UpdateMasterPlan(Guid id, [FromBody] UpdateMasterPlanRequest request)
     {
-        try
-        {
-            LogControllerAction(_logger, "UpdateMasterPlan", new { id, request });
+        LogControllerAction(_logger, "UpdateMasterPlan", new { id, request });
 
-            if (!ModelState.IsValid)
-                return CreateErrorResponse<MasterPlanDto>("Invalid input data");
+        if (!ModelState.IsValid)
+            return CreateValidationErrorResponse<MasterPlanDto>();
 
-            var result = await _masterPlanService.UpdateMasterPlanAsync(id, request);
-            return result.IsSuccess ? 
-                Ok(new ApiResponse<MasterPlanDto> { Success = true, Data = result.Data, Message = result.Message }) : 
-                BadRequest(new ApiResponse<MasterPlanDto> { Success = false, Message = result.Message });
-        }
-        catch (Exception ex)
+        var command = new UpdateMasterPlanCommand
         {
-            return HandleException<MasterPlanDto>(_logger, ex, "updating master plan");
-        }
+            MasterPlanId = id,
+            Request = request
+        };
+
+        var handler = HttpContext.RequestServices.GetRequiredService<ICommandHandler<UpdateMasterPlanCommand, MasterPlanDto>>();
+        var result = await handler.HandleAsync(command);
+
+        return result.IsSuccess ? 
+            CreateSuccessResponse(result.Data!, result.Message) : 
+            CreateErrorResponse<MasterPlanDto>(result.Message ?? "Operation failed", 400);
     }
 
     /// <summary>
@@ -155,23 +139,25 @@ public class MasterPlansController : BaseApiController
     [NoCache]
     public async Task<ActionResult<ApiResponse<bool>>> ApproveMasterPlan(Guid id, [FromBody] string? notes = null)
     {
-        try
-        {
-            LogControllerAction(_logger, "ApproveMasterPlan", new { id, notes });
+        LogControllerAction(_logger, "ApproveMasterPlan", new { id, notes });
 
-            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            if (!Guid.TryParse(userIdClaim, out var userId))
-                return CreateErrorResponse<bool>("Invalid user ID in token", 401);
+        var userId = GetCurrentUserId();
+        if (userId == null)
+            return CreateErrorResponse<bool>("User not authenticated", 401);
 
-            var result = await _masterPlanService.ApproveMasterPlanAsync(id, userId, notes);
-            return result.IsSuccess ? 
-                Ok(new ApiResponse<bool> { Success = true, Data = result.Data, Message = result.Message }) : 
-                BadRequest(new ApiResponse<bool> { Success = false, Message = result.Message });
-        }
-        catch (Exception ex)
+        var command = new ApproveMasterPlanCommand
         {
-            return HandleException<bool>(_logger, ex, "approving master plan");
-        }
+            MasterPlanId = id,
+            ApprovedById = userId.Value,
+            Notes = notes
+        };
+
+        var handler = HttpContext.RequestServices.GetRequiredService<ICommandHandler<ApproveMasterPlanCommand, bool>>();
+        var result = await handler.HandleAsync(command);
+
+        return result.IsSuccess ? 
+            Ok(new ApiResponse<bool> { Success = true, Data = result.Data, Message = result.Message }) : 
+            BadRequest(new ApiResponse<bool> { Success = false, Message = result.Message });
     }
 
     /// <summary>
@@ -183,19 +169,15 @@ public class MasterPlansController : BaseApiController
     [NoCache]
     public async Task<ActionResult<ApiResponse<bool>>> ActivateMasterPlan(Guid id)
     {
-        try
-        {
-            LogControllerAction(_logger, "ActivateMasterPlan", new { id });
+        LogControllerAction(_logger, "ActivateMasterPlan", new { id });
 
-            var result = await _masterPlanService.ActivateMasterPlanAsync(id);
-            return result.IsSuccess ? 
-                Ok(new ApiResponse<bool> { Success = true, Data = result.Data, Message = result.Message }) : 
-                BadRequest(new ApiResponse<bool> { Success = false, Message = result.Message });
-        }
-        catch (Exception ex)
-        {
-            return HandleException<bool>(_logger, ex, "activating master plan");
-        }
+        var command = new ActivateMasterPlanCommand { MasterPlanId = id };
+        var handler = HttpContext.RequestServices.GetRequiredService<ICommandHandler<ActivateMasterPlanCommand, bool>>();
+        var result = await handler.HandleAsync(command);
+
+        return result.IsSuccess ? 
+            Ok(new ApiResponse<bool> { Success = true, Data = result.Data, Message = result.Message }) : 
+            BadRequest(new ApiResponse<bool> { Success = false, Message = result.Message });
     }
 
     /// <summary>
@@ -205,19 +187,15 @@ public class MasterPlansController : BaseApiController
     [ShortCache] // 5 minute cache
     public async Task<ActionResult<ApiResponse<ProgressSummaryDto>>> GetProgressSummary(Guid id)
     {
-        try
-        {
-            LogControllerAction(_logger, "GetProgressSummary", new { id });
+        LogControllerAction(_logger, "GetProgressSummary", new { id });
 
-            var result = await _masterPlanService.GetProgressSummaryAsync(id);
-            return result.IsSuccess ? 
-                Ok(new ApiResponse<ProgressSummaryDto> { Success = true, Data = result.Data, Message = result.Message }) : 
-                BadRequest(new ApiResponse<ProgressSummaryDto> { Success = false, Message = result.Message });
-        }
-        catch (Exception ex)
-        {
-            return HandleException<ProgressSummaryDto>(_logger, ex, "retrieving progress summary");
-        }
+        var query = new GetProgressSummaryQuery { MasterPlanId = id };
+        var handler = HttpContext.RequestServices.GetRequiredService<IQueryHandler<GetProgressSummaryQuery, ProgressSummaryDto>>();
+        var result = await handler.HandleAsync(query);
+
+        return result.IsSuccess ? 
+            Ok(new ApiResponse<ProgressSummaryDto> { Success = true, Data = result.Data, Message = result.Message }) : 
+            BadRequest(new ApiResponse<ProgressSummaryDto> { Success = false, Message = result.Message });
     }
 
     /// <summary>
@@ -227,19 +205,15 @@ public class MasterPlansController : BaseApiController
     [ShortCache] // 5 minute cache
     public async Task<ActionResult<ApiResponse<decimal>>> GetOverallProgress(Guid id)
     {
-        try
-        {
-            LogControllerAction(_logger, "GetOverallProgress", new { id });
+        LogControllerAction(_logger, "GetOverallProgress", new { id });
 
-            var result = await _masterPlanService.CalculateOverallProgressAsync(id);
-            return result.IsSuccess ? 
-                Ok(new ApiResponse<decimal> { Success = true, Data = result.Data, Message = result.Message }) : 
-                BadRequest(new ApiResponse<decimal> { Success = false, Message = result.Message });
-        }
-        catch (Exception ex)
-        {
-            return HandleException<decimal>(_logger, ex, "calculating overall progress");
-        }
+        var query = new GetOverallProgressQuery { MasterPlanId = id };
+        var handler = HttpContext.RequestServices.GetRequiredService<IQueryHandler<GetOverallProgressQuery, decimal>>();
+        var result = await handler.HandleAsync(query);
+
+        return result.IsSuccess ? 
+            Ok(new ApiResponse<decimal> { Success = true, Data = result.Data, Message = result.Message }) : 
+            BadRequest(new ApiResponse<decimal> { Success = false, Message = result.Message });
     }
 
     /// <summary>
@@ -249,19 +223,15 @@ public class MasterPlansController : BaseApiController
     [MediumCache] // 15 minute cache
     public async Task<ActionResult<ApiResponse<List<ProjectPhaseDto>>>> GetPhases(Guid id)
     {
-        try
-        {
-            LogControllerAction(_logger, "GetPhases", new { id });
+        LogControllerAction(_logger, "GetPhases", new { id });
 
-            var result = await _masterPlanService.GetPhasesByMasterPlanAsync(id);
-            return result.IsSuccess ? 
-                Ok(new ApiResponse<List<ProjectPhaseDto>> { Success = true, Data = result.Data, Message = result.Message }) : 
-                BadRequest(new ApiResponse<List<ProjectPhaseDto>> { Success = false, Message = result.Message });
-        }
-        catch (Exception ex)
-        {
-            return HandleException<List<ProjectPhaseDto>>(_logger, ex, "retrieving phases");
-        }
+        var query = new GetPhasesQuery { MasterPlanId = id };
+        var handler = HttpContext.RequestServices.GetRequiredService<IQueryHandler<GetPhasesQuery, List<ProjectPhaseDto>>>();
+        var result = await handler.HandleAsync(query);
+
+        return result.IsSuccess ? 
+            Ok(new ApiResponse<List<ProjectPhaseDto>> { Success = true, Data = result.Data, Message = result.Message }) : 
+            BadRequest(new ApiResponse<List<ProjectPhaseDto>> { Success = false, Message = result.Message });
     }
 
     /// <summary>
@@ -273,28 +243,23 @@ public class MasterPlansController : BaseApiController
     [NoCache]
     public async Task<ActionResult<ApiResponse<ProjectPhaseDto>>> AddPhase(Guid id, [FromBody] CreateProjectPhaseRequest request)
     {
-        try
-        {
-            LogControllerAction(_logger, "AddPhase", new { id, request });
+        LogControllerAction(_logger, "AddPhase", new { id, request });
 
-            if (!ModelState.IsValid)
-            {
-                var errors = ModelState.Values
-                    .SelectMany(v => v.Errors)
-                    .Select(e => e.ErrorMessage)
-                    .ToList();
-                return CreateErrorResponse<ProjectPhaseDto>("Invalid input data");
-            }
+        if (!ModelState.IsValid)
+            return CreateValidationErrorResponse<ProjectPhaseDto>();
 
-            var result = await _masterPlanService.AddPhaseToMasterPlanAsync(id, request);
-            return result.IsSuccess ? 
-                Ok(new ApiResponse<ProjectPhaseDto> { Success = true, Data = result.Data, Message = result.Message }) : 
-                BadRequest(new ApiResponse<ProjectPhaseDto> { Success = false, Message = result.Message });
-        }
-        catch (Exception ex)
+        var command = new AddPhaseCommand
         {
-            return HandleException<ProjectPhaseDto>(_logger, ex, "adding phase");
-        }
+            MasterPlanId = id,
+            Request = request
+        };
+
+        var handler = HttpContext.RequestServices.GetRequiredService<ICommandHandler<AddPhaseCommand, ProjectPhaseDto>>();
+        var result = await handler.HandleAsync(command);
+
+        return result.IsSuccess ? 
+            Ok(new ApiResponse<ProjectPhaseDto> { Success = true, Data = result.Data, Message = result.Message }) : 
+            BadRequest(new ApiResponse<ProjectPhaseDto> { Success = false, Message = result.Message });
     }
 
     /// <summary>
@@ -309,47 +274,24 @@ public class MasterPlansController : BaseApiController
         Guid phaseId, 
         [FromBody] UpdatePhaseProgressRequest request)
     {
-        try
-        {
-            LogControllerAction(_logger, "UpdatePhaseProgress", new { masterPlanId, phaseId, request });
+        LogControllerAction(_logger, "UpdatePhaseProgress", new { masterPlanId, phaseId, request });
 
-            if (!ModelState.IsValid)
-            {
-                var errors = ModelState.Values
-                    .SelectMany(v => v.Errors)
-                    .Select(e => e.ErrorMessage)
-                    .ToList();
-                return CreateErrorResponse<bool>("Invalid input data");
-            }
+        if (!ModelState.IsValid)
+            return CreateValidationErrorResponse<bool>();
 
-            // Validate percentage range
-            if (request.CompletionPercentage < 0 || request.CompletionPercentage > 100)
-            {
-                return CreateErrorResponse<bool>("Completion percentage must be between 0 and 100", 400);
-            }
+        var command = new UpdatePhaseProgressCommand
+        {
+            PhaseId = phaseId,
+            CompletionPercentage = request.CompletionPercentage,
+            Status = request.Status
+        };
 
-            // Validate status (it's already validated by model binding for enum)
-            // Additional validation can be added here if needed
+        var handler = HttpContext.RequestServices.GetRequiredService<ICommandHandler<UpdatePhaseProgressCommand, bool>>();
+        var result = await handler.HandleAsync(command);
 
-            var result = await _masterPlanService.UpdatePhaseProgressAsync(phaseId, request.CompletionPercentage, request.Status);
-            return result.IsSuccess ? 
-                Ok(new ApiResponse<bool> { Success = true, Data = result.Data, Message = result.Message }) : 
-                BadRequest(new ApiResponse<bool> { Success = false, Message = result.Message });
-        }
-        catch (ArgumentException ex)
-        {
-            _logger.LogWarning(ex, "Invalid argument while updating phase progress");
-            return CreateErrorResponse<bool>($"Invalid input: {ex.Message}", 400);
-        }
-        catch (KeyNotFoundException ex)
-        {
-            _logger.LogWarning(ex, "Phase not found while updating progress");
-            return CreateErrorResponse<bool>($"Phase with ID {phaseId} not found", 404);
-        }
-        catch (Exception ex)
-        {
-            return HandleException<bool>(_logger, ex, "updating phase progress");
-        }
+        return result.IsSuccess ? 
+            Ok(new ApiResponse<bool> { Success = true, Data = result.Data, Message = result.Message }) : 
+            BadRequest(new ApiResponse<bool> { Success = false, Message = result.Message });
     }
 
     /// <summary>
@@ -359,19 +301,15 @@ public class MasterPlansController : BaseApiController
     [MediumCache] // 15 minute cache
     public async Task<ActionResult<ApiResponse<List<ProjectMilestoneDto>>>> GetMilestones(Guid id)
     {
-        try
-        {
-            LogControllerAction(_logger, "GetMilestones", new { id });
+        LogControllerAction(_logger, "GetMilestones", new { id });
 
-            var result = await _masterPlanService.GetMilestonesByMasterPlanAsync(id);
-            return result.IsSuccess ? 
-                Ok(new ApiResponse<List<ProjectMilestoneDto>> { Success = true, Data = result.Data, Message = result.Message }) : 
-                BadRequest(new ApiResponse<List<ProjectMilestoneDto>> { Success = false, Message = result.Message });
-        }
-        catch (Exception ex)
-        {
-            return HandleException<List<ProjectMilestoneDto>>(_logger, ex, "retrieving milestones");
-        }
+        var query = new GetMilestonesQuery { MasterPlanId = id };
+        var handler = HttpContext.RequestServices.GetRequiredService<IQueryHandler<GetMilestonesQuery, List<ProjectMilestoneDto>>>();
+        var result = await handler.HandleAsync(query);
+
+        return result.IsSuccess ? 
+            Ok(new ApiResponse<List<ProjectMilestoneDto>> { Success = true, Data = result.Data, Message = result.Message }) : 
+            BadRequest(new ApiResponse<List<ProjectMilestoneDto>> { Success = false, Message = result.Message });
     }
 
     /// <summary>
@@ -383,22 +321,23 @@ public class MasterPlansController : BaseApiController
     [NoCache]
     public async Task<ActionResult<ApiResponse<ProjectMilestoneDto>>> AddMilestone(Guid id, [FromBody] CreateProjectMilestoneRequest request)
     {
-        try
-        {
-            LogControllerAction(_logger, "AddMilestone", new { id, request });
+        LogControllerAction(_logger, "AddMilestone", new { id, request });
 
-            if (!ModelState.IsValid)
-                return CreateErrorResponse<ProjectMilestoneDto>("Invalid input data", 400);
+        if (!ModelState.IsValid)
+            return CreateValidationErrorResponse<ProjectMilestoneDto>();
 
-            var result = await _masterPlanService.AddMilestoneToMasterPlanAsync(id, request);
-            return result.IsSuccess ? 
-                Ok(new ApiResponse<ProjectMilestoneDto> { Success = true, Data = result.Data, Message = result.Message }) : 
-                BadRequest(new ApiResponse<ProjectMilestoneDto> { Success = false, Message = result.Message });
-        }
-        catch (Exception ex)
+        var command = new AddMilestoneCommand
         {
-            return HandleException<ProjectMilestoneDto>(_logger, ex, "adding milestone");
-        }
+            MasterPlanId = id,
+            Request = request
+        };
+
+        var handler = HttpContext.RequestServices.GetRequiredService<ICommandHandler<AddMilestoneCommand, ProjectMilestoneDto>>();
+        var result = await handler.HandleAsync(command);
+
+        return result.IsSuccess ? 
+            Ok(new ApiResponse<ProjectMilestoneDto> { Success = true, Data = result.Data, Message = result.Message }) : 
+            BadRequest(new ApiResponse<ProjectMilestoneDto> { Success = false, Message = result.Message });
     }
 
     /// <summary>
@@ -413,23 +352,25 @@ public class MasterPlansController : BaseApiController
         Guid milestoneId, 
         [FromBody] string? evidence = null)
     {
-        try
-        {
-            LogControllerAction(_logger, "CompleteMilestone", new { masterPlanId, milestoneId, evidence });
+        LogControllerAction(_logger, "CompleteMilestone", new { masterPlanId, milestoneId, evidence });
 
-            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            if (!Guid.TryParse(userIdClaim, out var userId))
-                return CreateErrorResponse<bool>("Invalid user ID in token", 401);
+        var userId = GetCurrentUserId();
+        if (userId == null)
+            return CreateErrorResponse<bool>("User not authenticated", 401);
 
-            var result = await _masterPlanService.CompleteMilestoneAsync(milestoneId, userId, evidence);
-            return result.IsSuccess ? 
-                Ok(new ApiResponse<bool> { Success = true, Data = result.Data, Message = result.Message }) : 
-                BadRequest(new ApiResponse<bool> { Success = false, Message = result.Message });
-        }
-        catch (Exception ex)
+        var command = new CompleteMilestoneCommand
         {
-            return HandleException<bool>(_logger, ex, "completing milestone");
-        }
+            MilestoneId = milestoneId,
+            CompletedById = userId.Value,
+            Evidence = evidence
+        };
+
+        var handler = HttpContext.RequestServices.GetRequiredService<ICommandHandler<CompleteMilestoneCommand, bool>>();
+        var result = await handler.HandleAsync(command);
+
+        return result.IsSuccess ? 
+            Ok(new ApiResponse<bool> { Success = true, Data = result.Data, Message = result.Message }) : 
+            BadRequest(new ApiResponse<bool> { Success = false, Message = result.Message });
     }
 
     /// <summary>
@@ -439,19 +380,15 @@ public class MasterPlansController : BaseApiController
     [ShortCache] // 5 minute cache
     public async Task<ActionResult<ApiResponse<List<ProjectMilestoneDto>>>> GetUpcomingMilestones(Guid id, [FromQuery] int days = 30)
     {
-        try
-        {
-            LogControllerAction(_logger, "GetUpcomingMilestones", new { id, days });
+        LogControllerAction(_logger, "GetUpcomingMilestones", new { id, days });
 
-            var result = await _masterPlanService.GetUpcomingMilestonesAsync(id, days);
-            return result.IsSuccess ? 
-                Ok(new ApiResponse<List<ProjectMilestoneDto>> { Success = true, Data = result.Data, Message = result.Message }) : 
-                BadRequest(new ApiResponse<List<ProjectMilestoneDto>> { Success = false, Message = result.Message });
-        }
-        catch (Exception ex)
-        {
-            return HandleException<List<ProjectMilestoneDto>>(_logger, ex, "retrieving upcoming milestones");
-        }
+        var query = new GetUpcomingMilestonesQuery { MasterPlanId = id, Days = days };
+        var handler = HttpContext.RequestServices.GetRequiredService<IQueryHandler<GetUpcomingMilestonesQuery, List<ProjectMilestoneDto>>>();
+        var result = await handler.HandleAsync(query);
+
+        return result.IsSuccess ? 
+            Ok(new ApiResponse<List<ProjectMilestoneDto>> { Success = true, Data = result.Data, Message = result.Message }) : 
+            BadRequest(new ApiResponse<List<ProjectMilestoneDto>> { Success = false, Message = result.Message });
     }
 
     /// <summary>
@@ -463,26 +400,28 @@ public class MasterPlansController : BaseApiController
     [NoCache]
     public async Task<ActionResult<ApiResponse<ProgressReportDto>>> CreateProgressReport(Guid id, [FromBody] CreateProgressReportRequest request)
     {
-        try
+        LogControllerAction(_logger, "CreateProgressReport", new { id, request });
+
+        if (!ModelState.IsValid)
+            return CreateValidationErrorResponse<ProgressReportDto>();
+
+        var userId = GetCurrentUserId();
+        if (userId == null)
+            return CreateErrorResponse<ProgressReportDto>("User not authenticated", 401);
+
+        var command = new CreateProgressReportCommand
         {
-            LogControllerAction(_logger, "CreateProgressReport", new { id, request });
+            MasterPlanId = id,
+            Request = request,
+            CreatedById = userId.Value
+        };
 
-            if (!ModelState.IsValid)
-                return CreateErrorResponse<ProgressReportDto>("Invalid input data", 400);
+        var handler = HttpContext.RequestServices.GetRequiredService<ICommandHandler<CreateProgressReportCommand, ProgressReportDto>>();
+        var result = await handler.HandleAsync(command);
 
-            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            if (!Guid.TryParse(userIdClaim, out var userId))
-                return CreateErrorResponse<ProgressReportDto>("Invalid user ID in token", 401);
-
-            var result = await _masterPlanService.CreateProgressReportAsync(id, request, userId);
-            return result.IsSuccess ? 
-                Ok(new ApiResponse<ProgressReportDto> { Success = true, Data = result.Data, Message = result.Message }) : 
-                BadRequest(new ApiResponse<ProgressReportDto> { Success = false, Message = result.Message });
-        }
-        catch (Exception ex)
-        {
-            return HandleException<ProgressReportDto>(_logger, ex, "creating progress report");
-        }
+        return result.IsSuccess ? 
+            Ok(new ApiResponse<ProgressReportDto> { Success = true, Data = result.Data, Message = result.Message }) : 
+            BadRequest(new ApiResponse<ProgressReportDto> { Success = false, Message = result.Message });
     }
 
     /// <summary>
@@ -495,27 +434,24 @@ public class MasterPlansController : BaseApiController
         [FromQuery] int pageNumber = 1, 
         [FromQuery] int pageSize = 10)
     {
-        try
-        {
-            LogControllerAction(_logger, "GetProgressReports", new { id, pageNumber, pageSize });
+        LogControllerAction(_logger, "GetProgressReports", new { id, pageNumber, pageSize });
 
-            var validationResult = ValidatePaginationParameters(pageNumber, pageSize);
-            if (validationResult != null)
-                return BadRequest(CreateErrorResponse(validationResult));
+        var validationResult = ValidatePaginationParameters(pageNumber, pageSize);
+        if (validationResult != null)
+            return BadRequest(CreateErrorResponse(validationResult));
 
-            var result = await _masterPlanService.GetProgressReportsAsync(id, pageNumber, pageSize);
-            return result.IsSuccess ? 
-                Ok(new ApiResponse<List<ProgressReportDto>> { Success = true, Data = result.Data }) : 
-                BadRequest(new ApiResponse<List<ProgressReportDto>> { Success = false, Message = "Failed to retrieve progress reports" });
-        }
-        catch (KeyNotFoundException ex)
-        {
-            _logger.LogWarning(ex, "Master plan not found while retrieving progress reports");
-            return NotFound(new ApiResponse<List<ProgressReportDto>> { Success = false, Message = $"Master plan with ID {id} not found" });
-        }
-        catch (Exception ex)
-        {
-            return HandleException<List<ProgressReportDto>>(_logger, ex, "retrieving progress reports");
-        }
+        var query = new GetProgressReportsQuery 
+        { 
+            MasterPlanId = id, 
+            PageNumber = pageNumber, 
+            PageSize = pageSize 
+        };
+
+        var handler = HttpContext.RequestServices.GetRequiredService<IQueryHandler<GetProgressReportsQuery, List<ProgressReportDto>>>();
+        var result = await handler.HandleAsync(query);
+
+        return result.IsSuccess ? 
+            Ok(new ApiResponse<List<ProgressReportDto>> { Success = true, Data = result.Data }) : 
+            BadRequest(new ApiResponse<List<ProgressReportDto>> { Success = false, Message = result.Message });
     }
 }

@@ -139,6 +139,41 @@ public class ProgressReport
     [MaxLength(3000)]
     public string? ExecutiveSummary { get; set; }
     
+    /// <summary>
+    /// Title of the progress report
+    /// </summary>
+    [MaxLength(255)]
+    public string? ReportTitle { get; set; }
+    
+    /// <summary>
+    /// Main content/body of the report
+    /// </summary>
+    [MaxLength(8000)]
+    public string? ReportContent { get; set; }
+    
+    /// <summary>
+    /// Overall completion percentage (alternative name for OverallCompletionPercentage)
+    /// </summary>
+    [Column(TypeName = "decimal(5,2)")]
+    public decimal CompletionPercentage { get; set; }
+    
+    /// <summary>
+    /// Challenges faced (alternative name for CurrentChallenges)
+    /// </summary>
+    [MaxLength(4000)]
+    public string? ChallengesFaced { get; set; }
+    
+    /// <summary>
+    /// Next steps and actions to be taken (maps to UpcomingActivities)
+    /// </summary>
+    [MaxLength(4000)]
+    public string? NextSteps { get; set; }
+    
+    /// <summary>
+    /// Last updated timestamp
+    /// </summary>
+    public DateTime? UpdatedAt { get; set; }
+    
     public DateTime CreatedAt { get; set; }
     
     [ForeignKey("CreatedBy")]

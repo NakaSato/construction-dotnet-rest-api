@@ -84,7 +84,30 @@ public class ProjectMilestone
     public string? Notes { get; set; }
     
     public DateTime CreatedAt { get; set; }
+    /// <summary>
+    /// Last updated timestamp
+    /// </summary>
     public DateTime? UpdatedAt { get; set; }
+    
+    /// <summary>
+    /// Target date for milestone (alternative name for PlannedDate)
+    /// </summary>
+    public DateTime TargetDate { get; set; }
+    
+    /// <summary>
+    /// Date milestone was completed (alternative name for ActualDate)
+    /// </summary>
+    public DateTime? CompletedDate { get; set; }
+    
+    /// <summary>
+    /// User who completed the milestone (alternative name for VerifiedById)
+    /// </summary>
+    public Guid? CompletedById { get; set; }
+    
+    /// <summary>
+    /// Priority level (alternative name for Importance)
+    /// </summary>
+    public MilestoneImportance Priority { get; set; } = MilestoneImportance.Medium;
     
     // Navigation Properties
     public virtual MasterPlan MasterPlan { get; set; } = null!;

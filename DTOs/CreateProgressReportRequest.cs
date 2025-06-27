@@ -91,4 +91,9 @@ public class CreateProgressReportRequest
     /// Phase updates for the report
     /// </summary>
     public List<UpdatePhaseProgressRequest>? PhaseUpdates { get; set; }
+    
+    // Additional properties for compatibility with MasterPlanReportingService
+    public string ReportTitle => Title;
+    public string ReportContent => Summary;
+    public string? ChallengesFaced => CurrentChallenges;
 }

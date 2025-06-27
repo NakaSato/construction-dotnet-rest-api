@@ -1,10 +1,11 @@
 using Microsoft.AspNetCore.Mvc;
 using dotnet_rest_api.DTOs;
+using dotnet_rest_api.Services;
 
 namespace dotnet_rest_api.Controllers;
 
 /// <summary>
-/// Base controller for all API controllers
+/// Base controller for all API controllers with enhanced functionality
 /// </summary>
 [ApiController]
 [Route("api/v1/[controller]")]
@@ -12,10 +13,110 @@ namespace dotnet_rest_api.Controllers;
 public abstract class BaseApiController : ControllerBase
 {
     private readonly ILogger<BaseApiController>? _logger;
+    protected readonly IUserContextService? _userContextService;
+    protected readonly IResponseBuilderService? _responseBuilderService;
 
-    protected BaseApiController(ILogger<BaseApiController>? logger = null)
+    protected BaseApiController(
+        ILogger<BaseApiController>? logger = null,
+        IUserContextService? userContextService = null,
+        IResponseBuilderService? responseBuilderService = null)
     {
         _logger = logger;
+        _userContextService = userContextService;
+        _responseBuilderService = responseBuilderService;
+    }
+
+    /// <summary>
+    /// Gets the current user ID from the authentication context
+    /// </summary>
+    protected Guid? GetCurrentUserId()
+    {
+        if (_userContextService == null)
+        {
+            // Fallback to original method if service is not available
+            var userIdString = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+            return userIdString != null && Guid.TryParse(userIdString, out var userId) ? userId : null;
+        }
+
+        return _userContextService.GetCurrentUserId(User);
+    }
+
+    /// <summary>
+    /// Gets the current user details from the authentication context
+    /// </summary>
+    protected UserContext? GetCurrentUserContext()
+    {
+        if (_userContextService == null)
+        {
+            return null;
+        }
+
+        return _userContextService.GetCurrentUserContext(User);
+    }
+
+    /// <summary>
+    /// Creates a standardized success response
+    /// </summary>
+    protected ActionResult<ApiResponse<T>> CreateSuccessResponse<T>(T data, string? message = null)
+    {
+        if (_responseBuilderService != null)
+        {
+            return Ok(_responseBuilderService.CreateSuccessResponse(data, message));
+        }
+
+        // Fallback to original method
+        return Ok(new ApiResponse<T>
+        {
+            Success = true,
+            Data = data,
+            Message = message ?? "Operation completed successfully"
+        });
+    }
+
+    /// <summary>
+    /// Creates a standardized error response
+    /// </summary>
+    protected ActionResult<ApiResponse<T>> CreateErrorResponse<T>(string message, int statusCode = 400)
+    {
+        if (_responseBuilderService != null)
+        {
+            var response = _responseBuilderService.CreateErrorResponse<T>(message, statusCode);
+            return StatusCode(statusCode, response);
+        }
+
+        // Fallback to original method
+        return StatusCode(statusCode, new ApiResponse<T>
+        {
+            Success = false,
+            Message = message,
+            Data = default(T)
+        });
+    }
+
+    /// <summary>
+    /// Creates a validation error response from ModelState
+    /// </summary>
+    protected ActionResult<ApiResponse<T>> CreateValidationErrorResponse<T>()
+    {
+        if (_responseBuilderService != null)
+        {
+            return BadRequest(_responseBuilderService.CreateValidationErrorResponse<T>(ModelState));
+        }
+
+        // Fallback to original method
+        var errors = ModelState
+            .Where(x => x.Value?.Errors.Count > 0)
+            .SelectMany(x => x.Value!.Errors)
+            .Select(x => x.ErrorMessage)
+            .ToList();
+
+        return BadRequest(new ApiResponse<T>
+        {
+            Success = false,
+            Message = "Validation failed",
+            Data = default(T),
+            Errors = errors
+        });
     }
 
     /// <summary>
@@ -126,43 +227,6 @@ public abstract class BaseApiController : ControllerBase
     /// </summary>
     /// <typeparam name="T">Response type</typeparam>
     /// <param name="data">Data to return</param>
-    /// <param name="message">Success message</param>
-    /// <returns>Success response</returns>
-    protected ActionResult<ApiResponse<T>> CreateSuccessResponse<T>(T data, string? message = null)
-    {
-        return Ok(new ApiResponse<T>
-        {
-            Success = true,
-            Data = data,
-            Message = message ?? "Success"
-        });
-    }
-
-    /// <summary>
-    /// Creates an error response
-    /// </summary>
-    /// <typeparam name="T">Response type</typeparam>
-    /// <param name="message">Error message</param>
-    /// <param name="statusCode">HTTP status code</param>
-    /// <returns>Error response</returns>
-    protected ActionResult<ApiResponse<T>> CreateErrorResponse<T>(string message, int statusCode = 400)
-    {
-        var response = new ApiResponse<T>
-        {
-            Success = false,
-            Message = message
-        };
-
-        return statusCode switch
-        {
-            404 => NotFound(response),
-            401 => Unauthorized(response),
-            403 => StatusCode(403, response),
-            500 => StatusCode(500, response),
-            _ => BadRequest(response)
-        };
-    }
-
     /// <summary>
     /// Creates an error response (non-generic)
     /// </summary>

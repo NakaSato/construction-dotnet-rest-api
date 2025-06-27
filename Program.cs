@@ -148,11 +148,18 @@ builder.Services.AddCors(options =>
 
 // Business Services Registration
 builder.Services.AddScoped<IDailyReportService, StubDailyReportService>();
+
+// Core Services - New abstractions for better code quality
+builder.Services.AddScoped<IUserContextService, UserContextService>();
+builder.Services.AddScoped<IResponseBuilderService, ResponseBuilderService>();
+builder.Services.AddScoped<IValidationHelperService, ValidationHelperService>();
+
 // Service implementations
 builder.Services.AddScoped<ICacheService, CacheService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IProjectService, ProjectService>(); // Real implementation
 builder.Services.AddScoped<ITaskService, TaskService>(); // Real implementation
+builder.Services.AddScoped<IMasterPlanService, MasterPlanService>(); // Real implementation
 
 // Placeholder Services (temporary implementations)
 builder.Services.AddScoped<IUserService, PlaceholderUserService>();
@@ -167,7 +174,7 @@ builder.Services.AddScoped<IWorkRequestApprovalService, PlaceholderWorkRequestAp
 builder.Services.AddScoped<INotificationService, PlaceholderNotificationService>();
 builder.Services.AddScoped<IEmailService, PlaceholderEmailService>();
 builder.Services.AddScoped<ICloudStorageService, PlaceholderCloudStorageService>();
-builder.Services.AddScoped<IQueryService, PlaceholderQueryService>();
+builder.Services.AddScoped<IQueryService, QueryService>(); // Real implementation
 
 // ===================================
 // APPLICATION PIPELINE CONFIGURATION

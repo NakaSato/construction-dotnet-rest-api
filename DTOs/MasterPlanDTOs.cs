@@ -41,6 +41,16 @@ public class ProjectPhaseDto
     public decimal ActualDurationDays { get; set; }
     public bool IsOnSchedule { get; set; }
     public bool IsOnBudget { get; set; }
+    
+    // Additional properties for analytics
+    public Guid PhaseId { get; set; }
+    public string PhaseName { get; set; } = string.Empty;
+    public DateTime PlannedStartDate { get; set; }
+    public DateTime PlannedEndDate { get; set; }
+    public DateTime? ActualStartDate { get; set; }
+    public DateTime? ActualEndDate { get; set; }
+    public decimal WeightPercentage { get; set; }
+    public int PhaseOrder { get; set; }
 }
 
 public class CreateProjectPhaseRequest
@@ -49,8 +59,11 @@ public class CreateProjectPhaseRequest
     public string? Description { get; set; }
     public DateTime StartDate { get; set; }
     public DateTime EndDate { get; set; }
+    public int PhaseOrder { get; set; }
+    public decimal WeightPercentage { get; set; }
     
     // For compatibility with mapping profile
+    public string PhaseName => Name;
     public DateTime PlannedStartDate => StartDate;
     public DateTime PlannedEndDate => EndDate;
 }
@@ -63,6 +76,12 @@ public class UpdateProjectPhaseRequest
     public DateTime EndDate { get; set; }
     public PhaseStatus Status { get; set; }
     public decimal CompletionPercentage { get; set; }
+    public decimal WeightPercentage { get; set; }
+    
+    // For compatibility with mapping profile
+    public string PhaseName => Name;
+    public DateTime PlannedStartDate => StartDate;
+    public DateTime PlannedEndDate => EndDate;
 }
 
 // Project Milestone DTOs
@@ -87,6 +106,11 @@ public class CreateProjectMilestoneRequest
     public string Name { get; set; } = string.Empty;
     public string? Description { get; set; }
     public DateTime DueDate { get; set; }
+    public MilestoneImportance Priority { get; set; } = MilestoneImportance.Medium;
+    
+    // For compatibility with mapping profile
+    public string MilestoneName => Name;
+    public DateTime TargetDate => DueDate;
 }
 
 public class UpdateProjectMilestoneRequest
@@ -94,6 +118,11 @@ public class UpdateProjectMilestoneRequest
     public string Name { get; set; } = string.Empty;
     public string? Description { get; set; }
     public DateTime DueDate { get; set; }
+    public MilestoneImportance Priority { get; set; } = MilestoneImportance.Medium;
+    
+    // For compatibility with mapping profile
+    public string MilestoneName => Name;
+    public DateTime TargetDate => DueDate;
 }
 
 // Progress Report DTOs
@@ -231,6 +260,10 @@ public class ProgressSummaryDto
     public bool IsOnSchedule { get; set; }
     public bool IsOnBudget { get; set; }
     public DateTime LastUpdated { get; set; }
+    
+    // For compatibility with analytics service
+    public decimal OverallProgress { get; set; }
+    public ProjectHealthStatus ProjectHealth { get; set; }
 }
 
 // Enums

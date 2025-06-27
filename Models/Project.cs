@@ -75,6 +75,17 @@ public class Project
     [Column(TypeName = "decimal(10,7)")]
     public decimal? Longitude { get; set; }
     
+    // Additional properties for backward compatibility
+    public string? Name => ProjectName;
+    public string? Description { get; set; }
+    public string? Priority { get; set; }
+    public DateTime? PlannedStartDate => StartDate;
+    public DateTime? PlannedEndDate => EstimatedEndDate;
+    public decimal? Budget { get; set; }
+    public Guid? ManagerId => ProjectManagerId;
+    public Guid? CreatedById { get; set; }
+    public DateTime? UpdatedAt { get; set; }
+    
     // Navigation properties
     public virtual User ProjectManager { get; set; } = null!;
     public virtual ICollection<ProjectTask> Tasks { get; set; } = new List<ProjectTask>();

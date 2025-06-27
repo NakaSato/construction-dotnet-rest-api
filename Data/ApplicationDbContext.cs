@@ -99,6 +99,17 @@ public class ApplicationDbContext : DbContext
                 .WithMany(u => u.AssignedTasks)
                 .HasForeignKey(t => t.AssignedTechnicianId)
                 .OnDelete(DeleteBehavior.SetNull);
+
+            // Configure relationship with ProjectPhase
+            entity.HasOne(t => t.Phase)
+                .WithMany(p => p.Tasks)
+                .HasForeignKey(t => t.PhaseId)
+                .OnDelete(DeleteBehavior.SetNull);
+
+            // Add indexes for better performance
+            entity.HasIndex(t => t.PhaseId);
+            entity.HasIndex(t => t.Priority);
+            entity.HasIndex(t => t.CompletionPercentage);
         });
 
         // Configure ImageMetadata entity
@@ -956,21 +967,6 @@ public class ApplicationDbContext : DbContext
             entity.HasIndex(pr => pr.PhaseId);
             entity.HasIndex(pr => pr.ResourceType);
             entity.HasIndex(pr => pr.AllocationStatus);
-        });
-
-        // Update ProjectTask to include Phase relationship
-        modelBuilder.Entity<ProjectTask>(entity =>
-        {
-            // Add foreign key to Phase
-            entity.HasOne<ProjectPhase>()
-                .WithMany(p => p.Tasks)
-                .HasForeignKey(t => t.PhaseId)
-                .OnDelete(DeleteBehavior.SetNull);
-
-            // Add indexes for new fields
-            entity.HasIndex(t => t.PhaseId);
-            entity.HasIndex(t => t.Priority);
-            entity.HasIndex(t => t.CompletionPercentage);
         });
 
         // DailyReport configuration
