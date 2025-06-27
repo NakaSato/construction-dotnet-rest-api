@@ -11,8 +11,12 @@ using Asp.Versioning;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Configure Kestrel to listen on port 5001
-builder.WebHost.UseUrls("http://localhost:5001");
+// Configure Kestrel URLs based on environment
+if (builder.Environment.IsDevelopment() && !builder.Environment.EnvironmentName.Equals("Docker", StringComparison.OrdinalIgnoreCase))
+{
+    // Only use localhost:5001 for local development outside Docker
+    builder.WebHost.UseUrls("http://localhost:5001");
+}
 
 // ===================================
 // SERVICE REGISTRATION
@@ -171,8 +175,8 @@ builder.Services.AddScoped<IQueryService, PlaceholderQueryService>();
 
 var app = builder.Build();
 
-// Swagger Configuration (enabled in Development for API documentation)
-if (app.Environment.IsDevelopment())
+// Swagger Configuration (enabled in Development and Docker for API documentation)
+if (app.Environment.IsDevelopment() || app.Environment.EnvironmentName == "Docker")
 {
     app.UseSwagger();
     app.UseSwaggerUI(options =>

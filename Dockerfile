@@ -34,7 +34,7 @@ RUN mkdir -p uploads
 COPY --from=publish /app/publish .
 
 # Set environment variables
-ENV ASPNETCORE_ENVIRONMENT=Production
-ENV ASPNETCORE_URLS=http://+:8080
+ENV ASPNETCORE_ENVIRONMENT=Docker
+ENV ASPNETCORE_HTTP_PORTS=8080
 
 ENTRYPOINT ["dotnet", "dotnet-rest-api.dll"]
