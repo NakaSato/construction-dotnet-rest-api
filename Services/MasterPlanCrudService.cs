@@ -13,6 +13,7 @@ namespace dotnet_rest_api.Services;
 /// </summary>
 public interface IMasterPlanCrudService
 {
+    Task<Result<List<MasterPlanDto>>> GetAllAsync(int pageNumber = 1, int pageSize = 50);
     Task<Result<MasterPlanDto>> GetByIdAsync(Guid masterPlanId);
     Task<Result<MasterPlanDto>> GetByProjectIdAsync(Guid projectId);
     Task<Result<MasterPlanDto>> CreateAsync(CreateMasterPlanRequest request, Guid createdById);
@@ -36,6 +37,36 @@ public class MasterPlanCrudService : IMasterPlanCrudService
         _context = context;
         _mapper = mapper;
         _logger = logger;
+    }
+
+    public async Task<Result<List<MasterPlanDto>>> GetAllAsync(int pageNumber = 1, int pageSize = 50)
+    {
+        try
+        {
+            // Validate pagination parameters
+            if (pageNumber < 1) pageNumber = 1;
+            if (pageSize < 1) pageSize = 50;
+            if (pageSize > 100) pageSize = 100; // Limit max page size
+
+            var skip = (pageNumber - 1) * pageSize;
+
+            var masterPlans = await _context.MasterPlans
+                .Include(mp => mp.Project)
+                .Include(mp => mp.CreatedBy)
+                .Include(mp => mp.ApprovedBy)
+                .OrderByDescending(mp => mp.CreatedAt)
+                .Skip(skip)
+                .Take(pageSize)
+                .ToListAsync();
+
+            var dtos = _mapper.Map<List<MasterPlanDto>>(masterPlans);
+            return Result<List<MasterPlanDto>>.Success(dtos);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error retrieving master plans with pagination (page: {PageNumber}, size: {PageSize})", pageNumber, pageSize);
+            return Result<List<MasterPlanDto>>.Failure($"Error retrieving master plans: {ex.Message}");
+        }
     }
 
     public async Task<Result<MasterPlanDto>> GetByIdAsync(Guid masterPlanId)

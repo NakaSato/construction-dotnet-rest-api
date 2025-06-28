@@ -201,4 +201,22 @@ public class GetProgressReportsQuery : IQuery<List<ProgressReportDto>>
     }
 }
 
+public class GetAllMasterPlansQuery : IQuery<List<MasterPlanDto>>
+{
+    /// <summary>
+    /// Page number for pagination (default: 1)
+    /// </summary>
+    public int PageNumber { get; set; } = 1;
+
+    /// <summary>
+    /// Page size for pagination (default: 50, max: 100)
+    /// </summary>
+    public int PageSize { get; set; } = 50;
+
+    public Task<Result<List<MasterPlanDto>>> ExecuteAsync()
+    {
+        throw new NotImplementedException("Use handler");
+    }
+}
+
 #endregion

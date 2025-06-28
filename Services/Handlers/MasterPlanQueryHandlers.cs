@@ -222,4 +222,32 @@ public class GetProgressReportsQueryHandler : IQueryHandler<GetProgressReportsQu
     }
 }
 
+public class GetAllMasterPlansQueryHandler : IQueryHandler<GetAllMasterPlansQuery, List<MasterPlanDto>>
+{
+    private readonly IMasterPlanCrudService _crudService;
+    private readonly ILogger<GetAllMasterPlansQueryHandler> _logger;
+
+    public GetAllMasterPlansQueryHandler(IMasterPlanCrudService crudService, ILogger<GetAllMasterPlansQueryHandler> logger)
+    {
+        _crudService = crudService;
+        _logger = logger;
+    }
+
+    public async Task<Result<List<MasterPlanDto>>> HandleAsync(GetAllMasterPlansQuery query)
+    {
+        try
+        {
+            _logger.LogInformation("Retrieving all master plans (page: {PageNumber}, size: {PageSize})", 
+                query.PageNumber, query.PageSize);
+            return await _crudService.GetAllAsync(query.PageNumber, query.PageSize);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error handling GetAllMasterPlansQuery (page: {PageNumber}, size: {PageSize})", 
+                query.PageNumber, query.PageSize);
+            return Result<List<MasterPlanDto>>.Failure($"Error retrieving master plans: {ex.Message}");
+        }
+    }
+}
+
 #endregion

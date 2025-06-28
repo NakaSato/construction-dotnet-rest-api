@@ -58,6 +58,7 @@ public static class RefactoredServiceExtensions
     public static IServiceCollection AddMasterPlanQueryHandlers(this IServiceCollection services)
     {
         // Query handlers
+        services.AddScoped<IQueryHandler<GetAllMasterPlansQuery, List<MasterPlanDto>>, GetAllMasterPlansQueryHandler>();
         services.AddScoped<IQueryHandler<GetMasterPlanQuery, MasterPlanDto>, GetMasterPlanQueryHandler>();
         services.AddScoped<IQueryHandler<GetMasterPlanByProjectQuery, MasterPlanDto>, GetMasterPlanByProjectQueryHandler>();
         services.AddScoped<IQueryHandler<GetProgressSummaryQuery, ProgressSummaryDto>, GetProgressSummaryQueryHandler>();

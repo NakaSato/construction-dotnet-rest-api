@@ -7,6 +7,7 @@ using System.Text;
 using dotnet_rest_api.Data;
 using dotnet_rest_api.Services;
 using dotnet_rest_api.Middleware;
+using dotnet_rest_api.Extensions;
 using Asp.Versioning;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -160,6 +161,9 @@ builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IProjectService, ProjectService>(); // Real implementation
 builder.Services.AddScoped<ITaskService, TaskService>(); // Real implementation
 builder.Services.AddScoped<IMasterPlanService, MasterPlanService>(); // Real implementation
+
+// Add refactored master plan services with CQRS handlers
+builder.Services.AddAllRefactoredServices();
 
 // Placeholder Services (temporary implementations)
 builder.Services.AddScoped<IUserService, PlaceholderUserService>();

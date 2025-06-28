@@ -35,6 +35,24 @@ public class MasterPlansController : BaseApiController
     }
 
     /// <summary>
+    /// Get all master plans with pagination
+    /// </summary>
+    [HttpGet]
+    [LongCache] // 1 hour cache
+    public async Task<ActionResult<ApiResponse<List<MasterPlanDto>>>> GetAllMasterPlans([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 50)
+    {
+        LogControllerAction(_logger, "GetAllMasterPlans", new { pageNumber, pageSize });
+
+        var query = new GetAllMasterPlansQuery { PageNumber = pageNumber, PageSize = pageSize };
+        var handler = HttpContext.RequestServices.GetRequiredService<IQueryHandler<GetAllMasterPlansQuery, List<MasterPlanDto>>>();
+        var result = await handler.HandleAsync(query);
+
+        return result.IsSuccess ? 
+            Ok(new ApiResponse<List<MasterPlanDto>> { Success = true, Data = result.Data, Message = result.Message }) : 
+            BadRequest(new ApiResponse<List<MasterPlanDto>> { Success = false, Message = result.Message });
+    }
+
+    /// <summary>
     /// Create a new master plan for a project
     /// Available to: Project Managers, Administrators
     /// </summary>
