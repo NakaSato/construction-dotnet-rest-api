@@ -5,6 +5,14 @@ test_user	test_user@example.com	User123!	User
 test_viewer	test_viewer@example.com	Viewer123!	Viewer
 
 
+# Production Database Connection Examples (REPLACE WITH YOUR ACTUAL VALUES)
+# Format: postgresql://username:password@host:port/database?sslmode=require
+# Example: postgresql://myuser:mypass@myhost.com:25060/mydb?sslmode=require
+
+# .NET Connection String Format:
+# CONNECTIONSTRINGS__DEFAULT="Host=your-host;Port=25060;Database=your-db;Username=your-user;Password=your-pass;SslMode=Require"
+
+
 {
   "username": "admin",
   "email": "admin@example.com",
