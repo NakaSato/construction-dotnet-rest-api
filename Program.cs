@@ -169,7 +169,7 @@ builder.Services.AddScoped<IMasterPlanService, MasterPlanService>(); // Real imp
 builder.Services.AddAllRefactoredServices();
 
 // Placeholder Services (temporary implementations)
-builder.Services.AddScoped<IUserService, PlaceholderUserService>();
+builder.Services.AddScoped<IUserService, UserService>(); // Real implementation
 builder.Services.AddScoped<IWorkRequestService, PlaceholderWorkRequestService>();
 builder.Services.AddScoped<IResourceService, PlaceholderResourceService>();
 builder.Services.AddScoped<IDocumentService, PlaceholderDocumentService>();
@@ -247,12 +247,9 @@ using (var scope = app.Services.CreateScope())
     {
         var context = services.GetRequiredService<ApplicationDbContext>();
         
-        if (app.Environment.IsDevelopment())
-        {
-            logger.LogInformation("Ensuring database exists...");
-            await context.Database.EnsureCreatedAsync();
-            logger.LogInformation("Database initialization completed.");
-        }
+        logger.LogInformation("Applying database migrations...");
+        await context.Database.MigrateAsync();
+        logger.LogInformation("Database migrations completed.");
     }
     catch (Exception ex)
     {
