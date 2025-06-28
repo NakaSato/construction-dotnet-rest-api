@@ -51,29 +51,10 @@ services:
       - solar-projects-network
     restart: unless-stopped
 
-  # PgAdmin for database management (optional)
-  pgadmin:
-    image: dpage/pgadmin4:latest
-    container_name: solar-projects-pgadmin
-    environment:
-      PGADMIN_DEFAULT_EMAIL: admin@solarprojects.com
-      PGADMIN_DEFAULT_PASSWORD: admin
-      PGADMIN_CONFIG_SERVER_MODE: 'False'
-    ports:
-      - "8081:80"
-    volumes:
-      - pgadmin_data:/var/lib/pgadmin
-    depends_on:
-      - postgres
-    networks:
-      - solar-projects-network
-    profiles:
-      - admin
-
 networks:
   solar-projects-network:
     driver: bridge
 
 volumes:
   postgres_data:
-  pgadmin_data:
+    
