@@ -116,7 +116,22 @@ public class UsersController : BaseApiController
                 return BadRequest(new ApiResponse<UserDto> { Success = false, Message = "Invalid input data" });
 
             var result = await _userService.CreateUserAsync(createUserRequest);
-            return ToApiResponse(result);
+            
+            if (result.Success)
+            {
+                return Created($"/api/v1/users/{result.Data?.UserId}", new ApiResponse<UserDto>
+                {
+                    Success = true,
+                    Data = result.Data,
+                    Message = result.Message ?? "User created successfully"
+                });
+            }
+            
+            return BadRequest(new ApiResponse<UserDto>
+            {
+                Success = false,
+                Message = result.Message ?? "Failed to create user"
+            });
         }
         catch (Exception ex)
         {
