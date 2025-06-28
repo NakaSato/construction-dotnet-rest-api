@@ -5,6 +5,14 @@ test_user	test_user@example.com	User123!	User
 test_viewer	test_viewer@example.com	Viewer123!	Viewer
 
 
+{
+  "username": "admin",
+  "email": "admin@example.com",
+  "password": "Admin123!",
+  "fullName": "TEST",
+  "roleId": 1
+}
+
 
 /api/v1/projects (CreateProjectRequest)
 ProjectName (string, required)
