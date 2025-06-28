@@ -6,6 +6,7 @@ using Microsoft.EntityFrameworkCore;
 using dotnet_rest_api.Data;
 using dotnet_rest_api.DTOs;
 using dotnet_rest_api.Models;
+using Microsoft.Extensions.Caching.Memory;
 
 namespace dotnet_rest_api.Services;
 
@@ -13,11 +14,13 @@ public class AuthService : IAuthService
 {
     private readonly ApplicationDbContext _context;
     private readonly IConfiguration _configuration;
+    private readonly IMemoryCache _cache;
 
-    public AuthService(ApplicationDbContext context, IConfiguration configuration)
+    public AuthService(ApplicationDbContext context, IConfiguration configuration, IMemoryCache cache)
     {
         _context = context;
         _configuration = configuration;
+        _cache = cache;
         
         // Debug: Log the connection string being used
         var connectionString = _configuration.GetConnectionString("DefaultConnection");
@@ -161,6 +164,42 @@ public class AuthService : IAuthService
         return ServiceResult<string>.ErrorResult("Refresh token functionality not implemented");
     }
 
+    public async Task<ServiceResult<bool>> LogoutAsync(string token)
+    {
+        try
+        {
+            if (string.IsNullOrEmpty(token))
+            {
+                return ServiceResult<bool>.ErrorResult("Token is required");
+            }
+
+            // Extract token ID for blacklisting
+            var tokenHandler = new JwtSecurityTokenHandler();
+            
+            if (!tokenHandler.CanReadToken(token))
+            {
+                return ServiceResult<bool>.ErrorResult("Invalid token format");
+            }
+
+            var jwtToken = tokenHandler.ReadJwtToken(token);
+            var tokenId = jwtToken.Claims.FirstOrDefault(c => c.Type == "jti")?.Value ?? token;
+            
+            // Add token to blacklist with expiration matching token expiration
+            var expiration = jwtToken.ValidTo;
+            var cacheKey = $"blacklisted_token_{tokenId}";
+            
+            _cache.Set(cacheKey, true, expiration);
+
+            await System.Threading.Tasks.Task.CompletedTask; // Ensure async compliance
+            
+            return ServiceResult<bool>.SuccessResult(true, "Logout successful");
+        }
+        catch (Exception ex)
+        {
+            return ServiceResult<bool>.ErrorResult($"An error occurred during logout: {ex.Message}");
+        }
+    }
+
     public bool ValidateTokenAsync(string token)
     {
         try
@@ -168,6 +207,7 @@ public class AuthService : IAuthService
             var tokenHandler = new JwtSecurityTokenHandler();
             var key = Encoding.UTF8.GetBytes(_configuration["Jwt:Key"] ?? "DefaultSecretKeyForDevelopmentOnlyNotForProduction123456789");
             
+            // First validate the token structure and signature
             tokenHandler.ValidateToken(token, new TokenValidationParameters
             {
                 ValidateIssuerSigningKey = true,
@@ -179,6 +219,16 @@ public class AuthService : IAuthService
                 ValidateLifetime = true,
                 ClockSkew = TimeSpan.Zero
             }, out SecurityToken validatedToken);
+
+            // Check if token is blacklisted
+            var jwtToken = tokenHandler.ReadJwtToken(token);
+            var tokenId = jwtToken.Claims.FirstOrDefault(c => c.Type == "jti")?.Value ?? token;
+            var cacheKey = $"blacklisted_token_{tokenId}";
+            
+            if (_cache.TryGetValue(cacheKey, out _))
+            {
+                return false; // Token is blacklisted
+            }
 
             return true;
         }
@@ -197,6 +247,7 @@ public class AuthService : IAuthService
         {
             new Claim("sub", user.UserId.ToString()),
             new Claim("id", user.UserId.ToString()),
+            new Claim("jti", Guid.NewGuid().ToString()), // JWT ID for token tracking
             new Claim(ClaimTypes.Name, user.Username),
             new Claim(ClaimTypes.Email, user.Email),
             new Claim(ClaimTypes.Role, user.Role?.RoleName ?? "User")
@@ -221,6 +272,7 @@ public class AuthService : IAuthService
         {
             new Claim("sub", Guid.NewGuid().ToString()),
             new Claim("id", Guid.NewGuid().ToString()),
+            new Claim("jti", Guid.NewGuid().ToString()), // JWT ID for token tracking
             new Claim(ClaimTypes.Name, "admin"),
             new Claim(ClaimTypes.Email, "admin@example.com"),
             new Claim(ClaimTypes.Role, "Administrator")

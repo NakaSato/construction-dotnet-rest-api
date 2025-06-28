@@ -231,6 +231,7 @@ app.UseStaticFiles(new StaticFileOptions
 
 // Authentication & Authorization
 app.UseAuthentication();
+app.UseMiddleware<dotnet_rest_api.Middleware.JwtBlacklistMiddleware>();
 app.UseAuthorization();
 app.MapControllers();
 

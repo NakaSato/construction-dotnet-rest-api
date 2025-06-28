@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 using dotnet_rest_api.DTOs;
 using dotnet_rest_api.Services;
 using Asp.Versioning;
@@ -82,6 +83,37 @@ public class AuthController : BaseApiController
         catch (Exception ex)
         {
             return HandleException<string>(_logger, ex, "token refresh");
+        }
+    }
+
+    /// <summary>
+    /// User logout - invalidates the current JWT token
+    /// </summary>
+    [HttpPost("logout")]
+    [Authorize]
+    public async Task<ActionResult<ApiResponse<bool>>> Logout()
+    {
+        try
+        {
+            // Extract token from Authorization header
+            var authHeader = Request.Headers["Authorization"].FirstOrDefault();
+            if (authHeader == null || !authHeader.StartsWith("Bearer "))
+            {
+                return BadRequest(new ApiResponse<bool>
+                {
+                    Success = false,
+                    Message = "Authorization header is missing or invalid"
+                });
+            }
+
+            var token = authHeader.Substring("Bearer ".Length).Trim();
+            var result = await _authService.LogoutAsync(token);
+
+            return ToApiResponse(result);
+        }
+        catch (Exception ex)
+        {
+            return HandleException<bool>(_logger, ex, "user logout");
         }
     }
 }

@@ -456,6 +456,55 @@ authenticate_users() {
     fi
 }
 
+test_logout_functionality() {
+    print_section "Logout Functionality Testing"
+    
+    # Test logout with each role
+    local roles=("admin" "manager" "user" "viewer")
+    local tokens=("$ADMIN_TOKEN" "$MANAGER_TOKEN" "$USER_TOKEN" "$VIEWER_TOKEN")
+    
+    for i in "${!roles[@]}"; do
+        local role="${roles[$i]}"
+        local token="${tokens[$i]}"
+        
+        if [[ -n "$token" ]]; then
+            print_test "$role" "POST" "/api/v1/auth/logout" "Logout for $role role"
+            response=$(make_request "POST" "/api/v1/auth/logout" "$token")
+            status=$(extract_status "$response")
+            
+            if [[ "$status" == "200" ]]; then
+                print_result "PASS" "200" "$status" "$role logout successful"
+                
+                # Test if token is invalidated
+                print_test "$role" "GET" "/api/v1/users?pageNumber=1&pageSize=5" "Test token invalidation after logout"
+                auth_test_response=$(make_request "GET" "/api/v1/users?pageNumber=1&pageSize=5" "$token")
+                auth_test_status=$(extract_status "$auth_test_response")
+                
+                if [[ "$auth_test_status" == "401" ]]; then
+                    print_result "PASS" "401" "$auth_test_status" "$role token properly invalidated"
+                else
+                    print_result "FAIL" "401" "$auth_test_status" "$role token should be invalidated after logout"
+                fi
+            else
+                print_result "FAIL" "200" "$status" "$role logout should succeed"
+            fi
+        else
+            print_result "SKIP" "N/A" "N/A" "No token for $role - skipping logout test"
+        fi
+    done
+    
+    # Test logout without token
+    print_test "anonymous" "POST" "/api/v1/auth/logout" "Logout without token (should be denied)"
+    response=$(make_request "POST" "/api/v1/auth/logout" "")
+    status=$(extract_status "$response")
+    
+    if [[ "$status" == "401" ]]; then
+        print_result "PASS" "401" "$status" "Logout without token properly denied"
+    else
+        print_result "FAIL" "401" "$status" "Logout without token should be denied"
+    fi
+}
+
 # =============================================================================
 # ENDPOINT TESTING FUNCTIONS
 # =============================================================================
@@ -1021,6 +1070,11 @@ main() {
     # Test execution
     test_health_endpoints
     authenticate_users
+    test_logout_functionality
+    
+    # Re-authenticate users after logout tests since we cleared tokens
+    authenticate_users
+    
     test_user_management
     test_project_management
     test_task_management

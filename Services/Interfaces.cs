@@ -147,6 +147,7 @@ public interface IAuthService
     Task<ServiceResult<LoginResponse>> LoginAsync(LoginRequest request);
     Task<ServiceResult<UserDto>> RegisterAsync(RegisterRequest request);
     Task<ServiceResult<string>> RefreshTokenAsync(string refreshToken);
+    Task<ServiceResult<bool>> LogoutAsync(string token);
     bool ValidateTokenAsync(string token);
 }
 
