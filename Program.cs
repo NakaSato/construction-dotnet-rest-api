@@ -64,7 +64,10 @@ builder.Services.AddSwaggerGen(options =>
 });
 
 // Database Configuration
-var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") 
+
+// Prefer environment variable for connection string, fallback to config, then default
+var connectionString = Environment.GetEnvironmentVariable("CONNECTIONSTRINGS__DEFAULT")
+    ?? builder.Configuration.GetConnectionString("DefaultConnection")
     ?? "Host=localhost;Database=SolarProjectsDb;Username=postgres;Password=postgres";
 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
