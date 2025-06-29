@@ -5,9 +5,9 @@ services:
     image: postgres:15-alpine
     container_name: solar-projects-db
     environment:
-      POSTGRES_DB: SolarProjectsDb
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       PGDATA: /var/lib/postgresql/data/pgdata
     ports:
       - "5432:5432"
@@ -17,7 +17,7 @@ services:
     networks:
       - solar-projects-network
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres -d SolarProjectsDb"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -31,7 +31,7 @@ services:
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
       - ASPNETCORE_URLS=http://+:8080
-      - ConnectionStrings__DefaultConnection=Host=postgres;Database=SolarProjectsDb;Username=postgres;Password=postgres;Port=5432
+      - ConnectionStrings__DefaultConnection=Host=postgres;Database=${POSTGRES_DB};Username=${POSTGRES_USER};Password=${POSTGRES_PASSWORD};Port=5432
       - JwtSettings__SecretKey=SolarProjects2024-SuperSecretKey-ForJWT-Authentication-Security-32Plus-Characters!
       - JwtSettings__Issuer=http://localhost:5001
       - JwtSettings__Audience=http://localhost:5001

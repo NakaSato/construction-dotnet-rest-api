@@ -47,16 +47,110 @@ public class StubDailyReportService : IDailyReportService
         return Task.FromResult(ServiceResult<bool>.ErrorResult("Not implemented"));
     }
 
-    public Task<ServiceResult<EnhancedPagedResult<DailyReportDto>>> GetProjectDailyReportsAsync(Guid projectId, DailyReportQueryParameters parameters)
+    // Enhanced Daily Report Operations
+    public Task<ServiceResult<EnhancedPagedResult<EnhancedDailyReportDto>>> GetProjectDailyReportsAsync(Guid projectId, EnhancedDailyReportQueryParameters parameters)
     {
-        var result = new EnhancedPagedResult<DailyReportDto>
+        var result = new EnhancedPagedResult<EnhancedDailyReportDto>
         {
-            Items = new List<DailyReportDto>(),
+            Items = new List<EnhancedDailyReportDto>(),
             PageNumber = 1,
             PageSize = 10,
             TotalCount = 0
         };
+        return Task.FromResult(ServiceResult<EnhancedPagedResult<EnhancedDailyReportDto>>.SuccessResult(result));
+    }
+
+    public Task<ServiceResult<EnhancedDailyReportDto>> CreateEnhancedDailyReportAsync(EnhancedCreateDailyReportRequest request, Guid userId)
+    {
+        return Task.FromResult(ServiceResult<EnhancedDailyReportDto>.ErrorResult("Not implemented"));
+    }
+
+    public Task<ServiceResult<bool>> ValidateProjectAccessAsync(Guid projectId, Guid userId)
+    {
+        return Task.FromResult(ServiceResult<bool>.SuccessResult(true));
+    }
+
+    // Analytics and Reporting
+    public Task<ServiceResult<DailyReportAnalyticsDto>> GetDailyReportAnalyticsAsync(Guid projectId, DateTime startDate, DateTime endDate)
+    {
+        return Task.FromResult(ServiceResult<DailyReportAnalyticsDto>.ErrorResult("Not implemented"));
+    }
+
+    public Task<ServiceResult<WeeklySummaryDto>> GetWeeklyProgressReportAsync(Guid projectId, DateTime weekStartDate)
+    {
+        return Task.FromResult(ServiceResult<WeeklySummaryDto>.ErrorResult("Not implemented"));
+    }
+
+    public Task<ServiceResult<DailyReportInsightsDto>> GetDailyReportInsightsAsync(Guid projectId, Guid? reportId = null)
+    {
+        return Task.FromResult(ServiceResult<DailyReportInsightsDto>.ErrorResult("Not implemented"));
+    }
+
+    // Bulk Operations
+    public Task<ServiceResult<BulkOperationResultDto>> BulkApproveDailyReportsAsync(DailyReportBulkApprovalRequest request, Guid approverId)
+    {
+        var result = new BulkOperationResultDto
+        {
+            TotalRequested = request.ReportIds.Count,
+            SuccessCount = 0,
+            FailureCount = request.ReportIds.Count,
+            Summary = "Not implemented"
+        };
+        return Task.FromResult(ServiceResult<BulkOperationResultDto>.ErrorResult("Not implemented"));
+    }
+
+    public Task<ServiceResult<BulkOperationResultDto>> BulkRejectDailyReportsAsync(DailyReportBulkRejectionRequest request, Guid approverId)
+    {
+        var result = new BulkOperationResultDto
+        {
+            TotalRequested = request.ReportIds.Count,
+            SuccessCount = 0,
+            FailureCount = request.ReportIds.Count,
+            Summary = "Not implemented"
+        };
+        return Task.FromResult(ServiceResult<BulkOperationResultDto>.ErrorResult("Not implemented"));
+    }
+
+    // Enhanced Export
+    public Task<ServiceResult<byte[]>> ExportEnhancedDailyReportsAsync(DailyReportExportRequest request)
+    {
+        return Task.FromResult(ServiceResult<byte[]>.ErrorResult("Not implemented"));
+    }
+
+    // Validation and Templates
+    public Task<ServiceResult<DailyReportValidationResultDto>> ValidateDailyReportAsync(EnhancedCreateDailyReportRequest request)
+    {
+        var result = new DailyReportValidationResultDto
+        {
+            IsValid = true,
+            Errors = new List<string>(),
+            Warnings = new List<string>(),
+            Suggestions = new List<string> { "This is a stub implementation" }
+        };
+        return Task.FromResult(ServiceResult<DailyReportValidationResultDto>.SuccessResult(result));
+    }
+
+    public Task<ServiceResult<List<DailyReportTemplateDto>>> GetDailyReportTemplatesAsync(Guid projectId)
+    {
+        return Task.FromResult(ServiceResult<List<DailyReportTemplateDto>>.SuccessResult(new List<DailyReportTemplateDto>()));
+    }
+
+    // Workflow Management
+    public Task<ServiceResult<EnhancedPagedResult<DailyReportDto>>> GetPendingApprovalsAsync(Guid? projectId, int pageNumber, int pageSize)
+    {
+        var result = new EnhancedPagedResult<DailyReportDto>
+        {
+            Items = new List<DailyReportDto>(),
+            PageNumber = pageNumber,
+            PageSize = pageSize,
+            TotalCount = 0
+        };
         return Task.FromResult(ServiceResult<EnhancedPagedResult<DailyReportDto>>.SuccessResult(result));
+    }
+
+    public Task<ServiceResult<List<ApprovalHistoryDto>>> GetApprovalHistoryAsync(Guid reportId)
+    {
+        return Task.FromResult(ServiceResult<List<ApprovalHistoryDto>>.SuccessResult(new List<ApprovalHistoryDto>()));
     }
 
     public Task<ServiceResult<DailyReportDto>> SubmitDailyReportAsync(Guid id)

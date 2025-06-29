@@ -9,6 +9,14 @@ using dotnet_rest_api.Services;
 using dotnet_rest_api.Middleware;
 using dotnet_rest_api.Extensions;
 using Asp.Versioning;
+using DotNetEnv;
+
+// Load environment variables from .env file (local development)
+var envPath = Path.Combine(Directory.GetCurrentDirectory(), ".env");
+if (File.Exists(envPath))
+{
+    Env.Load(envPath);
+}
 
 var builder = WebApplication.CreateBuilder(args);
 

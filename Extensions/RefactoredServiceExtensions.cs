@@ -48,6 +48,14 @@ public static class RefactoredServiceExtensions
         services.AddScoped<ICommandHandler<CompleteMilestoneCommand, bool>, CompleteMilestoneHandler>();
         services.AddScoped<ICommandHandler<CreateProgressReportCommand, ProgressReportDto>, CreateProgressReportHandler>();
 
+        // Advanced command handlers (TODO: Implement these handlers)
+        // services.AddScoped<ICommandHandler<DeleteMasterPlanCommand, bool>, DeleteMasterPlanHandler>();
+        // services.AddScoped<ICommandHandler<CreateTaskDependencyCommand, TaskDependencyDto>, CreateTaskDependencyHandler>();
+        // services.AddScoped<ICommandHandler<ValidateConstraintsCommand, ConstraintValidationResultDto>, ValidateConstraintsHandler>();
+        // services.AddScoped<ICommandHandler<TriggerWorkflowCommand, WorkflowExecutionResultDto>, TriggerWorkflowHandler>();
+        // services.AddScoped<ICommandHandler<ExportProjectReportCommand, ProjectExportDto>, ExportProjectReportHandler>();
+        // services.AddScoped<ICommandHandler<CreateStakeholderCommunicationCommand, StakeholderCommunicationDto>, CreateStakeholderCommunicationHandler>();
+
         return services;
     }
 
@@ -67,6 +75,15 @@ public static class RefactoredServiceExtensions
         services.AddScoped<IQueryHandler<GetMilestonesQuery, List<ProjectMilestoneDto>>, GetMilestonesQueryHandler>();
         services.AddScoped<IQueryHandler<GetUpcomingMilestonesQuery, List<ProjectMilestoneDto>>, GetUpcomingMilestonesQueryHandler>();
         services.AddScoped<IQueryHandler<GetProgressReportsQuery, List<ProgressReportDto>>, GetProgressReportsQueryHandler>();
+
+        // Advanced analytics query handlers (TODO: Implement these handlers)
+        // services.AddScoped<IQueryHandler<GetCriticalPathQuery, CriticalPathAnalysisDto>, GetCriticalPathQueryHandler>();
+        // services.AddScoped<IQueryHandler<GetEarnedValueAnalysisQuery, EarnedValueAnalysisDto>, GetEarnedValueAnalysisQueryHandler>();
+        // services.AddScoped<IQueryHandler<GetResourceUtilizationQuery, ResourceUtilizationReportDto>, GetResourceUtilizationQueryHandler>();
+        // services.AddScoped<IQueryHandler<GetExecutiveDashboardQuery, ExecutiveDashboardDto>, GetExecutiveDashboardQueryHandler>();
+        // services.AddScoped<IQueryHandler<GetGanttChartDataQuery, GanttChartDataDto>, GetGanttChartDataQueryHandler>();
+        // services.AddScoped<IQueryHandler<GetWeeklyViewQuery, WeeklyViewDto>, GetWeeklyViewQueryHandler>();
+        // services.AddScoped<IQueryHandler<GetProjectFromMasterPlanQuery, ProjectDto>, GetProjectFromMasterPlanQueryHandler>();
 
         return services;
     }

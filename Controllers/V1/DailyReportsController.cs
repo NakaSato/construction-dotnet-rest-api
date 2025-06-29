@@ -9,12 +9,14 @@ using Asp.Versioning;
 namespace dotnet_rest_api.Controllers.V1;
 
 /// <summary>
-/// API controller for managing daily reports
+/// Enhanced API controller for managing daily reports with comprehensive project-centric functionality
+/// Provides CRUD operations, analytics, reporting, and workflow management for solar project daily reports
 /// </summary>
 [ApiController]
 [ApiVersion("1.0")]
 [Route("api/v{version:apiVersion}/daily-reports")]
 [Authorize]
+[Produces("application/json")]
 public class DailyReportsController : BaseApiController
 {
     private readonly IDailyReportService _dailyReportService;
@@ -461,65 +463,494 @@ public class DailyReportsController : BaseApiController
 
     #endregion
 
-    #region Helper Methods
+    #region Enhanced Daily Report Operations
 
-    private Guid GetCurrentUserId()
+    /// <summary>
+    /// Get daily reports for a specific project with enhanced filtering and analytics
+    /// Available to: All authenticated users (filtered by project access)
+    /// </summary>
+    /// <param name="projectId">Project ID to filter reports</param>
+    /// <param name="parameters">Enhanced query parameters</param>
+    /// <returns>Paginated list of enhanced daily reports</returns>
+    [HttpGet("projects/{projectId:guid}")]
+    [MediumCache] // 15 minute cache
+    [ProducesResponseType(typeof(ApiResponse<EnhancedPagedResult<EnhancedDailyReportDto>>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    public async Task<ActionResult<ApiResponse<EnhancedPagedResult<EnhancedDailyReportDto>>>> GetProjectDailyReports(
+        Guid projectId, 
+        [FromQuery] EnhancedDailyReportQueryParameters parameters)
     {
-        var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-        return Guid.TryParse(userIdClaim, out var userId) ? userId : Guid.Empty;
+        try
+        {
+            LogControllerAction(_logger, "GetProjectDailyReports", new { projectId, parameters });
+
+            // Ensure project ID consistency
+            parameters.ProjectId = projectId;
+
+            // Apply dynamic filters from query string
+            var filterString = Request.Query["filter"].FirstOrDefault();
+            ApplyFiltersFromQuery(parameters, filterString);
+
+            var result = await _dailyReportService.GetProjectDailyReportsAsync(projectId, parameters);
+            return ToApiResponse(result);
+        }
+        catch (Exception ex)
+        {
+            return HandleException<EnhancedPagedResult<EnhancedDailyReportDto>>(_logger, ex, "retrieving project daily reports");
+        }
     }
 
-    private void AddHateoasLinks(DailyReportDto report)
+    /// <summary>
+    /// Create enhanced daily report with comprehensive validation and project context
+    /// Available to: All authenticated users (within their assigned projects)
+    /// </summary>
+    /// <param name="request">Enhanced daily report creation request</param>
+    /// <returns>Created daily report with full context</returns>
+    [HttpPost("enhanced")]
+    [NoCache]
+    [ProducesResponseType(typeof(ApiResponse<EnhancedDailyReportDto>), StatusCodes.Status201Created)]
+    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    public async Task<ActionResult<ApiResponse<EnhancedDailyReportDto>>> CreateEnhancedDailyReport(
+        [FromBody] EnhancedCreateDailyReportRequest request)
     {
-        report.Links = new List<LinkDto>
+        try
         {
-            new LinkDto
+            LogControllerAction(_logger, "CreateEnhancedDailyReport", request);
+
+            if (!ModelState.IsValid)
             {
-                Href = Url.Action(nameof(GetDailyReport), new { id = report.DailyReportId }),
-                Rel = "self",
-                Method = "GET"
-            },
-            new LinkDto
-            {
-                Href = Url.Action(nameof(UpdateDailyReport), new { id = report.DailyReportId }),
-                Rel = "update",
-                Method = "PUT"
-            },
-            new LinkDto
-            {
-                Href = Url.Action(nameof(DeleteDailyReport), new { id = report.DailyReportId }),
-                Rel = "delete",
-                Method = "DELETE"
+                var errors = ModelState.Values
+                    .SelectMany(v => v.Errors)
+                    .Select(e => e.ErrorMessage)
+                    .ToList();
+                return CreateErrorResponse<EnhancedDailyReportDto>("Invalid input data", 400, errors);
             }
+
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (!Guid.TryParse(userIdClaim, out var userId))
+                return CreateErrorResponse<EnhancedDailyReportDto>("Invalid user ID in token", 401);
+
+            // Validate project access
+            var hasProjectAccess = await _dailyReportService.ValidateProjectAccessAsync(request.ProjectId, userId);
+            if (!hasProjectAccess.IsSuccess)
+                return CreateErrorResponse<EnhancedDailyReportDto>("Access denied to project", 403);
+
+            var result = await _dailyReportService.CreateEnhancedDailyReportAsync(request, userId);
+            return ToApiResponse(result);
+        }
+        catch (Exception ex)
+        {
+            return HandleException<EnhancedDailyReportDto>(_logger, ex, "creating enhanced daily report");
+        }
+    }
+
+    /// <summary>
+    /// Get comprehensive daily report analytics for a project
+    /// Available to: Administrator, Manager, ProjectManager
+    /// </summary>
+    /// <param name="projectId">Project ID</param>
+    /// <param name="startDate">Analysis start date</param>
+    /// <param name="endDate">Analysis end date</param>
+    /// <returns>Comprehensive analytics data</returns>
+    [HttpGet("projects/{projectId:guid}/analytics")]
+    [Authorize(Roles = "Administrator,Manager,ProjectManager")]
+    [LongCache] // 1 hour cache for analytics
+    [ProducesResponseType(typeof(ApiResponse<DailyReportAnalyticsDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    public async Task<ActionResult<ApiResponse<DailyReportAnalyticsDto>>> GetDailyReportAnalytics(
+        Guid projectId,
+        [FromQuery] DateTime? startDate = null,
+        [FromQuery] DateTime? endDate = null)
+    {
+        try
+        {
+            LogControllerAction(_logger, "GetDailyReportAnalytics", new { projectId, startDate, endDate });
+
+            // Default to last 30 days if no dates provided
+            var analysisStart = startDate ?? DateTime.UtcNow.AddDays(-30);
+            var analysisEnd = endDate ?? DateTime.UtcNow;
+
+            if (analysisStart >= analysisEnd)
+                return CreateErrorResponse<DailyReportAnalyticsDto>("Start date must be before end date", 400);
+
+            var result = await _dailyReportService.GetDailyReportAnalyticsAsync(projectId, analysisStart, analysisEnd);
+            return ToApiResponse(result);
+        }
+        catch (Exception ex)
+        {
+            return HandleException<DailyReportAnalyticsDto>(_logger, ex, "retrieving daily report analytics");
+        }
+    }
+
+    /// <summary>
+    /// Generate weekly progress report for a project
+    /// Available to: Administrator, Manager, ProjectManager
+    /// </summary>
+    /// <param name="projectId">Project ID</param>
+    /// <param name="weekStartDate">Week start date (defaults to current week)</param>
+    /// <returns>Weekly progress report</returns>
+    [HttpGet("projects/{projectId:guid}/weekly-report")]
+    [Authorize(Roles = "Administrator,Manager,ProjectManager")]
+    [ShortCache] // 5 minute cache for weekly reports
+    [ProducesResponseType(typeof(ApiResponse<WeeklySummaryDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    public async Task<ActionResult<ApiResponse<WeeklySummaryDto>>> GetWeeklyProgressReport(
+        Guid projectId,
+        [FromQuery] DateTime? weekStartDate = null)
+    {
+        try
+        {
+            LogControllerAction(_logger, "GetWeeklyProgressReport", new { projectId, weekStartDate });
+
+            // Default to current week start (Monday)
+            var weekStart = weekStartDate ?? GetCurrentWeekStart();
+
+            var result = await _dailyReportService.GetWeeklyProgressReportAsync(projectId, weekStart);
+            return ToApiResponse(result);
+        }
+        catch (Exception ex)
+        {
+            return HandleException<WeeklySummaryDto>(_logger, ex, "retrieving weekly progress report");
+        }
+    }
+
+    /// <summary>
+    /// Bulk approve multiple daily reports
+    /// Available to: Administrator, Manager, ProjectManager
+    /// </summary>
+    /// <param name="request">Bulk approval request</param>
+    /// <returns>Approval results</returns>
+    [HttpPost("bulk-approve")]
+    [Authorize(Roles = "Administrator,Manager,ProjectManager")]
+    [NoCache]
+    [ProducesResponseType(typeof(ApiResponse<BulkOperationResultDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    public async Task<ActionResult<ApiResponse<BulkOperationResultDto>>> BulkApproveDailyReports(
+        [FromBody] DailyReportBulkApprovalRequest request)
+    {
+        try
+        {
+            LogControllerAction(_logger, "BulkApproveDailyReports", request);
+
+            if (!ModelState.IsValid || !request.ReportIds.Any())
+                return CreateErrorResponse<BulkOperationResultDto>("Invalid request data", 400);
+
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (!Guid.TryParse(userIdClaim, out var userId))
+                return CreateErrorResponse<BulkOperationResultDto>("Invalid user ID in token", 401);
+
+            var result = await _dailyReportService.BulkApproveDailyReportsAsync(request, userId);
+            return ToApiResponse(result);
+        }
+        catch (Exception ex)
+        {
+            return HandleException<BulkOperationResultDto>(_logger, ex, "bulk approving daily reports");
+        }
+    }
+
+    /// <summary>
+    /// Bulk reject multiple daily reports
+    /// Available to: Administrator, Manager, ProjectManager
+    /// </summary>
+    /// <param name="request">Bulk rejection request</param>
+    /// <returns>Rejection results</returns>
+    [HttpPost("bulk-reject")]
+    [Authorize(Roles = "Administrator,Manager,ProjectManager")]
+    [NoCache]
+    [ProducesResponseType(typeof(ApiResponse<BulkOperationResultDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    public async Task<ActionResult<ApiResponse<BulkOperationResultDto>>> BulkRejectDailyReports(
+        [FromBody] DailyReportBulkRejectionRequest request)
+    {
+        try
+        {
+            LogControllerAction(_logger, "BulkRejectDailyReports", request);
+
+            if (!ModelState.IsValid || !request.ReportIds.Any())
+                return CreateErrorResponse<BulkOperationResultDto>("Invalid request data", 400);
+
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (!Guid.TryParse(userIdClaim, out var userId))
+                return CreateErrorResponse<BulkOperationResultDto>("Invalid user ID in token", 401);
+
+            var result = await _dailyReportService.BulkRejectDailyReportsAsync(request, userId);
+            return ToApiResponse(result);
+        }
+        catch (Exception ex)
+        {
+            return HandleException<BulkOperationResultDto>(_logger, ex, "bulk rejecting daily reports");
+        }
+    }
+
+    /// <summary>
+    /// Enhanced export with multiple formats and comprehensive data
+    /// Available to: Administrator, Manager, ProjectManager
+    /// </summary>
+    /// <param name="request">Export request parameters</param>
+    /// <returns>File download</returns>
+    [HttpPost("export-enhanced")]
+    [Authorize(Roles = "Administrator,Manager,ProjectManager")]
+    [NoCache]
+    [ProducesResponseType(typeof(FileResult), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    public async Task<IActionResult> ExportEnhancedDailyReports([FromBody] DailyReportExportRequest request)
+    {
+        try
+        {
+            LogControllerAction(_logger, "ExportEnhancedDailyReports", request);
+
+            if (!ModelState.IsValid)
+                return BadRequest(new ApiResponse<object> { Success = false, Message = "Invalid request data" });
+
+            var result = await _dailyReportService.ExportEnhancedDailyReportsAsync(request);
+            
+            if (!result.IsSuccess)
+                return BadRequest(new ApiResponse<object> { Success = false, Message = result.Message });
+
+            var contentType = request.Format.ToLower() switch
+            {
+                "excel" => "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                "pdf" => "application/pdf",
+                "json" => "application/json",
+                _ => "text/csv"
+            };
+
+            var fileName = $"daily-reports-{request.ProjectId}-{DateTime.UtcNow:yyyyMMdd}.{request.Format}";
+            return File(result.Data!, contentType, fileName);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error exporting enhanced daily reports");
+            return StatusCode(500, new ApiResponse<object> { Success = false, Message = "Error exporting daily reports" });
+        }
+    }
+
+    /// <summary>
+    /// Get daily report insights and recommendations
+    /// Available to: Administrator, Manager, ProjectManager
+    /// </summary>
+    /// <param name="projectId">Project ID</param>
+    /// <param name="reportId">Specific report ID (optional)</param>
+    /// <returns>AI-generated insights and recommendations</returns>
+    [HttpGet("projects/{projectId:guid}/insights")]
+    [Authorize(Roles = "Administrator,Manager,ProjectManager")]
+    [MediumCache] // 15 minute cache for insights
+    [ProducesResponseType(typeof(ApiResponse<DailyReportInsightsDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    public async Task<ActionResult<ApiResponse<DailyReportInsightsDto>>> GetDailyReportInsights(
+        Guid projectId,
+        [FromQuery] Guid? reportId = null)
+    {
+        try
+        {
+            LogControllerAction(_logger, "GetDailyReportInsights", new { projectId, reportId });
+
+            var result = await _dailyReportService.GetDailyReportInsightsAsync(projectId, reportId);
+            return ToApiResponse(result);
+        }
+        catch (Exception ex)
+        {
+            return HandleException<DailyReportInsightsDto>(_logger, ex, "retrieving daily report insights");
+        }
+    }
+
+    /// <summary>
+    /// Validate daily report data before submission
+    /// Available to: All authenticated users
+    /// </summary>
+    /// <param name="request">Daily report data to validate</param>
+    /// <returns>Validation results and suggestions</returns>
+    [HttpPost("validate")]
+    [ShortCache] // 5 minute cache for validation
+    [ProducesResponseType(typeof(ApiResponse<DailyReportValidationResultDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    public async Task<ActionResult<ApiResponse<DailyReportValidationResultDto>>> ValidateDailyReport(
+        [FromBody] EnhancedCreateDailyReportRequest request)
+    {
+        try
+        {
+            LogControllerAction(_logger, "ValidateDailyReport", request);
+
+            var result = await _dailyReportService.ValidateDailyReportAsync(request);
+            return ToApiResponse(result);
+        }
+        catch (Exception ex)
+        {
+            return HandleException<DailyReportValidationResultDto>(_logger, ex, "validating daily report");
+        }
+    }
+
+    #endregion
+
+    #region Project Context and Workflow Management
+
+    /// <summary>
+    /// Get daily report templates for a specific project
+    /// Available to: All authenticated users
+    /// </summary>
+    /// <param name="projectId">Project ID</param>
+    /// <returns>Project-specific daily report templates</returns>
+    [HttpGet("projects/{projectId:guid}/templates")]
+    [LongCache] // 1 hour cache for templates
+    [ProducesResponseType(typeof(ApiResponse<List<DailyReportTemplateDto>>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    public async Task<ActionResult<ApiResponse<List<DailyReportTemplateDto>>>> GetDailyReportTemplates(Guid projectId)
+    {
+        try
+        {
+            LogControllerAction(_logger, "GetDailyReportTemplates", new { projectId });
+
+            var result = await _dailyReportService.GetDailyReportTemplatesAsync(projectId);
+            return ToApiResponse(result);
+        }
+        catch (Exception ex)
+        {
+            return HandleException<List<DailyReportTemplateDto>>(_logger, ex, "retrieving daily report templates");
+        }
+    }
+
+    /// <summary>
+    /// Get pending daily reports requiring approval
+    /// Available to: Administrator, Manager, ProjectManager
+    /// </summary>
+    /// <param name="projectId">Project ID (optional)</param>
+    /// <returns>List of reports pending approval</returns>
+    [HttpGet("pending-approval")]
+    [Authorize(Roles = "Administrator,Manager,ProjectManager")]
+    [ShortCache] // 5 minute cache for pending approvals
+    [ProducesResponseType(typeof(ApiResponse<EnhancedPagedResult<DailyReportDto>>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    public async Task<ActionResult<ApiResponse<EnhancedPagedResult<DailyReportDto>>>> GetPendingApprovals(
+        [FromQuery] Guid? projectId = null,
+        [FromQuery] int pageNumber = 1,
+        [FromQuery] int pageSize = 20)
+    {
+        try
+        {
+            LogControllerAction(_logger, "GetPendingApprovals", new { projectId, pageNumber, pageSize });
+
+            var result = await _dailyReportService.GetPendingApprovalsAsync(projectId, pageNumber, pageSize);
+            return ToApiResponse(result);
+        }
+        catch (Exception ex)
+        {
+            return HandleException<EnhancedPagedResult<DailyReportDto>>(_logger, ex, "retrieving pending approvals");
+        }
+    }
+
+    /// <summary>
+    /// Get daily report approval history
+    /// Available to: Administrator, Manager, ProjectManager
+    /// </summary>
+    /// <param name="reportId">Daily report ID</param>
+    /// <returns>Complete approval history</returns>
+    [HttpGet("{reportId:guid}/approval-history")]
+    [Authorize(Roles = "Administrator,Manager,ProjectManager")]
+    [MediumCache] // 15 minute cache for approval history
+    [ProducesResponseType(typeof(ApiResponse<List<ApprovalHistoryDto>>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    public async Task<ActionResult<ApiResponse<List<ApprovalHistoryDto>>>> GetApprovalHistory(Guid reportId)
+    {
+        try
+        {
+            LogControllerAction(_logger, "GetApprovalHistory", new { reportId });
+
+            var result = await _dailyReportService.GetApprovalHistoryAsync(reportId);
+            return ToApiResponse(result);
+        }
+        catch (Exception ex)
+        {
+            return HandleException<List<ApprovalHistoryDto>>(_logger, ex, "retrieving approval history");
+        }
+    }
+
+    #endregion
+
+    #region Helper Methods
+
+    private DateTime GetCurrentWeekStart()
+    {
+        var today = DateTime.UtcNow.Date;
+        var dayOfWeek = (int)today.DayOfWeek;
+        var daysUntilMonday = (dayOfWeek == 0) ? 6 : dayOfWeek - 1; // Sunday = 0, Monday = 1
+        return today.AddDays(-daysUntilMonday);
+    }
+
+    private void ApplyFiltersFromQuery<T>(T parameters, string? filterString) where T : BaseQueryParameters
+    {
+        if (string.IsNullOrEmpty(filterString))
+            return;
+
+        try
+        {
+            // Parse and apply dynamic filters
+            // This is a simplified implementation - in production, you'd want more robust filter parsing
+            var filters = filterString.Split(';');
+            foreach (var filter in filters)
+            {
+                var parts = filter.Split(':');
+                if (parts.Length == 2)
+                {
+                    var property = parts[0].Trim();
+                    var value = parts[1].Trim();
+                    
+                    // Apply filter based on property name
+                    ApplyFilterToProperty(parameters, property, value);
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Error applying dynamic filters: {FilterString}", filterString);
+        }
+    }
+
+    private void ApplyFilterToProperty<T>(T parameters, string propertyName, string value)
+    {
+        var property = typeof(T).GetProperty(propertyName);
+        if (property != null && property.CanWrite)
+        {
+            try
+            {
+                var convertedValue = Convert.ChangeType(value, property.PropertyType);
+                property.SetValue(parameters, convertedValue);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Error applying filter {PropertyName}={Value}", propertyName, value);
+            }
+        }
+    }
+
+    protected ApiResponse<T> CreateErrorResponse<T>(string message, int statusCode, List<string>? errors = null)
+    {
+        Response.StatusCode = statusCode;
+        return new ApiResponse<T>
+        {
+            Success = false,
+            Message = message,
+            Data = default,
+            Errors = errors ?? new List<string>()
         };
-
-        // Add status-specific actions
-        if (report.Status == "Draft" || report.Status == "RevisionRequested")
-        {
-            report.Links.Add(new LinkDto
-            {
-                Href = Url.Action(nameof(SubmitDailyReport), new { id = report.DailyReportId }),
-                Rel = "submit",
-                Method = "POST"
-            });
-        }
-
-        if (report.Status == "Submitted")
-        {
-            report.Links.Add(new LinkDto
-            {
-                Href = Url.Action(nameof(ApproveDailyReport), new { id = report.DailyReportId }),
-                Rel = "approve",
-                Method = "POST"
-            });
-
-            report.Links.Add(new LinkDto
-            {
-                Href = Url.Action(nameof(RejectDailyReport), new { id = report.DailyReportId }),
-                Rel = "reject",
-                Method = "POST"
-            });
-        }
     }
 
     #endregion

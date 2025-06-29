@@ -472,4 +472,318 @@ public class MasterPlansController : BaseApiController
             Ok(new ApiResponse<List<ProgressReportDto>> { Success = true, Data = result.Data }) : 
             BadRequest(new ApiResponse<List<ProgressReportDto>> { Success = false, Message = result.Message });
     }
+
+    /// <summary>
+    /// Delete a master plan (only Draft status plans can be deleted)
+    /// Available to: Project Managers, Administrators
+    /// </summary>
+    [HttpDelete("{id:guid}")]
+    [Authorize(Roles = "Administrator,ProjectManager")]
+    [NoCache]
+    public async Task<ActionResult<ApiResponse<object>>> DeleteMasterPlan(Guid id)
+    {
+        LogControllerAction(_logger, "DeleteMasterPlan", new { id });
+
+        var command = new DeleteMasterPlanCommand { MasterPlanId = id };
+        var handler = HttpContext.RequestServices.GetRequiredService<ICommandHandler<DeleteMasterPlanCommand, bool>>();
+        var result = await handler.HandleAsync(command);
+
+        return result.IsSuccess ? 
+            Ok(new ApiResponse<object> { Success = true, Data = null, Message = result.Message }) : 
+            BadRequest(new ApiResponse<object> { Success = false, Message = result.Message });
+    }
+
+    /// <summary>
+    /// Get critical path analysis for the master plan
+    /// </summary>
+    [HttpGet("{id:guid}/critical-path")]
+    [MediumCache] // 15 minute cache
+    public async Task<ActionResult<ApiResponse<CriticalPathAnalysisDto>>> GetCriticalPath(Guid id)
+    {
+        LogControllerAction(_logger, "GetCriticalPath", new { id });
+
+        var query = new GetCriticalPathQuery { MasterPlanId = id };
+        var handler = HttpContext.RequestServices.GetRequiredService<IQueryHandler<GetCriticalPathQuery, CriticalPathAnalysisDto>>();
+        var result = await handler.HandleAsync(query);
+
+        return result.IsSuccess ? 
+            Ok(new ApiResponse<CriticalPathAnalysisDto> { Success = true, Data = result.Data, Message = result.Message }) : 
+            BadRequest(new ApiResponse<CriticalPathAnalysisDto> { Success = false, Message = result.Message });
+    }
+
+    /// <summary>
+    /// Get earned value analysis for the master plan
+    /// </summary>
+    [HttpGet("{id:guid}/earned-value")]
+    [MediumCache] // 15 minute cache
+    public async Task<ActionResult<ApiResponse<EarnedValueAnalysisDto>>> GetEarnedValueAnalysis(Guid id)
+    {
+        LogControllerAction(_logger, "GetEarnedValueAnalysis", new { id });
+
+        var query = new GetEarnedValueAnalysisQuery { MasterPlanId = id };
+        var handler = HttpContext.RequestServices.GetRequiredService<IQueryHandler<GetEarnedValueAnalysisQuery, EarnedValueAnalysisDto>>();
+        var result = await handler.HandleAsync(query);
+
+        return result.IsSuccess ? 
+            Ok(new ApiResponse<EarnedValueAnalysisDto> { Success = true, Data = result.Data, Message = result.Message }) : 
+            BadRequest(new ApiResponse<EarnedValueAnalysisDto> { Success = false, Message = result.Message });
+    }
+
+    /// <summary>
+    /// Get resource utilization report for the master plan
+    /// </summary>
+    [HttpGet("{id:guid}/resource-utilization")]
+    [MediumCache] // 15 minute cache
+    public async Task<ActionResult<ApiResponse<ResourceUtilizationReportDto>>> GetResourceUtilization(
+        Guid id, 
+        [FromQuery] DateTime? startDate = null, 
+        [FromQuery] DateTime? endDate = null, 
+        [FromQuery] string? resourceType = null)
+    {
+        LogControllerAction(_logger, "GetResourceUtilization", new { id, startDate, endDate, resourceType });
+
+        var query = new GetResourceUtilizationQuery 
+        { 
+            MasterPlanId = id,
+            StartDate = startDate,
+            EndDate = endDate,
+            ResourceType = resourceType
+        };
+        
+        var handler = HttpContext.RequestServices.GetRequiredService<IQueryHandler<GetResourceUtilizationQuery, ResourceUtilizationReportDto>>();
+        var result = await handler.HandleAsync(query);
+
+        return result.IsSuccess ? 
+            Ok(new ApiResponse<ResourceUtilizationReportDto> { Success = true, Data = result.Data, Message = result.Message }) : 
+            BadRequest(new ApiResponse<ResourceUtilizationReportDto> { Success = false, Message = result.Message });
+    }
+
+    /// <summary>
+    /// Create task dependencies
+    /// Available to: Project Managers, Administrators
+    /// </summary>
+    [HttpPost("{id:guid}/dependencies")]
+    [Authorize(Roles = "Administrator,ProjectManager")]
+    [NoCache]
+    public async Task<ActionResult<ApiResponse<TaskDependencyDto>>> CreateTaskDependency(Guid id, [FromBody] CreateTaskDependencyRequest request)
+    {
+        LogControllerAction(_logger, "CreateTaskDependency", new { id, request });
+
+        if (!ModelState.IsValid)
+            return CreateValidationErrorResponse<TaskDependencyDto>();
+
+        var command = new CreateTaskDependencyCommand
+        {
+            MasterPlanId = id,
+            Request = request
+        };
+
+        var handler = HttpContext.RequestServices.GetRequiredService<ICommandHandler<CreateTaskDependencyCommand, TaskDependencyDto>>();
+        var result = await handler.HandleAsync(command);
+
+        return result.IsSuccess ? 
+            Ok(new ApiResponse<TaskDependencyDto> { Success = true, Data = result.Data, Message = result.Message }) : 
+            BadRequest(new ApiResponse<TaskDependencyDto> { Success = false, Message = result.Message });
+    }
+
+    /// <summary>
+    /// Validate schedule constraints
+    /// Available to: Project Managers, Administrators
+    /// </summary>
+    [HttpPost("{id:guid}/validate-constraints")]
+    [Authorize(Roles = "Administrator,ProjectManager")]
+    [NoCache]
+    public async Task<ActionResult<ApiResponse<ConstraintValidationResultDto>>> ValidateScheduleConstraints(Guid id)
+    {
+        LogControllerAction(_logger, "ValidateScheduleConstraints", new { id });
+
+        var command = new ValidateConstraintsCommand { MasterPlanId = id };
+        var handler = HttpContext.RequestServices.GetRequiredService<ICommandHandler<ValidateConstraintsCommand, ConstraintValidationResultDto>>();
+        var result = await handler.HandleAsync(command);
+
+        return result.IsSuccess ? 
+            Ok(new ApiResponse<ConstraintValidationResultDto> { Success = true, Data = result.Data, Message = result.Message }) : 
+            BadRequest(new ApiResponse<ConstraintValidationResultDto> { Success = false, Message = result.Message });
+    }
+
+    /// <summary>
+    /// Trigger workflow automation
+    /// Available to: Project Managers, Administrators
+    /// </summary>
+    [HttpPost("{id:guid}/trigger-workflow")]
+    [Authorize(Roles = "Administrator,ProjectManager")]
+    [NoCache]
+    public async Task<ActionResult<ApiResponse<WorkflowExecutionResultDto>>> TriggerWorkflowAutomation(Guid id, [FromBody] TriggerWorkflowRequest request)
+    {
+        LogControllerAction(_logger, "TriggerWorkflowAutomation", new { id, request });
+
+        if (!ModelState.IsValid)
+            return CreateValidationErrorResponse<WorkflowExecutionResultDto>();
+
+        var command = new TriggerWorkflowCommand
+        {
+            MasterPlanId = id,
+            Request = request
+        };
+
+        var handler = HttpContext.RequestServices.GetRequiredService<ICommandHandler<TriggerWorkflowCommand, WorkflowExecutionResultDto>>();
+        var result = await handler.HandleAsync(command);
+
+        return result.IsSuccess ? 
+            Ok(new ApiResponse<WorkflowExecutionResultDto> { Success = true, Data = result.Data, Message = result.Message }) : 
+            BadRequest(new ApiResponse<WorkflowExecutionResultDto> { Success = false, Message = result.Message });
+    }
+
+    /// <summary>
+    /// Generate executive dashboard
+    /// Available to: Administrators, Project Managers, Executives
+    /// </summary>
+    [HttpGet("{id:guid}/executive-dashboard")]
+    [Authorize(Roles = "Administrator,ProjectManager,Executive")]
+    [ShortCache] // 5 minute cache
+    public async Task<ActionResult<ApiResponse<ExecutiveDashboardDto>>> GenerateExecutiveDashboard(Guid id)
+    {
+        LogControllerAction(_logger, "GenerateExecutiveDashboard", new { id });
+
+        var query = new GetExecutiveDashboardQuery { MasterPlanId = id };
+        var handler = HttpContext.RequestServices.GetRequiredService<IQueryHandler<GetExecutiveDashboardQuery, ExecutiveDashboardDto>>();
+        var result = await handler.HandleAsync(query);
+
+        return result.IsSuccess ? 
+            Ok(new ApiResponse<ExecutiveDashboardDto> { Success = true, Data = result.Data, Message = result.Message }) : 
+            BadRequest(new ApiResponse<ExecutiveDashboardDto> { Success = false, Message = result.Message });
+    }
+
+    /// <summary>
+    /// Export project report in various formats
+    /// Available to: Administrators, Project Managers
+    /// </summary>
+    [HttpGet("{id:guid}/export")]
+    [Authorize(Roles = "Administrator,ProjectManager")]
+    [NoCache]
+    public async Task<ActionResult<ApiResponse<ProjectExportDto>>> ExportProjectReport(
+        Guid id, 
+        [FromQuery] string format = "pdf", 
+        [FromQuery] string[]? sections = null, 
+        [FromQuery] string? dateRange = null)
+    {
+        LogControllerAction(_logger, "ExportProjectReport", new { id, format, sections, dateRange });
+
+        var command = new ExportProjectReportCommand
+        {
+            MasterPlanId = id,
+            Format = format,
+            Sections = sections ?? Array.Empty<string>(),
+            DateRange = dateRange
+        };
+
+        var handler = HttpContext.RequestServices.GetRequiredService<ICommandHandler<ExportProjectReportCommand, ProjectExportDto>>();
+        var result = await handler.HandleAsync(command);
+
+        return result.IsSuccess ? 
+            Ok(new ApiResponse<ProjectExportDto> { Success = true, Data = result.Data, Message = result.Message }) : 
+            BadRequest(new ApiResponse<ProjectExportDto> { Success = false, Message = result.Message });
+    }
+
+    /// <summary>
+    /// Generate stakeholder communication
+    /// Available to: Administrators, Project Managers
+    /// </summary>
+    [HttpPost("{id:guid}/stakeholder-communication")]
+    [Authorize(Roles = "Administrator,ProjectManager")]
+    [NoCache]
+    public async Task<ActionResult<ApiResponse<StakeholderCommunicationDto>>> GenerateStakeholderCommunication(Guid id, [FromBody] CreateStakeholderCommunicationRequest request)
+    {
+        LogControllerAction(_logger, "GenerateStakeholderCommunication", new { id, request });
+
+        if (!ModelState.IsValid)
+            return CreateValidationErrorResponse<StakeholderCommunicationDto>();
+
+        var command = new CreateStakeholderCommunicationCommand
+        {
+            MasterPlanId = id,
+            Request = request
+        };
+
+        var handler = HttpContext.RequestServices.GetRequiredService<ICommandHandler<CreateStakeholderCommunicationCommand, StakeholderCommunicationDto>>();
+        var result = await handler.HandleAsync(command);
+
+        return result.IsSuccess ? 
+            Ok(new ApiResponse<StakeholderCommunicationDto> { Success = true, Data = result.Data, Message = result.Message }) : 
+            BadRequest(new ApiResponse<StakeholderCommunicationDto> { Success = false, Message = result.Message });
+    }
+
+    /// <summary>
+    /// Get Gantt chart data for visualization
+    /// </summary>
+    [HttpGet("{id:guid}/gantt-data")]
+    [MediumCache] // 15 minute cache
+    public async Task<ActionResult<ApiResponse<GanttChartDataDto>>> GetGanttChartData(
+        Guid id, 
+        [FromQuery] int? depth = null, 
+        [FromQuery] DateTime? baseline = null)
+    {
+        LogControllerAction(_logger, "GetGanttChartData", new { id, depth, baseline });
+
+        var query = new GetGanttChartDataQuery 
+        { 
+            MasterPlanId = id,
+            Depth = depth,
+            Baseline = baseline
+        };
+        
+        var handler = HttpContext.RequestServices.GetRequiredService<IQueryHandler<GetGanttChartDataQuery, GanttChartDataDto>>();
+        var result = await handler.HandleAsync(query);
+
+        return result.IsSuccess ? 
+            Ok(new ApiResponse<GanttChartDataDto> { Success = true, Data = result.Data, Message = result.Message }) : 
+            BadRequest(new ApiResponse<GanttChartDataDto> { Success = false, Message = result.Message });
+    }
+
+    /// <summary>
+    /// Get weekly view data for calendar views
+    /// </summary>
+    [HttpGet("{id:guid}/weekly-view")]
+    [ShortCache] // 5 minute cache
+    public async Task<ActionResult<ApiResponse<WeeklyViewDto>>> GetWeeklyView(
+        Guid id, 
+        [FromQuery] DateTime startDate, 
+        [FromQuery] DateTime endDate, 
+        [FromQuery] string? timezone = null)
+    {
+        LogControllerAction(_logger, "GetWeeklyView", new { id, startDate, endDate, timezone });
+
+        var query = new GetWeeklyViewQuery 
+        { 
+            MasterPlanId = id,
+            StartDate = startDate,
+            EndDate = endDate,
+            Timezone = timezone ?? "UTC"
+        };
+        
+        var handler = HttpContext.RequestServices.GetRequiredService<IQueryHandler<GetWeeklyViewQuery, WeeklyViewDto>>();
+        var result = await handler.HandleAsync(query);
+
+        return result.IsSuccess ? 
+            Ok(new ApiResponse<WeeklyViewDto> { Success = true, Data = result.Data, Message = result.Message }) : 
+            BadRequest(new ApiResponse<WeeklyViewDto> { Success = false, Message = result.Message });
+    }
+
+    /// <summary>
+    /// Get project information from master plan
+    /// </summary>
+    [HttpGet("{masterPlanId:guid}/project")]
+    [LongCache] // 1 hour cache
+    public async Task<ActionResult<ApiResponse<ProjectDto>>> GetProjectFromMasterPlan(Guid masterPlanId)
+    {
+        LogControllerAction(_logger, "GetProjectFromMasterPlan", new { masterPlanId });
+
+        var query = new GetProjectFromMasterPlanQuery { MasterPlanId = masterPlanId };
+        var handler = HttpContext.RequestServices.GetRequiredService<IQueryHandler<GetProjectFromMasterPlanQuery, ProjectDto>>();
+        var result = await handler.HandleAsync(query);
+
+        return result.IsSuccess ? 
+            Ok(new ApiResponse<ProjectDto> { Success = true, Data = result.Data, Message = result.Message }) : 
+            BadRequest(new ApiResponse<ProjectDto> { Success = false, Message = result.Message });
+    }
 }

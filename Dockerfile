@@ -12,11 +12,11 @@ WORKDIR /source
 
 # Copy project file and restore as distinct layers
 COPY --link dotnet-rest-api.csproj .
-RUN dotnet restore -a amd64
+RUN dotnet restore
 
 # Copy source code and publish app
 COPY --link . .
-RUN dotnet publish -a amd64 --no-restore -o /app
+RUN dotnet publish -c Release -o /app
 
 # Runtime stage
 FROM mcr.microsoft.com/dotnet/aspnet:9.0
