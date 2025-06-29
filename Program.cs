@@ -35,6 +35,20 @@ if (builder.Environment.IsDevelopment() && !builder.Environment.EnvironmentName.
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 
+// SignalR Configuration with enhanced features
+builder.Services.AddSignalR(options =>
+{
+    // Enable detailed errors in development
+    options.EnableDetailedErrors = builder.Environment.IsDevelopment();
+    
+    // Configure client timeout and keep alive
+    options.ClientTimeoutInterval = TimeSpan.FromMinutes(5);
+    options.KeepAliveInterval = TimeSpan.FromMinutes(2);
+    
+    // Set maximum message size (1MB)
+    options.MaximumReceiveMessageSize = 1024 * 1024;
+});
+
 // Swagger Configuration
 builder.Services.AddSwaggerGen(options =>
 {
@@ -113,6 +127,24 @@ builder.Services.AddAuthentication(options =>
         ValidateLifetime = true,
         ClockSkew = TimeSpan.Zero
     };
+    
+    // Configure SignalR token authentication
+    options.Events = new JwtBearerEvents
+    {
+        OnMessageReceived = context =>
+        {
+            var accessToken = context.Request.Query["access_token"];
+            var path = context.HttpContext.Request.Path;
+            
+            // If the request is for SignalR hub
+            if (!string.IsNullOrEmpty(accessToken) && path.StartsWithSegments("/notificationHub"))
+            {
+                context.Token = accessToken;
+            }
+            
+            return Task.CompletedTask;
+        }
+    };
 });
 
 builder.Services.AddAuthorization();
@@ -147,7 +179,7 @@ if (rateLimitEnabled)
     builder.Services.AddRateLimit(builder.Configuration);
 }
 
-// CORS Configuration
+// CORS Configuration with SignalR support
 builder.Services.AddCors(options =>
 {
     options.AddDefaultPolicy(policy =>
@@ -155,6 +187,15 @@ builder.Services.AddCors(options =>
         policy.AllowAnyOrigin()
               .AllowAnyMethod()
               .AllowAnyHeader();
+    });
+    
+    // Specific policy for SignalR with credentials
+    options.AddPolicy("SignalRPolicy", policy =>
+    {
+        policy.WithOrigins("http://localhost:3000", "http://localhost:5173", "https://your-frontend-domain.com")
+              .AllowAnyMethod()
+              .AllowAnyHeader()
+              .AllowCredentials();
     });
 });
 
@@ -186,10 +227,13 @@ builder.Services.AddScoped<ICalendarService, PlaceholderCalendarService>();
 builder.Services.AddScoped<IWeeklyReportService, PlaceholderWeeklyReportService>();
 builder.Services.AddScoped<IWeeklyWorkRequestService, PlaceholderWeeklyWorkRequestService>();
 builder.Services.AddScoped<IWorkRequestApprovalService, PlaceholderWorkRequestApprovalService>();
-builder.Services.AddScoped<INotificationService, PlaceholderNotificationService>();
+builder.Services.AddScoped<INotificationService, SignalRNotificationService>();
 builder.Services.AddScoped<IEmailService, PlaceholderEmailService>();
 builder.Services.AddScoped<ICloudStorageService, PlaceholderCloudStorageService>();
 builder.Services.AddScoped<IQueryService, QueryService>(); // Real implementation
+
+// Background Services
+builder.Services.AddNotificationBackgroundService();
 
 // ===================================
 // APPLICATION PIPELINE CONFIGURATION
@@ -242,6 +286,9 @@ app.UseAuthentication();
 app.UseMiddleware<dotnet_rest_api.Middleware.JwtBlacklistMiddleware>();
 app.UseAuthorization();
 app.MapControllers();
+
+// SignalR Hub Configuration
+app.MapHub<dotnet_rest_api.Hubs.NotificationHub>("/notificationHub");
 
 // ===================================
 // DATABASE INITIALIZATION
