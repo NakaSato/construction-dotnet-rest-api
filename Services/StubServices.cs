@@ -47,6 +47,18 @@ public class StubDailyReportService : IDailyReportService
         return Task.FromResult(ServiceResult<bool>.ErrorResult("Not implemented"));
     }
 
+    public Task<ServiceResult<EnhancedPagedResult<DailyReportDto>>> GetProjectDailyReportsAsync(Guid projectId, DailyReportQueryParameters parameters)
+    {
+        var result = new EnhancedPagedResult<DailyReportDto>
+        {
+            Items = new List<DailyReportDto>(),
+            PageNumber = parameters.PageNumber,
+            PageSize = parameters.PageSize,
+            TotalCount = 0
+        };
+        return Task.FromResult(ServiceResult<EnhancedPagedResult<DailyReportDto>>.SuccessResult(result));
+    }
+
     // Enhanced Daily Report Operations
     public Task<ServiceResult<EnhancedPagedResult<EnhancedDailyReportDto>>> GetProjectDailyReportsAsync(Guid projectId, EnhancedDailyReportQueryParameters parameters)
     {
