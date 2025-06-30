@@ -34,6 +34,8 @@ public class ApplicationDbContext : DbContext
     public DbSet<WorkRequestTask> WorkRequestTasks { get; set; }
     public DbSet<WorkRequestComment> WorkRequestComments { get; set; }
     public DbSet<ProjectTask> ProjectTasks { get; set; }
+    public DbSet<WorkRequestNotification> WorkRequestNotifications { get; set; }
+    public DbSet<WorkRequestApproval> WorkRequestApprovals { get; set; }
 
   protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

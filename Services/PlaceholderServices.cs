@@ -348,12 +348,12 @@ public class PlaceholderRateLimitStorage : IRateLimitStorage
         return 0;
     }
 
-    public async Task IncrementRequestCountAsync(string key, TimeSpan expiration)
+    public async System.Threading.Tasks.Task IncrementRequestCountAsync(string key, TimeSpan expiration)
     {
         await System.Threading.Tasks.Task.Delay(1);
     }
 
-    public async Task ResetRequestCountAsync(string key)
+    public async System.Threading.Tasks.Task ResetRequestCountAsync(string key)
     {
         await System.Threading.Tasks.Task.Delay(1);
     }
@@ -383,12 +383,12 @@ public class PlaceholderRateLimitService : IRateLimitService
 
 public class PlaceholderRateLimitMonitoringService : IRateLimitMonitoringService
 {
-    public async Task RecordRateLimitHit(string clientId, string rule, string endpoint, bool isAllowed)
+    public async System.Threading.Tasks.Task RecordRateLimitHit(string clientId, string rule, string endpoint, bool isAllowed)
     {
         await System.Threading.Tasks.Task.Delay(1);
     }
 
-    public async Task<RateLimitStatistics> GetStatistics(TimeSpan period)
+    public async System.Threading.Tasks.Task<RateLimitStatistics> GetStatistics(TimeSpan period)
     {
         await System.Threading.Tasks.Task.Delay(1);
         return new RateLimitStatistics
@@ -400,35 +400,35 @@ public class PlaceholderRateLimitMonitoringService : IRateLimitMonitoringService
         };
     }
 
-    public async Task<List<ClientRateLimitInfo>> GetTopClients(int count)
+    public async System.Threading.Tasks.Task<List<ClientRateLimitInfo>> GetTopClients(int count)
     {
         await System.Threading.Tasks.Task.Delay(1);
         return new List<ClientRateLimitInfo>();
     }
 
-    public async Task<List<RateLimitViolation>> GetRecentViolations(TimeSpan period)
+    public async System.Threading.Tasks.Task<List<RateLimitViolation>> GetRecentViolations(TimeSpan period)
     {
         await System.Threading.Tasks.Task.Delay(1);
         return new List<RateLimitViolation>();
     }
 
-    public async Task<Dictionary<string, RateLimitRule>> GetActiveRules()
+    public async System.Threading.Tasks.Task<Dictionary<string, RateLimitRule>> GetActiveRules()
     {
         await System.Threading.Tasks.Task.Delay(1);
         return new Dictionary<string, RateLimitRule>();
     }
 
-    public async Task ClearClientLimits(string clientId)
+    public async System.Threading.Tasks.Task ClearClientLimits(string clientId)
     {
         await System.Threading.Tasks.Task.Delay(1);
     }
 
-    public async Task ClearAllLimits()
+    public async System.Threading.Tasks.Task ClearAllLimits()
     {
         await System.Threading.Tasks.Task.Delay(1);
     }
 
-    public async Task UpdateRuleConfiguration(string ruleName, RateLimitRule rule)
+    public async System.Threading.Tasks.Task UpdateRuleConfiguration(string ruleName, RateLimitRule rule)
     {
         await System.Threading.Tasks.Task.Delay(1);
     }

@@ -101,10 +101,7 @@ public class NotificationsController : BaseApiController
                 Items = notifications,
                 PageNumber = pageNumber,
                 PageSize = pageSize,
-                TotalCount = totalCount,
-                TotalPages = (int)Math.Ceiling(totalCount / (double)pageSize),
-                HasPreviousPage = pageNumber > 1,
-                HasNextPage = pageNumber < (int)Math.Ceiling(totalCount / (double)pageSize)
+                TotalCount = totalCount
             };
 
             return ToApiResponse(ServiceResult<EnhancedPagedResult<NotificationDto>>.SuccessResult(result));
@@ -306,8 +303,7 @@ public class NotificationsController : BaseApiController
     /// Send a test notification to verify SignalR connectivity
     /// Available to: All authenticated users
     /// </summary>
-    /// <param name="message">Test message to send</param>
-    [HttpPost("test")]
+    [HttpPost("test-signalr")]
     [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     public async Task<ActionResult<ApiResponse<object>>> SendTestNotification([FromBody] string message)
@@ -320,7 +316,7 @@ public class NotificationsController : BaseApiController
 
             await _notificationService.SendNotificationAsync(message, userId);
 
-            return CreateSuccessResponse(new { Message = "Test notification sent successfully" }, 
+            return CreateSuccessResponse((object)new { Message = "Test notification sent successfully" }, 
                 "Test notification sent");
         }
         catch (Exception ex)
@@ -349,7 +345,7 @@ public class NotificationsController : BaseApiController
                 request.Message, 
                 request.Priority);
 
-            return CreateSuccessResponse(new { AnnouncementId = Guid.NewGuid() }, 
+            return CreateSuccessResponse((object)new { AnnouncementId = Guid.NewGuid() }, 
                 "System announcement sent successfully");
         }
         catch (Exception ex)

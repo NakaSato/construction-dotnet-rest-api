@@ -148,7 +148,7 @@ public interface ICloudStorageService
 
 public interface IDataSeeder
 {
-    Task SeedSampleDataAsync();
+    System.Threading.Tasks.Task SeedSampleDataAsync();
 }
 
 public interface IAuthService
@@ -168,21 +168,21 @@ public interface IRateLimitService
 
 public interface IRateLimitMonitoringService
 {
-    Task RecordRateLimitHit(string clientId, string rule, string endpoint, bool isAllowed);
+    System.Threading.Tasks.Task RecordRateLimitHit(string clientId, string rule, string endpoint, bool isAllowed);
     System.Threading.Tasks.Task<RateLimitStatistics> GetStatistics(TimeSpan period);
     System.Threading.Tasks.Task<List<ClientRateLimitInfo>> GetTopClients(int count);
     System.Threading.Tasks.Task<List<RateLimitViolation>> GetRecentViolations(TimeSpan period);
     System.Threading.Tasks.Task<Dictionary<string, RateLimitRule>> GetActiveRules();
-    Task ClearClientLimits(string clientId);
-    Task ClearAllLimits();
-    Task UpdateRuleConfiguration(string ruleName, RateLimitRule rule);
+    System.Threading.Tasks.Task ClearClientLimits(string clientId);
+    System.Threading.Tasks.Task ClearAllLimits();
+    System.Threading.Tasks.Task UpdateRuleConfiguration(string ruleName, RateLimitRule rule);
 }
 
 public interface IRateLimitStorage
 {
     System.Threading.Tasks.Task<int> GetRequestCountAsync(string key);
-    Task IncrementRequestCountAsync(string key, TimeSpan expiration);
-    Task ResetRequestCountAsync(string key);
+    System.Threading.Tasks.Task IncrementRequestCountAsync(string key, TimeSpan expiration);
+    System.Threading.Tasks.Task ResetRequestCountAsync(string key);
 }
 
 public interface IResourceService

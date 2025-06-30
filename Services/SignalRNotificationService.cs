@@ -134,11 +134,16 @@ public class SignalRNotificationService : INotificationService
     {
         return type switch
         {
-            NotificationType.Created => "New Work Request",
-            NotificationType.StatusChanged => "Work Request Status Updated", 
-            NotificationType.Approved => "Work Request Approved",
-            NotificationType.Rejected => "Work Request Rejected",
-            NotificationType.Completed => "Work Request Completed",
+            NotificationType.WorkRequestSubmitted => "Work Request Submitted",
+            NotificationType.WorkRequestApproved => "Work Request Approved",
+            NotificationType.WorkRequestRejected => "Work Request Rejected", 
+            NotificationType.WorkRequestAssigned => "Work Request Assigned",
+            NotificationType.WorkRequestCompleted => "Work Request Completed",
+            NotificationType.WorkRequestEscalated => "Work Request Escalated",
+            NotificationType.WorkRequestDue => "Work Request Due",
+            NotificationType.WorkRequestOverdue => "Work Request Overdue",
+            NotificationType.ApprovalRequired => "Approval Required",
+            NotificationType.ApprovalReminder => "Approval Reminder",
             _ => "Work Request Notification"
         };
     }
@@ -418,21 +423,4 @@ public class SignalRNotificationService : INotificationService
         }
     }
 
-    private static string GetNotificationSubject(NotificationType type)
-    {
-        return type switch
-        {
-            NotificationType.WorkRequestSubmitted => "Work Request Submitted",
-            NotificationType.WorkRequestApproved => "Work Request Approved",
-            NotificationType.WorkRequestRejected => "Work Request Rejected",
-            NotificationType.WorkRequestAssigned => "Work Request Assigned",
-            NotificationType.WorkRequestCompleted => "Work Request Completed",
-            NotificationType.WorkRequestEscalated => "Work Request Escalated",
-            NotificationType.WorkRequestDue => "Work Request Due",
-            NotificationType.WorkRequestOverdue => "Work Request Overdue",
-            NotificationType.ApprovalRequired => "Approval Required",
-            NotificationType.ApprovalReminder => "Approval Reminder",
-            _ => "Notification"
-        };
-    }
 }

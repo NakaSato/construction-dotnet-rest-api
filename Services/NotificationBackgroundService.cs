@@ -94,7 +94,7 @@ public class NotificationBackgroundService : BackgroundService
             Message = $"Work Request: {workRequest.Title}",
             Data = new Dictionary<string, object>
             {
-                { "WorkRequestId", workRequest.Id },
+                { "WorkRequestId", workRequest.WorkRequestId },
                 { "ProjectId", workRequest.ProjectId },
                 { "Title", workRequest.Title },
                 { "Status", workRequest.Status },
@@ -103,8 +103,8 @@ public class NotificationBackgroundService : BackgroundService
             TargetGroup = $"project_{workRequest.ProjectId}",
             Priority = workRequest.Priority switch
             {
-                "Urgent" => 2,
-                "High" => 1,
+                WorkRequestPriority.Critical => 2,
+                WorkRequestPriority.High => 1,
                 _ => 0
             }
         };
@@ -119,14 +119,14 @@ public class NotificationBackgroundService : BackgroundService
         var item = new NotificationQueueItem
         {
             Type = notificationType,
-            Message = $"Daily Report: {dailyReport.Date:yyyy-MM-dd}",
+            Message = $"Daily Report: {dailyReport.ReportDate:yyyy-MM-dd}",
             Data = new Dictionary<string, object>
             {
-                { "DailyReportId", dailyReport.Id },
+                { "DailyReportId", dailyReport.DailyReportId },
                 { "ProjectId", dailyReport.ProjectId },
-                { "Date", dailyReport.Date },
+                { "Date", dailyReport.ReportDate },
                 { "Status", dailyReport.Status },
-                { "SubmittedBy", dailyReport.SubmittedById }
+                { "SubmittedBy", dailyReport.SubmittedByUserId }
             },
             TargetGroup = $"project_{dailyReport.ProjectId}",
             Priority = notificationType.Contains("Approval") ? 1 : 0
@@ -134,7 +134,7 @@ public class NotificationBackgroundService : BackgroundService
         QueueNotification(item);
     }
 
-    protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+    protected override async System.Threading.Tasks.Task ExecuteAsync(CancellationToken stoppingToken)
     {
         _logger.LogInformation("Notification Background Service started");
 
@@ -246,7 +246,11 @@ public class NotificationBackgroundService : BackgroundService
                         var workRequest = await context.WorkRequests.FindAsync(workRequestId);
                         if (workRequest != null)
                         {
-                            await signalRNotificationService.SendWorkRequestCreatedNotificationAsync(workRequest);
+                            await signalRNotificationService.SendWorkRequestNotificationAsync(
+                                workRequest.WorkRequestId, 
+                                NotificationType.WorkRequestSubmitted, 
+                                workRequest.RequestedById, 
+                                $"Work Request '{workRequest.Title}' has been created");
                         }
                     }
                     break;
@@ -259,7 +263,10 @@ public class NotificationBackgroundService : BackgroundService
                         var dailyReport = await context.DailyReports.FindAsync(dailyReportId);
                         if (dailyReport != null)
                         {
-                            await signalRNotificationService.SendDailyReportCreatedNotificationAsync(dailyReport);
+                            await signalRNotificationService.SendDailyReportCreatedNotificationAsync(
+                                dailyReport.DailyReportId, 
+                                dailyReport.ProjectId, 
+                                "Reporter");
                         }
                     }
                     break;
@@ -296,45 +303,38 @@ public class NotificationBackgroundService : BackgroundService
             var context = scope.ServiceProvider.GetRequiredService<Data.ApplicationDbContext>();
             
             // Store notification records for each target user
-            var notifications = new List<Notification>();
+            var notifications = new List<WorkRequestNotification>();
             
             if (item.TargetUserIds.Any())
             {
                 foreach (var userId in item.TargetUserIds)
                 {
-                    notifications.Add(new Notification
+                    // For WorkRequest notifications, we need a WorkRequestId
+                    if (item.Data.TryGetValue("WorkRequestId", out var wrId) && wrId is Guid workRequestId)
                     {
-                        Id = Guid.NewGuid(),
-                        UserId = userId,
-                        Title = GetNotificationTitle(item.Type),
-                        Message = item.Message,
-                        Type = item.Type,
-                        IsRead = false,
-                        CreatedAt = item.CreatedAt,
-                        Data = System.Text.Json.JsonSerializer.Serialize(item.Data)
-                    });
+                        notifications.Add(new WorkRequestNotification
+                        {
+                            NotificationId = Guid.NewGuid(),
+                            WorkRequestId = workRequestId,
+                            RecipientId = userId,
+                            Type = NotificationType.WorkRequestSubmitted, // Default type
+                            Status = NotificationStatus.Pending,
+                            Subject = GetNotificationTitle(item.Type),
+                            Message = item.Message,
+                            CreatedAt = item.CreatedAt
+                        });
+                    }
                 }
             }
             else if (!string.IsNullOrEmpty(item.TargetGroup))
             {
-                // For group notifications, we could store a single system notification
-                // or find all users in the group and create individual notifications
-                notifications.Add(new Notification
-                {
-                    Id = Guid.NewGuid(),
-                    UserId = null, // System notification
-                    Title = GetNotificationTitle(item.Type),
-                    Message = item.Message,
-                    Type = item.Type,
-                    IsRead = false,
-                    CreatedAt = item.CreatedAt,
-                    Data = System.Text.Json.JsonSerializer.Serialize(item.Data)
-                });
+                // For group notifications, skip database storage for now
+                // as WorkRequestNotification requires a WorkRequestId
             }
 
             if (notifications.Any())
             {
-                context.Notifications.AddRange(notifications);
+                context.WorkRequestNotifications.AddRange(notifications);
                 await context.SaveChangesAsync();
                 
                 _logger.LogInformation("Stored {Count} notification records in database for notification {NotificationId}", 
