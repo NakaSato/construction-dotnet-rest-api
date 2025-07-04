@@ -1,62 +1,57 @@
-# 📋 Project Management
+# Project Management
 
-This guide covers all project management endpoints for the Solar Projects API.
+Project management endpoints for the Solar Projects API.
 
-**🔒 Authentication Required**  
-**🎯 Role Required**: Admin, Manager (full CRUD access - create/read/update/delete all project data), All authenticated users (view only)
+**Authentication Required**: All endpoints require JWT authentication  
+**Role Required**: Admin/Manager (full CRUD), User/Viewer (read-only)
 
-## ⚡ Admin & Manager Capabilities
+## Admin & Manager Capabilities
 
-- ✅ Create new projects
-- ✅ Update all project fields (name, address, dates, equipment, etc.)
-- ✅ Modify project assignments and team configurations  
-- ✅ Update technical specifications (capacity, modules, inverters)
-- ✅ Edit location coordinates and connection details
-- ✅ Change project status and timelines
-- 🚫 Delete projects (Admin only)
+- Create new projects
+- Update all project fields
+- Modify project assignments and team configurations  
+- Update technical specifications
+- Edit location coordinates and connection details
+- Change project status and timelines
+- Delete projects (Admin only)
 
-## 🔑 Detailed Update Permissions
+## Update Permissions
 
-**Admin & Manager roles have FULL UPDATE ACCESS to all project data fields:**
+Admin & Manager roles have full update access to all project data fields:
 
-| Data Category | Fields Admin/Manager Can Update | API Endpoints |
-|---------------|----------------------------------|---------------|
-| **📋 Basic Info** | `projectName`, `address`, `clientInfo` | PUT/PATCH `/projects/{id}` |
-| **📅 Timeline** | `startDate`, `estimatedEndDate`, `actualEndDate` | PUT/PATCH `/projects/{id}` |
-| **👥 Team** | `projectManagerId`, `team` assignments | PUT/PATCH `/projects/{id}` |
-| **⚡ Technical** | `totalCapacityKw`, `pvModuleCount`, `connectionType`, `connectionNotes` | PUT/PATCH `/projects/{id}` |
-| **🔧 Equipment** | `equipmentDetails.inverter125kw`, `inverter80kw`, `inverter60kw`, `inverter40kw` | PUT/PATCH `/projects/{id}` |
-| **💰 Financial** | `ftsValue`, `revenueValue`, `pqmValue` | PUT/PATCH `/projects/{id}` |
-| **📍 Location** | `locationCoordinates.latitude`, `locationCoordinates.longitude` | PUT/PATCH `/projects/{id}` |
-| **📊 Status** | Project status and workflow management | PUT/PATCH `/projects/{id}` |
+| Data Category | Fields | API Endpoints |
+|---------------|--------|---------------|
+| Basic Info | `projectName`, `address`, `clientInfo` | PUT/PATCH `/projects/{id}` |
+| Timeline | `startDate`, `estimatedEndDate`, `actualEndDate` | PUT/PATCH `/projects/{id}` |
+| Team | `projectManagerId`, `team` assignments | PUT/PATCH `/projects/{id}` |
+| Technical | `totalCapacityKw`, `pvModuleCount`, `connectionType` | PUT/PATCH `/projects/{id}` |
+| Equipment | Inverter details and specifications | PUT/PATCH `/projects/{id}` |
+| Financial | `ftsValue`, `revenueValue`, `pqmValue` | PUT/PATCH `/projects/{id}` |
+| Location | `locationCoordinates.latitude`, `longitude` | PUT/PATCH `/projects/{id}` |
+| Status | Project status and workflow management | PUT/PATCH `/projects/{id}` |
 
-**🚫 Admin-Only Operations:**
+**Admin-Only Operations:**
 - Project deletion (`DELETE /projects/{id}`)
-- System configuration changes
 
-**📖 User & Viewer Access:**
+**User & Viewer Access:**
 - Read-only access to all project data
-- Cannot modify any project information
-- Can submit reports and updates related to their work
+- Can submit reports related to their work
 
-## 📊 Get All Projects
+## Get All Projects
 
 **GET** `/api/v1/projects`
 
-Retrieve a paginated list of projects with advanced filtering, sorting, and field selection.
+Retrieve a paginated list of projects with filtering, sorting, and field selection.
 
 **Query Parameters**:
 - `pageNumber` (int): Page number (default: 1)
 - `pageSize` (int): Items per page (default: 10, max: 100)
-- `status` (string): Filter by status ("Planning", "InProgress", "Completed", "OnHold", "Cancelled")
+- `status` (string): Filter by status 
 - `search` (string): Search in project name or description
-- `sortBy` (string): Sort field (projectName, startDate, status, etc.)
+- `sortBy` (string): Sort field
 - `sortOrder` (string): Sort direction ("asc" or "desc")
-- `fields` (string): Comma-separated list of fields to include in response
+- `fields` (string): Comma-separated list of fields to include
 - `managerId` (Guid): Filter by project manager ID
-- `filter` (string): Advanced filter expressions
-
-**🆕 Current Database**: 97+ solar projects imported and available
 
 **Success Response (200)**:
 ```json
@@ -120,7 +115,7 @@ Retrieve a paginated list of projects with advanced filtering, sorting, and fiel
 }
 ```
 
-## 🔍 Get Project by ID
+## Get Project by ID
 
 **GET** `/api/v1/projects/{id}`
 
@@ -178,7 +173,7 @@ Retrieve detailed information about a specific project.
 }
 ```
 
-## 👤 Get My Projects
+## Get My Projects
 
 **GET** `/api/v1/projects/me`
 
@@ -248,7 +243,7 @@ Get projects associated with the current authenticated user.
 }
 ```
 
-## 📊 Get Project Status
+## Get Project Status
 
 **GET** `/api/v1/projects/{id}/status`
 
@@ -303,45 +298,7 @@ Get real-time status information for a specific project.
 }
 ```
 
-## 🧪 API Test Endpoint
-
-**GET** `/api/v1/projects/test`
-
-**🔓 No Authentication Required**
-
-Test endpoint to verify the Projects API is functioning correctly.
-
-**Success Response (200)**:
-```json
-{
-  "message": "Projects API is working",
-  "timestamp": "2025-06-15T10:00:00Z",
-  "environment": "Development",
-  "apiVersion": "v1.0",
-  "sampleProjects": [
-    {
-      "id": 1,
-      "name": "Solar Farm Project A",
-      "status": "Active",
-      "location": "California"
-    },
-    {
-      "id": 2,
-      "name": "Solar Installation B",
-      "status": "Planning",
-      "location": "Texas"
-    },
-    {
-      "id": 3,
-      "name": "Residential Solar C",
-      "status": "Completed",
-      "location": "Florida"
-    }
-  ]
-}
-```
-
-## 📝 Create New Project
+## Create New Project
 
 **POST** `/api/v1/projects`
 
@@ -428,7 +385,7 @@ Create a new solar installation project with detailed information.
 }
 ```
 
-## 🔄 Update Project
+## Update Project
 
 **PUT** `/api/v1/projects/{id}`
 
@@ -520,7 +477,7 @@ Update all fields of an existing project.
 }
 ```
 
-## 🔄 Partially Update Project
+## Partially Update Project
 
 **PATCH** `/api/v1/projects/{id}`
 
@@ -594,7 +551,7 @@ Update specific fields of an existing project without affecting other fields.
 }
 ```
 
-## 🗑️ Delete Project
+## Delete Project
 
 **DELETE** `/api/v1/projects/{id}`
 
@@ -625,7 +582,7 @@ Delete a project and all associated data (tasks, reports, etc.).
 }
 ```
 
-## 📊 Project Statuses
+## Project Statuses
 
 | Status | Description | Allowed Transitions |
 |--------|-------------|---------------------|
@@ -635,7 +592,309 @@ Delete a project and all associated data (tasks, reports, etc.).
 | **Completed** | All work finished | (Final state) |
 | **Cancelled** | Project terminated | (Final state) |
 
-## ❌ Project Error Codes
+## Project Analytics
+
+**GET** `/api/v1/projects/analytics`
+
+Get comprehensive project analytics and performance metrics.
+
+**Query Parameters**:
+- `timeframe` (string): Analytics timeframe ("30d", "90d", "1y", "all")
+- `groupBy` (string): Group results by ("status", "manager", "month", "quarter")
+- `includeFinancial` (bool): Include financial metrics (default: false)
+- `includePerformance` (bool): Include performance metrics (default: true)
+
+**Success Response (200)**:
+```json
+{
+  "success": true,
+  "message": "Project analytics retrieved successfully",
+  "data": {
+    "summary": {
+      "totalProjects": 97,
+      "activeProjects": 68,
+      "completedProjects": 23,
+      "totalCapacity": 48560.5,
+      "averageCompletionTime": 127,
+      "onTimeDeliveryRate": 87.3
+    },
+    "statusBreakdown": {
+      "Planning": 12,
+      "InProgress": 68,
+      "OnHold": 6,
+      "Completed": 23,
+      "Cancelled": 2
+    },
+    "performanceMetrics": {
+      "averageProjectDuration": 127,
+      "budgetVariance": -2.4,
+      "qualityScore": 94.2,
+      "customerSatisfaction": 91.8,
+      "teamEfficiency": 88.5
+    },
+    "trends": {
+      "projectsPerMonth": [
+        { "month": "2024-01", "count": 8, "completed": 5 },
+        { "month": "2024-02", "count": 12, "completed": 9 }
+      ],
+      "capacityTrends": [
+        { "month": "2024-01", "totalKw": 2850.5 },
+        { "month": "2024-02", "totalKw": 3420.8 }
+      ]
+    },
+    "topPerformers": {
+      "managers": [
+        {
+          "managerId": "mgr001",
+          "fullName": "Sarah Johnson",
+          "projectCount": 15,
+          "completionRate": 93.3,
+          "averageDuration": 115
+        }
+      ],
+      "projects": [
+        {
+          "projectId": "proj001",
+          "projectName": "Solar Farm Alpha",
+          "completionRate": 98.5,
+          "onTimeDelivery": true,
+          "budgetVariance": -1.2
+        }
+      ]
+    }
+  }
+}
+```
+
+## Project Performance Tracking
+
+**GET** `/api/v1/projects/{id}/performance`
+
+Track detailed performance metrics for a specific project.
+
+**Path Parameters**:
+- `id` (guid) - Project ID
+
+**Success Response (200)**:
+```json
+{
+  "success": true,
+  "message": "Project performance retrieved successfully",
+  "data": {
+    "projectId": "8f83b2a1-c4e5-4d67-9abc-123456789def",
+    "projectName": "Building A Solar Installation",
+    "performanceScore": 92.4,
+    "kpis": {
+      "timelineAdherence": 94.2,
+      "budgetAdherence": 97.8,
+      "qualityScore": 96.5,
+      "safetyScore": 100.0,
+      "clientSatisfaction": 91.2
+    },
+    "milestones": [
+      {
+        "milestoneId": "ms001",
+        "title": "Design Approval",
+        "targetDate": "2024-06-15T00:00:00Z",
+        "actualDate": "2024-06-14T00:00:00Z",
+        "status": "Completed",
+        "varianceDays": -1
+      }
+    ],
+    "resourceUtilization": {
+      "teamUtilization": 87.3,
+      "equipmentUtilization": 82.1,
+      "materialEfficiency": 94.7
+    },
+    "riskAssessment": {
+      "overallRiskLevel": "Low",
+      "activeRisks": 2,
+      "mitigatedRisks": 8,
+      "riskTrend": "Decreasing"
+    },
+    "progressHistory": [
+      {
+        "date": "2024-06-20",
+        "completionPercentage": 75.5,
+        "tasksCompleted": 45,
+        "hoursWorked": 8.5,
+        "issues": 0
+      }
+    ]
+  }
+}
+```
+
+## Project Status Workflow
+
+**PATCH** `/api/v1/projects/{id}/status`
+
+Update project status with workflow validation.
+
+**Path Parameters**:
+- `id` (guid) - Project ID
+
+**Request Body**:
+```json
+{
+  "status": "InProgress",
+  "reason": "All permits approved and team assigned",
+  "effectiveDate": "2024-06-21T08:00:00Z",
+  "notifyStakeholders": true
+}
+```
+
+**Success Response (200)**:
+```json
+{
+  "success": true,
+  "message": "Project status updated successfully",
+  "data": {
+    "projectId": "8f83b2a1-c4e5-4d67-9abc-123456789def",
+    "previousStatus": "Planning",
+    "newStatus": "InProgress",
+    "effectiveDate": "2024-06-21T08:00:00Z",
+    "updatedBy": {
+      "userId": "user123",
+      "fullName": "John Manager"
+    },
+    "notifications": {
+      "sent": 12,
+      "failed": 0,
+      "recipients": ["team", "client", "stakeholders"]
+    }
+  }
+}
+```
+
+## Project Templates
+
+**GET** `/api/v1/projects/templates`
+
+Get available project templates for quick project creation.
+
+**Success Response (200)**:
+```json
+{
+  "success": true,
+  "message": "Project templates retrieved successfully",
+  "data": {
+    "templates": [
+      {
+        "templateId": "tmpl001",
+        "name": "Residential Solar Installation",
+        "description": "Standard template for residential solar projects",
+        "category": "Residential",
+        "estimatedDuration": 30,
+        "defaultTasks": [
+          {
+            "title": "Site Survey",
+            "estimatedHours": 4,
+            "phase": "Planning"
+          },
+          {
+            "title": "Permit Application",
+            "estimatedHours": 8,
+            "phase": "Planning"
+          }
+        ],
+        "requiredEquipment": [
+          "Solar Panels",
+          "Inverter",
+          "Mounting System"
+        ],
+        "usageCount": 45
+      }
+    ]
+  }
+}
+```
+
+**POST** `/api/v1/projects/from-template/{templateId}`
+
+Create a new project from a template.
+
+**Path Parameters**:
+- `templateId` (guid) - Template ID
+
+**Request Body**:
+```json
+{
+  "projectName": "Smith Residence Solar",
+  "address": "123 Oak Street, Anytown, ST 12345",
+  "clientInfo": "John & Jane Smith",
+  "totalCapacityKw": 8.5,
+  "projectManagerId": "mgr001",
+  "startDate": "2024-06-25T00:00:00Z",
+  "customizations": {
+    "skipTasks": ["permit_application"],
+    "additionalTasks": [
+      {
+        "title": "HOA Approval",
+        "estimatedHours": 2
+      }
+    ]
+  }
+}
+```
+
+## Advanced Project Search
+
+**GET** `/api/v1/projects/search`
+
+Advanced search with full-text search and filters.
+
+**Query Parameters**:
+- `q` (string): Search query
+- `filters` (object): Advanced filter criteria
+- `coordinates` (string): Location-based search (lat,lng,radius)
+- `dateRange` (string): Date range filter
+- `facets` (bool): Include facet information
+
+**Success Response (200)**:
+```json
+{
+  "success": true,
+  "message": "Search results retrieved successfully",
+  "data": {
+    "query": "solar installation residential",
+    "results": [
+      {
+        "projectId": "proj001",
+        "projectName": "Smith Residence Solar",
+        "relevanceScore": 95.2,
+        "matchedFields": ["projectName", "description", "tags"],
+        "highlights": [
+          "Smith Residence <mark>Solar</mark>",
+          "<mark>Residential</mark> <mark>installation</mark> project"
+        ]
+      }
+    ],
+    "facets": {
+      "status": {
+        "InProgress": 45,
+        "Completed": 23,
+        "Planning": 12
+      },
+      "capacity": {
+        "0-10kW": 67,
+        "10-50kW": 23,
+        "50kW+": 7
+      },
+      "location": {
+        "Urban": 78,
+        "Suburban": 45,
+        "Rural": 12
+      }
+    },
+    "suggestions": ["solar panels", "residential installation", "rooftop mounting"],
+    "totalResults": 97,
+    "searchTime": 0.034
+  }
+}
+```
+
+## Project Error Codes
 
 | Error Code | Description | Resolution |
 |------------|-------------|------------|
@@ -647,6 +906,36 @@ Delete a project and all associated data (tasks, reports, etc.).
 | **PRJ006** | Invalid status transition | Follow allowed status transitions |
 | **PRJ007** | Duplicate project name | Choose a unique project name |
 | **PRJ008** | Missing required fields | Add all required fields to request |
+| **PRJ009** | Template not found | Verify template ID exists |
+| **PRJ010** | Invalid search query | Check search syntax and parameters |
+| **PRJ011** | Location coordinates invalid | Provide valid latitude and longitude |
+| **PRJ012** | Performance data unavailable | Project must have activity to show performance |
+
+## Summary
+
+### Key Features
+- **Comprehensive CRUD Operations**: Full project lifecycle management
+- **Advanced Search & Filtering**: Powerful search capabilities with facets
+- **Performance Analytics**: Detailed metrics and KPI tracking
+- **Template System**: Quick project creation from predefined templates
+- **Status Workflow**: Structured status transitions with validation
+- **Real-time Notifications**: Automatic stakeholder notifications
+- **Geographic Integration**: Location-based project management
+
+### Integration Points
+- **Master Plans**: Automatic master plan creation for new projects
+- **Task Management**: Linked task creation and tracking
+- **Daily Reports**: Progress reporting tied to projects
+- **File Management**: Document and image storage per project
+- **Calendar Integration**: Project milestones and schedule management
+
+### Best Practices
+- Use templates for consistent project setup
+- Maintain accurate project status throughout lifecycle
+- Regular performance monitoring and reporting
+- Proper role-based access control implementation
+- Geographic data for location-based insights
+- Regular analytics review for process improvement
 
 ---
 *Last Updated: July 4, 2025*

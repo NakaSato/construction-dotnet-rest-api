@@ -1,36 +1,36 @@
-# ❌ Error Handling
+# Error Handling
 
-This guide explains the error handling approach and common error codes for the Solar Projects API.
+Error handling approach and common error codes for the Solar Projects API.
 
-## 🔍 API Response Format
+## API Response Format
 
 All API responses follow a consistent format:
 
 ```json
 {
-  "success": true/false,         // Boolean indicating success
+  "success": true/false,
   "message": "Human-readable message",
-  "data": { ... } or null,       // Response data (null on error)
-  "errors": []                   // Array of error messages (empty on success)
+  "data": { ... } or null,
+  "errors": []
 }
 ```
 
-## 🚦 HTTP Status Codes
+## HTTP Status Codes
 
 | Code | Status | Meaning | Common Causes |
 |------|--------|---------|--------------|
-| **200** | OK | Successful request | GET, PUT, PATCH operations completed |
-| **201** | Created | Resource created | POST operations completed |
-| **400** | Bad Request | Invalid input | Missing fields, validation errors |
-| **401** | Unauthorized | Authentication error | Missing/invalid token |
-| **403** | Forbidden | Permission error | User lacks required role |
-| **404** | Not Found | Resource not found | Invalid ID, wrong endpoint |
-| **409** | Conflict | Resource conflict | Duplicate entry, concurrency issue |
-| **422** | Unprocessable Entity | Validation error | Business rule violations |
-| **429** | Too Many Requests | Rate limited | Exceeded API call limits |
-| **500** | Server Error | Internal error | Unexpected server-side errors |
+| 200 | OK | Successful request | GET, PUT, PATCH operations completed |
+| 201 | Created | Resource created | POST operations completed |
+| 400 | Bad Request | Invalid input | Missing fields, validation errors |
+| 401 | Unauthorized | Authentication error | Missing/invalid token |
+| 403 | Forbidden | Permission error | User lacks required role |
+| 404 | Not Found | Resource not found | Invalid ID, wrong endpoint |
+| 409 | Conflict | Resource conflict | Duplicate entry, concurrency issue |
+| 422 | Unprocessable Entity | Validation error | Business rule violations |
+| 429 | Too Many Requests | Rate limited | Exceeded API call limits |
+| 500 | Server Error | Internal error | Unexpected server-side errors |
 
-## 📋 Error Response Format
+## Error Response Format
 
 Error responses provide detailed information about what went wrong:
 
@@ -47,7 +47,7 @@ Error responses provide detailed information about what went wrong:
 }
 ```
 
-### 🔧 Validation Errors (400)
+### Validation Errors (400)
 
 ```json
 {
@@ -288,4 +288,4 @@ Future<T> retryOperation<T>(Future<T> Function() operation) async {
 - **Status Indicators**: For ongoing operation status
 
 ---
-*Last Updated: June 15, 2025*
+*Last Updated: July 4, 2025*

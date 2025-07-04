@@ -1,16 +1,16 @@
-# 🚀 Quick Start Guide
+# Quick Start Guide
 
-This guide will help you get started with the Solar Projects API quickly.
+Get started with the Solar Projects API quickly.
 
-## 📋 Quick Start Checklist
+## Quick Start Checklist
 
-- [x] **Deploy API & Database**: Docker containers running on `http://localhost:5002`
-- [x] **Authenticate**: Get JWT token with valid credentials
-- [x] **Make API Calls**: Use token in Authorization header
-- [x] **Review Responses**: Check success/error fields in JSON
-- [x] **Handle Errors**: Use appropriate error codes for troubleshooting
+- Deploy API & Database: Docker containers running on `http://localhost:5002`
+- Authenticate: Get JWT token with valid credentials
+- Make API Calls: Use token in Authorization header
+- Review Responses: Check success/error fields in JSON
+- Handle Errors: Use appropriate error codes for troubleshooting
 
-## 🔑 Authentication
+## Authentication
 
 1. **Get your authentication token**:
 
@@ -20,31 +20,14 @@ curl -X POST http://localhost:5002/api/v1/auth/login \
   -d '{"username":"test_admin","password":"Admin123!"}'
 ```
 
-2. **Save your token** from the response:
-
-```json
-{
-  "success": true,
-  "message": "Login successful",
-  "data": {
-    "token": "eyJhbGciOiJIUzI...", // Save this token
-    "user": {
-      "userId": "...",
-      "username": "test_admin",
-      "roleName": "Admin"
-    }
-  }
-}
-```
-
-3. **Use the token** in subsequent requests:
+2. **Save your token** from the response and **use the token** in subsequent requests:
 
 ```bash
 curl -X GET http://localhost:5002/api/v1/projects \
-  -H "Authorization: Bearer eyJhbGciOiJIUzI..."
+  -H "Authorization: Bearer YOUR_JWT_TOKEN"
 ```
 
-## 🌐 API Base URLs
+## API Base URLs
 
 | Environment | Base URL | Status |
 |-------------|----------|--------|

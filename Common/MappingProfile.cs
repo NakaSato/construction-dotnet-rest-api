@@ -21,6 +21,55 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.Role, opt => opt.Ignore())
             .ForMember(dest => dest.PasswordHash, opt => opt.Ignore());
 
+        // WBS Task mappings
+        CreateMap<WbsTask, WbsTaskDto>()
+            .ForMember(dest => dest.AssignedUserName, opt => opt.MapFrom(src => src.AssignedUser != null ? src.AssignedUser.FullName : null))
+            .ForMember(dest => dest.Dependencies, opt => opt.MapFrom(src => src.Dependencies.Select(d => d.PrerequisiteTaskId).ToList()))
+            .ForMember(dest => dest.EvidenceCount, opt => opt.MapFrom(src => src.Evidence.Count));
+
+        CreateMap<CreateWbsTaskDto, WbsTask>()
+            .ForMember(dest => dest.CreatedAt, opt => opt.Ignore())
+            .ForMember(dest => dest.UpdatedAt, opt => opt.Ignore())
+            .ForMember(dest => dest.CreatedBy, opt => opt.Ignore())
+            .ForMember(dest => dest.UpdatedBy, opt => opt.Ignore())
+            .ForMember(dest => dest.Project, opt => opt.Ignore())
+            .ForMember(dest => dest.AssignedUser, opt => opt.Ignore())
+            .ForMember(dest => dest.ParentTask, opt => opt.Ignore())
+            .ForMember(dest => dest.ChildTasks, opt => opt.Ignore())
+            .ForMember(dest => dest.Dependencies, opt => opt.Ignore())
+            .ForMember(dest => dest.DependentTasks, opt => opt.Ignore())
+            .ForMember(dest => dest.Evidence, opt => opt.Ignore());
+
+        CreateMap<UpdateWbsTaskDto, WbsTask>()
+            .ForMember(dest => dest.WbsId, opt => opt.Ignore())
+            .ForMember(dest => dest.CreatedAt, opt => opt.Ignore())
+            .ForMember(dest => dest.UpdatedAt, opt => opt.Ignore())
+            .ForMember(dest => dest.CreatedBy, opt => opt.Ignore())
+            .ForMember(dest => dest.UpdatedBy, opt => opt.Ignore())
+            .ForMember(dest => dest.Project, opt => opt.Ignore())
+            .ForMember(dest => dest.AssignedUser, opt => opt.Ignore())
+            .ForMember(dest => dest.ParentTask, opt => opt.Ignore())
+            .ForMember(dest => dest.ChildTasks, opt => opt.Ignore())
+            .ForMember(dest => dest.Dependencies, opt => opt.Ignore())
+            .ForMember(dest => dest.DependentTasks, opt => opt.Ignore())
+            .ForMember(dest => dest.Evidence, opt => opt.Ignore());
+
+        CreateMap<WbsTask, WbsTaskHierarchyDto>()
+            .ForMember(dest => dest.Children, opt => opt.Ignore())
+            .ForMember(dest => dest.Level, opt => opt.Ignore());
+
+        CreateMap<WbsTaskEvidence, WbsTaskEvidenceDto>();
+
+        CreateMap<CreateWbsTaskEvidenceDto, WbsTaskEvidence>()
+            .ForMember(dest => dest.Id, opt => opt.Ignore())
+            .ForMember(dest => dest.WbsTaskId, opt => opt.Ignore())
+            .ForMember(dest => dest.CreatedAt, opt => opt.Ignore())
+            .ForMember(dest => dest.WbsTask, opt => opt.Ignore());
+
+        CreateMap<WbsTaskDependency, WbsTaskDependencyDto>()
+            .ForMember(dest => dest.DependentTaskName, opt => opt.MapFrom(src => src.DependentTask != null ? src.DependentTask.TaskNameEN : null))
+            .ForMember(dest => dest.PrerequisiteTaskName, opt => opt.MapFrom(src => src.PrerequisiteTask != null ? src.PrerequisiteTask.TaskNameEN : null));
+
         // Master Plan mappings
         CreateMap<MasterPlan, MasterPlanDto>()
             .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.MasterPlanId))

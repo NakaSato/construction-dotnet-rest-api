@@ -1,42 +1,57 @@
-# 🔐 Authentication & User Management
+# Authentication & User Management
 
-This guide covers all authentication endpoints, user registration, and role-based access control for the Solar Project Management API.
+Authentication endpoints, user registration, and role-based access control for the Solar Project Management API.
 
-## 🔑 Authentication Overview
+## Authentication Overview
 
-All API endpoints (except health checks) require JWT authentication:
+All API endpoints require JWT authentication:
 
 ```http
 Authorization: Bearer YOUR_JWT_TOKEN
 ```
 
-## 👥 User Roles & Permissions
+### Security Features
+- JWT token authentication
+- Refresh token rotation
+- Role-based access control (RBAC)
+- Password security policies
+- Session management
+- Audit logging
 
-| Role ID | Role Name | Project Access | Description | Mobile Use Case |
-|---------|-----------|----------------|-------------|-----------------|
-| `1` | **Admin** | Full CRUD + Delete | Complete system access | Management app |
-| `2` | **Manager** | Full CRUD | Project management without delete | Supervisor app |
-| `3` | **User** | Read + Own Reports | Field technician access | Technician app |
-| `4` | **Viewer** | Read Only | Client/reporting access | Client portal |
+## User Roles & Permissions
 
-### 🔑 Current Test Accounts
+| Role ID | Role Name | Project Access | Description |
+|---------|-----------|----------------|-------------|
+| `1` | Admin | Full CRUD + Delete | Complete system access |
+| `2` | Manager | Full CRUD | Project management |
+| `3` | User | Read + Own Reports | Field technician access |
+| `4` | Viewer | Read Only | Client/reporting access |
 
-| Username | Email | Password | Role | Purpose |
-|----------|-------|----------|------|---------|
-| `test_admin` | `test_admin@example.com` | `Admin123!` | Admin | Full system access |
-| `test_manager` | `test_manager@example.com` | `Manager123!` | Manager | Project management |
-| `test_user` | `test_user@example.com` | `User123!` | User | Field technician |
-| `test_viewer` | `test_viewer@example.com` | `Viewer123!` | Viewer | Read-only access |
+### Permission Matrix
 
-## 🚪 Login
+| Action | Admin | Manager | User | Viewer |
+|--------|-------|---------|------|--------|
+| Projects | Full CRUD + Delete | Full CRUD | Read Only | Read Only |
+| Master Plans | Full CRUD + Delete | Full CRUD | Read Only | Read Only |
+| Tasks | Full CRUD + Delete | Full CRUD | Read + Own CRUD | Read Only |
+| Daily Reports | Full CRUD + Delete | Full CRUD + Approve | Own CRUD | Read Only |
+| Work Requests | Full CRUD + Delete | Full CRUD + Approve | Own CRUD | Read Only |
+| Users | Full CRUD | Read + Team Management | Read Own Profile | Read Own Profile |
+
+### Test Accounts
+
+| Username | Email | Password | Role |
+|----------|-------|----------|------|
+| `test_admin` | `test_admin@example.com` | `Admin123!` | Admin |
+| `test_manager` | `test_manager@example.com` | `Manager123!` | Manager |
+| `test_user` | `test_user@example.com` | `User123!` | User |
+| `test_viewer` | `test_viewer@example.com` | `Viewer123!` | Viewer |
+
+## Login
 
 **POST** `/api/v1/auth/login`
 
-Authenticate a user and receive a JWT token for API access.
-
-### Request Options
-
-You can login with either **username** or **email**:
+### Request
 
 ```json
 // Option 1: Login with username
@@ -87,41 +102,9 @@ You can login with either **username** or **email**:
 }
 ```
 
-### Flutter Example
-
-```dart
-Future<AuthResponse> login(String usernameOrEmail, String password) async {
-  try {
-    final response = await ApiClient.post('/auth/login', {
-      'username': usernameOrEmail,  // Can be username or email
-      'password': password,
-    });
-    
-    if (response['success']) {
-      final authData = AuthResponse.fromJson(response['data']);
-      
-      // Store tokens securely
-      await _storage.write(key: 'jwt_token', value: authData.token);
-      await _storage.write(key: 'refresh_token', value: authData.refreshToken);
-      
-      return authData;
-    } else {
-      throw Exception(response['message']);
-    }
-  } on ApiException catch (e) {
-    if (e.statusCode == 401) {
-      throw Exception('Invalid username or password');
-    }
-    rethrow;
-  }
-}
-```
-
-## 📝 Register New User
+## Register New User
 
 **POST** `/api/v1/auth/register`
-
-Create a new user account with specified role and permissions.
 
 ### Request Body
 
@@ -134,14 +117,6 @@ Create a new user account with specified role and permissions.
   "roleId": 3
 }
 ```
-
-### Password Requirements
-
-- Minimum 8 characters
-- At least one uppercase letter
-- At least one lowercase letter
-- At least one number
-- At least one special character
 
 ### Success Response (201)
 
@@ -176,10 +151,7 @@ Create a new user account with specified role and permissions.
 }
 ```
 
-### Flutter Registration Example
-
-```dart
-class RegistrationForm extends StatefulWidget {
+## Token Refresh
   @override
   _RegistrationFormState createState() => _RegistrationFormState();
 }
@@ -359,43 +331,10 @@ Invalidate the current session and tokens.
 - **Never** store tokens in plain text
 
 ### 2. Token Handling
-```dart
-// Example secure token storage in Flutter
-class TokenManager {
-  static const _storage = FlutterSecureStorage();
-  
-  static Future<void> saveTokens(String jwt, String refresh) async {
-    await _storage.write(key: 'jwt_token', value: jwt);
-    await _storage.write(key: 'refresh_token', value: refresh);
-  }
-  
-  static Future<String?> getJwtToken() async {
-    return await _storage.read(key: 'jwt_token');
-  }
-  
-  static Future<void> clearTokens() async {
-    await _storage.delete(key: 'jwt_token');
-    await _storage.delete(key: 'refresh_token');
-  }
-}
-```
+Implement secure token storage using appropriate methods for your platform.
 
 ### 3. Automatic Token Refresh
-```dart
-// Auto-refresh implementation
-class ApiClient {
-  static Future<Map<String, dynamic>> authenticatedRequest(
-    String endpoint, 
-    Map<String, dynamic> data
-  ) async {
-    String? token = await TokenManager.getJwtToken();
-    
-    try {
-      return await _makeRequest(endpoint, data, token);
-    } on TokenExpiredException {
-      // Auto-refresh token
-      await _refreshToken();
-      token = await TokenManager.getJwtToken();
+Implement automatic token refresh when tokens expire.
       return await _makeRequest(endpoint, data, token);
     }
   }
@@ -424,12 +363,38 @@ class ApiClient {
 
 | Error Code | Status | Description | Solution |
 |------------|--------|-------------|----------|
-| **AUTH001** | 401 | Invalid credentials | Check username/email and password |
-| **AUTH002** | 401 | Token expired | Use refresh token or login again |
-| **AUTH003** | 401 | Invalid token format | Ensure Bearer token format |
-| **AUTH004** | 403 | Insufficient permissions | Check user role requirements |
-| **AUTH005** | 400 | Weak password | Follow password requirements |
-| **AUTH006** | 409 | Username/email exists | Choose different username or email |
+| AUTH001 | 401 | Invalid credentials | Check username/email and password |
+| AUTH002 | 401 | Token expired | Use refresh token or login again |
+| AUTH003 | 401 | Invalid token format | Ensure Bearer token format |
+| AUTH004 | 403 | Insufficient permissions | Check user role requirements |
+| AUTH005 | 400 | Weak password | Follow password requirements |
+| AUTH006 | 409 | Username/email exists | Choose different username or email |
+| AUTH007 | 429 | Too many login attempts | Wait before retrying |
+| AUTH008 | 400 | Invalid refresh token | Login again to get new tokens |
+
+## Advanced Security Features
+
+### Multi-Factor Authentication
+```http
+POST /api/v1/auth/enable-mfa
+```
+
+### Password Policy
+```http
+GET /api/v1/auth/password-policy
+```
+
+### Session Management
+```http
+GET /api/v1/auth/active-sessions
+DELETE /api/v1/auth/sessions/{sessionId}
+```
+
+### Account Recovery
+```http
+POST /api/v1/auth/forgot-password
+POST /api/v1/auth/reset-password
+```
 
 ---
-*Last Updated: June 15, 2025*
+*Last Updated: January 2025*

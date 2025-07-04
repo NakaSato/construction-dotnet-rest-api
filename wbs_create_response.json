@@ -1,0 +1,4 @@
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0100   596    0   346  100   250  95924  69309 --:--:-- --:--:-- --:--:--  194k
+{"type":"https://tools.ietf.org/html/rfc9110#section-15.5.1","title":"One or more validation errors occurred.","status":400,"errors":{"WbsId":["The WbsId field is required."],"TaskNameEN":["The TaskNameEN field is required."],"TaskNameTH":["The TaskNameTH field is required."]},"traceId":"00-821f06c25e80ad5aa27941c0fe51cc0e-2c4712d833bb15bb-00"}HTTP_CODE:400

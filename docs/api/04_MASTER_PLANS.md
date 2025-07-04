@@ -1,31 +1,63 @@
-# 🏗️ Master Plan Management
+# Master Plan Management
 
-**🔒 Authentication Required**  
-**🎯 Role Required**: Administrator, Project Manager (full CRUD access), All authenticated users (view only)
+**Authentication Required**: All endpoints require JWT authentication  
+**Role Required**: Admin/Manager (full CRUD), User/Viewer (read-only)
 
-Master plans provide comprehensive project planning and management capabilities within the context of a specific **Project**. Each Master Plan belongs to a Project and serves as the detailed execution blueprint, allowing Project Managers to create comprehensive plans with phases, milestones, and budget tracking for solar installation projects.
+Master plans serve as the central planning schedule that coordinates all schedules within a solar project. Each master plan belongs to a project and acts as the comprehensive scheduling framework.
 
-## 🏗️ Project-Master Plan Relationship
+## Project-Master Plan Relationship
 
-- **Project** is the primary reference entity containing high-level project information
-- **Master Plan** belongs to a Project (1:1 relationship) and defines the detailed execution strategy  
+- **Project** is the primary business entity containing high-level project information
+- **Master Plan** belongs to a Project (1:1 relationship) and serves as the central planning schedule
 - A Project can have only one active Master Plan at a time
-- Master Plans inherit project context (budget, timeline, stakeholders) from their parent Project
+- Master Plans coordinate and contain all project schedules:
+  - Phase Schedules: Detailed timelines for each project phase
+  - Task Schedules: Individual work item timelines and dependencies
+  - Milestone Schedules: Key deliverable and checkpoint dates
+  - Resource Schedules: Personnel, equipment, and material allocation
+  - Approval Schedules: Workflow and approval process timelines
 
-## ⚡ Administrator & Project Manager Capabilities
+## Administrator & Project Manager Capabilities
 
-- ✅ Create new master plans for projects
-- ✅ Update plan details (name, description, dates, budget)
-- ✅ Manage plan status and versioning
-- ✅ Set project phases and milestones
-- ✅ Track progress and budget allocation
-- ✅ Approve and submit plans for execution
+- Create new master plans for projects
+- Update plan details (name, description, dates, budget)
+- Manage plan status and versioning
+- Coordinate all project schedules within the master plan
+- Track progress across all integrated schedules
+- Resolve schedule conflicts and optimize resource allocation
+- Generate comprehensive scheduling reports
+- Approve and submit plans for execution
 
-## 📖 User & Viewer Access
+## User & Viewer Access
 
-- Read-only access to approved master plans
+- Read-only access to approved master plans and all contained schedules
 - Cannot modify plan information
-- Can view project progress and milestones
+- Can view project progress and milestone tracking
+- Access to schedule-based reports
+
+## Master Plan as Central Scheduling Framework
+
+The Master Plan serves as the central planning schedule for all schedules within a project.
+
+### Integrated Schedule Management
+- **Phase Schedules**: Breaks down the project into manageable time-based phases
+- **Task Schedules**: Individual work items with start/end dates and dependencies
+- **Milestone Schedules**: Key deliverables and checkpoint dates across all phases
+- **Resource Schedules**: Personnel, equipment, and material allocation timelines
+- **Approval Schedules**: Workflow deadlines and approval process timelines
+
+### ⚡ Schedule Coordination Features
+- **Dependency Management**: Links between different schedule components
+- **Conflict Resolution**: Identifies and resolves scheduling conflicts across all schedules
+- **Resource Optimization**: Prevents double-booking and optimizes resource utilization
+- **Timeline Synchronization**: Ensures all sub-schedules align with master timeline
+- **Progress Tracking**: Unified progress monitoring across all schedule components
+
+### 📊 Schedule Analytics
+- **Critical Path Analysis**: Identifies bottlenecks across all integrated schedules
+- **Resource Utilization**: Tracks allocation efficiency across all schedule types
+- **Schedule Performance**: Monitors adherence to planned vs. actual timelines
+- **Variance Analysis**: Identifies deviations from planned schedules
 
 ## 🏗️ Create Master Plan
 
@@ -33,23 +65,24 @@ Master plans provide comprehensive project planning and management capabilities 
 
 **🔒 Required Roles**: Administrator, ProjectManager
 
-Create a new master plan for an existing project with detailed planning information. The master plan inherits core attributes from its parent project and serves as the detailed execution blueprint.
+Create a new master plan for an existing project with comprehensive scheduling framework. The master plan serves as the central planning schedule that will coordinate all project activities, timelines, and resource allocation schedules.
 
 **⚠️ Prerequisites**: 
 - A valid Project must exist before creating a Master Plan
 - Each Project can only have one active Master Plan at a time
+- Master Plan becomes the central scheduling authority for all project activities
 
 **Request Body**:
 ```json
 {
   "title": "Solar Installation Master Plan - Phase 1",
-  "description": "Comprehensive plan for residential solar installation covering site preparation through final commissioning",
+  "description": "Central planning schedule for residential solar installation covering all project schedules from site preparation through final commissioning",
   "projectId": "456e7890-e89b-12d3-a456-426614174001",
   "startDate": "2025-07-01T00:00:00Z",
   "endDate": "2025-09-30T00:00:00Z",
   "budget": 275000.00,
   "priority": "High",
-  "notes": "Plan includes weather contingency and permit approval delays"
+  "notes": "Master schedule includes all sub-schedules: phase schedules, task schedules, milestone schedules, resource schedules, and approval workflow schedules"
 }
 ```
 
@@ -57,11 +90,11 @@ Create a new master plan for an existing project with detailed planning informat
 ```json
 {
   "success": true,
-  "message": "Master plan created successfully",
+  "message": "Master plan created successfully as central scheduling framework",
   "data": {
     "id": "123e4567-e89b-12d3-a456-426614174000",
     "title": "Solar Installation Master Plan - Phase 1",
-    "description": "Comprehensive plan for residential solar installation covering site preparation through final commissioning",
+    "description": "Central planning schedule for residential solar installation covering all project schedules from site preparation through final commissioning",
     "projectId": "456e7890-e89b-12d3-a456-426614174001",
     "startDate": "2025-07-01T00:00:00Z",
     "endDate": "2025-09-30T00:00:00Z",
@@ -631,73 +664,79 @@ Retrieve paginated list of progress reports for a master plan.
 
 ## 📊 Master Plan Status Workflow & Business Logic
 
-Master plans follow a sophisticated status workflow with advanced business logic for progress tracking, dependency management, and hierarchical project structure.
+Master plans follow a sophisticated status workflow with advanced business logic for coordinating all project schedules, managing dependencies across schedule types, and maintaining hierarchical project structure as the central planning authority.
 
 ### Status Workflow
 | Status | Description | Available Actions | Who Can Change |
 |--------|-------------|-------------------|----------------|
-| **Draft** | Initial creation, editable | Edit, Submit for Approval, Delete | Creator, Admin |
-| **Pending** | Submitted for approval | Approve, Reject, Request Changes | Admin, Senior PM |
-| **Approved** | Ready for execution | Start Execution, Archive | Admin, PM |
-| **InProgress** | Currently being executed | Update Progress, Complete | Admin, PM |
-| **Completed** | Successfully finished | Archive, Generate Report | Admin, PM |
-| **Cancelled** | Cancelled before completion | Archive, Restart | Admin |
+| **Draft** | Initial creation, all schedules editable | Edit schedules, Submit for Approval, Delete | Creator, Admin |
+| **Pending** | Submitted for approval with all schedules | Approve, Reject, Request Changes | Admin, Senior PM |
+| **Approved** | Ready for execution, schedules locked | Start Execution, Archive | Admin, PM |
+| **InProgress** | Currently being executed, live schedule tracking | Update Progress, Complete | Admin, PM |
+| **Completed** | Successfully finished, all schedules complete | Archive, Generate Report | Admin, PM |
+| **Cancelled** | Cancelled before completion, schedules voided | Archive, Restart | Admin |
 
-### Advanced Progress Tracking & Weighted Calculations
+### Advanced Schedule Coordination & Integration
 
-The system implements sophisticated, multi-level progress tracking using weighted calculations to provide accurate project status representation:
+The system implements sophisticated, multi-level schedule coordination using the master plan as the central scheduling authority:
 
-#### 🔢 Progress Calculation Formulas
+#### 🔢 Schedule Integration Formulas
 
-**Phase Completion (Weighted Average)**:
+**Phase Schedule Completion (Weighted Average)**:
 ```
-PhaseCompletion = Σ(SubActivityCompletion[i] × SubActivityDuration[i]) / Σ(SubActivityDuration[i])
-```
-
-**Overall Project Completion**:
-```
-OverallProjectCompletion = Σ(PhaseCompletion[p] × PhaseWeight[p])
+PhaseScheduleCompletion = Σ(TaskScheduleCompletion[i] × TaskDuration[i]) / Σ(TaskDuration[i])
 ```
 
-For solar projects, this typically translates to:
-- Planning & Permitting: 15% weight
-- Procurement & Logistics: 10% weight  
-- Construction & Installation: 65% weight
-- Testing & Handover: 10% weight
+**Overall Master Schedule Completion**:
+```
+MasterScheduleCompletion = Σ(PhaseScheduleCompletion[p] × PhaseWeight[p])
+```
 
-#### 🔗 Task Dependencies & Critical Path
+**Schedule Performance Index (SPI)**:
+```
+SPI = Earned Schedule Value / Planned Schedule Value
+```
 
-The system supports four standard dependency types:
+For solar projects, the master plan typically coordinates these schedule weights:
+- Planning & Permitting Schedule: 15% weight
+- Procurement & Logistics Schedule: 10% weight  
+- Construction & Installation Schedule: 65% weight
+- Testing & Handover Schedule: 10% weight
 
-| Type | Code | Description | Example Use Case |
+#### 🔗 Schedule Dependencies & Critical Path Analysis
+
+The master plan supports comprehensive dependency management across all schedule types:
+
+| Dependency Type | Code | Description | Example Use Case |
 |------|------|-------------|------------------|
-| **Finish-to-Start** | FS | Task B starts after Task A finishes | Engineering approval → Building permit |
-| **Start-to-Start** | SS | Task B starts when Task A starts | Parallel construction activities |
-| **Finish-to-Finish** | FF | Task B finishes when Task A finishes | Final testing → Pre-commissioning |
-| **Start-to-Finish** | SF | Task B finishes when Task A starts | Resource handoff scenarios |
+| **Finish-to-Start** | FS | Schedule B starts after Schedule A finishes | Phase schedule → Next phase schedule |
+| **Start-to-Start** | SS | Schedule B starts when Schedule A starts | Parallel task schedules |
+| **Finish-to-Finish** | FF | Schedule B finishes when Schedule A finishes | Milestone schedules alignment |
+| **Start-to-Finish** | SF | Schedule B finishes when Schedule A starts | Resource handoff schedules |
 
-#### 🏗️ Resource Dependencies
+#### 🏗️ Resource Schedule Dependencies
 
-Beyond logical task dependencies, the system models **Resource Dependencies** where multiple tasks compete for limited resources (crews, equipment). This prevents unrealistic scheduling and identifies potential bottlenecks.
+Beyond logical schedule dependencies, the master plan models **Resource Schedule Dependencies** where multiple schedules compete for limited resources (crews, equipment). This prevents scheduling conflicts and identifies potential bottlenecks across all project schedules.
 
-#### 📈 Hierarchical Structure
+#### 📈 Hierarchical Schedule Structure
 
-The progress calculation engine uses **recursive algorithms** to handle unlimited nesting levels with **Project as the root entity**:
-- **Project** (Root) → **Master Plan** → **Phases** → **Activities** → **Sub-tasks**
-- Each level can have weighted contributions to the parent level
-- Project-level progress aggregates Master Plan completion
-- Master Plan inherits Project constraints and stakeholder requirements
-- Supports future expansion without architectural changes
+The master plan uses **recursive scheduling algorithms** to handle unlimited nesting levels with **Project as the root scheduling entity**:
+- **Project** (Root Schedule) → **Master Plan** (Central Schedule) → **Phase Schedules** → **Task Schedules** → **Sub-task Schedules**
+- Each schedule level contributes to the parent schedule completion
+- Project-level schedule aggregates Master Plan schedule completion
+- Master Plan inherits Project schedule constraints and stakeholder requirements
+- Supports future schedule expansion without architectural changes
 
-### Project-Master Plan Data Model
+### Project-Master Plan Schedule Model
 
 ```
-Project (1) ←→ (1) MasterPlan
+Project (1) ←→ (1) MasterPlan (Central Schedule Authority)
     ↓                ↓
 Project.Budget ≥ MasterPlan.Budget
 Project.StartDate ≤ MasterPlan.StartDate  
 Project.EndDate ≥ MasterPlan.EndDate
-Project.Stakeholders → MasterPlan.Notifications
+Project.Stakeholders → MasterPlan.ScheduleNotifications
+MasterPlan.Schedules → All Phase/Task/Milestone/Resource Schedules
 ```
 
 ## 📊 Advanced Analytics
@@ -1188,3 +1227,29 @@ GET /api/v1/master-plans/{masterPlanId}/project
 ```http
 GET /api/v1/projects/{projectId}/master-plans?includeArchived=true
 ```
+
+## 🎯 Summary: Master Plan as Central Scheduling Authority
+
+The Master Plan serves as the **single source of truth for all project scheduling**, functioning as:
+
+### 📅 Unified Schedule Management
+- **Central Coordination Point**: All project schedules flow through and are managed by the master plan
+- **Schedule Integration**: Combines phase schedules, task schedules, milestone schedules, resource schedules, and approval schedules into one coherent framework
+- **Conflict Resolution**: Identifies and resolves scheduling conflicts across all schedule types before they impact project delivery
+
+### ⚡ Real-Time Schedule Synchronization
+- **Live Updates**: Changes to any sub-schedule automatically update the master plan and all related schedules
+- **Dependency Cascade**: Schedule changes trigger automatic updates to dependent schedules throughout the project
+- **Resource Optimization**: Prevents double-booking and optimizes resource allocation across all project schedules
+
+### 📊 Comprehensive Schedule Analytics
+- **Critical Path Tracking**: Identifies the longest sequence of dependent schedules that determines project completion
+- **Schedule Performance Monitoring**: Tracks planned vs. actual progress across all integrated schedules
+- **Predictive Scheduling**: Uses historical data and current progress to forecast schedule completion and identify potential delays
+
+### 🔗 Stakeholder Schedule Communication
+- **Unified Reporting**: Provides stakeholders with a single, coherent view of all project schedules
+- **Role-Based Schedule Views**: Delivers schedule information tailored to different stakeholder needs (executives, project managers, technicians)
+- **Automated Schedule Notifications**: Alerts stakeholders to schedule changes, conflicts, or milestones across all schedule types
+
+The master plan ensures that all project activities are properly scheduled, coordinated, and tracked within a single, integrated scheduling framework that serves as the definitive planning schedule for the entire project.

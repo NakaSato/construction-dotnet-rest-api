@@ -3,47 +3,131 @@
 **🔒 Authentication Required**  
 **🎯 Role Required**: Admin, Manager (full access), Users (create own reports), All authenticated users (view)
 
-Daily reports provide a way to track daily work progress, hours worked, and issues encountered within the context of a specific **Project**. Each Daily Report belongs to a Project and serves as a detailed work log for solar installation projects.
+Daily reports provide comprehensive tracking of daily work activities, progress, safety compliance, and resource utilization within the context of a specific **Project**. Each Daily Report belongs to a Project and serves as a detailed work log, progress tracker, and compliance record for solar installation projects. Daily reports support advanced workflow management, approval processes, and AI-powered insights for project optimization.
 
 ## 🏗️ Project-Daily Report Relationship
 
-- **Project** is the primary reference entity containing high-level project information
-- **Daily Report** belongs to a Project (many:1 relationship) and captures daily work activities
-- A Project can have multiple Daily Reports (one per worker per day)
-- Daily Reports inherit project context (location, team, objectives) from their parent Project
-- All reporting and analysis is organized by Project for proper tracking
+- **Project** is the primary business entity containing high-level project information and constraints
+- **Daily Report** belongs to a Project (many:1 relationship) and captures comprehensive daily work activities
+- A Project can have multiple Daily Reports (typically one per team member per day, or one consolidated per day)
+- Daily Reports integrate with the project's **Master Plan** for progress tracking and schedule validation
+- Daily Reports inherit project context (location, team, objectives, safety requirements) from their parent Project
+- All reporting, analytics, and compliance tracking is organized by Project for comprehensive oversight
+- Daily Reports contribute to project-level progress calculations and milestone tracking
 
 ## ⚡ Daily Report Capabilities
 
 ### Admin & Manager
-- ✅ Create reports for any project
-- ✅ View all reports across projects
-- ✅ Update any report details
-- ✅ Generate summary reports
-- ✅ Export report data
-- ✅ Delete reports if needed
+- ✅ Create reports for any project and team member
+- ✅ View all reports across projects with advanced filtering
+- ✅ Update any report details and override submission rules
+- ✅ Approve/reject reports with workflow management
+- ✅ Generate comprehensive summary reports and analytics
+- ✅ Export report data in multiple formats (PDF, Excel, CSV)
+- ✅ Access AI-powered insights and recommendations
+- ✅ Configure report templates and validation rules
+- ✅ Manage bulk operations and approval workflows
+- ✅ Delete reports if needed (with audit trail)
+
+### Project Managers
+- ✅ Create and manage reports for assigned projects
+- ✅ View team reports with analytics and insights
+- ✅ Approve reports within their project scope
+- ✅ Generate project-specific progress reports
+- ✅ Access safety and quality analytics
+- ✅ Configure project-specific report templates
 
 ### Users (Technicians)
-- ✅ Create their own daily reports
-- ✅ Update their own reports (within 24h)
-- ✅ Attach photos to reports
-- ✅ Report issues and blockers
+- ✅ Create their own daily reports with guided templates
+- ✅ Update their own reports (within configurable time limit)
+- ✅ Attach photos, documents, and evidence to reports
+- ✅ Report safety incidents, quality issues, and blockers
+- ✅ Track personal productivity and contribution metrics
+- ✅ Submit reports for approval workflow
 - ❌ Cannot modify others' reports
-- ❌ Cannot delete reports
+- ❌ Cannot delete submitted reports
+- ❌ Limited access to analytics and insights
 
-## 📋 Get All Daily Reports
+### Viewers
+- ✅ Read-only access to approved reports
+- ✅ View project progress summaries
+- ✅ Access basic analytics and charts
+- ❌ Cannot create, edit, or approve reports
+
+## 🎯 Daily Report Features & Capabilities
+
+### 📋 Comprehensive Data Capture
+- **Work Progress Tracking**: Detailed activity logging with time allocation and completion percentages
+- **Safety & Quality Metrics**: Standardized scoring systems with incident reporting
+- **Weather Impact Assessment**: Weather condition logging with impact analysis on work progress
+- **Resource Utilization**: Personnel, equipment, and material usage tracking with cost implications
+- **Photo Documentation**: Progress photos with metadata, GPS coordinates, and categorization
+- **Issue & Risk Management**: Incident reporting with severity classification and resolution tracking
+
+### 🔄 Advanced Workflow Management
+- **Approval Workflows**: Configurable multi-level approval processes with role-based permissions
+- **Template-Based Creation**: Project-specific templates ensuring consistent data collection
+- **Validation Engine**: Real-time data validation with AI-powered suggestions and corrections
+- **Bulk Operations**: Mass approval, rejection, and export capabilities for efficiency
+
+### 📊 Analytics & Insights
+- **AI-Powered Analysis**: Automated insights generation with performance recommendations
+- **Progress Analytics**: Real-time progress tracking with trend analysis and forecasting
+- **Safety Analytics**: Safety performance monitoring with risk assessment and compliance tracking
+- **Resource Optimization**: Equipment and personnel utilization analysis with cost optimization suggestions
+
+### 🔗 Integration Capabilities
+- **Master Plan Integration**: Direct linkage to project schedules and milestone tracking
+- **Task Progress Sync**: Automatic task completion updates based on daily report submissions
+- **Calendar Integration**: Schedule coordination with project timelines and resource allocation
+- **Notification System**: Automated alerts for approvals, issues, and milestone achievements
+
+## � API Overview
+
+The Daily Reports API provides comprehensive endpoints for managing daily work reports with the following capabilities:
+
+### 📖 Core CRUD Operations
+- **Create Enhanced Reports**: `/api/v1/daily-reports` and `/api/v1/daily-reports/enhanced`
+- **Retrieve Reports**: `/api/v1/daily-reports`, `/api/v1/daily-reports/{id}`, `/api/v1/daily-reports/projects/{projectId}`
+- **Update Reports**: `/api/v1/daily-reports/{id}` (with role-based time restrictions)
+- **Delete Reports**: `/api/v1/daily-reports/{id}` (Admin/Manager only with audit trail)
+
+### 🔄 Workflow Management
+- **Approval Operations**: Submit, approve, reject, and bulk operations
+- **Status Tracking**: Draft → Submitted → Approved/Rejected/Revision Required
+- **History Tracking**: Complete audit trail of all report modifications and approvals
+
+### 📊 Analytics & Reporting
+- **Project Analytics**: `/api/v1/daily-reports/projects/{projectId}/analytics`
+- **Progress Reports**: `/api/v1/daily-reports/projects/{projectId}/weekly-report`
+- **AI Insights**: `/api/v1/daily-reports/projects/{projectId}/insights`
+- **Export Options**: Enhanced export with multiple formats and comprehensive data
+
+### 🔧 Configuration & Templates
+- **Template Management**: Project-specific report templates with validation rules
+- **Validation Engine**: Real-time validation with suggestions and auto-corrections
+- **Bulk Operations**: Mass operations for efficiency at scale
+
+## �📋 Get All Daily Reports
 
 **GET** `/api/v1/daily-reports`
 
 Retrieve daily reports with filtering options.
 
 **Query Parameters**:
-- `projectId` (Guid): Filter by project
+- `projectId` (Guid): Filter by specific project
 - `userId` (Guid): Filter by reporting user
-- `startDate` (DateTime): Filter from date
-- `endDate` (DateTime): Filter to date
-- `pageNumber` (int): Page number
-- `pageSize` (int): Items per page
+- `startDate` (DateTime): Filter from date (YYYY-MM-DD or ISO format)
+- `endDate` (DateTime): Filter to date (YYYY-MM-DD or ISO format)
+- `approvalStatus` (string): Filter by approval status (Draft, Submitted, Approved, Rejected, RevisionRequired)
+- `minSafetyScore` (int): Minimum safety score filter (1-10)
+- `minQualityScore` (int): Minimum quality score filter (1-10)
+- `weatherCondition` (string): Filter by weather condition
+- `hasCriticalIssues` (bool): Filter reports with critical issues
+- `sortBy` (string): Sort field (reportDate, safetyScore, qualityScore, hoursWorked, createdAt)
+- `sortDirection` (string): Sort direction (asc, desc)
+- `pageNumber` (int): Page number (default: 1)
+- `pageSize` (int): Items per page (default: 10, max: 100)
 
 **Success Response (200)**:
 ```json
@@ -59,10 +143,18 @@ Retrieve daily reports with filtering options.
         "userId": "789e0123-e89b-12d3-a456-426614174002",
         "userName": "John Technician",
         "reportDate": "2025-06-14",
+        "approvalStatus": "Approved",
         "hoursWorked": 8.5,
+        "personnelOnSite": 4,
         "weatherConditions": "Sunny, 85°F",
+        "temperature": 85.0,
+        "humidity": 45,
         "summary": "Completed installation of 24 solar panels on south-facing roof section",
         "issues": "None",
+        "safetyScore": 10,
+        "qualityScore": 9,
+        "dailyProgressContribution": 12.5,
+        "hasCriticalIssues": false,
         "tasksCompleted": ["Install mounting rails", "Install panels in section A"],
         "createdAt": "2025-06-14T17:30:00Z",
         "hasAttachments": true
@@ -74,10 +166,18 @@ Retrieve daily reports with filtering options.
         "userId": "890f1234-e89b-12d3-a456-426614174002",
         "userName": "Sarah Electrician",
         "reportDate": "2025-06-14",
+        "approvalStatus": "Submitted",
         "hoursWorked": 7.0,
+        "personnelOnSite": 3,
         "weatherConditions": "Sunny, 85°F",
+        "temperature": 85.0,
+        "humidity": 45,
         "summary": "Completed electrical wiring for inverter connections",
         "issues": "Permit inspector delayed until tomorrow",
+        "safetyScore": 9,
+        "qualityScore": 8,
+        "dailyProgressContribution": 8.5,
+        "hasCriticalIssues": false,
         "tasksCompleted": ["Wire inverters", "Test connections"],
         "createdAt": "2025-06-14T16:45:00Z",
         "hasAttachments": false
@@ -90,6 +190,15 @@ Retrieve daily reports with filtering options.
       "totalPages": 5,
       "hasPreviousPage": false,
       "hasNextPage": true
+    },
+    "summary": {
+      "totalReports": 45,
+      "averageSafetyScore": 9.2,
+      "averageQualityScore": 8.8,
+      "totalHoursLogged": 382.5,
+      "totalProgressContribution": 95.5,
+      "criticalIssuesCount": 2,
+      "pendingApprovals": 8
     }
   },
   "errors": []
@@ -117,10 +226,25 @@ Retrieve details of a specific daily report.
     "userId": "789e0123-e89b-12d3-a456-426614174002",
     "userName": "John Technician",
     "reportDate": "2025-06-14",
+    "approvalStatus": "Approved",
+    "approvedBy": "Sarah Manager",
+    "approvedAt": "2025-06-14T18:30:00Z",
     "hoursWorked": 8.5,
+    "personnelOnSite": 4,
     "weatherConditions": "Sunny, 85°F",
+    "temperature": 85.0,
+    "humidity": 45,
+    "windSpeed": 8.5,
+    "weatherImpact": "None - ideal conditions",
     "summary": "Completed installation of 24 solar panels on south-facing roof section",
+    "workAccomplished": "Successfully installed mounting rails and 24 high-efficiency solar panels",
+    "workPlannedNextDay": "Begin electrical connections and inverter setup",
     "issues": "None",
+    "safetyScore": 10,
+    "qualityScore": 9,
+    "dailyProgressContribution": 12.5,
+    "hasCriticalIssues": false,
+    "requiresManagerAttention": false,
     "tasksCompleted": [
       {
         "taskId": "task1-id",
@@ -174,9 +298,20 @@ Create a new daily report for work completed.
   "projectId": "456e7890-e89b-12d3-a456-426614174001",
   "reportDate": "2025-06-15",
   "hoursWorked": 9.0,
+  "personnelOnSite": 4,
   "weatherConditions": "Partly cloudy, 82°F",
+  "temperature": 82.0,
+  "humidity": 55,
+  "windSpeed": 12.0,
+  "weatherImpact": "Slight delay due to cloud cover affecting panel testing",
   "summary": "Completed electrical connections and initial testing of inverter system",
+  "workAccomplished": "Electrical connections completed, inverter testing 75% complete",
+  "workPlannedNextDay": "Complete inverter testing and begin system commissioning",
   "issues": "Waiting for city inspector clearance before final connection",
+  "safetyScore": 10,
+  "qualityScore": 9,
+  "dailyProgressContribution": 8.5,
+  "additionalNotes": "Team maintained excellent safety standards throughout electrical work",
   "tasksCompleted": [
     {
       "taskId": "task3-id",
@@ -191,12 +326,14 @@ Create a new daily report for work completed.
     {
       "name": "Electrical cable",
       "quantity": 150,
-      "unit": "feet"
+      "unit": "feet",
+      "unitCost": 2.50
     },
     {
       "name": "Conduit",
       "quantity": 40,
-      "unit": "feet"
+      "unit": "feet",
+      "unitCost": 3.75
     }
   ]
 }
@@ -209,10 +346,17 @@ Create a new daily report for work completed.
   "message": "Daily report created successfully",
   "data": {
     "id": "345g7890-e89b-12d3-a456-426614174000",
+    "projectId": "456e7890-e89b-12d3-a456-426614174001",
     "projectName": "Solar Installation Project Alpha",
     "reportDate": "2025-06-15",
+    "approvalStatus": "Draft",
     "hoursWorked": 9.0,
-    "createdAt": "2025-06-15T18:15:00Z"
+    "safetyScore": 10,
+    "qualityScore": 9,
+    "dailyProgressContribution": 8.5,
+    "createdAt": "2025-06-15T18:15:00Z",
+    "canEdit": true,
+    "canSubmit": true
   },
   "errors": []
 }
@@ -296,7 +440,110 @@ Delete a daily report.
 }
 ```
 
-## 📎 Add Attachment to Report
+## � Report Approval Workflow
+
+### Submit Report for Approval
+
+**POST** `/api/v1/daily-reports/{id}/submit`
+
+**🔒 Requires**: Report creator or higher authority
+
+Submit a daily report for management approval.
+
+**Path Parameters**:
+- `id` (Guid): Daily report ID
+
+**Request Body**:
+```json
+{
+  "comments": "Report ready for review - all safety protocols followed"
+}
+```
+
+**Success Response (200)**:
+```json
+{
+  "success": true,
+  "message": "Report submitted for approval",
+  "data": {
+    "id": "345g7890-e89b-12d3-a456-426614174000",
+    "approvalStatus": "Submitted",
+    "submittedAt": "2025-06-15T19:00:00Z",
+    "submittedBy": "John Technician"
+  },
+  "errors": []
+}
+```
+
+### Approve Daily Report
+
+**POST** `/api/v1/daily-reports/{id}/approve`
+
+**🔒 Required Roles**: Admin, Manager, ProjectManager
+
+Approve a submitted daily report.
+
+**Path Parameters**:
+- `id` (Guid): Daily report ID
+
+**Request Body**:
+```json
+{
+  "comments": "Excellent work quality and safety compliance. Approved for record."
+}
+```
+
+**Success Response (200)**:
+```json
+{
+  "success": true,
+  "message": "Daily report approved successfully",
+  "data": {
+    "id": "345g7890-e89b-12d3-a456-426614174000",
+    "approvalStatus": "Approved",
+    "approvedBy": "Sarah Manager",
+    "approvedAt": "2025-06-15T20:30:00Z",
+    "approvalComments": "Excellent work quality and safety compliance. Approved for record."
+  },
+  "errors": []
+}
+```
+
+### Reject Daily Report
+
+**POST** `/api/v1/daily-reports/{id}/reject`
+
+**🔒 Required Roles**: Admin, Manager, ProjectManager
+
+Reject a submitted daily report with reason.
+
+**Path Parameters**:
+- `id` (Guid): Daily report ID
+
+**Request Body**:
+```json
+{
+  "rejectionReason": "Insufficient detail in work summary. Please provide more specific information about tasks completed and any safety incidents."
+}
+```
+
+**Success Response (200)**:
+```json
+{
+  "success": true,
+  "message": "Daily report rejected",
+  "data": {
+    "id": "345g7890-e89b-12d3-a456-426614174000",
+    "approvalStatus": "Rejected",
+    "rejectedBy": "Sarah Manager",
+    "rejectedAt": "2025-06-15T20:15:00Z",
+    "rejectionReason": "Insufficient detail in work summary. Please provide more specific information about tasks completed and any safety incidents."
+  },
+  "errors": []
+}
+```
+
+## �📎 Add Attachment to Report
 
 **POST** `/api/v1/daily-reports/{id}/attachments`
 
@@ -1149,6 +1396,42 @@ Export daily reports with comprehensive data and analytics.
 
 **Success Response (200)**:
 - File download with comprehensive daily report data
+
+## 🎯 Summary: Daily Reports as Project Intelligence Hub
+
+Daily Reports serve as the **primary intelligence gathering and performance monitoring system** for solar installation projects, providing:
+
+### 📊 Real-Time Project Intelligence
+- **Live Progress Tracking**: Immediate visibility into daily progress with automatic master plan integration
+- **Safety & Quality Monitoring**: Continuous compliance tracking with automated alerts for below-threshold scores
+- **Resource Utilization Analytics**: Real-time tracking of personnel, equipment, and material efficiency
+- **Weather Impact Analysis**: Comprehensive weather data collection with impact assessment on project timelines
+
+### 🤖 AI-Powered Optimization
+- **Predictive Analytics**: AI-driven insights for project completion forecasting and risk identification
+- **Performance Benchmarking**: Automated comparison against industry standards and historical project data
+- **Optimization Recommendations**: Machine learning-powered suggestions for productivity and safety improvements
+- **Anomaly Detection**: Automatic identification of unusual patterns requiring management attention
+
+### 🔄 Integrated Workflow Management
+- **Approval Automation**: Streamlined approval workflows with role-based permissions and escalation rules
+- **Template Standardization**: Project-specific templates ensuring consistent, high-quality data collection
+- **Bulk Operations**: Efficient mass operations for large teams and multi-project management
+- **Audit Trail**: Complete tracking of all report modifications, approvals, and workflow actions
+
+### 📈 Strategic Business Value
+- **Compliance Documentation**: Comprehensive records for regulatory compliance and client reporting
+- **Performance Analytics**: Detailed insights into team productivity, safety performance, and project health
+- **Cost Management**: Material usage tracking and cost analysis for budget optimization
+- **Client Communication**: Professional progress reports with photos and detailed accomplishments
+
+### 🔗 Ecosystem Integration
+- **Master Plan Synchronization**: Automatic progress updates to project schedules and milestone tracking
+- **Task Management**: Direct integration with task completion and assignment systems
+- **Calendar Coordination**: Schedule updates and milestone notifications based on daily progress
+- **Notification Hub**: Automated stakeholder communications for issues, achievements, and approvals
+
+The Daily Reports system transforms routine documentation into a powerful project management and business intelligence platform, providing the data foundation for successful solar installation project delivery.
 
 ## ❌ Enhanced Daily Report Error Codes
 

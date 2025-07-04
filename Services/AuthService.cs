@@ -74,7 +74,7 @@ public class AuthService : IAuthService
                         Username = "admin",
                         Email = "admin@example.com",
                         FullName = "Admin User",
-                        RoleName = "Administrator",
+                        RoleName = "Admin",
                         IsActive = true
                     }
                 };
@@ -275,7 +275,7 @@ public class AuthService : IAuthService
             new Claim("jti", Guid.NewGuid().ToString()), // JWT ID for token tracking
             new Claim(ClaimTypes.Name, "admin"),
             new Claim(ClaimTypes.Email, "admin@example.com"),
-            new Claim(ClaimTypes.Role, "Administrator")
+            new Claim(ClaimTypes.Role, "Admin")
         };
 
         var token = new JwtSecurityToken(

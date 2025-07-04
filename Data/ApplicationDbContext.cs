@@ -37,7 +37,12 @@ public class ApplicationDbContext : DbContext
     public DbSet<WorkRequestNotification> WorkRequestNotifications { get; set; }
     public DbSet<WorkRequestApproval> WorkRequestApprovals { get; set; }
 
-  protected override void OnModelCreating(ModelBuilder modelBuilder)
+    // WBS (Work Breakdown Structure) DbSets
+    public DbSet<WbsTask> WbsTasks { get; set; }
+    public DbSet<WbsTaskDependency> WbsTaskDependencies { get; set; }
+    public DbSet<WbsTaskEvidence> WbsTaskEvidence { get; set; }
+    
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         // Configure Project entity
         modelBuilder.Entity<Project>(entity =>
@@ -1014,6 +1019,158 @@ public class ApplicationDbContext : DbContext
                 .WithMany()
                 .HasForeignKey(e => e.DailyReportId)
                 .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        // Configure WbsTask entity
+        modelBuilder.Entity<WbsTask>(entity =>
+        {
+            entity.HasKey(w => w.WbsId);
+            
+            entity.Property(w => w.WbsId)
+                .IsRequired()
+                .HasMaxLength(50);
+            
+            entity.Property(w => w.ParentWbsId)
+                .HasMaxLength(50);
+            
+            entity.Property(w => w.TaskNameEN)
+                .IsRequired()
+                .HasMaxLength(200);
+            
+            entity.Property(w => w.TaskNameTH)
+                .IsRequired()
+                .HasMaxLength(200);
+            
+            entity.Property(w => w.Description)
+                .HasMaxLength(1000);
+            
+            entity.Property(w => w.Status)
+                .IsRequired()
+                .HasConversion<string>();
+            
+            entity.Property(w => w.WeightPercent)
+                .HasPrecision(5, 2);
+            
+            entity.Property(w => w.InstallationArea)
+                .HasMaxLength(100);
+            
+            entity.Property(w => w.AcceptanceCriteria)
+                .HasMaxLength(500);
+            
+            entity.Property(w => w.CreatedAt)
+                .HasDefaultValueSql("CURRENT_TIMESTAMP");
+            
+            entity.Property(w => w.UpdatedAt)
+                .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+            // Configure relationship with Project
+            entity.HasOne(w => w.Project)
+                .WithMany()
+                .HasForeignKey(w => w.ProjectId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // Configure relationship with AssignedUser
+            entity.HasOne(w => w.AssignedUser)
+                .WithMany()
+                .HasForeignKey(w => w.AssignedUserId)
+                .OnDelete(DeleteBehavior.SetNull);
+
+            // Configure self-referencing relationship for parent/child tasks
+            entity.HasOne(w => w.ParentTask)
+                .WithMany(w => w.ChildTasks)
+                .HasForeignKey(w => w.ParentWbsId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // Add indexes for better performance
+            entity.HasIndex(w => w.ProjectId);
+            entity.HasIndex(w => w.Status);
+            entity.HasIndex(w => w.InstallationArea);
+            entity.HasIndex(w => w.AssignedUserId);
+            entity.HasIndex(w => w.ParentWbsId);
+        });
+
+        // Configure WbsTaskDependency entity
+        modelBuilder.Entity<WbsTaskDependency>(entity =>
+        {
+            entity.HasKey(d => d.Id);
+            
+            entity.Property(d => d.Id)
+                .HasDefaultValueSql("gen_random_uuid()");
+            
+            entity.Property(d => d.DependentTaskId)
+                .IsRequired()
+                .HasMaxLength(50);
+            
+            entity.Property(d => d.PrerequisiteTaskId)
+                .IsRequired()
+                .HasMaxLength(50);
+            
+            entity.Property(d => d.DependencyType)
+                .IsRequired()
+                .HasConversion<string>();
+            
+            entity.Property(d => d.CreatedAt)
+                .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+            // Configure relationship with DependentTask
+            entity.HasOne(d => d.DependentTask)
+                .WithMany(w => w.Dependencies)
+                .HasForeignKey(d => d.DependentTaskId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // Configure relationship with PrerequisiteTask
+            entity.HasOne(d => d.PrerequisiteTask)
+                .WithMany(w => w.DependentTasks)
+                .HasForeignKey(d => d.PrerequisiteTaskId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // Ensure no self-dependencies and no duplicate dependencies
+            entity.HasIndex(d => new { d.DependentTaskId, d.PrerequisiteTaskId })
+                .IsUnique();
+        });
+
+        // Configure WbsTaskEvidence entity
+        modelBuilder.Entity<WbsTaskEvidence>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            
+            entity.Property(e => e.Id)
+                .HasDefaultValueSql("gen_random_uuid()");
+            
+            entity.Property(e => e.WbsTaskId)
+                .IsRequired()
+                .HasMaxLength(50);
+            
+            entity.Property(e => e.EvidenceType)
+                .IsRequired()
+                .HasMaxLength(50);
+            
+            entity.Property(e => e.FileUrl)
+                .IsRequired()
+                .HasMaxLength(500);
+            
+            entity.Property(e => e.FileName)
+                .HasMaxLength(200);
+            
+            entity.Property(e => e.MimeType)
+                .HasMaxLength(100);
+            
+            entity.Property(e => e.Description)
+                .HasMaxLength(500);
+            
+            entity.Property(e => e.CreatedAt)
+                .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+            // Configure relationship with WbsTask
+            entity.HasOne(e => e.WbsTask)
+                .WithMany(w => w.Evidence)
+                .HasForeignKey(e => e.WbsTaskId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // Add indexes
+            entity.HasIndex(e => e.WbsTaskId);
+            entity.HasIndex(e => e.EvidenceType);
+            entity.HasIndex(e => e.CreatedAt);
         });
     }
 }

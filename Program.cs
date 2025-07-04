@@ -21,10 +21,21 @@ if (File.Exists(envPath))
 var builder = WebApplication.CreateBuilder(args);
 
 // Configure Kestrel URLs based on environment
-if (builder.Environment.IsDevelopment() && !builder.Environment.EnvironmentName.Equals("Docker", StringComparison.OrdinalIgnoreCase))
+var aspnetcoreHttpPorts = Environment.GetEnvironmentVariable("ASPNETCORE_HTTP_PORTS");
+var isDocker = builder.Environment.EnvironmentName.Equals("Docker", StringComparison.OrdinalIgnoreCase);
+
+if (!string.IsNullOrEmpty(aspnetcoreHttpPorts) || isDocker)
+{
+    // In Docker or when ASPNETCORE_HTTP_PORTS is set, listen on all interfaces
+    var port = aspnetcoreHttpPorts ?? "8080";
+    builder.WebHost.UseUrls($"http://0.0.0.0:{port}");
+    Console.WriteLine($"Configuring for Docker/Production: listening on http://0.0.0.0:{port}");
+}
+else if (builder.Environment.IsDevelopment())
 {
     // Only use localhost:5001 for local development outside Docker
     builder.WebHost.UseUrls("http://localhost:5001");
+    Console.WriteLine("Configuring for local development: listening on http://localhost:5001");
 }
 
 // ===================================
@@ -94,7 +105,18 @@ var connectionString = Environment.GetEnvironmentVariable("CONNECTIONSTRINGS__DE
 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
 {
-    options.UseNpgsql(connectionString);
+    // Use in-memory database if environment variable is set or PostgreSQL is not available
+    var useInMemory = Environment.GetEnvironmentVariable("USE_IN_MEMORY_DB")?.ToLower() == "true" 
+        || builder.Environment.IsEnvironment("Test");
+    
+    if (useInMemory)
+    {
+        options.UseInMemoryDatabase("SolarProjectsInMemoryDb");
+    }
+    else
+    {
+        options.UseNpgsql(connectionString);
+    }
     
     if (builder.Environment.IsDevelopment())
     {
@@ -202,6 +224,10 @@ builder.Services.AddCors(options =>
 // Business Services Registration
 builder.Services.AddScoped<IDailyReportService, StubDailyReportService>();
 
+// WBS Services Registration
+builder.Services.AddScoped<WbsDataSeeder>();
+builder.Services.AddScoped<IWbsService, WbsService>();
+
 // Core Services - New abstractions for better code quality
 builder.Services.AddScoped<IUserContextService, UserContextService>();
 builder.Services.AddScoped<IResponseBuilderService, ResponseBuilderService>();
@@ -302,10 +328,21 @@ using (var scope = app.Services.CreateScope())
     try
     {
         var context = services.GetRequiredService<ApplicationDbContext>();
+        var useInMemory = Environment.GetEnvironmentVariable("USE_IN_MEMORY_DB")?.ToLower() == "true" 
+                         || app.Environment.EnvironmentName.Equals("Testing", StringComparison.OrdinalIgnoreCase);
         
-        logger.LogInformation("Applying database migrations...");
-        await context.Database.MigrateAsync();
-        logger.LogInformation("Database migrations completed.");
+        if (useInMemory)
+        {
+            logger.LogInformation("Using in-memory database - ensuring database is created...");
+            await context.Database.EnsureCreatedAsync();
+            logger.LogInformation("In-memory database initialized.");
+        }
+        else
+        {
+            logger.LogInformation("Applying database migrations...");
+            await context.Database.MigrateAsync();
+            logger.LogInformation("Database migrations completed.");
+        }
     }
     catch (Exception ex)
     {
