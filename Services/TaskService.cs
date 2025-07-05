@@ -555,8 +555,8 @@ public class TaskService : ITaskService
     {
         try
         {
-            // For now, return placeholder result as TaskProgressReport entity implementation would be needed
-            await System.Threading.Tasks.Task.CompletedTask; // To make async method valid
+            // TODO: Implement proper task progress report storage when TaskProgressReport entity is added
+            await System.Threading.Tasks.Task.CompletedTask;
             
             var report = new TaskProgressReportDto
             {

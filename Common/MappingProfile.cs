@@ -299,17 +299,11 @@ public class MappingProfile : Profile
         CreateMap<PersonnelLog, PersonnelLogDto>()
             .ForMember(dest => dest.UserName, opt => opt.MapFrom(src => src.User != null ? src.User.FullName : string.Empty));
 
-        // Note: CreatePersonnelLogRequest class not found in codebase - mapping removed
-
         // Material Usage mappings
         CreateMap<MaterialUsage, MaterialUsageDto>();
 
-        // Note: CreateMaterialUsageRequest class not found in codebase - mapping removed
-
         // Equipment Log mappings
         CreateMap<EquipmentLog, EquipmentLogDto>();
-
-        // Note: CreateEquipmentLogRequest class not found in codebase - mapping removed
 
         // Work Request mappings
         CreateMap<WorkRequest, WorkRequestDto>()
@@ -318,7 +312,6 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.RequestedByName, opt => opt.MapFrom(src => src.RequestedBy != null ? src.RequestedBy.FullName : string.Empty))
             .ForMember(dest => dest.AssignedToName, opt => opt.MapFrom(src => src.AssignedTo != null ? src.AssignedTo.FullName : string.Empty))
             .ForMember(dest => dest.ProjectName, opt => opt.MapFrom(src => src.Project.ProjectName));
-            // Note: TaskCount and CommentCount properties not found in WorkRequestDto - mappings removed
 
         CreateMap<CreateWorkRequestRequest, WorkRequest>()
             .ForMember(dest => dest.WorkRequestId, opt => opt.Ignore())
@@ -371,8 +364,6 @@ public class MappingProfile : Profile
         // Image Metadata mappings
         CreateMap<ImageMetadata, ImageMetadataDto>()
             .ForMember(dest => dest.UploadedBy, opt => opt.MapFrom(src => src.UploadedByUser));
-            // Note: UploadedByName and ProjectName properties not found in ImageMetadataDto - mappings removed
-            // ImageMetadataDto has UploadedBy (UserDto) property instead
 
         // Weekly Work Request mappings
         CreateMap<WeeklyWorkRequest, WeeklyWorkRequestDto>()
@@ -439,10 +430,6 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.SafetyIncidents, opt => opt.MapFrom(src => src.AggregatedMetrics != null ? src.AggregatedMetrics.SafetyIncidents : 0))
             .ForMember(dest => dest.DelaysReported, opt => opt.MapFrom(src => src.AggregatedMetrics != null ? src.AggregatedMetrics.DelaysReported : 0))
             .ForMember(dest => dest.CompletionPercentage, opt => opt.MapFrom(src => 0));
-
-        // Role mappings
-        // Note: RoleDto class not found in codebase - mapping commented out
-        // CreateMap<Role, RoleDto>();
     }
 
     // Helper methods for JSON parsing

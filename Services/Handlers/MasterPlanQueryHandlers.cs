@@ -1,9 +1,18 @@
 using dotnet_rest_api.Common;
 using dotnet_rest_api.DTOs;
-using dotnet_rest_api.Services.Commands;
+// using dotnet_rest_api.Services.Commands;
 using dotnet_rest_api.Services.Interfaces;
 
 namespace dotnet_rest_api.Services.Handlers;
+
+/*
+ * CQRS Query Handlers - Currently incomplete implementation
+ * These handlers depend on Query classes that haven't been implemented yet.
+ * Uncomment and implement when Query classes are created.
+ */
+
+// TODO: Implement Query classes and uncomment these handlers
+/*
 
 /// <summary>
 /// Query handlers for master plan read operations
@@ -251,3 +260,5 @@ public class GetAllMasterPlansQueryHandler : IQueryHandler<GetAllMasterPlansQuer
 }
 
 #endregion
+
+*/

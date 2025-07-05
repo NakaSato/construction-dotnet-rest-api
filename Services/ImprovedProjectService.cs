@@ -77,10 +77,13 @@ public class ImprovedProjectService : IProjectService
         {
             _logger.LogInformation("Creating project {ProjectName}", request.ProjectName);
 
-            // Validate project manager exists
-            var validationResult = await ValidateProjectManagerAsync(request.ProjectManagerId);
-            if (!validationResult.IsSuccess)
-                return ServiceResult<ProjectDto>.ErrorResult(validationResult.Message);
+            // Validate project manager exists (only if provided)
+            if (request.ProjectManagerId.HasValue)
+            {
+                var validationResult = await ValidateProjectManagerAsync(request.ProjectManagerId.Value);
+                if (!validationResult.IsSuccess)
+                    return ServiceResult<ProjectDto>.ErrorResult(validationResult.Message ?? "Validation failed");
+            }
 
             var project = CreateProjectEntity(request);
             
@@ -109,10 +112,13 @@ public class ImprovedProjectService : IProjectService
             if (project == null)
                 return ServiceResult<ProjectDto>.ErrorResult("Project not found");
 
-            // Validate project manager
-            var validationResult = await ValidateProjectManagerAsync(request.ProjectManagerId);
-            if (!validationResult.IsSuccess)
-                return ServiceResult<ProjectDto>.ErrorResult(validationResult.Message);
+            // Validate project manager (only if provided)
+            if (request.ProjectManagerId.HasValue)
+            {
+                var validationResult = await ValidateProjectManagerAsync(request.ProjectManagerId.Value);
+                if (!validationResult.IsSuccess)
+                    return ServiceResult<ProjectDto>.ErrorResult(validationResult.Message ?? "Validation failed");
+            }
 
             UpdateProjectEntity(project, request);
             await _context.SaveChangesAsync();
@@ -351,7 +357,7 @@ public class ImprovedProjectService : IProjectService
             StartDate = project.StartDate,
             EstimatedEndDate = project.EstimatedEndDate,
             ActualEndDate = project.ActualEndDate,
-            ProjectManager = MapToUserDto(project.ProjectManager),
+            ProjectManager = project.ProjectManager != null ? MapToUserDto(project.ProjectManager) : null,
             Team = project.Team,
             ConnectionType = project.ConnectionType,
             ConnectionNotes = project.ConnectionNotes,
@@ -364,15 +370,17 @@ public class ImprovedProjectService : IProjectService
         };
     }
 
-    private static UserDto MapToUserDto(User user)
+    private static UserDto? MapToUserDto(User? user)
     {
+        if (user == null) return null;
+        
         return new UserDto
         {
             UserId = user.UserId,
             Username = user.Username,
             Email = user.Email,
             FullName = user.FullName,
-            RoleName = user.Role.RoleName,
+            RoleName = user.Role?.RoleName ?? "Unknown",
             IsActive = user.IsActive
         };
     }
@@ -464,7 +472,7 @@ public class ImprovedProjectService : IProjectService
         if (request.ActualEndDate.HasValue)
             project.ActualEndDate = request.ActualEndDate;
 
-        // ProjectManagerId is not nullable in UpdateProjectRequest, so set it directly
+        // ProjectManagerId is now nullable for development
         project.ProjectManagerId = request.ProjectManagerId;
 
         // Update the UpdatedAt property if it exists

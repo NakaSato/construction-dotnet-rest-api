@@ -99,7 +99,7 @@ public class ProjectDto
     public DateTime? EstimatedEndDate { get; set; }
     public DateTime? ActualEndDate { get; set; }
     public DateTime? UpdatedAt { get; set; }
-    public UserDto ProjectManager { get; set; } = null!;
+    public UserDto? ProjectManager { get; set; }
     public int TaskCount { get; set; }
     public int CompletedTaskCount { get; set; }
     
@@ -142,8 +142,8 @@ public class CreateProjectRequest
 
     public DateTime? EstimatedEndDate { get; set; }
 
-    [Required(ErrorMessage = "Project manager ID is required")]
-    public Guid ProjectManagerId { get; set; }
+    // [Required(ErrorMessage = "Project manager ID is required")] // Temporarily disabled for local development
+    public Guid? ProjectManagerId { get; set; }
 
     // Solar Project Specific Fields
     [StringLength(50, ErrorMessage = "Team name cannot exceed 50 characters")]
@@ -225,8 +225,8 @@ public class UpdateProjectRequest
 
     public DateTime? ActualEndDate { get; set; }
 
-    [Required(ErrorMessage = "Project manager ID is required")]
-    public Guid ProjectManagerId { get; set; }
+    // [Required(ErrorMessage = "Project manager ID is required")] // Temporarily disabled for local development
+    public Guid? ProjectManagerId { get; set; }
 }
 
 // Task DTOs
@@ -504,7 +504,6 @@ public class DailyReportDto
     public List<WorkProgressItemDto> WorkProgressItems { get; set; } = new();
     public List<PersonnelLogDto> PersonnelLogs { get; set; } = new();
     public List<MaterialUsageDto> MaterialUsages { get; set; } = new();
-    public List<MaterialUsageDto> MaterialUsage { get; set; } = new();
     public List<EquipmentLogDto> EquipmentLogs { get; set; } = new();
     public List<ImageMetadataDto> Images { get; set; } = new();
     public int ImageCount { get; set; }

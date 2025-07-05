@@ -81,15 +81,15 @@ public class ProjectService : IProjectService
                     StartDate = p.StartDate,
                     EstimatedEndDate = p.EstimatedEndDate,
                     ActualEndDate = p.ActualEndDate,
-                    ProjectManager = new UserDto
+                    ProjectManager = p.ProjectManager != null ? new UserDto
                     {
                         UserId = p.ProjectManager.UserId,
                         Username = p.ProjectManager.Username,
                         Email = p.ProjectManager.Email,
                         FullName = p.ProjectManager.FullName,
-                        RoleName = p.ProjectManager.Role.RoleName,
+                        RoleName = p.ProjectManager.Role != null ? p.ProjectManager.Role.RoleName : "Unknown",
                         IsActive = p.ProjectManager.IsActive
-                    },
+                    } : null,
                     Team = p.Team,
                     ConnectionType = p.ConnectionType,
                     ConnectionNotes = p.ConnectionNotes,
@@ -240,11 +240,14 @@ public class ProjectService : IProjectService
     {
         try
         {
-            // Check if project manager exists
-            var projectManager = await _context.Users.FindAsync(request.ProjectManagerId);
-            if (projectManager == null)
+            // Check if project manager exists (only if provided)
+            if (request.ProjectManagerId.HasValue)
             {
-                return ServiceResult<ProjectDto>.ErrorResult("Project manager not found");
+                var projectManager = await _context.Users.FindAsync(request.ProjectManagerId.Value);
+                if (projectManager == null)
+                {
+                    return ServiceResult<ProjectDto>.ErrorResult("Project manager not found");
+                }
             }
 
             var project = new Project
@@ -295,15 +298,15 @@ public class ProjectService : IProjectService
                 StartDate = createdProject.StartDate,
                 EstimatedEndDate = createdProject.EstimatedEndDate,
                 ActualEndDate = createdProject.ActualEndDate,
-                ProjectManager = new UserDto
+                ProjectManager = createdProject.ProjectManager != null ? new UserDto
                 {
                     UserId = createdProject.ProjectManager.UserId,
                     Username = createdProject.ProjectManager.Username,
                     Email = createdProject.ProjectManager.Email,
                     FullName = createdProject.ProjectManager.FullName,
-                    RoleName = createdProject.ProjectManager.Role.RoleName,
+                    RoleName = createdProject.ProjectManager.Role?.RoleName ?? "Unknown",
                     IsActive = createdProject.ProjectManager.IsActive
-                },
+                } : null,
                 Team = createdProject.Team,
                 ConnectionType = createdProject.ConnectionType,
                 ConnectionNotes = createdProject.ConnectionNotes,

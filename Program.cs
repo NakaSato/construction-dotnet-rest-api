@@ -240,23 +240,18 @@ builder.Services.AddScoped<IProjectService, ProjectService>(); // Real implement
 builder.Services.AddScoped<ITaskService, TaskService>(); // Real implementation
 builder.Services.AddScoped<IMasterPlanService, MasterPlanService>(); // Real implementation
 
-// Add refactored master plan services with CQRS handlers
-builder.Services.AddAllRefactoredServices();
+// Add refactored master plan services with CQRS handlers (currently incomplete)
+// builder.Services.AddAllRefactoredServices();
 
-// Placeholder Services (temporary implementations)
-builder.Services.AddScoped<IUserService, UserService>(); // Real implementation
-builder.Services.AddScoped<IWorkRequestService, PlaceholderWorkRequestService>();
-builder.Services.AddScoped<IResourceService, PlaceholderResourceService>();
-builder.Services.AddScoped<IDocumentService, PlaceholderDocumentService>();
-builder.Services.AddScoped<IImageService, PlaceholderImageService>();
-builder.Services.AddScoped<ICalendarService, PlaceholderCalendarService>();
-builder.Services.AddScoped<IWeeklyReportService, PlaceholderWeeklyReportService>();
-builder.Services.AddScoped<IWeeklyWorkRequestService, PlaceholderWeeklyWorkRequestService>();
-builder.Services.AddScoped<IWorkRequestApprovalService, PlaceholderWorkRequestApprovalService>();
+// Real Service Implementations
+builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<INotificationService, SignalRNotificationService>();
-builder.Services.AddScoped<IEmailService, PlaceholderEmailService>();
-builder.Services.AddScoped<ICloudStorageService, PlaceholderCloudStorageService>();
-builder.Services.AddScoped<IQueryService, QueryService>(); // Real implementation
+builder.Services.AddScoped<IQueryService, QueryService>();
+
+// Note: Placeholder services removed - implement these when needed:
+// - IWorkRequestService, IResourceService, IDocumentService, IImageService
+// - ICalendarService, IWeeklyReportService, IWeeklyWorkRequestService
+// - IWorkRequestApprovalService, IEmailService, ICloudStorageService
 
 // Background Services
 builder.Services.AddNotificationBackgroundService();

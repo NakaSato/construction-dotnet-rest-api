@@ -1,4 +1,11 @@
-using dotnet_rest_api.Common;
+/*
+ * MasterPlanOrchestratorService - Currently incomplete implementation
+ * This service was part of a CQRS refactoring attempt but was never completed.
+ * It's missing required interface method implementations.
+ * Uncomment and complete implementation when needed.
+ */
+
+/*_rest_api.Common;
 using dotnet_rest_api.DTOs;
 using dotnet_rest_api.Models;
 using Task = System.Threading.Tasks.Task;
@@ -177,53 +184,6 @@ public class MasterPlanOrchestratorService : IMasterPlanService
 
     #endregion
 
-    #region Legacy Interface Support (for backward compatibility)
-
-    // These methods maintain compatibility with the original interface
-    // but are marked as obsolete to encourage migration to focused services
-
-    [Obsolete("Use IMasterPlanCrudService.GetByIdAsync instead")]
-    public Task<IEnumerable<Models.MasterPlan>> GetAllMasterPlansAsync()
-    {
-        _logger.LogWarning("Using obsolete method GetAllMasterPlansAsync. Consider using focused services instead.");
-        // Implementation would go here if needed for backward compatibility
-        throw new NotImplementedException("Method is obsolete. Use focused services instead.");
-    }
-
-    [Obsolete("Use IMasterPlanCrudService.GetByIdAsync instead")]
-    public Task<Models.MasterPlan?> GetMasterPlanByIdAsync(Guid id)
-    {
-        _logger.LogWarning("Using obsolete method GetMasterPlanByIdAsync. Use GetMasterPlanDtoByIdAsync instead.");
-        throw new NotImplementedException("Method is obsolete. Use GetMasterPlanDtoByIdAsync instead.");
-    }
-
-    [Obsolete("Use IMasterPlanCrudService.GetByProjectIdAsync instead")]
-    public Task<IEnumerable<Models.MasterPlan>> GetMasterPlansByProjectIdAsync(Guid projectId)
-    {
-        _logger.LogWarning("Using obsolete method GetMasterPlansByProjectIdAsync. Use GetMasterPlanByProjectIdAsync instead.");
-        throw new NotImplementedException("Method is obsolete. Use GetMasterPlanByProjectIdAsync instead.");
-    }
-
-    [Obsolete("Use IMasterPlanCrudService.CreateAsync instead")]
-    public Task<Models.MasterPlan> CreateMasterPlanAsync(Models.MasterPlan masterPlan)
-    {
-        _logger.LogWarning("Using obsolete method CreateMasterPlanAsync. Use CreateMasterPlanAsync(CreateMasterPlanRequest, Guid) instead.");
-        throw new NotImplementedException("Method is obsolete. Use CreateMasterPlanAsync(CreateMasterPlanRequest, Guid) instead.");
-    }
-
-    [Obsolete("Use IMasterPlanCrudService.UpdateAsync instead")]
-    public Task<Models.MasterPlan?> UpdateMasterPlanAsync(Guid id, Models.MasterPlan masterPlan)
-    {
-        _logger.LogWarning("Using obsolete method UpdateMasterPlanAsync. Use UpdateMasterPlanAsync(Guid, UpdateMasterPlanRequest) instead.");
-        throw new NotImplementedException("Method is obsolete. Use UpdateMasterPlanAsync(Guid, UpdateMasterPlanRequest) instead.");
-    }
-
-    [Obsolete("Use IMasterPlanCrudService.DeleteAsync instead")]
-    public Task<bool> DeleteMasterPlanAsync(Guid id)
-    {
-        _logger.LogWarning("Using obsolete method DeleteMasterPlanAsync. Use focused services instead.");
-        throw new NotImplementedException("Method is obsolete. Use focused services instead.");
-    }
-
-    #endregion
 }
+
+*/

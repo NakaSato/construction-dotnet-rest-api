@@ -21,10 +21,6 @@ public class AuthService : IAuthService
         _context = context;
         _configuration = configuration;
         _cache = cache;
-        
-        // Debug: Log the connection string being used
-        var connectionString = _configuration.GetConnectionString("DefaultConnection");
-        Console.WriteLine($"[DEBUG] AuthService connection string: {connectionString}");
     }
 
     public async Task<ServiceResult<LoginResponse>> LoginAsync(LoginRequest request)
@@ -161,7 +157,8 @@ public class AuthService : IAuthService
         // In production, you should store and validate refresh tokens
         await System.Threading.Tasks.Task.CompletedTask;
         
-        return ServiceResult<string>.ErrorResult("Refresh token functionality not implemented");
+        // TODO: Implement refresh token functionality when needed
+        return ServiceResult<string>.ErrorResult("Refresh token functionality not yet implemented");
     }
 
     public async Task<ServiceResult<bool>> LogoutAsync(string token)

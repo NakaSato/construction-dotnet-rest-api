@@ -1,5 +1,3 @@
-using dotnet_rest_api.DTOs;
-
 namespace dotnet_rest_api.DTOs;
 
 /// <summary>

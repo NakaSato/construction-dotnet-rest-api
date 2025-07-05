@@ -1,9 +1,18 @@
 using dotnet_rest_api.Common;
 using dotnet_rest_api.DTOs;
-using dotnet_rest_api.Services.Commands;
+// using dotnet_rest_api.Services.Commands;
 using dotnet_rest_api.Services.Interfaces;
 
 namespace dotnet_rest_api.Services.Handlers;
+
+/*
+ * CQRS Command Handlers - Currently incomplete implementation
+ * These handlers depend on Command classes that haven't been implemented yet.
+ * Uncomment and implement when Command classes are created.
+ */
+
+// TODO: Implement Command classes and uncomment these handlers
+/*
 
 /// <summary>
 /// Command handlers for master plan operations
@@ -259,3 +268,5 @@ public class CreateProgressReportHandler : ICommandHandler<CreateProgressReportC
 }
 
 #endregion
+
+*/

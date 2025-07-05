@@ -102,43 +102,23 @@ create_project() {
     local start_iso=$(convert_date "$start_date")
     local end_iso=$(convert_date "$due_date")
     
-    # Create project JSON
+    # Create project JSON (simplified for development)
     local project_json=$(cat <<EOF
 {
     "projectName": "$project_name",
     "address": "$location, Thailand",
     "clientInfo": "การประปาส่วนภูมิภาค - $branch",
     "startDate": "$start_iso",
-    "estimatedEndDate": "$end_iso",
-    "projectManagerId": "cface76b-1457-44a1-89fa-6b4ccc2f5f66",
-    "team": "Solar Installation Team",
-    "connectionType": "$connection_type",
-    "connectionNotes": "PWA Solar Project - Water Treatment Facility",
-    "totalCapacityKw": $capacity,
-    "pvModuleCount": $panel_count,
-    "equipmentDetails": {
-        "inverter125kw": ${inv125:-0},
-        "inverter80kw": ${inv80:-0},
-        "inverter60kw": ${inv60:-0},
-        "inverter40kw": ${inv40:-0}
-    },
-    "ftsValue": 1000000,
-    "revenueValue": 1200000,
-    "pqmValue": 100000,
-    "locationCoordinates": {
-        "latitude": 13.7563,
-        "longitude": 100.5018
-    }
+    "estimatedEndDate": "$end_iso"
 }
 EOF
 )
     
     print_step "Creating: $project_name"
     
-    # Make API call
+    # Make API call (no authentication needed for development)
     local response=$(curl -s -w "%{http_code}" \
         -H "Content-Type: application/json" \
-        -H "Authorization: Bearer $token" \
         -d "$project_json" \
         "$BASE_URL/api/v1/projects")
     
@@ -173,8 +153,8 @@ main() {
         exit 1
     fi
     
-    # Get admin token
-    local admin_token=$(get_admin_token)
+    # Get admin token (commented out for development)
+    # local admin_token=$(get_admin_token)
     echo ""
     
     # Process CSV file
@@ -195,8 +175,8 @@ main() {
             continue
         fi
         
-        # Create project
-        create_project "$admin_token" "$line" "$line_num"
+        # Create project (no authentication needed for development)
+        create_project "" "$line" "$line_num"
         
         # Brief pause
         sleep 0.3

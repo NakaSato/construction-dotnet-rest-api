@@ -13,7 +13,12 @@ public class CalendarController : BaseApiController
 {
     private readonly ICalendarService _calendarService;
 
-    public CalendarController(ICalendarService calendarService)
+    public CalendarController(
+        ICalendarService calendarService,
+        ILogger<CalendarController> logger,
+        IUserContextService userContextService,
+        IResponseBuilderService responseBuilderService) 
+        : base(logger, userContextService, responseBuilderService)
     {
         _calendarService = calendarService;
     }
@@ -310,10 +315,17 @@ public class CalendarController : BaseApiController
     [ProducesResponseType(typeof(ApiResponse<CalendarEventResponseDto>), 501)]
     public async Task<ActionResult<ApiResponse<CalendarEventResponseDto>>> CreateRecurringEvent([FromBody] CreateCalendarEventDto request)
     {
-        // For now, using a hardcoded user ID. In a real application, this would come from authentication
-        Guid createdByUserId = Guid.NewGuid(); // TODO: Get from authenticated user context
+        var currentUserId = GetCurrentUserId();
+        if (currentUserId == null)
+        {
+            return Unauthorized(new ApiResponse<CalendarEventResponseDto> 
+            { 
+                Success = false, 
+                Message = "User not authenticated" 
+            });
+        }
 
-        var result = await _calendarService.CreateRecurringEventAsync(request, createdByUserId);
+        var result = await _calendarService.CreateRecurringEventAsync(request, currentUserId.Value);
         
         if (result.Success)
             return StatusCode(201, result);

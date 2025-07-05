@@ -38,7 +38,7 @@ public class Project
     public DateTime? ActualEndDate { get; set; }
     
     [ForeignKey("ProjectManager")]
-    public Guid ProjectManagerId { get; set; }
+    public Guid? ProjectManagerId { get; set; }
     
     public DateTime CreatedAt { get; set; }
     

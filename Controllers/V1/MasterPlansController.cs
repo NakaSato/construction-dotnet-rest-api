@@ -1,14 +1,10 @@
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
-using System.Security.Claims;
-using dotnet_rest_api.DTOs;
-using dotnet_rest_api.Services;
-using dotnet_rest_api.Services.Commands;
-using dotnet_rest_api.Services.Interfaces;
-using dotnet_rest_api.Attributes;
-using Asp.Versioning;
+/*
+ * MasterPlansController - Currently incomplete CQRS implementation
+ * This controller extensively uses Command and Query classes that haven't been implemented.
+ * Disable until CQRS implementation is completed.
+ */
 
-namespace dotnet_rest_api.Controllers.V1;
+/*
 
 /// <summary>
 /// API controller for managing master plans and overall project progress
@@ -787,3 +783,5 @@ public class MasterPlansController : BaseApiController
             BadRequest(new ApiResponse<ProjectDto> { Success = false, Message = result.Message });
     }
 }
+
+*/

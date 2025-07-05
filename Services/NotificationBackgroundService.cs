@@ -352,14 +352,9 @@ public class NotificationBackgroundService : BackgroundService
     {
         try
         {
-            // Email service implementation would go here
-            // For now, just log that we would send an email
-            _logger.LogInformation("Would send email notification for high-priority item {NotificationId}: {Message}", 
+            // TODO: Integrate with email service when IEmailService is implemented
+            _logger.LogInformation("Email notification would be sent for high-priority item {NotificationId}: {Message}", 
                 item.Id, item.Message);
-            
-            // Placeholder for email service integration
-            // var emailService = scope.ServiceProvider.GetRequiredService<IEmailService>();
-            // await emailService.SendNotificationEmailAsync(item);
             
             await System.Threading.Tasks.Task.CompletedTask;
         }
