@@ -187,6 +187,15 @@ builder.Services.AddApiVersioning(options =>
     options.SubstituteApiVersionInUrl = true;
 });
 
+// SignalR Configuration for Real-Time Updates
+builder.Services.AddSignalR(options =>
+{
+    options.EnableDetailedErrors = builder.Environment.IsDevelopment();
+    options.KeepAliveInterval = TimeSpan.FromSeconds(15);
+    options.ClientTimeoutInterval = TimeSpan.FromSeconds(30);
+    options.HandshakeTimeout = TimeSpan.FromSeconds(15);
+});
+
 // Caching & Performance Services
 builder.Services.AddMemoryCache();
 builder.Services.AddDistributedMemoryCache();
@@ -308,7 +317,7 @@ app.UseMiddleware<dotnet_rest_api.Middleware.JwtBlacklistMiddleware>();
 app.UseAuthorization();
 app.MapControllers();
 
-// SignalR Hub Configuration
+// SignalR Hub Configuration for Real-Time Updates
 app.MapHub<dotnet_rest_api.Hubs.NotificationHub>("/notificationHub");
 
 // ===================================

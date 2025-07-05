@@ -535,38 +535,181 @@ connection.on(method: "EntityUpdated") { (data: EntityUpdateData) in
 connection.start()
 ```
 
-## 🔧 Server-Side Integration in Controllers
+## 🔧 Server-Side Integration Architecture
 
-All controllers automatically broadcast real-time updates:
+### Multi-Service Implementation
+
+The system supports both `ProjectService` and `ImprovedProjectService` implementations with real-time notifications:
+
+#### ProjectService (Full Real-Time Integration)
+```csharp
+public class ProjectService : IProjectService
+{
+    private readonly ApplicationDbContext _context;
+    private readonly INotificationService _notificationService;
+
+    public async Task<ServiceResult<ProjectDto>> CreateProjectAsync(CreateProjectRequest request, string? createdBy)
+    {
+        // 1. Create project entity
+        var project = new Project { /* mapping logic */ };
+        _context.Projects.Add(project);
+        await _context.SaveChangesAsync();
+
+        // 2. Send enhanced real-time notifications
+        await _notificationService.SendEnhancedProjectCreatedNotificationAsync(
+            project.ProjectId,
+            project.ProjectName,
+            project.Address,
+            project.Status,
+            project.Latitude,
+            project.Longitude,
+            createdBy ?? "System"
+        );
+
+        // 3. Update dashboard statistics
+        await _notificationService.SendDashboardStatsUpdatedNotificationAsync();
+
+        return ServiceResult<ProjectDto>.SuccessResult(projectDto, "Project created successfully");
+    }
+
+    public async Task<ServiceResult<ProjectDto>> UpdateProjectAsync(Guid id, UpdateProjectRequest request, string? updatedBy)
+    {
+        // Store old values for change tracking
+        var oldStatus = project.Status;
+        var oldAddress = project.Address;
+        var changedFields = new Dictionary<string, object>();
+
+        // Apply updates
+        project.ProjectName = request.ProjectName;
+        // ... other updates ...
+
+        await _context.SaveChangesAsync();
+
+        // Send specific change notifications
+        if (oldStatus != project.Status)
+        {
+            await _notificationService.SendProjectStatusChangedNotificationAsync(
+                project.ProjectId, project.ProjectName, oldStatus, project.Status,
+                project.ActualEndDate, null, updatedBy ?? "System"
+            );
+        }
+
+        if (oldAddress != project.Address)
+        {
+            await _notificationService.SendProjectLocationUpdatedNotificationAsync(
+                project.ProjectId, project.ProjectName, project.Address,
+                project.Latitude, project.Longitude, updatedBy ?? "System"
+            );
+        }
+
+        // Send comprehensive update notification
+        await _notificationService.SendEnhancedProjectUpdatedNotificationAsync(
+            project.ProjectId, project.ProjectName, project.Address, project.Status,
+            project.Latitude, project.Longitude, project.ActualEndDate,
+            null, updatedBy ?? "System", changedFields
+        );
+
+        return ServiceResult<ProjectDto>.SuccessResult(projectDto, "Project updated successfully");
+    }
+}
+```
+
+#### ImprovedProjectService (Delegated Real-Time Integration)
+```csharp
+public class ImprovedProjectService : IProjectService
+{
+    // Enhanced with real-time support via method overloads
+    public async Task<ServiceResult<ProjectDto>> CreateProjectAsync(CreateProjectRequest request, string? createdBy)
+    {
+        // Delegates to original method - future enhancement point
+        return await CreateProjectAsync(request);
+    }
+
+    public async Task<ServiceResult<ProjectDto>> UpdateProjectAsync(Guid id, UpdateProjectRequest request, string? updatedBy)
+    {
+        // Delegates to original method - future enhancement point
+        return await UpdateProjectAsync(id, request);
+    }
+
+    // Core implementation maintains clean architecture
+    public async Task<ServiceResult<ProjectDto>> CreateProjectAsync(CreateProjectRequest request)
+    {
+        _logger.LogInformation("Creating project {ProjectName}", request.ProjectName);
+        
+        var project = CreateProjectEntity(request);
+        _context.Projects.Add(project);
+        await _context.SaveChangesAsync();
+        
+        // Real-time notifications handled at controller level or via decorators
+        return ServiceResult<ProjectDto>.SuccessResult(projectDto, "Project created successfully");
+    }
+}
+```
+
+### Controller Integration
+
+Controllers pass user context for enhanced real-time notifications:
 
 ```csharp
-[HttpPost]
-public async Task<IActionResult> CreateProject(CreateProjectDto dto)
+[ApiController]
+public class ProjectsController : BaseApiController
 {
-    // 1. Create project
-    var project = new Project { /* ... */ };
-    await _context.Projects.AddAsync(project);
-    await _context.SaveChangesAsync();
+    private readonly IProjectService _projectService;
 
-    // 2. Automatic real-time broadcast (handled by service)
-    await _notificationService.SendProjectCreatedNotificationAsync(project);
+    [HttpPost]
+    [Authorize(Roles = "Admin,Manager")]
+    public async Task<ActionResult<ApiResponse<ProjectDto>>> CreateProject([FromBody] CreateProjectRequest request)
+    {
+        if (!ModelState.IsValid)
+            return BadRequest(new ApiResponse<ProjectDto> { Success = false, Message = "Invalid input data" });
 
-    // 3. Return response (users already notified)
-    return Ok(project);
-}
+        // Extract user information for real-time notifications
+        var userName = User.Identity?.Name ?? User.FindFirst(ClaimTypes.Name)?.Value ?? "Unknown User";
 
-[HttpPut("{id}")]
-public async Task<IActionResult> UpdateProject(Guid id, UpdateProjectDto dto)
-{
-    // 1. Update project
-    var project = await _context.Projects.FindAsync(id);
-    // ... update logic ...
-    await _context.SaveChangesAsync();
+        // Call service with user context
+        var result = await _projectService.CreateProjectAsync(request, userName);
+        
+        if (result.IsSuccess)
+            return StatusCode(201, CreateSuccessResponse(result.Data!, "Project created successfully"));
 
-    // 2. Automatic real-time broadcast
-    await _notificationService.SendProjectUpdatedNotificationAsync(project);
+        return ToApiResponse(result);
+    }
 
-    return Ok(project);
+    [HttpPut("{id:guid}")]
+    [Authorize(Roles = "Admin,Manager")]
+    public async Task<ActionResult<ApiResponse<ProjectDto>>> UpdateProject(Guid id, [FromBody] UpdateProjectRequest request)
+    {
+        if (!ModelState.IsValid)
+            return BadRequest(new ApiResponse<ProjectDto> { Success = false, Message = "Invalid input data" });
+
+        var userName = User.Identity?.Name ?? User.FindFirst(ClaimTypes.Name)?.Value ?? "Unknown User";
+        var result = await _projectService.UpdateProjectAsync(id, request, userName);
+        
+        return ToApiResponse(result);
+    }
+
+    [HttpPatch("{id:guid}")]
+    [Authorize(Roles = "Admin,Manager")]
+    public async Task<ActionResult<ApiResponse<ProjectDto>>> PatchProject(Guid id, [FromBody] PatchProjectRequest request)
+    {
+        if (!ModelState.IsValid)
+            return BadRequest(new ApiResponse<ProjectDto> { Success = false, Message = "Invalid input data" });
+
+        var userName = User.Identity?.Name ?? User.FindFirst(ClaimTypes.Name)?.Value ?? "Unknown User";
+        var result = await _projectService.PatchProjectAsync(id, request, userName);
+        
+        return ToApiResponse(result);
+    }
+
+    [HttpDelete("{id:guid}")]
+    [Authorize(Roles = "Admin")]
+    public async Task<ActionResult<ApiResponse<bool>>> DeleteProject(Guid id)
+    {
+        var userName = User.Identity?.Name ?? User.FindFirst(ClaimTypes.Name)?.Value ?? "Unknown User";
+        var result = await _projectService.DeleteProjectAsync(id, userName);
+        
+        return ToApiResponse(result);
+    }
 }
 ```
 
@@ -761,3 +904,51 @@ The system transforms traditional API interactions into a **live, collaborative 
 *🔄 All API endpoints automatically broadcast real-time updates to connected users. No additional configuration required for live data synchronization.*
 
 **Last Updated**: July 5, 2025 | **Version**: 2.0 | **API**: Solar Project Management | **Coverage**: 25 Thai Water Authority Projects
+
+## 📚 Additional Documentation
+
+- **[Complete SignalR Setup Guide](/docs/SIGNALR_SETUP_GUIDE.md)** - Comprehensive configuration and deployment instructions
+- **[Real-Time Feature Testing Guide](/docs/testing/REAL_TIME_FEATURE_TESTING.md)** - Testing procedures and validation
+- **[Interactive Testing Dashboard](/docs/testing/real-time-dashboard.html)** - Live testing interface
+- **[Implementation Summary](/docs/REAL_TIME_IMPLEMENTATION_COMPLETE.md)** - Complete feature overview
+
+## 🔧 Quick Configuration Check
+
+To verify SignalR is properly configured, check these key components:
+
+### Backend Verification
+```bash
+# 1. Check SignalR service registration in Program.cs
+grep -n "AddSignalR" Program.cs
+
+# 2. Verify hub mapping
+grep -n "MapHub" Program.cs
+
+# 3. Confirm notification service registration  
+grep -n "INotificationService" Program.cs
+```
+
+### Frontend Connection Test
+```javascript
+// Quick connection test
+const connection = new signalR.HubConnectionBuilder()
+    .withUrl("/notificationHub", {
+        accessTokenFactory: () => localStorage.getItem("jwtToken")
+    })
+    .build();
+
+connection.start().then(() => {
+    console.log("✅ SignalR connected successfully");
+}).catch(err => {
+    console.error("❌ SignalR connection failed:", err);
+});
+```
+
+### Health Check Endpoint
+```bash
+# Check real-time system status
+curl -H "Authorization: Bearer YOUR_JWT" \
+     https://your-api.com/api/v1/health/signalr
+```
+
+---
