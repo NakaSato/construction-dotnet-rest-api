@@ -1,0 +1,752 @@
+[
+  {
+    "id": 107,
+    "projectName": "สำนักงานประปาเขต 9",
+    "client": "กปภ.เขต 9",
+    "capacityKw": 125.4,
+    "panelCount": 220,
+    "team": null,
+    "zeroExport": "N",
+    "inverters": {
+      "inv125kw": 1,
+      "inv80kw": null,
+      "inv60kw": 4,
+      "inv40kw": 1
+    },
+    "fts": null,
+    "revenue": null,
+    "reports": {
+      "daily": "CLICK",
+      "weeklyRequest": "CLICK",
+      "weekly": "CLICK",
+      "monthly": "CLICK",
+      "photo": null
+    },
+    "schedule": {
+      "startDate": "6/9/2025",
+      "dueDate": "08/08/2025",
+      "durationDays": 60,
+      "countdownDays": 26
+    }
+  },
+  {
+    "id": 108,
+    "projectName": "สถานีผลิตน้ำแม่กวง",
+    "client": "กปภ.สาขาเชียงใหม่",
+    "capacityKw": 112.86,
+    "panelCount": 198,
+    "team": null,
+    "zeroExport": "N",
+    "inverters": {
+      "inv125kw": 1,
+      "inv80kw": null,
+      "inv60kw": 3,
+      "inv40kw": 1
+    },
+    "fts": null,
+    "revenue": null,
+    "reports": {
+      "daily": "CLICK",
+      "weeklyRequest": "CLICK",
+      "weekly": "CLICK",
+      "monthly": "CLICK",
+      "photo": "CLICK"
+    },
+    "schedule": {
+      "startDate": "6/9/2025",
+      "dueDate": "08/08/2025",
+      "durationDays": 60,
+      "countdownDays": 26
+    }
+  },
+  {
+    "id": 109,
+    "projectName": "สถานีผลิตน้ำแม่แฝก",
+    "client": "กปภ.สาขาเชียงใหม่",
+    "capacityKw": 314.64,
+    "panelCount": 552,
+    "team": null,
+    "zeroExport": "N",
+    "inverters": {
+      "inv125kw": 2,
+      "inv80kw": 1,
+      "inv60kw": 8,
+      "inv40kw": 1
+    },
+    "fts": null,
+    "revenue": null,
+    "reports": {
+      "daily": "CLICK",
+      "weeklyRequest": "CLICK",
+      "weekly": "CLICK",
+      "monthly": "CLICK",
+      "photo": "CLICK"
+    },
+    "schedule": {
+      "startDate": "6/9/2025",
+      "dueDate": "09/07/2025",
+      "durationDays": 90,
+      "countdownDays": 46
+    }
+  },
+  {
+    "id": 110,
+    "projectName": "สถานีจ่ายน้ำสันทราย",
+    "client": "กปภ.สาขาเชียงใหม่",
+    "capacityKw": 102.6,
+    "panelCount": 180,
+    "team": null,
+    "zeroExport": "N",
+    "inverters": {
+      "inv125kw": 1,
+      "inv80kw": null,
+      "inv60kw": 3,
+      "inv40kw": 1
+    },
+    "fts": null,
+    "revenue": null,
+    "reports": {
+      "daily": "CLICK",
+      "weeklyRequest": "CLICK",
+      "weekly": "CLICK",
+      "monthly": "CLICK",
+      "photo": "CLICK"
+    },
+    "schedule": {
+      "startDate": "6/9/2025",
+      "dueDate": "08/08/2025",
+      "durationDays": 60,
+      "countdownDays": 26
+    }
+  },
+  {
+    "id": 111,
+    "projectName": "สถานีผลิตน้ำแม่ริม",
+    "client": "กปภ.สาขาแม่ริม",
+    "capacityKw": 282.72,
+    "panelCount": 496,
+    "team": null,
+    "zeroExport": "N",
+    "inverters": {
+      "inv125kw": 2,
+      "inv80kw": null,
+      "inv60kw": 7,
+      "inv40kw": 1
+    },
+    "fts": null,
+    "revenue": null,
+    "reports": {
+      "daily": "CLICK",
+      "weeklyRequest": "CLICK",
+      "weekly": "CLICK",
+      "monthly": "CLICK",
+      "photo": "CLICK"
+    },
+    "schedule": {
+      "startDate": "6/9/2025",
+      "dueDate": "09/07/2025",
+      "durationDays": 90,
+      "countdownDays": 46
+    }
+  },
+  {
+    "id": 112,
+    "projectName": "โรงสูบแรงสูงแม่สาย",
+    "client": "กปภ.สาขาแม่สาย",
+    "capacityKw": 133.38,
+    "panelCount": 234,
+    "team": null,
+    "zeroExport": "N",
+    "inverters": {
+      "inv125kw": 1,
+      "inv80kw": 1,
+      "inv60kw": 5,
+      "inv40kw": 2
+    },
+    "fts": null,
+    "revenue": null,
+    "reports": {
+      "daily": "CLICK",
+      "weeklyRequest": "CLICK",
+      "weekly": "CLICK",
+      "monthly": "CLICK",
+      "photo": "CLICK"
+    },
+    "schedule": {
+      "startDate": "6/9/2025",
+      "dueDate": "08/08/2025",
+      "durationDays": 60,
+      "countdownDays": 26
+    }
+  },
+  {
+    "id": 113,
+    "projectName": "สถานีผลิตน้ำเกาะช้าง",
+    "client": "กปภ.สาขาแม่สาย",
+    "capacityKw": 102.6,
+    "panelCount": 180,
+    "team": null,
+    "zeroExport": "N",
+    "inverters": {
+      "inv125kw": 1,
+      "inv80kw": null,
+      "inv60kw": 3,
+      "inv40kw": 1
+    },
+    "fts": null,
+    "revenue": null,
+    "reports": {
+      "daily": "CLICK",
+      "weeklyRequest": "CLICK",
+      "weekly": "CLICK",
+      "monthly": "CLICK",
+      "photo": "CLICK"
+    },
+    "schedule": {
+      "startDate": "6/9/2025",
+      "dueDate": "08/08/2025",
+      "durationDays": 60,
+      "countdownDays": 26
+    }
+  },
+  {
+    "id": 114,
+    "projectName": "สถานีผลิตน้ำดอยจอมทอง",
+    "client": "กปภ.สาขาพะเยา",
+    "capacityKw": 435.48,
+    "panelCount": 764,
+    "team": null,
+    "zeroExport": "N",
+    "inverters": {
+      "inv125kw": 3,
+      "inv80kw": 1,
+      "inv60kw": 11,
+      "inv40kw": 1
+    },
+    "fts": null,
+    "revenue": null,
+    "reports": {
+      "daily": "CLICK!",
+      "weeklyRequest": "CLICK!",
+      "weekly": "CLICK!",
+      "monthly": "CLICK!",
+      "photo": "CLICK!"
+    },
+    "schedule": {
+      "startDate": "6/9/2025",
+      "dueDate": "09/07/2025",
+      "durationDays": 90,
+      "countdownDays": 46
+    }
+  },
+  {
+    "id": 123,
+    "projectName": "สถานีผลิตน้ำประปาตาก",
+    "client": "กปภ.สาขาตาก",
+    "capacityKw": 233.7,
+    "panelCount": 410,
+    "team": null,
+    "zeroExport": "N",
+    "inverters": {
+      "inv125kw": 1,
+      "inv80kw": 1,
+      "inv60kw": 7,
+      "inv40kw": 1
+    },
+    "fts": null,
+    "revenue": null,
+    "reports": {
+      "daily": "CLICK",
+      "weeklyRequest": "CLICK",
+      "weekly": "CLICK",
+      "monthly": "CLICK",
+      "photo": "CLICK"
+    },
+    "schedule": {
+      "startDate": "6/9/2025",
+      "dueDate": "08/08/2025",
+      "durationDays": 60,
+      "countdownDays": 26
+    }
+  },
+  {
+    "id": 126,
+    "projectName": "หน่วยบริการหัวรอ",
+    "client": "กปภ.สาขาพิษณุโลก",
+    "capacityKw": 475.38,
+    "panelCount": 834,
+    "team": null,
+    "zeroExport": "N",
+    "inverters": {
+      "inv125kw": 3,
+      "inv80kw": 1,
+      "inv60kw": 14,
+      "inv40kw": 1
+    },
+    "fts": null,
+    "revenue": null,
+    "reports": {
+      "daily": "CLICK",
+      "weeklyRequest": "CLICK",
+      "weekly": "CLICK",
+      "monthly": "CLICK",
+      "photo": "CLICK"
+    },
+    "schedule": {
+      "startDate": "6/9/2025",
+      "dueDate": "09/07/2025",
+      "durationDays": 90,
+      "countdownDays": 46
+    }
+  },
+  {
+    "id": 127,
+    "projectName": "สถานีจ่ายน้ำสมอแข",
+    "client": "กปภ.สาขาพิษณุโลก",
+    "capacityKw": 123.12,
+    "panelCount": 216,
+    "team": null,
+    "zeroExport": "N",
+    "inverters": {
+      "inv125kw": 1,
+      "inv80kw": null,
+      "inv60kw": 3,
+      "inv40kw": 1
+    },
+    "fts": null,
+    "revenue": null,
+    "reports": {
+      "daily": "CLICK",
+      "weeklyRequest": "CLICK",
+      "weekly": "CLICK",
+      "monthly": "CLICK",
+      "photo": "CLICK"
+    },
+    "schedule": {
+      "startDate": "6/9/2025",
+      "dueDate": "08/08/2025",
+      "durationDays": 60,
+      "countdownDays": 26
+    }
+  },
+  {
+    "id": 128,
+    "projectName": "สำนักงานประปาสวรรคโลก",
+    "client": "กปภ.สาขาสวรรคโลก",
+    "capacityKw": 159.6,
+    "panelCount": 280,
+    "team": null,
+    "zeroExport": "N",
+    "inverters": {
+      "inv125kw": 1,
+      "inv80kw": 1,
+      "inv60kw": 5,
+      "inv40kw": 1
+    },
+    "fts": null,
+    "revenue": null,
+    "reports": {
+      "daily": "CLICK",
+      "weeklyRequest": "CLICK",
+      "weekly": "CLICK",
+      "monthly": "CLICK",
+      "photo": "CLICK"
+    },
+    "schedule": {
+      "startDate": "6/9/2025",
+      "dueDate": "08/08/2025",
+      "durationDays": 60,
+      "countdownDays": 26
+    }
+  },
+  {
+    "id": 122,
+    "projectName": "สำนักงานประปาตะพานหิน",
+    "client": "กปภ.สาขาตะพานหิน",
+    "capacityKw": 305.52,
+    "panelCount": 536,
+    "team": null,
+    "zeroExport": "N",
+    "inverters": {
+      "inv125kw": 2,
+      "inv80kw": 1,
+      "inv60kw": 8,
+      "inv40kw": 1
+    },
+    "fts": null,
+    "revenue": null,
+    "reports": {
+      "daily": "CLICK",
+      "weeklyRequest": "CLICK",
+      "weekly": "CLICK",
+      "monthly": "CLICK",
+      "photo": "CLICK"
+    },
+    "schedule": {
+      "startDate": "6/9/2025",
+      "dueDate": "09/07/2025",
+      "durationDays": 90,
+      "countdownDays": 46
+    }
+  },
+  {
+    "id": 124,
+    "projectName": "สำนักงานประปาบางมูลนาก",
+    "client": "กปภ.สาขาบางมูลนาก",
+    "capacityKw": 141.36,
+    "panelCount": 248,
+    "team": null,
+    "zeroExport": "N",
+    "inverters": {
+      "inv125kw": 1,
+      "inv80kw": null,
+      "inv60kw": 4,
+      "inv40kw": 1
+    },
+    "fts": null,
+    "revenue": null,
+    "reports": {
+      "daily": "CLICK",
+      "weeklyRequest": "CLICK",
+      "weekly": "CLICK",
+      "monthly": "CLICK",
+      "photo": "CLICK"
+    },
+    "schedule": {
+      "startDate": "7/28/2025",
+      "dueDate": "09/26/2025",
+      "durationDays": 60,
+      "countdownDays": 61
+    }
+  },
+  {
+    "id": 129,
+    "projectName": "สถานีผลิตน้ำปากแคว",
+    "client": "กปภ.สาขาสุโขทัย",
+    "capacityKw": 136.8,
+    "panelCount": 240,
+    "team": null,
+    "zeroExport": "N",
+    "inverters": {
+      "inv125kw": 1,
+      "inv80kw": null,
+      "inv60kw": 5,
+      "inv40kw": 1
+    },
+    "fts": null,
+    "revenue": null,
+    "reports": {
+      "daily": "CLICK",
+      "weeklyRequest": "CLICK",
+      "weekly": "CLICK",
+      "monthly": "CLICK",
+      "photo": "CLICK"
+    },
+    "schedule": {
+      "startDate": "6/30/2025",
+      "dueDate": "08/29/2025",
+      "durationDays": 60,
+      "countdownDays": 41
+    }
+  },
+  {
+    "id": 121,
+    "projectName": "สถานีผลิตน้ำพระธาตุผาแดง",
+    "client": "กปภ.สาขาแม่สอด",
+    "capacityKw": 184.68,
+    "panelCount": 324,
+    "team": null,
+    "zeroExport": "N",
+    "inverters": {
+      "inv125kw": 1,
+      "inv80kw": 1,
+      "inv60kw": 4,
+      "inv40kw": 1
+    },
+    "fts": null,
+    "revenue": null,
+    "reports": {
+      "daily": "CLICK",
+      "weeklyRequest": "CLICK",
+      "weekly": "CLICK",
+      "monthly": "CLICK",
+      "photo": "CLICK"
+    },
+    "schedule": {
+      "startDate": "7/28/2025",
+      "dueDate": "09/26/2025",
+      "durationDays": 60,
+      "countdownDays": 61
+    }
+  },
+  {
+    "id": 125,
+    "projectName": "สถานีผลิตน้ำโคกสลุด",
+    "client": "กปภ.สาขาพิจิตร",
+    "capacityKw": 100.32,
+    "panelCount": 176,
+    "team": null,
+    "zeroExport": "N",
+    "inverters": {
+      "inv125kw": 1,
+      "inv80kw": null,
+      "inv60kw": 3,
+      "inv40kw": 1
+    },
+    "fts": null,
+    "revenue": null,
+    "reports": {
+      "daily": "CLICK",
+      "weeklyRequest": "CLICK",
+      "weekly": "CLICK",
+      "monthly": "CLICK",
+      "photo": "CLICK"
+    },
+    "schedule": {
+      "startDate": "7/28/2025",
+      "dueDate": "09/26/2025",
+      "durationDays": 60,
+      "countdownDays": 61
+    }
+  },
+  {
+    "id": 130,
+    "projectName": "สถานีผลิตน้ำทุ่งทะเลหลวง",
+    "client": "กปภ.สาขาสุโขทัย",
+    "capacityKw": 124.26,
+    "panelCount": 218,
+    "team": null,
+    "zeroExport": "N",
+    "inverters": {
+      "inv125kw": 1,
+      "inv80kw": null,
+      "inv60kw": 3,
+      "inv40kw": 1
+    },
+    "fts": null,
+    "revenue": null,
+    "reports": {
+      "daily": "CLICK",
+      "weeklyRequest": "CLICK",
+      "weekly": "CLICK",
+      "monthly": "CLICK",
+      "photo": "CLICK"
+    },
+    "schedule": {
+      "startDate": "7/28/2025",
+      "dueDate": "09/26/2025",
+      "durationDays": 60,
+      "countdownDays": 61
+    }
+  },
+  {
+    "id": 131,
+    "projectName": "สถานีผลิตน้ำปากฝาง",
+    "client": "กปภ.สาขาอุตรดิตถ์",
+    "capacityKw": 104.88,
+    "panelCount": 184,
+    "team": null,
+    "zeroExport": "N",
+    "inverters": {
+      "inv125kw": 1,
+      "inv80kw": null,
+      "inv60kw": 4,
+      "inv40kw": 1
+    },
+    "fts": null,
+    "revenue": null,
+    "reports": {
+      "daily": "CLICK",
+      "weeklyRequest": "CLICK",
+      "weekly": "CLICK",
+      "monthly": "CLICK",
+      "photo": "CLICK"
+    },
+    "schedule": {
+      "startDate": "7/28/2025",
+      "dueDate": "09/26/2025",
+      "durationDays": 60,
+      "countdownDays": 61
+    }
+  },
+  {
+    "id": 115,
+    "projectName": "สถานีผลิตน้ำพระบาท สระ 1",
+    "client": "กปภ.สาขาลำปาง",
+    "capacityKw": 254.22,
+    "panelCount": 446,
+    "team": null,
+    "zeroExport": "N",
+    "inverters": {
+      "inv125kw": 2,
+      "inv80kw": null,
+      "inv60kw": 7,
+      "inv40kw": 1
+    },
+    "fts": null,
+    "revenue": null,
+    "reports": {
+      "daily": "CLICK",
+      "weeklyRequest": "CLICK",
+      "weekly": "CLICK",
+      "monthly": "CLICK",
+      "photo": "CLICK"
+    },
+    "schedule": {
+      "startDate": "8/1/2025",
+      "dueDate": "09/30/2025",
+      "durationDays": 60,
+      "countdownDays": 63
+    }
+  },
+  {
+    "id": 116,
+    "projectName": "สำนักงานประปาแม่เมาะ",
+    "client": "กปภ.สาขาลำปาง",
+    "capacityKw": 102.6,
+    "panelCount": 180,
+    "team": null,
+    "zeroExport": "N",
+    "inverters": {
+      "inv125kw": 1,
+      "inv80kw": null,
+      "inv60kw": 3,
+      "inv40kw": 1
+    },
+    "fts": null,
+    "revenue": null,
+    "reports": {
+      "daily": "CLICK",
+      "weeklyRequest": "CLICK",
+      "weekly": "CLICK",
+      "monthly": "CLICK",
+      "photo": "CLICK"
+    },
+    "schedule": {
+      "startDate": "8/1/2025",
+      "dueDate": "09/30/2025",
+      "durationDays": 60,
+      "countdownDays": 63
+    }
+  },
+  {
+    "id": 117,
+    "projectName": "โรงกรองน้ำแรงสูงริมปิง (ใหม่)",
+    "client": "กปภ.สาขาลำพูน",
+    "capacityKw": 181.26,
+    "panelCount": 318,
+    "team": null,
+    "zeroExport": "N",
+    "inverters": {
+      "inv125kw": 2,
+      "inv80kw": null,
+      "inv60kw": 5,
+      "inv40kw": 1
+    },
+    "fts": null,
+    "revenue": null,
+    "reports": {
+      "daily": "CLICK",
+      "weeklyRequest": "CLICK",
+      "weekly": "CLICK",
+      "monthly": "CLICK",
+      "photo": "CLICK"
+    },
+    "schedule": {
+      "startDate": "8/1/2025",
+      "dueDate": "09/30/2025",
+      "durationDays": 60,
+      "countdownDays": 63
+    }
+  },
+  {
+    "id": 118,
+    "projectName": "สำนักงานการประปาส่วนภูมิภาคสาขาลำพูน",
+    "client": "กปภ.สาขาลำพูน",
+    "capacityKw": 94.62,
+    "panelCount": 166,
+    "team": null,
+    "zeroExport": "N",
+    "inverters": {
+      "inv125kw": 1,
+      "inv80kw": null,
+      "inv60kw": 3,
+      "inv40kw": 1
+    },
+    "fts": null,
+    "revenue": null,
+    "reports": {
+      "daily": "CLICK",
+      "weeklyRequest": "CLICK",
+      "weekly": "CLICK",
+      "monthly": "CLICK",
+      "photo": "CLICK"
+    },
+    "schedule": {
+      "startDate": "8/1/2025",
+      "dueDate": "09/30/2025",
+      "durationDays": 60,
+      "countdownDays": 63
+    }
+  },
+  {
+    "id": 119,
+    "projectName": "สถานีผลิตน้ำประปาแพร่",
+    "client": "กปภ.สาขาแพร่",
+    "capacityKw": 220.02,
+    "panelCount": 386,
+    "team": null,
+    "zeroExport": "N",
+    "inverters": {
+      "inv125kw": 2,
+      "inv80kw": null,
+      "inv60kw": 8,
+      "inv40kw": 2
+    },
+    "fts": null,
+    "revenue": null,
+    "reports": {
+      "daily": "CLICK",
+      "weeklyRequest": "CLICK",
+      "weekly": "CLICK",
+      "monthly": "CLICK",
+      "photo": "CLICK"
+    },
+    "schedule": {
+      "startDate": "8/1/2025",
+      "dueDate": "09/30/2025",
+      "durationDays": 60,
+      "countdownDays": 63
+    }
+  },
+  {
+    "id": 120,
+    "projectName": "สถานีผลิตน้ำราษฎร์อำนวย",
+    "client": "กปภ.สาขาน่าน",
+    "capacityKw": 143.64,
+    "panelCount": 252,
+    "team": null,
+    "zeroExport": "N",
+    "inverters": {
+      "inv125kw": 1,
+      "inv80kw": null,
+      "inv60kw": 3,
+      "inv40kw": 1
+    },
+    "fts": null,
+    "revenue": null,
+    "reports": {
+      "daily": "CLICK",
+      "weeklyRequest": "CLICK",
+      "weekly": "CLICK",
+      "monthly": "CLICK",
+      "photo": "CLICK"
+    },
+    "schedule": {
+      "startDate": "8/1/2025",
+      "dueDate": "09/30/2025",
+      "durationDays": 60,
+      "countdownDays": 63
+    }
+  }
+]
