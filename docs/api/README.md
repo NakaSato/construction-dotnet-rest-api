@@ -22,8 +22,9 @@ REST API documentation for the Solar Project Management System.
 - **[Work Requests](./07_WORK_REQUESTS.md)** - Change orders
 
 ### Additional Features
-- **[Real-Time Notifications](./08_REAL_TIME_NOTIFICATIONS.md)** - Live updates
-- **[Calendar Events](./09_CALENDAR.md)** - Scheduling
+- **[🌐 Real-Time Live Updates](./00_REAL_TIME_LIVE_UPDATES.md)** - Comprehensive real-time data synchronization for all endpoints
+- **[Real-Time Notifications](./08_REAL_TIME_NOTIFICATIONS.md)** - Live notifications system
+- **[Calendar Events](./09_CALENDAR.md)** - Scheduling with live updates
 - **[Weekly Planning](./10_WEEKLY_PLANNING.md)** - Weekly reports
 - **[Image Upload](./11_IMAGE_UPLOAD.md)** - File handling
 

@@ -1,11 +1,14 @@
 # Task Management
 
+**⚡ Real-Time Live Updates**: All task operations support real-time data synchronization. Task assignments, status changes, and updates are instantly broadcast to relevant team members.
+
 **Base URL**: `/api/v1/tasks`
 
 **Authentication Required**: All endpoints require JWT authentication  
+**📡 Live Updates**: SignalR WebSocket broadcasting for all operations  
 **Status**: Available
 
-Task management provides the ability to create, assign, and track specific work items for solar installation projects.
+Task management provides the ability to create, assign, and track specific work items for solar installation projects with real-time collaboration features.
 
 ## Authorization & Access Control
 

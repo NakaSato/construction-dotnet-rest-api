@@ -102,14 +102,81 @@ public interface IWorkRequestApprovalService
 
 public interface INotificationService
 {
+    // Basic notifications
     System.Threading.Tasks.Task SendNotificationAsync(string message, Guid userId);
-    System.Threading.Tasks.Task SendWorkRequestNotificationAsync(Guid workRequestId, NotificationType type, Guid recipientId, string message, Guid? senderId = null);
-    System.Threading.Tasks.Task SendDailyReportNotificationAsync(Guid dailyReportId, string type, Guid projectId, string message);
-    System.Threading.Tasks.Task SendProjectStatusUpdateAsync(Guid projectId, string statusUpdate, decimal? completionPercentage = null);
-    System.Threading.Tasks.Task SendApprovalRequiredNotificationAsync(Guid workRequestId, string title, decimal? estimatedCost);
-    System.Threading.Tasks.Task SendNotificationCountUpdateAsync(Guid userId);
     System.Threading.Tasks.Task SendSystemAnnouncementAsync(string title, string message, string priority = "Info");
     System.Threading.Tasks.Task MarkNotificationAsReadAsync(Guid notificationId, Guid userId);
+    System.Threading.Tasks.Task SendNotificationCountUpdateAsync(Guid userId);
+
+    // Work Request notifications
+    System.Threading.Tasks.Task SendWorkRequestNotificationAsync(Guid workRequestId, NotificationType type, Guid recipientId, string message, Guid? senderId = null);
+    System.Threading.Tasks.Task SendWorkRequestCreatedNotificationAsync(Guid workRequestId, string title, Guid projectId);
+    System.Threading.Tasks.Task SendWorkRequestUpdatedNotificationAsync(Guid workRequestId, string title, Guid projectId, string updatedBy);
+    System.Threading.Tasks.Task SendWorkRequestDeletedNotificationAsync(string title, Guid projectId, string deletedBy);
+    System.Threading.Tasks.Task SendApprovalRequiredNotificationAsync(Guid workRequestId, string title, decimal? estimatedCost);
+
+    // Daily Report notifications
+    System.Threading.Tasks.Task SendDailyReportNotificationAsync(Guid dailyReportId, string type, Guid projectId, string message);
+    System.Threading.Tasks.Task SendDailyReportCreatedNotificationAsync(Guid dailyReportId, Guid projectId, string reporterName);
+    System.Threading.Tasks.Task SendDailyReportUpdatedNotificationAsync(Guid dailyReportId, Guid projectId, string updatedBy);
+    System.Threading.Tasks.Task SendDailyReportDeletedNotificationAsync(Guid projectId, string deletedBy);
+    System.Threading.Tasks.Task SendDailyReportApprovalStatusChangeAsync(Guid dailyReportId, Guid projectId, string newStatus, string approverName);
+
+    // Project notifications
+    System.Threading.Tasks.Task SendProjectStatusUpdateAsync(Guid projectId, string statusUpdate, decimal? completionPercentage = null);
+    System.Threading.Tasks.Task SendProjectCreatedNotificationAsync(Guid projectId, string projectName, string createdBy);
+    System.Threading.Tasks.Task SendProjectUpdatedNotificationAsync(Guid projectId, string projectName, string updatedBy);
+    System.Threading.Tasks.Task SendProjectDeletedNotificationAsync(string projectName, string deletedBy);
+    System.Threading.Tasks.Task SendRealTimeProgressUpdateAsync(Guid projectId, decimal progressPercentage, string milestone = "");
+
+    // Task notifications
+    System.Threading.Tasks.Task SendTaskCreatedNotificationAsync(Guid taskId, string taskName, Guid projectId, string createdBy);
+    System.Threading.Tasks.Task SendTaskUpdatedNotificationAsync(Guid taskId, string taskName, Guid projectId, string updatedBy);
+    System.Threading.Tasks.Task SendTaskDeletedNotificationAsync(string taskName, Guid projectId, string deletedBy);
+    System.Threading.Tasks.Task SendTaskStatusChangedNotificationAsync(Guid taskId, string taskName, Guid projectId, string newStatus, string updatedBy);
+
+    // User notifications
+    System.Threading.Tasks.Task SendUserCreatedNotificationAsync(Guid userId, string userName, string createdBy);
+    System.Threading.Tasks.Task SendUserUpdatedNotificationAsync(Guid userId, string userName, string updatedBy);
+    System.Threading.Tasks.Task SendUserDeletedNotificationAsync(string userName, string deletedBy);
+    System.Threading.Tasks.Task SendUserRoleChangedNotificationAsync(Guid userId, string userName, string newRole, string updatedBy);
+
+    // Calendar Event notifications
+    System.Threading.Tasks.Task SendCalendarEventCreatedNotificationAsync(Guid eventId, string eventTitle, Guid projectId, string createdBy);
+    System.Threading.Tasks.Task SendCalendarEventUpdatedNotificationAsync(Guid eventId, string eventTitle, Guid projectId, string updatedBy);
+    System.Threading.Tasks.Task SendCalendarEventDeletedNotificationAsync(string eventTitle, Guid projectId, string deletedBy);
+
+    // Master Plan notifications
+    System.Threading.Tasks.Task SendMasterPlanCreatedNotificationAsync(Guid masterPlanId, string planName, Guid projectId, string createdBy);
+    System.Threading.Tasks.Task SendMasterPlanUpdatedNotificationAsync(Guid masterPlanId, string planName, Guid projectId, string updatedBy);
+    System.Threading.Tasks.Task SendMasterPlanDeletedNotificationAsync(string planName, Guid projectId, string deletedBy);
+
+    // WBS notifications
+    System.Threading.Tasks.Task SendWbsTaskCreatedNotificationAsync(Guid taskId, string wbsId, string taskName, Guid projectId, string createdBy);
+    System.Threading.Tasks.Task SendWbsTaskUpdatedNotificationAsync(Guid taskId, string wbsId, string taskName, Guid projectId, string updatedBy);
+    System.Threading.Tasks.Task SendWbsTaskDeletedNotificationAsync(string wbsId, string taskName, Guid projectId, string deletedBy);
+
+    // Resource notifications
+    System.Threading.Tasks.Task SendResourceCreatedNotificationAsync(Guid resourceId, string resourceName, string createdBy);
+    System.Threading.Tasks.Task SendResourceUpdatedNotificationAsync(Guid resourceId, string resourceName, string updatedBy);
+    System.Threading.Tasks.Task SendResourceDeletedNotificationAsync(string resourceName, string deletedBy);
+
+    // Document notifications
+    System.Threading.Tasks.Task SendDocumentUploadedNotificationAsync(Guid documentId, string fileName, Guid projectId, string uploadedBy);
+    System.Threading.Tasks.Task SendDocumentDeletedNotificationAsync(string fileName, Guid projectId, string deletedBy);
+
+    // Weekly Report notifications
+    System.Threading.Tasks.Task SendWeeklyReportCreatedNotificationAsync(Guid reportId, Guid projectId, string reporterName);
+    System.Threading.Tasks.Task SendWeeklyReportUpdatedNotificationAsync(Guid reportId, Guid projectId, string updatedBy);
+    System.Threading.Tasks.Task SendWeeklyReportDeletedNotificationAsync(Guid projectId, string deletedBy);
+
+    // Enhanced Real-Time Project Features (July 2025)
+    System.Threading.Tasks.Task SendProjectStatusChangedNotificationAsync(Guid projectId, string projectName, ProjectStatus oldStatus, ProjectStatus newStatus, DateTime? actualEndDate = null, decimal? completionPercentage = null, string? updatedBy = null);
+    System.Threading.Tasks.Task SendProjectLocationUpdatedNotificationAsync(Guid projectId, string projectName, string? address = null, decimal? latitude = null, decimal? longitude = null, string? updatedBy = null);
+    System.Threading.Tasks.Task SendEnhancedProjectCreatedNotificationAsync(Guid projectId, string projectName, string? address = null, ProjectStatus status = ProjectStatus.Planning, decimal? latitude = null, decimal? longitude = null, string? createdBy = null);
+    System.Threading.Tasks.Task SendEnhancedProjectUpdatedNotificationAsync(Guid projectId, string projectName, string? address = null, ProjectStatus? status = null, decimal? latitude = null, decimal? longitude = null, DateTime? actualEndDate = null, decimal? completionPercentage = null, string? updatedBy = null, Dictionary<string, object>? changedFields = null);
+    System.Threading.Tasks.Task SendDashboardStatsUpdatedNotificationAsync();
+    System.Threading.Tasks.Task SendWaterFacilityUpdateNotificationAsync(Guid projectId, string facilityType, string facilityName, Dictionary<string, object> updates);
 }
 
 public interface IEmailService

@@ -1,13 +1,16 @@
 # 📊 Daily Reports
 
+**⚡ Real-Time Live Updates**: Daily reports support real-time collaborative editing with live field updates, typing indicators, and instant approval notifications.
+
 **🔒 Authentication Required: JWT Bearer Token**  
+**📡 Live Updates**: SignalR WebSocket broadcasting for collaborative editing  
 **🎯 Role Requirements**: 
 - **Admin, Manager**: Full access to all operations
 - **ProjectManager**: Project-specific management access
 - **User**: Create and manage own reports
 - **All authenticated users**: View approved reports
 
-Daily reports provide comprehensive tracking of daily work activities, progress, safety compliance, and resource utilization within the context of a specific **Project**. Each Daily Report belongs to a Project and serves as a detailed work log, progress tracker, and compliance record for solar installation projects. Daily reports support advanced workflow management, approval processes, and AI-powered insights for project optimization.
+Daily reports provide comprehensive tracking of daily work activities, progress, safety compliance, and resource utilization within the context of a specific **Project**. Each Daily Report belongs to a Project and serves as a detailed work log, progress tracker, and compliance record for solar installation projects. Daily reports support advanced workflow management, approval processes, real-time collaborative editing, and AI-powered insights for project optimization.
 
 ## 🔐 Authorization & Access Control
 

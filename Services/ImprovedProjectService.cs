@@ -481,4 +481,29 @@ public class ImprovedProjectService : IProjectService
     }
 
     #endregion
+
+    // Method overloads with user context (for enhanced real-time notifications)
+    public async Task<ServiceResult<ProjectDto>> CreateProjectAsync(CreateProjectRequest request, string? createdBy)
+    {
+        // Delegate to the original method - could be enhanced with user context in the future
+        return await CreateProjectAsync(request);
+    }
+
+    public async Task<ServiceResult<ProjectDto>> UpdateProjectAsync(Guid id, UpdateProjectRequest request, string? updatedBy)
+    {
+        // Delegate to the original method - could be enhanced with user context in the future
+        return await UpdateProjectAsync(id, request);
+    }
+
+    public async Task<ServiceResult<ProjectDto>> PatchProjectAsync(Guid id, PatchProjectRequest request, string? updatedBy)
+    {
+        // Delegate to the original method - could be enhanced with user context in the future
+        return await PatchProjectAsync(id, request);
+    }
+
+    public async Task<ServiceResult<bool>> DeleteProjectAsync(Guid id, string? deletedBy)
+    {
+        // Delegate to the original method - could be enhanced with user context in the future
+        return await DeleteProjectAsync(id);
+    }
 }

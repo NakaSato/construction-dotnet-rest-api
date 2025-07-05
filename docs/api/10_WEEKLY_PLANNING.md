@@ -1,5 +1,8 @@
 # 📅 Weekly Planning
 
+**⚡ Real-Time Live Updates**: This API supports real-time data synchronization. All changes are instantly broadcast to connected users via WebSocket.
+
+
 **Base URL**: `/api/v1/weekly-planning`
 
 **🔒 Authentication Required**  

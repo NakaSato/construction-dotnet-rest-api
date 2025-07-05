@@ -1,5 +1,8 @@
 # 🔧 Work Requests
 
+**⚡ Real-Time Live Updates**: This API supports real-time data synchronization. All changes are instantly broadcast to connected users via WebSocket.
+
+
 **🔒 Authentication Required**  
 **🎯 Role Required**: Admin, Manager (full access), Users (create requests), All authenticated users (view)
 

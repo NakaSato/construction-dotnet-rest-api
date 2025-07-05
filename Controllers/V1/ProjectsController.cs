@@ -92,7 +92,10 @@ public class ProjectsController : BaseApiController
             return BadRequest(new ApiResponse<ProjectDto> { Success = false, Message = "Invalid input data" });
         }
 
-        var result = await _projectService.CreateProjectAsync(request);
+        // Get user information for real-time notifications
+        var userName = User.Identity?.Name ?? User.FindFirst(ClaimTypes.Name)?.Value ?? "Unknown User";
+
+        var result = await _projectService.CreateProjectAsync(request, userName);
         
         if (result.IsSuccess)
         {
@@ -119,7 +122,10 @@ public class ProjectsController : BaseApiController
             return BadRequest(new ApiResponse<ProjectDto> { Success = false, Message = "Invalid input data" });
         }
 
-        var result = await _projectService.UpdateProjectAsync(id, request);
+        // Get user information for real-time notifications
+        var userName = User.Identity?.Name ?? User.FindFirst(ClaimTypes.Name)?.Value ?? "Unknown User";
+
+        var result = await _projectService.UpdateProjectAsync(id, request, userName);
         return ToApiResponse(result);
     }
 
@@ -140,7 +146,10 @@ public class ProjectsController : BaseApiController
             return BadRequest(new ApiResponse<ProjectDto> { Success = false, Message = "Invalid input data" });
         }
 
-        var result = await _projectService.PatchProjectAsync(id, request);
+        // Get user information for real-time notifications
+        var userName = User.Identity?.Name ?? User.FindFirst(ClaimTypes.Name)?.Value ?? "Unknown User";
+
+        var result = await _projectService.PatchProjectAsync(id, request, userName);
         return ToApiResponse(result);
     }
 
@@ -157,7 +166,10 @@ public class ProjectsController : BaseApiController
         // Log controller action for debugging
         LogControllerAction(_logger, "DeleteProject", new { id });
 
-        var result = await _projectService.DeleteProjectAsync(id);
+        // Get user information for real-time notifications
+        var userName = User.Identity?.Name ?? User.FindFirst(ClaimTypes.Name)?.Value ?? "Unknown User";
+
+        var result = await _projectService.DeleteProjectAsync(id, userName);
         return ToApiResponse(result);
     }
 

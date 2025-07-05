@@ -1,5 +1,8 @@
 # Master Plan Management
 
+**⚡ Real-Time Live Updates**: This API supports real-time data synchronization. All changes are instantly broadcast to connected users via WebSocket.
+
+
 **Authentication Required**: All endpoints require JWT authentication  
 **Role Required**: Admin/Manager (full CRUD), User/Viewer (read-only)
 

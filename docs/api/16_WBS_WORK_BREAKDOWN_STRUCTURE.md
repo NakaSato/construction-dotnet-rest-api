@@ -1,5 +1,8 @@
 # Work Breakdown Structure (WBS) API
 
+**⚡ Real-Time Live Updates**: This API supports real-time data synchronization. All changes are instantly broadcast to connected users via WebSocket.
+
+
 The WBS API provides comprehensive Work Breakdown Structure management for solar PV installation projects, enabling hierarchical task management, progress tracking, and evidence collection.
 
 ## Overview

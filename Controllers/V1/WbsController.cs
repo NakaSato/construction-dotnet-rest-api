@@ -3,11 +3,13 @@ using Microsoft.AspNetCore.Mvc;
 using dotnet_rest_api.Models;
 using dotnet_rest_api.DTOs;
 using dotnet_rest_api.Services;
+using System.Security.Claims;
 
 namespace dotnet_rest_api.Controllers.V1;
 
 /// <summary>
 /// Controller for managing Work Breakdown Structure (WBS) tasks for solar PV installation projects
+/// Supports real-time notifications for all CRUD operations
 /// </summary>
 [Route("api/v1/wbs")]
 [ApiController]
@@ -15,11 +17,13 @@ namespace dotnet_rest_api.Controllers.V1;
 public class WbsController : ControllerBase
 {
     private readonly IWbsService _wbsService;
+    private readonly INotificationService _notificationService;
     private readonly ILogger<WbsController> _logger;
 
-    public WbsController(IWbsService wbsService, ILogger<WbsController> logger)
+    public WbsController(IWbsService wbsService, INotificationService notificationService, ILogger<WbsController> logger)
     {
         _wbsService = wbsService;
+        _notificationService = notificationService;
         _logger = logger;
     }
 
@@ -129,6 +133,7 @@ public class WbsController : ControllerBase
 
     /// <summary>
     /// Create a new WBS task
+    /// Real-time notification: Broadcasts task creation to all project team members
     /// </summary>
     /// <param name="createDto">WBS task creation data</param>
     /// <returns>Created WBS task</returns>
@@ -139,13 +144,25 @@ public class WbsController : ControllerBase
         try
         {
             var task = await _wbsService.CreateTaskAsync(createDto);
+            var userName = User.FindFirst(ClaimTypes.Name)?.Value ?? "Unknown User";
+            
+            // Send real-time notification
+            await _notificationService.SendWbsTaskCreatedNotificationAsync(
+                Guid.NewGuid(), // Generate a new Guid for notification tracking
+                task.WbsId,
+                task.TaskNameEN,
+                task.ProjectId,
+                userName
+            );
+
+            _logger.LogInformation("WBS task {WbsId} created by {UserName} with real-time notification sent", task.WbsId, userName);
             
             return CreatedAtAction(nameof(GetTask), new { wbsId = task.WbsId }, 
                 new ApiResponse<WbsTaskDto>
                 {
                     Success = true,
                     Data = task,
-                    Message = "WBS task created successfully"
+                    Message = "WBS task created successfully with live updates sent to team"
                 });
         }
         catch (ArgumentException ex)
@@ -169,6 +186,7 @@ public class WbsController : ControllerBase
 
     /// <summary>
     /// Update an existing WBS task
+    /// Real-time notification: Broadcasts task updates to all project team members
     /// </summary>
     /// <param name="wbsId">WBS ID of the task to update</param>
     /// <param name="updateDto">Updated task data</param>
@@ -180,12 +198,24 @@ public class WbsController : ControllerBase
         try
         {
             var task = await _wbsService.UpdateTaskAsync(wbsId, updateDto);
+            var userName = User.FindFirst(ClaimTypes.Name)?.Value ?? "Unknown User";
+            
+            // Send real-time notification
+            await _notificationService.SendWbsTaskUpdatedNotificationAsync(
+                Guid.NewGuid(), // Generate a new Guid for notification tracking
+                task.WbsId,
+                task.TaskNameEN,
+                task.ProjectId,
+                userName
+            );
+
+            _logger.LogInformation("WBS task {WbsId} updated by {UserName} with real-time notification sent", wbsId, userName);
             
             return Ok(new ApiResponse<WbsTaskDto>
             {
                 Success = true,
                 Data = task,
-                Message = "WBS task updated successfully"
+                Message = "WBS task updated successfully with live updates sent to team"
             });
         }
         catch (ArgumentException ex)
@@ -209,6 +239,7 @@ public class WbsController : ControllerBase
 
     /// <summary>
     /// Delete a WBS task
+    /// Real-time notification: Broadcasts task deletion to all project team members
     /// </summary>
     /// <param name="wbsId">WBS ID of the task to delete</param>
     /// <returns>Confirmation of deletion</returns>
@@ -218,6 +249,17 @@ public class WbsController : ControllerBase
     {
         try
         {
+            // Get task details before deletion for notification
+            var task = await _wbsService.GetTaskByIdAsync(wbsId);
+            if (task == null)
+            {
+                return NotFound(new ApiResponse<object>
+                {
+                    Success = false,
+                    Message = $"WBS task with ID '{wbsId}' not found"
+                });
+            }
+
             var deleted = await _wbsService.DeleteTaskAsync(wbsId);
             
             if (!deleted)
@@ -229,10 +271,22 @@ public class WbsController : ControllerBase
                 });
             }
 
+            var userName = User.FindFirst(ClaimTypes.Name)?.Value ?? "Unknown User";
+            
+            // Send real-time notification
+            await _notificationService.SendWbsTaskDeletedNotificationAsync(
+                task.WbsId,
+                task.TaskNameEN,
+                task.ProjectId,
+                userName
+            );
+
+            _logger.LogInformation("WBS task {WbsId} deleted by {UserName} with real-time notification sent", wbsId, userName);
+
             return Ok(new ApiResponse<object>
             {
                 Success = true,
-                Message = "WBS task deleted successfully"
+                Message = "WBS task deleted successfully with live updates sent to team"
             });
         }
         catch (InvalidOperationException ex)

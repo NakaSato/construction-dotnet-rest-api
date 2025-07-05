@@ -11,8 +11,12 @@ public interface IProjectService
     Task<ServiceResult<PagedResult<ProjectDto>>> GetProjectsLegacyAsync(int pageNumber, int pageSize, Guid? managerId);
     Task<ServiceResult<ProjectDto>> GetProjectByIdAsync(Guid id);
     Task<ServiceResult<ProjectDto>> CreateProjectAsync(CreateProjectRequest request);
+    Task<ServiceResult<ProjectDto>> CreateProjectAsync(CreateProjectRequest request, string? createdBy);
     Task<ServiceResult<ProjectDto>> UpdateProjectAsync(Guid id, UpdateProjectRequest request);
+    Task<ServiceResult<ProjectDto>> UpdateProjectAsync(Guid id, UpdateProjectRequest request, string? updatedBy);
     Task<ServiceResult<ProjectDto>> PatchProjectAsync(Guid id, PatchProjectRequest request);
+    Task<ServiceResult<ProjectDto>> PatchProjectAsync(Guid id, PatchProjectRequest request, string? updatedBy);
     Task<ServiceResult<bool>> DeleteProjectAsync(Guid id);
+    Task<ServiceResult<bool>> DeleteProjectAsync(Guid id, string? deletedBy);
     Task<ServiceResult<PagedResult<ProjectDto>>> GetUserProjectsAsync(Guid userId, int pageNumber, int pageSize);
 }

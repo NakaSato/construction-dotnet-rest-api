@@ -296,4 +296,152 @@ public class NotificationHub : Hub
     }
 
     #endregion
+
+    #region Enhanced Group Management (July 2025)
+
+    /// <summary>
+    /// Join a geographic region group for receiving regional project updates
+    /// </summary>
+    /// <param name="region">Region name (northern, western, central)</param>
+    public async Task JoinRegionGroup(string region)
+    {
+        var userId = Context.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        var userName = Context.User?.FindFirst(ClaimTypes.Name)?.Value;
+        
+        _logger.LogInformation("User {UserId} ({UserName}) joining region group {Region}", userId, userName, region);
+        
+        await Groups.AddToGroupAsync(Context.ConnectionId, $"region_{region}");
+        await Clients.Caller.SendAsync("JoinedRegionGroup", region);
+    }
+
+    /// <summary>
+    /// Leave a geographic region group
+    /// </summary>
+    /// <param name="region">Region name to leave</param>
+    public async Task LeaveRegionGroup(string region)
+    {
+        var userId = Context.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        
+        _logger.LogInformation("User {UserId} leaving region group {Region}", userId, region);
+        
+        await Groups.RemoveFromGroupAsync(Context.ConnectionId, $"region_{region}");
+        await Clients.Caller.SendAsync("LeftRegionGroup", region);
+    }
+
+    /// <summary>
+    /// Join a facility type group for receiving facility-specific updates
+    /// </summary>
+    /// <param name="facilityType">Facility type (water_treatment, solar_installation, etc.)</param>
+    public async Task JoinFacilityGroup(string facilityType)
+    {
+        var userId = Context.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        var userName = Context.User?.FindFirst(ClaimTypes.Name)?.Value;
+        
+        _logger.LogInformation("User {UserId} ({UserName}) joining facility group {FacilityType}", userId, userName, facilityType);
+        
+        await Groups.AddToGroupAsync(Context.ConnectionId, $"facility_{facilityType}");
+        await Clients.Caller.SendAsync("JoinedFacilityGroup", facilityType);
+    }
+
+    /// <summary>
+    /// Leave a facility type group
+    /// </summary>
+    /// <param name="facilityType">Facility type to leave</param>
+    public async Task LeaveFacilityGroup(string facilityType)
+    {
+        var userId = Context.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        
+        _logger.LogInformation("User {UserId} leaving facility group {FacilityType}", userId, facilityType);
+        
+        await Groups.RemoveFromGroupAsync(Context.ConnectionId, $"facility_{facilityType}");
+        await Clients.Caller.SendAsync("LeftFacilityGroup", facilityType);
+    }
+
+    /// <summary>
+    /// Join the map viewers group for receiving location updates
+    /// </summary>
+    public async Task JoinMapViewersGroup()
+    {
+        var userId = Context.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        var userName = Context.User?.FindFirst(ClaimTypes.Name)?.Value;
+        
+        _logger.LogInformation("User {UserId} ({UserName}) joining map viewers group", userId, userName);
+        
+        await Groups.AddToGroupAsync(Context.ConnectionId, "map_viewers");
+        await Clients.Caller.SendAsync("JoinedMapViewersGroup");
+    }
+
+    /// <summary>
+    /// Leave the map viewers group
+    /// </summary>
+    public async Task LeaveMapViewersGroup()
+    {
+        var userId = Context.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        
+        _logger.LogInformation("User {UserId} leaving map viewers group", userId);
+        
+        await Groups.RemoveFromGroupAsync(Context.ConnectionId, "map_viewers");
+        await Clients.Caller.SendAsync("LeftMapViewersGroup");
+    }
+
+    /// <summary>
+    /// Send real-time location data to connected map viewers
+    /// </summary>
+    /// <param name="projectId">Project ID</param>
+    /// <param name="latitude">GPS latitude</param>
+    /// <param name="longitude">GPS longitude</param>
+    /// <param name="address">Project address</param>
+    public async Task UpdateProjectLocation(string projectId, decimal latitude, decimal longitude, string address)
+    {
+        var userId = Context.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        var userName = Context.User?.FindFirst(ClaimTypes.Name)?.Value;
+        
+        var locationData = new
+        {
+            ProjectId = projectId,
+            Coordinates = new { Latitude = latitude, Longitude = longitude },
+            Address = address,
+            UpdatedBy = userName,
+            Timestamp = DateTime.UtcNow
+        };
+
+        // Send to map viewers
+        await Clients.Group("map_viewers").SendAsync("ProjectLocationUpdated", locationData);
+        
+        // Send to project group
+        await Clients.Group($"project_{projectId}").SendAsync("LocationUpdated", locationData);
+        
+        _logger.LogInformation("User {UserId} updated location for project {ProjectId}", userId, projectId);
+    }
+
+    /// <summary>
+    /// Broadcast project status change to relevant groups
+    /// </summary>
+    /// <param name="projectId">Project ID</param>
+    /// <param name="newStatus">New project status</param>
+    /// <param name="completionPercentage">Completion percentage</param>
+    public async Task UpdateProjectStatus(string projectId, string newStatus, decimal? completionPercentage = null)
+    {
+        var userId = Context.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        var userName = Context.User?.FindFirst(ClaimTypes.Name)?.Value;
+        
+        var statusData = new
+        {
+            ProjectId = projectId,
+            NewStatus = newStatus,
+            CompletionPercentage = completionPercentage,
+            UpdatedBy = userName,
+            Timestamp = DateTime.UtcNow
+        };
+
+        // Send to project group
+        await Clients.Group($"project_{projectId}").SendAsync("ProjectStatusChanged", statusData);
+        
+        // Send to managers and admins
+        await Clients.Groups(new[] { "role_manager", "role_administrator" }).SendAsync("ProjectStatusChanged", statusData);
+        
+        _logger.LogInformation("User {UserId} updated status for project {ProjectId} to {NewStatus}", userId, projectId, newStatus);
+    }
+
+    #endregion
 }

@@ -1,9 +1,12 @@
 # Project Management
 
+**⚡ Real-Time Live Updates**: All project operations support real-time data synchronization. When any user creates, updates, or deletes projects, all connected users see changes immediately.
+
 Project management endpoints for the Solar Projects API.
 
 **Authentication Required**: All endpoints require JWT authentication  
-**Role Required**: Admin/Manager (full CRUD), User/Viewer (read-only)
+**Role Required**: Admin/Manager (full CRUD), User/Viewer (read-only)  
+**📡 Live Updates**: SignalR WebSocket broadcasting for all operations
 
 ## Admin & Manager Capabilities
 

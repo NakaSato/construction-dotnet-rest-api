@@ -9,11 +9,13 @@ public class ProjectService : IProjectService
 {
     private readonly ApplicationDbContext _context;
     private readonly IQueryService _queryService;
+    private readonly INotificationService _notificationService;
 
-    public ProjectService(ApplicationDbContext context, IQueryService queryService)
+    public ProjectService(ApplicationDbContext context, IQueryService queryService, INotificationService notificationService)
     {
         _context = context;
         _queryService = queryService;
+        _notificationService = notificationService;
     }
 
     public async Task<ServiceResult<EnhancedPagedResult<ProjectDto>>> GetProjectsAsync(ProjectQueryParameters parameters)
@@ -238,6 +240,11 @@ public class ProjectService : IProjectService
 
     public async Task<ServiceResult<ProjectDto>> CreateProjectAsync(CreateProjectRequest request)
     {
+        return await CreateProjectAsync(request, "System");
+    }
+
+    public async Task<ServiceResult<ProjectDto>> CreateProjectAsync(CreateProjectRequest request, string? createdBy)
+    {
         try
         {
             // Check if project manager exists (only if provided)
@@ -281,6 +288,20 @@ public class ProjectService : IProjectService
 
             _context.Projects.Add(project);
             await _context.SaveChangesAsync();
+
+            // Send enhanced real-time notification for project creation
+            await _notificationService.SendEnhancedProjectCreatedNotificationAsync(
+                project.ProjectId,
+                project.ProjectName,
+                project.Address,
+                project.Status,
+                project.Latitude,
+                project.Longitude,
+                createdBy ?? "System"
+            );
+
+            // Update dashboard statistics
+            await _notificationService.SendDashboardStatsUpdatedNotificationAsync();
 
             // Fetch the created project with related data
             var createdProject = await _context.Projects
@@ -331,6 +352,11 @@ public class ProjectService : IProjectService
 
     public async Task<ServiceResult<ProjectDto>> UpdateProjectAsync(Guid id, UpdateProjectRequest request)
     {
+        return await UpdateProjectAsync(id, request, "System");
+    }
+
+    public async Task<ServiceResult<ProjectDto>> UpdateProjectAsync(Guid id, UpdateProjectRequest request, string? updatedBy)
+    {
         try
         {
             var project = await _context.Projects
@@ -352,6 +378,12 @@ public class ProjectService : IProjectService
                 }
             }
 
+            // Store old values for comparison
+            var oldStatus = project.Status;
+            var oldAddress = project.Address;
+            var oldLatitude = project.Latitude;
+            var oldLongitude = project.Longitude;
+
             // Update project properties (only those available in UpdateProjectRequest)
             project.ProjectName = request.ProjectName;
             project.Address = request.Address;
@@ -368,6 +400,61 @@ public class ProjectService : IProjectService
             }
 
             await _context.SaveChangesAsync();
+
+            // Send real-time notifications for changes
+            var changedFields = new Dictionary<string, object>();
+            
+            // Check for status changes
+            if (oldStatus != project.Status)
+            {
+                changedFields.Add("Status", new { Old = oldStatus.ToString(), New = project.Status.ToString() });
+                await _notificationService.SendProjectStatusChangedNotificationAsync(
+                    project.ProjectId,
+                    project.ProjectName,
+                    oldStatus,
+                    project.Status,
+                    project.ActualEndDate,
+                    null, // completion percentage - could be calculated if needed
+                    updatedBy ?? "System"
+                );
+            }
+
+            // Check for location/address changes
+            if (oldAddress != project.Address || oldLatitude != project.Latitude || oldLongitude != project.Longitude)
+            {
+                changedFields.Add("Location", new { 
+                    Old = new { Address = oldAddress, Latitude = oldLatitude, Longitude = oldLongitude },
+                    New = new { Address = project.Address, Latitude = project.Latitude, Longitude = project.Longitude }
+                });
+                await _notificationService.SendProjectLocationUpdatedNotificationAsync(
+                    project.ProjectId,
+                    project.ProjectName,
+                    project.Address,
+                    project.Latitude,
+                    project.Longitude,
+                    updatedBy ?? "System"
+                );
+            }
+
+            // Send comprehensive update notification
+            await _notificationService.SendEnhancedProjectUpdatedNotificationAsync(
+                project.ProjectId,
+                project.ProjectName,
+                project.Address,
+                project.Status,
+                project.Latitude,
+                project.Longitude,
+                project.ActualEndDate,
+                null, // completion percentage
+                updatedBy ?? "System",
+                changedFields
+            );
+
+            // Update dashboard statistics if status changed
+            if (oldStatus != project.Status)
+            {
+                await _notificationService.SendDashboardStatsUpdatedNotificationAsync();
+            }
 
             // Refresh the project with updated manager data
             await _context.Entry(project).Reference(p => p.ProjectManager).LoadAsync();
@@ -413,6 +500,11 @@ public class ProjectService : IProjectService
 
     public async Task<ServiceResult<ProjectDto>> PatchProjectAsync(Guid id, PatchProjectRequest request)
     {
+        return await PatchProjectAsync(id, request, "System");
+    }
+
+    public async Task<ServiceResult<ProjectDto>> PatchProjectAsync(Guid id, PatchProjectRequest request, string? updatedBy)
+    {
         try
         {
             var project = await _context.Projects
@@ -424,32 +516,59 @@ public class ProjectService : IProjectService
                 return ServiceResult<ProjectDto>.ErrorResult("Project not found");
             }
 
+            // Store old values for change tracking
+            var oldStatus = project.Status;
+            var oldAddress = project.Address;
+            var changedFields = new Dictionary<string, object>();
+
             // Apply partial updates only for non-null properties available in PatchProjectRequest
             if (!string.IsNullOrEmpty(request.ProjectName))
+            {
+                changedFields.Add("ProjectName", new { Old = project.ProjectName, New = request.ProjectName });
                 project.ProjectName = request.ProjectName;
+            }
 
             if (!string.IsNullOrEmpty(request.Address))
+            {
+                changedFields.Add("Address", new { Old = project.Address, New = request.Address });
                 project.Address = request.Address;
+            }
 
             if (!string.IsNullOrEmpty(request.ClientInfo))
+            {
+                changedFields.Add("ClientInfo", new { Old = project.ClientInfo, New = request.ClientInfo });
                 project.ClientInfo = request.ClientInfo;
+            }
 
             if (!string.IsNullOrEmpty(request.Status))
             {
                 if (Enum.TryParse<ProjectStatus>(request.Status, true, out var statusEnum))
                 {
+                    if (project.Status != statusEnum)
+                    {
+                        changedFields.Add("Status", new { Old = project.Status.ToString(), New = statusEnum.ToString() });
+                    }
                     project.Status = statusEnum;
                 }
             }
 
             if (request.StartDate.HasValue)
+            {
+                changedFields.Add("StartDate", new { Old = project.StartDate, New = request.StartDate.Value });
                 project.StartDate = request.StartDate.Value;
+            }
 
             if (request.EstimatedEndDate.HasValue)
+            {
+                changedFields.Add("EstimatedEndDate", new { Old = project.EstimatedEndDate, New = request.EstimatedEndDate.Value });
                 project.EstimatedEndDate = request.EstimatedEndDate.Value;
+            }
 
             if (request.ActualEndDate.HasValue)
+            {
+                changedFields.Add("ActualEndDate", new { Old = project.ActualEndDate, New = request.ActualEndDate.Value });
                 project.ActualEndDate = request.ActualEndDate.Value;
+            }
 
             if (request.ProjectManagerId.HasValue)
             {
@@ -458,10 +577,60 @@ public class ProjectService : IProjectService
                 {
                     return ServiceResult<ProjectDto>.ErrorResult("New project manager not found");
                 }
+                changedFields.Add("ProjectManagerId", new { Old = project.ProjectManagerId, New = request.ProjectManagerId.Value });
                 project.ProjectManagerId = request.ProjectManagerId.Value;
             }
 
             await _context.SaveChangesAsync();
+
+            // Send real-time notifications for specific changes
+            if (oldStatus != project.Status)
+            {
+                await _notificationService.SendProjectStatusChangedNotificationAsync(
+                    project.ProjectId,
+                    project.ProjectName,
+                    oldStatus,
+                    project.Status,
+                    project.ActualEndDate,
+                    null,
+                    updatedBy ?? "System"
+                );
+            }
+
+            if (oldAddress != project.Address)
+            {
+                await _notificationService.SendProjectLocationUpdatedNotificationAsync(
+                    project.ProjectId,
+                    project.ProjectName,
+                    project.Address,
+                    project.Latitude,
+                    project.Longitude,
+                    updatedBy ?? "System"
+                );
+            }
+
+            // Send comprehensive patch notification
+            if (changedFields.Any())
+            {
+                await _notificationService.SendEnhancedProjectUpdatedNotificationAsync(
+                    project.ProjectId,
+                    project.ProjectName,
+                    project.Address,
+                    project.Status,
+                    project.Latitude,
+                    project.Longitude,
+                    project.ActualEndDate,
+                    null,
+                    updatedBy ?? "System",
+                    changedFields
+                );
+
+                // Update dashboard if status changed
+                if (oldStatus != project.Status)
+                {
+                    await _notificationService.SendDashboardStatsUpdatedNotificationAsync();
+                }
+            }
 
             // Refresh the project with updated manager data
             await _context.Entry(project).Reference(p => p.ProjectManager).LoadAsync();
@@ -507,6 +676,11 @@ public class ProjectService : IProjectService
 
     public async Task<ServiceResult<bool>> DeleteProjectAsync(Guid id)
     {
+        return await DeleteProjectAsync(id, "System");
+    }
+
+    public async Task<ServiceResult<bool>> DeleteProjectAsync(Guid id, string? deletedBy)
+    {
         try
         {
             var project = await _context.Projects.FindAsync(id);
@@ -522,8 +696,17 @@ public class ProjectService : IProjectService
                 return ServiceResult<bool>.ErrorResult("Cannot delete project with existing tasks. Please delete all related tasks first.");
             }
 
+            // Store project name for notification before deletion
+            var projectName = project.ProjectName;
+
             _context.Projects.Remove(project);
             await _context.SaveChangesAsync();
+
+            // Send real-time deletion notification
+            await _notificationService.SendProjectDeletedNotificationAsync(projectName, deletedBy ?? "System");
+
+            // Send universal entity deletion event
+            await _notificationService.SendDashboardStatsUpdatedNotificationAsync();
 
             return ServiceResult<bool>.SuccessResult(true, "Project deleted successfully");
         }

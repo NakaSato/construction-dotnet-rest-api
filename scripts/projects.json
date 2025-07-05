@@ -1,752 +1,1002 @@
 [
   {
-    "id": 107,
+    "projectId": "107",
     "projectName": "สำนักงานประปาเขต 9",
-    "client": "กปภ.เขต 9",
-    "capacityKw": 125.4,
-    "panelCount": 220,
-    "team": null,
-    "zeroExport": "N",
-    "inverters": {
-      "inv125kw": 1,
-      "inv80kw": null,
-      "inv60kw": 4,
-      "inv40kw": 1
+    "address": "99/1 ถนนพหลโยธิน แขวงลาดยาว เขตจตุจักร กรุงเทพมหานคร 10900",
+    "clientInfo": "107 กปภ.เขต 9",
+    "status": "Completed",
+    "startDate": "2025-06-09T00:00:00Z",
+    "estimatedEndDate": "2025-08-08T00:00:00Z",
+    "actualEndDate": "2025-07-28T00:00:00Z",
+    "updatedAt": "2025-07-05T17:15:00Z",
+    "projectManager": {
+      "userId": "c73a80de-c8b2-4a8c-a881-17452dcd1118",
+      "username": "project.manager",
+      "email": "pm@company.com",
+      "fullName": "Project Manager",
+      "roleName": "Manager",
+      "isActive": true
     },
-    "fts": null,
-    "revenue": null,
-    "reports": {
-      "daily": "CLICK",
-      "weeklyRequest": "CLICK",
-      "weekly": "CLICK",
-      "monthly": "CLICK",
-      "photo": null
+    "taskCount": 0,
+    "completedTaskCount": 0,
+    "team": "Solar Team Alpha",
+    "connectionType": "MV",
+    "connectionNotes": "ระบบจำหน่ายแรงสูง",
+    "totalCapacityKw": 125.4,
+    "pvModuleCount": 220,
+    "equipmentDetails": {
+      "inverter125kw": 1,
+      "inverter80kw": 0,
+      "inverter60kw": 4,
+      "inverter40kw": 1
     },
-    "schedule": {
-      "startDate": "6/9/2025",
-      "dueDate": "08/08/2025",
-      "durationDays": 60,
-      "countdownDays": 26
-    }
+    "ftsValue": 0,
+    "revenueValue": 0,
+    "pqmValue": 0,
+    "locationCoordinates": {
+      "latitude": 13.7563,
+      "longitude": 100.5018
+    },
+    "createdAt": "2025-07-05T17:15:00Z"
   },
   {
-    "id": 108,
+    "projectId": "108",
     "projectName": "สถานีผลิตน้ำแม่กวง",
-    "client": "กปภ.สาขาเชียงใหม่",
-    "capacityKw": 112.86,
-    "panelCount": 198,
-    "team": null,
-    "zeroExport": "N",
-    "inverters": {
-      "inv125kw": 1,
-      "inv80kw": null,
-      "inv60kw": 3,
-      "inv40kw": 1
+    "address": "123 ถนนแม่กวง ตำบลแม่กวง อำเภอสันทราย จังหวัดเชียงใหม่ 50210",
+    "clientInfo": "108 กปภ.สาขาเชียงใหม่",
+    "status": "In Progress",
+    "startDate": "2025-06-09T00:00:00Z",
+    "estimatedEndDate": "2025-08-08T00:00:00Z",
+    "actualEndDate": null,
+    "updatedAt": "2025-07-05T17:15:00Z",
+    "projectManager": {
+      "userId": "c73a80de-c8b2-4a8c-a881-17452dcd1118",
+      "username": "project.manager",
+      "email": "pm@company.com",
+      "fullName": "Project Manager",
+      "roleName": "Manager",
+      "isActive": true
     },
-    "fts": null,
-    "revenue": null,
-    "reports": {
-      "daily": "CLICK",
-      "weeklyRequest": "CLICK",
-      "weekly": "CLICK",
-      "monthly": "CLICK",
-      "photo": "CLICK"
+    "taskCount": 0,
+    "completedTaskCount": 0,
+    "team": "Solar Team Alpha",
+    "connectionType": "MV",
+    "connectionNotes": "ระบบจำหน่ายแรงสูง",
+    "totalCapacityKw": 112.86,
+    "pvModuleCount": 198,
+    "equipmentDetails": {
+      "inverter125kw": 1,
+      "inverter80kw": 0,
+      "inverter60kw": 3,
+      "inverter40kw": 1
     },
-    "schedule": {
-      "startDate": "6/9/2025",
-      "dueDate": "08/08/2025",
-      "durationDays": 60,
-      "countdownDays": 26
-    }
+    "ftsValue": 0,
+    "revenueValue": 0,
+    "pqmValue": 0,
+    "locationCoordinates": {
+      "latitude": 18.7061,
+      "longitude": 98.9817
+    },
+    "createdAt": "2025-07-05T17:15:00Z"
   },
   {
-    "id": 109,
+    "projectId": "109",
     "projectName": "สถานีผลิตน้ำแม่แฝก",
-    "client": "กปภ.สาขาเชียงใหม่",
-    "capacityKw": 314.64,
-    "panelCount": 552,
-    "team": null,
-    "zeroExport": "N",
-    "inverters": {
-      "inv125kw": 2,
-      "inv80kw": 1,
-      "inv60kw": 8,
-      "inv40kw": 1
+    "address": "456 ถนนแม่แฝก ตำบลแม่แฝก อำเภอสันป่าตอง จังหวัดเชียงใหม่ 50120",
+    "clientInfo": "109 กปภ.สาขาเชียงใหม่",
+    "status": "In Progress",
+    "startDate": "2025-06-09T00:00:00Z",
+    "estimatedEndDate": "2025-09-07T00:00:00Z",
+    "actualEndDate": null,
+    "updatedAt": "2025-07-05T17:15:00Z",
+    "projectManager": {
+      "userId": "c73a80de-c8b2-4a8c-a881-17452dcd1118",
+      "username": "project.manager",
+      "email": "pm@company.com",
+      "fullName": "Project Manager",
+      "roleName": "Manager",
+      "isActive": true
     },
-    "fts": null,
-    "revenue": null,
-    "reports": {
-      "daily": "CLICK",
-      "weeklyRequest": "CLICK",
-      "weekly": "CLICK",
-      "monthly": "CLICK",
-      "photo": "CLICK"
+    "taskCount": 0,
+    "completedTaskCount": 0,
+    "team": "Solar Team Alpha",
+    "connectionType": "MV",
+    "connectionNotes": "ระบบจำหน่ายแรงสูง",
+    "totalCapacityKw": 314.64,
+    "pvModuleCount": 552,
+    "equipmentDetails": {
+      "inverter125kw": 2,
+      "inverter80kw": 1,
+      "inverter60kw": 8,
+      "inverter40kw": 1
     },
-    "schedule": {
-      "startDate": "6/9/2025",
-      "dueDate": "09/07/2025",
-      "durationDays": 90,
-      "countdownDays": 46
-    }
+    "ftsValue": 0,
+    "revenueValue": 0,
+    "pqmValue": 0,
+    "locationCoordinates": {
+      "latitude": 18.8312,
+      "longitude": 98.9672
+    },
+    "createdAt": "2025-07-05T17:15:00Z"
   },
   {
-    "id": 110,
+    "projectId": "110",
     "projectName": "สถานีจ่ายน้ำสันทราย",
-    "client": "กปภ.สาขาเชียงใหม่",
-    "capacityKw": 102.6,
-    "panelCount": 180,
-    "team": null,
-    "zeroExport": "N",
-    "inverters": {
-      "inv125kw": 1,
-      "inv80kw": null,
-      "inv60kw": 3,
-      "inv40kw": 1
+    "address": "789 ถนนสันทราย ตำบลสันทราย อำเภอสันทราย จังหวัดเชียงใหม่ 50210",
+    "clientInfo": "110 กปภ.สาขาเชียงใหม่",
+    "status": "Completed",
+    "startDate": "2025-06-09T00:00:00Z",
+    "estimatedEndDate": "2025-08-08T00:00:00Z",
+    "actualEndDate": "2025-07-25T00:00:00Z",
+    "updatedAt": "2025-07-05T17:15:00Z",
+    "projectManager": {
+      "userId": "c73a80de-c8b2-4a8c-a881-17452dcd1118",
+      "username": "project.manager",
+      "email": "pm@company.com",
+      "fullName": "Project Manager",
+      "roleName": "Manager",
+      "isActive": true
     },
-    "fts": null,
-    "revenue": null,
-    "reports": {
-      "daily": "CLICK",
-      "weeklyRequest": "CLICK",
-      "weekly": "CLICK",
-      "monthly": "CLICK",
-      "photo": "CLICK"
+    "taskCount": 0,
+    "completedTaskCount": 0,
+    "team": "Solar Team Alpha",
+    "connectionType": "LV",
+    "connectionNotes": "ระบบจำหน่ายแรงต่ำ",
+    "totalCapacityKw": 102.6,
+    "pvModuleCount": 180,
+    "equipmentDetails": {
+      "inverter125kw": 1,
+      "inverter80kw": 0,
+      "inverter60kw": 3,
+      "inverter40kw": 1
     },
-    "schedule": {
-      "startDate": "6/9/2025",
-      "dueDate": "08/08/2025",
-      "durationDays": 60,
-      "countdownDays": 26
-    }
+    "ftsValue": 0,
+    "revenueValue": 0,
+    "pqmValue": 0,
+    "locationCoordinates": {
+      "latitude": 18.7904,
+      "longitude": 99.0046
+    },
+    "createdAt": "2025-07-05T17:15:00Z"
   },
   {
-    "id": 111,
+    "projectId": "111",
     "projectName": "สถานีผลิตน้ำแม่ริม",
-    "client": "กปภ.สาขาแม่ริม",
-    "capacityKw": 282.72,
-    "panelCount": 496,
-    "team": null,
-    "zeroExport": "N",
-    "inverters": {
-      "inv125kw": 2,
-      "inv80kw": null,
-      "inv60kw": 7,
-      "inv40kw": 1
+    "address": "321 ถนนแม่ริม ตำบลแม่ริม อำเภอแม่ริม จังหวัดเชียงใหม่ 50180",
+    "clientInfo": "111 กปภ.สาขาแม่ริม",
+    "status": "In Progress",
+    "startDate": "2025-06-09T00:00:00Z",
+    "estimatedEndDate": "2025-09-07T00:00:00Z",
+    "actualEndDate": null,
+    "updatedAt": "2025-07-05T17:15:00Z",
+    "projectManager": {
+      "userId": "c73a80de-c8b2-4a8c-a881-17452dcd1118",
+      "username": "project.manager",
+      "email": "pm@company.com",
+      "fullName": "Project Manager",
+      "roleName": "Manager",
+      "isActive": true
     },
-    "fts": null,
-    "revenue": null,
-    "reports": {
-      "daily": "CLICK",
-      "weeklyRequest": "CLICK",
-      "weekly": "CLICK",
-      "monthly": "CLICK",
-      "photo": "CLICK"
+    "taskCount": 0,
+    "completedTaskCount": 0,
+    "team": "Solar Team Alpha",
+    "connectionType": "MV",
+    "connectionNotes": "ระบบจำหน่ายแรงสูง",
+    "totalCapacityKw": 282.72,
+    "pvModuleCount": 496,
+    "equipmentDetails": {
+      "inverter125kw": 2,
+      "inverter80kw": 0,
+      "inverter60kw": 7,
+      "inverter40kw": 1
     },
-    "schedule": {
-      "startDate": "6/9/2025",
-      "dueDate": "09/07/2025",
-      "durationDays": 90,
-      "countdownDays": 46
-    }
+    "ftsValue": 0,
+    "revenueValue": 0,
+    "pqmValue": 0,
+    "locationCoordinates": {
+      "latitude": 18.8856,
+      "longitude": 98.9289
+    },
+    "createdAt": "2025-07-05T17:15:00Z"
   },
   {
-    "id": 112,
+    "projectId": "112",
     "projectName": "โรงสูบแรงสูงแม่สาย",
-    "client": "กปภ.สาขาแม่สาย",
-    "capacityKw": 133.38,
-    "panelCount": 234,
-    "team": null,
-    "zeroExport": "N",
-    "inverters": {
-      "inv125kw": 1,
-      "inv80kw": 1,
-      "inv60kw": 5,
-      "inv40kw": 2
+    "address": "555 ถนนแม่สาย ตำบลแม่สาย อำเภอแม่สาย จังหวัดเชียงราย 57130",
+    "clientInfo": "112 กปภ.สาขาแม่สาย",
+    "status": "Completed",
+    "startDate": "2025-06-09T00:00:00Z",
+    "estimatedEndDate": "2025-08-08T00:00:00Z",
+    "actualEndDate": "2025-07-30T00:00:00Z",
+    "updatedAt": "2025-07-05T17:15:00Z",
+    "projectManager": {
+      "userId": "c73a80de-c8b2-4a8c-a881-17452dcd1118",
+      "username": "project.manager",
+      "email": "pm@company.com",
+      "fullName": "Project Manager",
+      "roleName": "Manager",
+      "isActive": true
     },
-    "fts": null,
-    "revenue": null,
-    "reports": {
-      "daily": "CLICK",
-      "weeklyRequest": "CLICK",
-      "weekly": "CLICK",
-      "monthly": "CLICK",
-      "photo": "CLICK"
+    "taskCount": 0,
+    "completedTaskCount": 0,
+    "team": "Solar Team Alpha",
+    "connectionType": "MV",
+    "connectionNotes": "ระบบจำหน่ายแรงสูง",
+    "totalCapacityKw": 133.38,
+    "pvModuleCount": 234,
+    "equipmentDetails": {
+      "inverter125kw": 1,
+      "inverter80kw": 1,
+      "inverter60kw": 5,
+      "inverter40kw": 2
     },
-    "schedule": {
-      "startDate": "6/9/2025",
-      "dueDate": "08/08/2025",
-      "durationDays": 60,
-      "countdownDays": 26
-    }
+    "ftsValue": 0,
+    "revenueValue": 0,
+    "pqmValue": 0,
+    "locationCoordinates": {
+      "latitude": 20.3647,
+      "longitude": 99.9253
+    },
+    "createdAt": "2025-07-05T17:15:00Z"
   },
   {
-    "id": 113,
+    "projectId": "113",
     "projectName": "สถานีผลิตน้ำเกาะช้าง",
-    "client": "กปภ.สาขาแม่สาย",
-    "capacityKw": 102.6,
-    "panelCount": 180,
-    "team": null,
-    "zeroExport": "N",
-    "inverters": {
-      "inv125kw": 1,
-      "inv80kw": null,
-      "inv60kw": 3,
-      "inv40kw": 1
+    "address": "222 ถนนเกาะช้าง ตำบลเกาะช้าง อำเภอแม่สาย จังหวัดเชียงราย 57130",
+    "clientInfo": "113 กปภ.สาขาแม่สาย",
+    "status": "In Progress",
+    "startDate": "2025-06-09T00:00:00Z",
+    "estimatedEndDate": "2025-08-08T00:00:00Z",
+    "actualEndDate": null,
+    "updatedAt": "2025-07-05T17:15:00Z",
+    "projectManager": {
+      "userId": "c73a80de-c8b2-4a8c-a881-17452dcd1118",
+      "username": "project.manager",
+      "email": "pm@company.com",
+      "fullName": "Project Manager",
+      "roleName": "Manager",
+      "isActive": true
     },
-    "fts": null,
-    "revenue": null,
-    "reports": {
-      "daily": "CLICK",
-      "weeklyRequest": "CLICK",
-      "weekly": "CLICK",
-      "monthly": "CLICK",
-      "photo": "CLICK"
+    "taskCount": 0,
+    "completedTaskCount": 0,
+    "team": "Solar Team Alpha",
+    "connectionType": "LV",
+    "connectionNotes": "ระบบจำหน่ายแรงต่ำ",
+    "totalCapacityKw": 102.6,
+    "pvModuleCount": 180,
+    "equipmentDetails": {
+      "inverter125kw": 1,
+      "inverter80kw": 0,
+      "inverter60kw": 3,
+      "inverter40kw": 1
     },
-    "schedule": {
-      "startDate": "6/9/2025",
-      "dueDate": "08/08/2025",
-      "durationDays": 60,
-      "countdownDays": 26
-    }
+    "ftsValue": 0,
+    "revenueValue": 0,
+    "pqmValue": 0,
+    "locationCoordinates": {
+      "latitude": 20.3194,
+      "longitude": 99.8839
+    },
+    "createdAt": "2025-07-05T17:15:00Z"
   },
   {
-    "id": 114,
+    "projectId": "114",
     "projectName": "สถานีผลิตน้ำดอยจอมทอง",
-    "client": "กปภ.สาขาพะเยา",
-    "capacityKw": 435.48,
-    "panelCount": 764,
-    "team": null,
-    "zeroExport": "N",
-    "inverters": {
-      "inv125kw": 3,
-      "inv80kw": 1,
-      "inv60kw": 11,
-      "inv40kw": 1
+    "address": "888 ถนนดอยจอมทอง ตำบลดอกคำใต้ อำเภอเมืองพะเยา จังหวัดพะเยา 56000",
+    "clientInfo": "114 กปภ.สาขาพะเยา",
+    "status": "In Progress",
+    "startDate": "2025-06-09T00:00:00Z",
+    "estimatedEndDate": "2025-09-07T00:00:00Z",
+    "actualEndDate": null,
+    "updatedAt": "2025-07-05T17:15:00Z",
+    "projectManager": {
+      "userId": "c73a80de-c8b2-4a8c-a881-17452dcd1118",
+      "username": "project.manager",
+      "email": "pm@company.com",
+      "fullName": "Project Manager",
+      "roleName": "Manager",
+      "isActive": true
     },
-    "fts": null,
-    "revenue": null,
-    "reports": {
-      "daily": "CLICK!",
-      "weeklyRequest": "CLICK!",
-      "weekly": "CLICK!",
-      "monthly": "CLICK!",
-      "photo": "CLICK!"
+    "taskCount": 0,
+    "completedTaskCount": 0,
+    "team": "Solar Team Alpha",
+    "connectionType": "MV",
+    "connectionNotes": "ระบบจำหน่ายแรงสูง",
+    "totalCapacityKw": 435.48,
+    "pvModuleCount": 764,
+    "equipmentDetails": {
+      "inverter125kw": 3,
+      "inverter80kw": 1,
+      "inverter60kw": 11,
+      "inverter40kw": 1
     },
-    "schedule": {
-      "startDate": "6/9/2025",
-      "dueDate": "09/07/2025",
-      "durationDays": 90,
-      "countdownDays": 46
-    }
+    "ftsValue": 0,
+    "revenueValue": 0,
+    "pqmValue": 0,
+    "locationCoordinates": {
+      "latitude": 19.5218,
+      "longitude": 99.8971
+    },
+    "createdAt": "2025-07-05T17:15:00Z"
   },
   {
-    "id": 123,
+    "projectId": "123",
     "projectName": "สถานีผลิตน้ำประปาตาก",
-    "client": "กปภ.สาขาตาก",
-    "capacityKw": 233.7,
-    "panelCount": 410,
-    "team": null,
-    "zeroExport": "N",
-    "inverters": {
-      "inv125kw": 1,
-      "inv80kw": 1,
-      "inv60kw": 7,
-      "inv40kw": 1
+    "address": "777 ถนนตาก ตำบลระแหง อำเภอเมืองตาก จังหวัดตาก 63000",
+    "clientInfo": "123 กปภ.สาขาตาก",
+    "status": "In Progress",
+    "startDate": "2025-06-09T00:00:00Z",
+    "estimatedEndDate": "2025-08-08T00:00:00Z",
+    "actualEndDate": null,
+    "updatedAt": "2025-07-05T17:15:00Z",
+    "projectManager": {
+      "userId": "c73a80de-c8b2-4a8c-a881-17452dcd1118",
+      "username": "project.manager",
+      "email": "pm@company.com",
+      "fullName": "Project Manager",
+      "roleName": "Manager",
+      "isActive": true
     },
-    "fts": null,
-    "revenue": null,
-    "reports": {
-      "daily": "CLICK",
-      "weeklyRequest": "CLICK",
-      "weekly": "CLICK",
-      "monthly": "CLICK",
-      "photo": "CLICK"
+    "taskCount": 0,
+    "completedTaskCount": 0,
+    "team": "Solar Team Alpha",
+    "connectionType": "MV",
+    "connectionNotes": "ระบบจำหน่ายแรงสูง",
+    "totalCapacityKw": 233.7,
+    "pvModuleCount": 410,
+    "equipmentDetails": {
+      "inverter125kw": 1,
+      "inverter80kw": 1,
+      "inverter60kw": 7,
+      "inverter40kw": 1
     },
-    "schedule": {
-      "startDate": "6/9/2025",
-      "dueDate": "08/08/2025",
-      "durationDays": 60,
-      "countdownDays": 26
-    }
+    "ftsValue": 0,
+    "revenueValue": 0,
+    "pqmValue": 0,
+    "locationCoordinates": {
+      "latitude": 16.8633,
+      "longitude": 99.2281
+    },
+    "createdAt": "2025-07-05T17:15:00Z"
   },
   {
-    "id": 126,
+    "projectId": "126",
     "projectName": "หน่วยบริการหัวรอ",
-    "client": "กปภ.สาขาพิษณุโลก",
-    "capacityKw": 475.38,
-    "panelCount": 834,
-    "team": null,
-    "zeroExport": "N",
-    "inverters": {
-      "inv125kw": 3,
-      "inv80kw": 1,
-      "inv60kw": 14,
-      "inv40kw": 1
+    "address": "666 ถนนหัวรอ ตำบลหัวรอ อำเภอเมืองพิษณุโลก จังหวัดพิษณุโลก 65000",
+    "clientInfo": "126 กปภ.สาขาพิษณุโลก",
+    "status": "In Progress",
+    "startDate": "2025-06-09T00:00:00Z",
+    "estimatedEndDate": "2025-09-07T00:00:00Z",
+    "actualEndDate": null,
+    "updatedAt": "2025-07-05T17:15:00Z",
+    "projectManager": {
+      "userId": "c73a80de-c8b2-4a8c-a881-17452dcd1118",
+      "username": "project.manager",
+      "email": "pm@company.com",
+      "fullName": "Project Manager",
+      "roleName": "Manager",
+      "isActive": true
     },
-    "fts": null,
-    "revenue": null,
-    "reports": {
-      "daily": "CLICK",
-      "weeklyRequest": "CLICK",
-      "weekly": "CLICK",
-      "monthly": "CLICK",
-      "photo": "CLICK"
+    "taskCount": 0,
+    "completedTaskCount": 0,
+    "team": "Solar Team Alpha",
+    "connectionType": "MV",
+    "connectionNotes": "ระบบจำหน่ายแรงสูง",
+    "totalCapacityKw": 475.38,
+    "pvModuleCount": 834,
+    "equipmentDetails": {
+      "inverter125kw": 3,
+      "inverter80kw": 1,
+      "inverter60kw": 14,
+      "inverter40kw": 1
     },
-    "schedule": {
-      "startDate": "6/9/2025",
-      "dueDate": "09/07/2025",
-      "durationDays": 90,
-      "countdownDays": 46
-    }
+    "ftsValue": 0,
+    "revenueValue": 0,
+    "pqmValue": 0,
+    "locationCoordinates": {
+      "latitude": 16.6833,
+      "longitude": 100.6167
+    },
+    "createdAt": "2025-07-05T17:15:00Z"
   },
   {
-    "id": 127,
+    "projectId": "127",
     "projectName": "สถานีจ่ายน้ำสมอแข",
-    "client": "กปภ.สาขาพิษณุโลก",
-    "capacityKw": 123.12,
-    "panelCount": 216,
-    "team": null,
-    "zeroExport": "N",
-    "inverters": {
-      "inv125kw": 1,
-      "inv80kw": null,
-      "inv60kw": 3,
-      "inv40kw": 1
+    "address": "444 ถนนสมอแข ตำบลสมอแข อำเภอเมืองพิษณุโลก จังหวัดพิษณุโลก 65000",
+    "clientInfo": "127 กปภ.สาขาพิษณุโลก",
+    "status": "Completed",
+    "startDate": "2025-06-09T00:00:00Z",
+    "estimatedEndDate": "2025-08-08T00:00:00Z",
+    "actualEndDate": "2025-07-22T00:00:00Z",
+    "updatedAt": "2025-07-05T17:15:00Z",
+    "projectManager": {
+      "userId": "c73a80de-c8b2-4a8c-a881-17452dcd1118",
+      "username": "project.manager",
+      "email": "pm@company.com",
+      "fullName": "Project Manager",
+      "roleName": "Manager",
+      "isActive": true
     },
-    "fts": null,
-    "revenue": null,
-    "reports": {
-      "daily": "CLICK",
-      "weeklyRequest": "CLICK",
-      "weekly": "CLICK",
-      "monthly": "CLICK",
-      "photo": "CLICK"
+    "taskCount": 0,
+    "completedTaskCount": 0,
+    "team": "Solar Team Alpha",
+    "connectionType": "LV",
+    "connectionNotes": "ระบบจำหน่ายแรงต่ำ",
+    "totalCapacityKw": 123.12,
+    "pvModuleCount": 216,
+    "equipmentDetails": {
+      "inverter125kw": 1,
+      "inverter80kw": 0,
+      "inverter60kw": 3,
+      "inverter40kw": 1
     },
-    "schedule": {
-      "startDate": "6/9/2025",
-      "dueDate": "08/08/2025",
-      "durationDays": 60,
-      "countdownDays": 26
-    }
+    "ftsValue": 0,
+    "revenueValue": 0,
+    "pqmValue": 0,
+    "locationCoordinates": {
+      "latitude": 16.7794,
+      "longitude": 100.5906
+    },
+    "createdAt": "2025-07-05T17:15:00Z"
   },
   {
-    "id": 128,
+    "projectId": "128",
     "projectName": "สำนักงานประปาสวรรคโลก",
-    "client": "กปภ.สาขาสวรรคโลก",
-    "capacityKw": 159.6,
-    "panelCount": 280,
-    "team": null,
-    "zeroExport": "N",
-    "inverters": {
-      "inv125kw": 1,
-      "inv80kw": 1,
-      "inv60kw": 5,
-      "inv40kw": 1
+    "address": "333 ถนนสวรรคโลก ตำบลสวรรคโลก อำเภอเมืองสุโขทัย จังหวัดสุโขทัย 64000",
+    "clientInfo": "128 กปภ.สาขาสวรรคโลก",
+    "status": "In Progress",
+    "startDate": "2025-06-09T00:00:00Z",
+    "estimatedEndDate": "2025-08-08T00:00:00Z",
+    "actualEndDate": null,
+    "updatedAt": "2025-07-05T17:15:00Z",
+    "projectManager": {
+      "userId": "c73a80de-c8b2-4a8c-a881-17452dcd1118",
+      "username": "project.manager",
+      "email": "pm@company.com",
+      "fullName": "Project Manager",
+      "roleName": "Manager",
+      "isActive": true
     },
-    "fts": null,
-    "revenue": null,
-    "reports": {
-      "daily": "CLICK",
-      "weeklyRequest": "CLICK",
-      "weekly": "CLICK",
-      "monthly": "CLICK",
-      "photo": "CLICK"
+    "taskCount": 0,
+    "completedTaskCount": 0,
+    "team": "Solar Team Alpha",
+    "connectionType": "MV",
+    "connectionNotes": "ระบบจำหน่ายแรงสูง",
+    "totalCapacityKw": 159.6,
+    "pvModuleCount": 280,
+    "equipmentDetails": {
+      "inverter125kw": 1,
+      "inverter80kw": 1,
+      "inverter60kw": 5,
+      "inverter40kw": 1
     },
-    "schedule": {
-      "startDate": "6/9/2025",
-      "dueDate": "08/08/2025",
-      "durationDays": 60,
-      "countdownDays": 26
-    }
+    "ftsValue": 0,
+    "revenueValue": 0,
+    "pqmValue": 0,
+    "locationCoordinates": {
+      "latitude": 17.3124,
+      "longitude": 99.9471
+    },
+    "createdAt": "2025-07-05T17:15:00Z"
   },
   {
-    "id": 122,
+    "projectId": "122",
     "projectName": "สำนักงานประปาตะพานหิน",
-    "client": "กปภ.สาขาตะพานหิน",
-    "capacityKw": 305.52,
-    "panelCount": 536,
-    "team": null,
-    "zeroExport": "N",
-    "inverters": {
-      "inv125kw": 2,
-      "inv80kw": 1,
-      "inv60kw": 8,
-      "inv40kw": 1
+    "address": "111 ถนนตะพานหิน ตำบลตะพานหิน อำเภอเมืองพิจิตร จังหวัดพิจิตร 66000",
+    "clientInfo": "122 กปภ.สาขาตะพานหิน",
+    "status": "In Progress",
+    "startDate": "2025-06-09T00:00:00Z",
+    "estimatedEndDate": "2025-09-07T00:00:00Z",
+    "actualEndDate": null,
+    "updatedAt": "2025-07-05T17:15:00Z",
+    "projectManager": {
+      "userId": "c73a80de-c8b2-4a8c-a881-17452dcd1118",
+      "username": "project.manager",
+      "email": "pm@company.com",
+      "fullName": "Project Manager",
+      "roleName": "Manager",
+      "isActive": true
     },
-    "fts": null,
-    "revenue": null,
-    "reports": {
-      "daily": "CLICK",
-      "weeklyRequest": "CLICK",
-      "weekly": "CLICK",
-      "monthly": "CLICK",
-      "photo": "CLICK"
+    "taskCount": 0,
+    "completedTaskCount": 0,
+    "team": "Solar Team Alpha",
+    "connectionType": "MV",
+    "connectionNotes": "ระบบจำหน่ายแรงสูง",
+    "totalCapacityKw": 305.52,
+    "pvModuleCount": 536,
+    "equipmentDetails": {
+      "inverter125kw": 2,
+      "inverter80kw": 1,
+      "inverter60kw": 8,
+      "inverter40kw": 1
     },
-    "schedule": {
-      "startDate": "6/9/2025",
-      "dueDate": "09/07/2025",
-      "durationDays": 90,
-      "countdownDays": 46
-    }
+    "ftsValue": 0,
+    "revenueValue": 0,
+    "pqmValue": 0,
+    "locationCoordinates": {
+      "latitude": 16.4322,
+      "longitude": 100.0581
+    },
+    "createdAt": "2025-07-05T17:15:00Z"
   },
   {
-    "id": 124,
+    "projectId": "124",
     "projectName": "สำนักงานประปาบางมูลนาก",
-    "client": "กปภ.สาขาบางมูลนาก",
-    "capacityKw": 141.36,
-    "panelCount": 248,
-    "team": null,
-    "zeroExport": "N",
-    "inverters": {
-      "inv125kw": 1,
-      "inv80kw": null,
-      "inv60kw": 4,
-      "inv40kw": 1
+    "address": "999 ถนนบางมูลนาก ตำบลบางมูลนาก อำเภอเมืองพิจิตร จังหวัดพิจิตร 66000",
+    "clientInfo": "124 กปภ.สาขาบางมูลนาก",
+    "status": "Planning",
+    "startDate": "2025-07-28T00:00:00Z",
+    "estimatedEndDate": "2025-09-26T00:00:00Z",
+    "actualEndDate": null,
+    "updatedAt": "2025-07-05T17:15:00Z",
+    "projectManager": {
+      "userId": "c73a80de-c8b2-4a8c-a881-17452dcd1118",
+      "username": "project.manager",
+      "email": "pm@company.com",
+      "fullName": "Project Manager",
+      "roleName": "Manager",
+      "isActive": true
     },
-    "fts": null,
-    "revenue": null,
-    "reports": {
-      "daily": "CLICK",
-      "weeklyRequest": "CLICK",
-      "weekly": "CLICK",
-      "monthly": "CLICK",
-      "photo": "CLICK"
+    "taskCount": 0,
+    "completedTaskCount": 0,
+    "team": "Solar Team Alpha",
+    "connectionType": "MV",
+    "connectionNotes": "ระบบจำหน่ายแรงสูง",
+    "totalCapacityKw": 141.36,
+    "pvModuleCount": 248,
+    "equipmentDetails": {
+      "inverter125kw": 1,
+      "inverter80kw": 0,
+      "inverter60kw": 4,
+      "inverter40kw": 1
     },
-    "schedule": {
-      "startDate": "7/28/2025",
-      "dueDate": "09/26/2025",
-      "durationDays": 60,
-      "countdownDays": 61
-    }
+    "ftsValue": 0,
+    "revenueValue": 0,
+    "pqmValue": 0,
+    "locationCoordinates": {
+      "latitude": 16.4205,
+      "longitude": 100.0971
+    },
+    "createdAt": "2025-07-05T17:15:00Z"
   },
   {
-    "id": 129,
+    "projectId": "129",
     "projectName": "สถานีผลิตน้ำปากแคว",
-    "client": "กปภ.สาขาสุโขทัย",
-    "capacityKw": 136.8,
-    "panelCount": 240,
-    "team": null,
-    "zeroExport": "N",
-    "inverters": {
-      "inv125kw": 1,
-      "inv80kw": null,
-      "inv60kw": 5,
-      "inv40kw": 1
+    "address": "147 ถนนปากแคว ตำบลปากแคว อำเภอเมืองสุโขทัย จังหวัดสุโขทัย 64000",
+    "clientInfo": "129 กปภ.สาขาสุโขทัย",
+    "status": "In Progress",
+    "startDate": "2025-06-30T00:00:00Z",
+    "estimatedEndDate": "2025-08-29T00:00:00Z",
+    "actualEndDate": null,
+    "updatedAt": "2025-07-05T17:15:00Z",
+    "projectManager": {
+      "userId": "c73a80de-c8b2-4a8c-a881-17452dcd1118",
+      "username": "project.manager",
+      "email": "pm@company.com",
+      "fullName": "Project Manager",
+      "roleName": "Manager",
+      "isActive": true
     },
-    "fts": null,
-    "revenue": null,
-    "reports": {
-      "daily": "CLICK",
-      "weeklyRequest": "CLICK",
-      "weekly": "CLICK",
-      "monthly": "CLICK",
-      "photo": "CLICK"
+    "taskCount": 0,
+    "completedTaskCount": 0,
+    "team": "Solar Team Alpha",
+    "connectionType": "MV",
+    "connectionNotes": "ระบบจำหน่ายแรงสูง",
+    "totalCapacityKw": 136.8,
+    "pvModuleCount": 240,
+    "equipmentDetails": {
+      "inverter125kw": 1,
+      "inverter80kw": 0,
+      "inverter60kw": 5,
+      "inverter40kw": 1
     },
-    "schedule": {
-      "startDate": "6/30/2025",
-      "dueDate": "08/29/2025",
-      "durationDays": 60,
-      "countdownDays": 41
-    }
+    "ftsValue": 0,
+    "revenueValue": 0,
+    "pqmValue": 0,
+    "locationCoordinates": {
+      "latitude": 17.1453,
+      "longitude": 99.8195
+    },
+    "createdAt": "2025-07-05T17:15:00Z"
   },
   {
-    "id": 121,
+    "projectId": "121",
     "projectName": "สถานีผลิตน้ำพระธาตุผาแดง",
-    "client": "กปภ.สาขาแม่สอด",
-    "capacityKw": 184.68,
-    "panelCount": 324,
-    "team": null,
-    "zeroExport": "N",
-    "inverters": {
-      "inv125kw": 1,
-      "inv80kw": 1,
-      "inv60kw": 4,
-      "inv40kw": 1
+    "address": "258 ถนนพระธาตุผาแดง ตำบลแม่ป่า อำเภอแม่สอด จังหวัดตาก 63110",
+    "clientInfo": "121 กปภ.สาขาแม่สอด",
+    "status": "Planning",
+    "startDate": "2025-07-28T00:00:00Z",
+    "estimatedEndDate": "2025-09-26T00:00:00Z",
+    "actualEndDate": null,
+    "updatedAt": "2025-07-05T17:15:00Z",
+    "projectManager": {
+      "userId": "c73a80de-c8b2-4a8c-a881-17452dcd1118",
+      "username": "project.manager",
+      "email": "pm@company.com",
+      "fullName": "Project Manager",
+      "roleName": "Manager",
+      "isActive": true
     },
-    "fts": null,
-    "revenue": null,
-    "reports": {
-      "daily": "CLICK",
-      "weeklyRequest": "CLICK",
-      "weekly": "CLICK",
-      "monthly": "CLICK",
-      "photo": "CLICK"
+    "taskCount": 0,
+    "completedTaskCount": 0,
+    "team": "Solar Team Alpha",
+    "connectionType": "MV",
+    "connectionNotes": "ระบบจำหน่ายแรงสูง",
+    "totalCapacityKw": 184.68,
+    "pvModuleCount": 324,
+    "equipmentDetails": {
+      "inverter125kw": 1,
+      "inverter80kw": 1,
+      "inverter60kw": 4,
+      "inverter40kw": 1
     },
-    "schedule": {
-      "startDate": "7/28/2025",
-      "dueDate": "09/26/2025",
-      "durationDays": 60,
-      "countdownDays": 61
-    }
+    "ftsValue": 0,
+    "revenueValue": 0,
+    "pqmValue": 0,
+    "locationCoordinates": {
+      "latitude": 16.5467,
+      "longitude": 98.7114
+    },
+    "createdAt": "2025-07-05T17:15:00Z"
   },
   {
-    "id": 125,
+    "projectId": "125",
     "projectName": "สถานีผลิตน้ำโคกสลุด",
-    "client": "กปภ.สาขาพิจิตร",
-    "capacityKw": 100.32,
-    "panelCount": 176,
-    "team": null,
-    "zeroExport": "N",
-    "inverters": {
-      "inv125kw": 1,
-      "inv80kw": null,
-      "inv60kw": 3,
-      "inv40kw": 1
+    "address": "369 ถนนโคกสลุด ตำบลโคกสลุด อำเภอเมืองพิจิตร จังหวัดพิจิตร 66000",
+    "clientInfo": "125 กปภ.สาขาพิจิตร",
+    "status": "Planning",
+    "startDate": "2025-07-28T00:00:00Z",
+    "estimatedEndDate": "2025-09-26T00:00:00Z",
+    "actualEndDate": null,
+    "updatedAt": "2025-07-05T17:15:00Z",
+    "projectManager": {
+      "userId": "c73a80de-c8b2-4a8c-a881-17452dcd1118",
+      "username": "project.manager",
+      "email": "pm@company.com",
+      "fullName": "Project Manager",
+      "roleName": "Manager",
+      "isActive": true
     },
-    "fts": null,
-    "revenue": null,
-    "reports": {
-      "daily": "CLICK",
-      "weeklyRequest": "CLICK",
-      "weekly": "CLICK",
-      "monthly": "CLICK",
-      "photo": "CLICK"
+    "taskCount": 0,
+    "completedTaskCount": 0,
+    "team": "Solar Team Alpha",
+    "connectionType": "LV",
+    "connectionNotes": "ระบบจำหน่ายแรงต่ำ",
+    "totalCapacityKw": 100.32,
+    "pvModuleCount": 176,
+    "equipmentDetails": {
+      "inverter125kw": 1,
+      "inverter80kw": 0,
+      "inverter60kw": 3,
+      "inverter40kw": 1
     },
-    "schedule": {
-      "startDate": "7/28/2025",
-      "dueDate": "09/26/2025",
-      "durationDays": 60,
-      "countdownDays": 61
-    }
+    "ftsValue": 0,
+    "revenueValue": 0,
+    "pqmValue": 0,
+    "locationCoordinates": {
+      "latitude": 16.4389,
+      "longitude": 100.1278
+    },
+    "createdAt": "2025-07-05T17:15:00Z"
   },
   {
-    "id": 130,
+    "projectId": "130",
     "projectName": "สถานีผลิตน้ำทุ่งทะเลหลวง",
-    "client": "กปภ.สาขาสุโขทัย",
-    "capacityKw": 124.26,
-    "panelCount": 218,
-    "team": null,
-    "zeroExport": "N",
-    "inverters": {
-      "inv125kw": 1,
-      "inv80kw": null,
-      "inv60kw": 3,
-      "inv40kw": 1
+    "address": "741 ถนนทุ่งทะเลหลวง ตำบลทุ่งทะเลหลวง อำเภอศรีสัชนาลัย จังหวัดสุโขทัย 64130",
+    "clientInfo": "130 กปภ.สาขาสุโขทัย",
+    "status": "Planning",
+    "startDate": "2025-07-28T00:00:00Z",
+    "estimatedEndDate": "2025-09-26T00:00:00Z",
+    "actualEndDate": null,
+    "updatedAt": "2025-07-05T17:15:00Z",
+    "projectManager": {
+      "userId": "c73a80de-c8b2-4a8c-a881-17452dcd1118",
+      "username": "project.manager",
+      "email": "pm@company.com",
+      "fullName": "Project Manager",
+      "roleName": "Manager",
+      "isActive": true
     },
-    "fts": null,
-    "revenue": null,
-    "reports": {
-      "daily": "CLICK",
-      "weeklyRequest": "CLICK",
-      "weekly": "CLICK",
-      "monthly": "CLICK",
-      "photo": "CLICK"
+    "taskCount": 0,
+    "completedTaskCount": 0,
+    "team": "Solar Team Alpha",
+    "connectionType": "LV",
+    "connectionNotes": "ระบบจำหน่ายแรงต่ำ",
+    "totalCapacityKw": 124.26,
+    "pvModuleCount": 218,
+    "equipmentDetails": {
+      "inverter125kw": 1,
+      "inverter80kw": 0,
+      "inverter60kw": 3,
+      "inverter40kw": 1
     },
-    "schedule": {
-      "startDate": "7/28/2025",
-      "dueDate": "09/26/2025",
-      "durationDays": 60,
-      "countdownDays": 61
-    }
+    "ftsValue": 0,
+    "revenueValue": 0,
+    "pqmValue": 0,
+    "locationCoordinates": {
+      "latitude": 17.0247,
+      "longitude": 99.7539
+    },
+    "createdAt": "2025-07-05T17:15:00Z"
   },
   {
-    "id": 131,
+    "projectId": "131",
     "projectName": "สถานีผลิตน้ำปากฝาง",
-    "client": "กปภ.สาขาอุตรดิตถ์",
-    "capacityKw": 104.88,
-    "panelCount": 184,
-    "team": null,
-    "zeroExport": "N",
-    "inverters": {
-      "inv125kw": 1,
-      "inv80kw": null,
-      "inv60kw": 4,
-      "inv40kw": 1
+    "address": "852 ถนนปากฝาง ตำบลปากฝาง อำเภอเมืองอุตรดิตถ์ จังหวัดอุตรดิตถ์ 53000",
+    "clientInfo": "131 กปภ.สาขาอุตรดิตถ์",
+    "status": "Planning",
+    "startDate": "2025-07-28T00:00:00Z",
+    "estimatedEndDate": "2025-09-26T00:00:00Z",
+    "actualEndDate": null,
+    "updatedAt": "2025-07-05T17:15:00Z",
+    "projectManager": {
+      "userId": "c73a80de-c8b2-4a8c-a881-17452dcd1118",
+      "username": "project.manager",
+      "email": "pm@company.com",
+      "fullName": "Project Manager",
+      "roleName": "Manager",
+      "isActive": true
     },
-    "fts": null,
-    "revenue": null,
-    "reports": {
-      "daily": "CLICK",
-      "weeklyRequest": "CLICK",
-      "weekly": "CLICK",
-      "monthly": "CLICK",
-      "photo": "CLICK"
+    "taskCount": 0,
+    "completedTaskCount": 0,
+    "team": "Solar Team Alpha",
+    "connectionType": "LV",
+    "connectionNotes": "ระบบจำหน่ายแรงต่ำ",
+    "totalCapacityKw": 104.88,
+    "pvModuleCount": 184,
+    "equipmentDetails": {
+      "inverter125kw": 1,
+      "inverter80kw": 0,
+      "inverter60kw": 4,
+      "inverter40kw": 1
     },
-    "schedule": {
-      "startDate": "7/28/2025",
-      "dueDate": "09/26/2025",
-      "durationDays": 60,
-      "countdownDays": 61
-    }
+    "ftsValue": 0,
+    "revenueValue": 0,
+    "pqmValue": 0,
+    "locationCoordinates": {
+      "latitude": 17.6158,
+      "longitude": 100.1108
+    },
+    "createdAt": "2025-07-05T17:15:00Z"
   },
   {
-    "id": 115,
+    "projectId": "115",
     "projectName": "สถานีผลิตน้ำพระบาท สระ 1",
-    "client": "กปภ.สาขาลำปาง",
-    "capacityKw": 254.22,
-    "panelCount": 446,
-    "team": null,
-    "zeroExport": "N",
-    "inverters": {
-      "inv125kw": 2,
-      "inv80kw": null,
-      "inv60kw": 7,
-      "inv40kw": 1
+    "address": "963 ถนนพระบาท ตำบลพระบาท อำเภอเมืองลำปาง จังหวัดลำปาง 52000",
+    "clientInfo": "115 กปภ.สาขาลำปาง",
+    "status": "Planning",
+    "startDate": "2025-08-01T00:00:00Z",
+    "estimatedEndDate": "2025-09-30T00:00:00Z",
+    "actualEndDate": null,
+    "updatedAt": "2025-07-05T17:15:00Z",
+    "projectManager": {
+      "userId": "c73a80de-c8b2-4a8c-a881-17452dcd1118",
+      "username": "project.manager",
+      "email": "pm@company.com",
+      "fullName": "Project Manager",
+      "roleName": "Manager",
+      "isActive": true
     },
-    "fts": null,
-    "revenue": null,
-    "reports": {
-      "daily": "CLICK",
-      "weeklyRequest": "CLICK",
-      "weekly": "CLICK",
-      "monthly": "CLICK",
-      "photo": "CLICK"
+    "taskCount": 0,
+    "completedTaskCount": 0,
+    "team": "Solar Team Alpha",
+    "connectionType": "MV",
+    "connectionNotes": "ระบบจำหน่ายแรงสูง",
+    "totalCapacityKw": 254.22,
+    "pvModuleCount": 446,
+    "equipmentDetails": {
+      "inverter125kw": 2,
+      "inverter80kw": 0,
+      "inverter60kw": 7,
+      "inverter40kw": 1
     },
-    "schedule": {
-      "startDate": "8/1/2025",
-      "dueDate": "09/30/2025",
-      "durationDays": 60,
-      "countdownDays": 63
-    }
+    "ftsValue": 0,
+    "revenueValue": 0,
+    "pqmValue": 0,
+    "locationCoordinates": {
+      "latitude": 18.2647,
+      "longitude": 99.5061
+    },
+    "createdAt": "2025-07-05T17:15:00Z"
   },
   {
-    "id": 116,
+    "projectId": "116",
     "projectName": "สำนักงานประปาแม่เมาะ",
-    "client": "กปภ.สาขาลำปาง",
-    "capacityKw": 102.6,
-    "panelCount": 180,
-    "team": null,
-    "zeroExport": "N",
-    "inverters": {
-      "inv125kw": 1,
-      "inv80kw": null,
-      "inv60kw": 3,
-      "inv40kw": 1
+    "address": "159 ถนนแม่เมาะ ตำบลแม่เมาะ อำเภอแม่เมาะ จังหวัดลำปาง 52120",
+    "clientInfo": "116 กปภ.สาขาลำปาง",
+    "status": "Planning",
+    "startDate": "2025-08-01T00:00:00Z",
+    "estimatedEndDate": "2025-09-30T00:00:00Z",
+    "actualEndDate": null,
+    "updatedAt": "2025-07-05T17:15:00Z",
+    "projectManager": {
+      "userId": "c73a80de-c8b2-4a8c-a881-17452dcd1118",
+      "username": "project.manager",
+      "email": "pm@company.com",
+      "fullName": "Project Manager",
+      "roleName": "Manager",
+      "isActive": true
     },
-    "fts": null,
-    "revenue": null,
-    "reports": {
-      "daily": "CLICK",
-      "weeklyRequest": "CLICK",
-      "weekly": "CLICK",
-      "monthly": "CLICK",
-      "photo": "CLICK"
+    "taskCount": 0,
+    "completedTaskCount": 0,
+    "team": "Solar Team Alpha",
+    "connectionType": "LV",
+    "connectionNotes": "ระบบจำหน่ายแรงต่ำ",
+    "totalCapacityKw": 102.6,
+    "pvModuleCount": 180,
+    "equipmentDetails": {
+      "inverter125kw": 1,
+      "inverter80kw": 0,
+      "inverter60kw": 3,
+      "inverter40kw": 1
     },
-    "schedule": {
-      "startDate": "8/1/2025",
-      "dueDate": "09/30/2025",
-      "durationDays": 60,
-      "countdownDays": 63
-    }
+    "ftsValue": 0,
+    "revenueValue": 0,
+    "pqmValue": 0,
+    "locationCoordinates": {
+      "latitude": 18.1461,
+      "longitude": 99.4711
+    },
+    "createdAt": "2025-07-05T17:15:00Z"
   },
   {
-    "id": 117,
+    "projectId": "117",
     "projectName": "โรงกรองน้ำแรงสูงริมปิง (ใหม่)",
-    "client": "กปภ.สาขาลำพูน",
-    "capacityKw": 181.26,
-    "panelCount": 318,
-    "team": null,
-    "zeroExport": "N",
-    "inverters": {
-      "inv125kw": 2,
-      "inv80kw": null,
-      "inv60kw": 5,
-      "inv40kw": 1
+    "address": "753 ถนนริมปิง ตำบลในเมือง อำเภอเมืองลำพูน จังหวัดลำพูน 51000",
+    "clientInfo": "117 กปภ.สาขาลำพูน",
+    "status": "Planning",
+    "startDate": "2025-08-01T00:00:00Z",
+    "estimatedEndDate": "2025-09-30T00:00:00Z",
+    "actualEndDate": null,
+    "updatedAt": "2025-07-05T17:15:00Z",
+    "projectManager": {
+      "userId": "c73a80de-c8b2-4a8c-a881-17452dcd1118",
+      "username": "project.manager",
+      "email": "pm@company.com",
+      "fullName": "Project Manager",
+      "roleName": "Manager",
+      "isActive": true
     },
-    "fts": null,
-    "revenue": null,
-    "reports": {
-      "daily": "CLICK",
-      "weeklyRequest": "CLICK",
-      "weekly": "CLICK",
-      "monthly": "CLICK",
-      "photo": "CLICK"
+    "taskCount": 0,
+    "completedTaskCount": 0,
+    "team": "Solar Team Alpha",
+    "connectionType": "MV",
+    "connectionNotes": "ระบบจำหน่ายแรงสูง",
+    "totalCapacityKw": 181.26,
+    "pvModuleCount": 318,
+    "equipmentDetails": {
+      "inverter125kw": 2,
+      "inverter80kw": 0,
+      "inverter60kw": 5,
+      "inverter40kw": 1
     },
-    "schedule": {
-      "startDate": "8/1/2025",
-      "dueDate": "09/30/2025",
-      "durationDays": 60,
-      "countdownDays": 63
-    }
+    "ftsValue": 0,
+    "revenueValue": 0,
+    "pqmValue": 0,
+    "locationCoordinates": {
+      "latitude": 18.5794,
+      "longitude": 99.0131
+    },
+    "createdAt": "2025-07-05T17:15:00Z"
   },
   {
-    "id": 118,
+    "projectId": "118",
     "projectName": "สำนักงานการประปาส่วนภูมิภาคสาขาลำพูน",
-    "client": "กปภ.สาขาลำพูน",
-    "capacityKw": 94.62,
-    "panelCount": 166,
-    "team": null,
-    "zeroExport": "N",
-    "inverters": {
-      "inv125kw": 1,
-      "inv80kw": null,
-      "inv60kw": 3,
-      "inv40kw": 1
+    "address": "357 ถนนลำพูน ตำบลในเมือง อำเภอเมืองลำพูน จังหวัดลำพูน 51000",
+    "clientInfo": "118 กปภ.สาขาลำพูน",
+    "status": "Planning",
+    "startDate": "2025-08-01T00:00:00Z",
+    "estimatedEndDate": "2025-09-30T00:00:00Z",
+    "actualEndDate": null,
+    "updatedAt": "2025-07-05T17:15:00Z",
+    "projectManager": {
+      "userId": "c73a80de-c8b2-4a8c-a881-17452dcd1118",
+      "username": "project.manager",
+      "email": "pm@company.com",
+      "fullName": "Project Manager",
+      "roleName": "Manager",
+      "isActive": true
     },
-    "fts": null,
-    "revenue": null,
-    "reports": {
-      "daily": "CLICK",
-      "weeklyRequest": "CLICK",
-      "weekly": "CLICK",
-      "monthly": "CLICK",
-      "photo": "CLICK"
+    "taskCount": 0,
+    "completedTaskCount": 0,
+    "team": "Solar Team Alpha",
+    "connectionType": "LV",
+    "connectionNotes": "ระบบจำหน่ายแรงต่ำ",
+    "totalCapacityKw": 94.62,
+    "pvModuleCount": 166,
+    "equipmentDetails": {
+      "inverter125kw": 1,
+      "inverter80kw": 0,
+      "inverter60kw": 3,
+      "inverter40kw": 1
     },
-    "schedule": {
-      "startDate": "8/1/2025",
-      "dueDate": "09/30/2025",
-      "durationDays": 60,
-      "countdownDays": 63
-    }
+    "ftsValue": 0,
+    "revenueValue": 0,
+    "pqmValue": 0,
+    "locationCoordinates": {
+      "latitude": 18.5847,
+      "longitude": 99.0169
+    },
+    "createdAt": "2025-07-05T17:15:00Z"
   },
   {
-    "id": 119,
+    "projectId": "119",
     "projectName": "สถานีผลิตน้ำประปาแพร่",
-    "client": "กปภ.สาขาแพร่",
-    "capacityKw": 220.02,
-    "panelCount": 386,
-    "team": null,
-    "zeroExport": "N",
-    "inverters": {
-      "inv125kw": 2,
-      "inv80kw": null,
-      "inv60kw": 8,
-      "inv40kw": 2
+    "address": "486 ถนนแพร่ ตำบลในเมือง อำเภอเมืองแพร่ จังหวัดแพร่ 54000",
+    "clientInfo": "119 กปภ.สาขาแพร่",
+    "status": "In Progress",
+    "startDate": "2025-08-01T00:00:00Z",
+    "estimatedEndDate": "2025-09-30T00:00:00Z",
+    "actualEndDate": null,
+    "updatedAt": "2025-07-05T17:15:00Z",
+    "projectManager": {
+      "userId": "c73a80de-c8b2-4a8c-a881-17452dcd1118",
+      "username": "project.manager",
+      "email": "pm@company.com",
+      "fullName": "Project Manager",
+      "roleName": "Manager",
+      "isActive": true
     },
-    "fts": null,
-    "revenue": null,
-    "reports": {
-      "daily": "CLICK",
-      "weeklyRequest": "CLICK",
-      "weekly": "CLICK",
-      "monthly": "CLICK",
-      "photo": "CLICK"
+    "taskCount": 0,
+    "completedTaskCount": 0,
+    "team": "Solar Team Alpha",
+    "connectionType": "MV",
+    "connectionNotes": "ระบบจำหน่ายแรงสูง",
+    "totalCapacityKw": 220.02,
+    "pvModuleCount": 386,
+    "equipmentDetails": {
+      "inverter125kw": 2,
+      "inverter80kw": 0,
+      "inverter60kw": 8,
+      "inverter40kw": 2
     },
-    "schedule": {
-      "startDate": "8/1/2025",
-      "dueDate": "09/30/2025",
-      "durationDays": 60,
-      "countdownDays": 63
-    }
+    "ftsValue": 0,
+    "revenueValue": 0,
+    "pqmValue": 0,
+    "locationCoordinates": {
+      "latitude": 18.4761,
+      "longitude": 100.5153
+    },
+    "createdAt": "2025-07-05T17:15:00Z"
   },
   {
-    "id": 120,
+    "projectId": "120",
     "projectName": "สถานีผลิตน้ำราษฎร์อำนวย",
-    "client": "กปภ.สาขาน่าน",
-    "capacityKw": 143.64,
-    "panelCount": 252,
-    "team": null,
-    "zeroExport": "N",
-    "inverters": {
-      "inv125kw": 1,
-      "inv80kw": null,
-      "inv60kw": 3,
-      "inv40kw": 1
+    "address": "654 ถนนราษฎร์อำนวย ตำบลราษฎร์อำนวย อำเภอเมืองน่าน จังหวัดน่าน 55000",
+    "clientInfo": "120 กปภ.สาขาน่าน",
+    "status": "Planning",
+    "startDate": "2025-08-01T00:00:00Z",
+    "estimatedEndDate": "2025-09-30T00:00:00Z",
+    "actualEndDate": null,
+    "updatedAt": "2025-07-05T17:15:00Z",
+    "projectManager": {
+      "userId": "c73a80de-c8b2-4a8c-a881-17452dcd1118",
+      "username": "project.manager",
+      "email": "pm@company.com",
+      "fullName": "Project Manager",
+      "roleName": "Manager",
+      "isActive": true
     },
-    "fts": null,
-    "revenue": null,
-    "reports": {
-      "daily": "CLICK",
-      "weeklyRequest": "CLICK",
-      "weekly": "CLICK",
-      "monthly": "CLICK",
-      "photo": "CLICK"
+    "taskCount": 0,
+    "completedTaskCount": 0,
+    "team": "Solar Team Alpha",
+    "connectionType": "MV",
+    "connectionNotes": "ระบบจำหน่ายแรงสูง",
+    "totalCapacityKw": 143.64,
+    "pvModuleCount": 252,
+    "equipmentDetails": {
+      "inverter125kw": 1,
+      "inverter80kw": 0,
+      "inverter60kw": 3,
+      "inverter40kw": 1
     },
-    "schedule": {
-      "startDate": "8/1/2025",
-      "dueDate": "09/30/2025",
-      "durationDays": 60,
-      "countdownDays": 63
-    }
+    "ftsValue": 0,
+    "revenueValue": 0,
+    "pqmValue": 0,
+    "locationCoordinates": {
+      "latitude": 19.0764,
+      "longitude": 100.7747
+    },
+    "createdAt": "2025-07-05T17:15:00Z"
   }
 ]

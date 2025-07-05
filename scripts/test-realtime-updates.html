@@ -1,0 +1,87 @@
+# 🧪 Real-Time Live Updates Testing Guide
+
+**📅 Date**: July 5, 2025  
+**🎯 Purpose**: Test real-time data synchronization across all API endpoints  
+**⚡ Feature**: SignalR WebSocket live updates
+
+## 🚀 Quick Test Setup
+
+### 1. Start the API Server
+```bash
+# Navigate to the project directory
+cd /Users/chanthawat/Development/dotnet-rest-api
+
+# Start the server with watch mode for development
+dotnet watch run --urls "http://localhost:5001"
+```
+
+### 2. Test SignalR Connection
+```bash
+# Check if SignalR hub is accessible
+curl -i http://localhost:5001/notificationHub
+
+# Check health endpoint
+curl http://localhost:5001/health
+```
+
+## 🔧 Interactive Testing Methods
+
+### Method 1: Browser Console Testing (Immediate)
+
+Open two browser tabs to `http://localhost:5001/swagger` and use browser console:
+
+```javascript
+// Tab 1: Setup SignalR connection
+const connection = new signalR.HubConnectionBuilder()
+    .withUrl("http://localhost:5001/notificationHub")
+    .withAutomaticReconnect()
+    .build();
+
+// Listen for all real-time events
+connection.on("ProjectCreated", (data) => {
+    console.log("🚀 Project Created:", data);
+});
+
+connection.on("ProjectUpdated", (data) => {
+    console.log("📝 Project Updated:", data);
+});
+
+connection.on("TaskCreated", (data) => {
+    console.log("✅ Task Created:", data);
+});
+
+connection.on("DailyReportCreated", (data) => {
+    console.log("📊 Daily Report Created:", data);
+});
+
+connection.on("ReceiveNotification", (data) => {
+    console.log("🔔 Notification:", data);
+});
+
+// Start connection
+await connection.start();
+console.log("✅ SignalR Connected - Ready to receive real-time updates!");
+```
+
+```javascript
+// Tab 2: Trigger API calls to test real-time updates
+// Use Swagger UI or make direct API calls
+
+// Example: Create a project and watch Tab 1 for real-time updates
+fetch('http://localhost:5001/api/v1/projects', {
+    method: 'POST',
+    headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer YOUR_JWT_TOKEN'
+    },
+    body: JSON.stringify({
+        projectName: "Real-Time Test Project",
+        address: "123 Test Street",
+        clientInfo: "Test Client"
+    })
+});
+```
+
+### Method 2: Automated Testing Script
+
+I'll create a comprehensive test script:

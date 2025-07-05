@@ -1,0 +1,122 @@
+[
+  {
+    "projectId": "107",
+    "projectName": "สำนักงานประปาเขต 9",
+    "address": null,
+    "clientInfo": "107 กปภ.เขต 9",
+    "status": "Planning",
+    "startDate": "2025-06-09T00:00:00Z",
+    "estimatedEndDate": "2025-08-08T00:00:00Z",
+    "actualEndDate": null,
+    "updatedAt": "2025-07-05T17:15:00Z",
+    "projectManager": {
+      "userId": "c73a80de-c8b2-4a8c-a881-17452dcd1118",
+      "username": "project.manager",
+      "email": "pm@company.com",
+      "fullName": "Project Manager",
+      "roleName": "Manager",
+      "isActive": true
+    },
+    "taskCount": 0,
+    "completedTaskCount": 0,
+    "team": "Solar Team Alpha",
+    "connectionType": "MV",
+    "connectionNotes": "ระบบจำหน่ายแรงสูง",
+    "totalCapacityKw": 125.4,
+    "pvModuleCount": 220,
+    "equipmentDetails": {
+      "inverter125kw": 1,
+      "inverter80kw": 0,
+      "inverter60kw": 4,
+      "inverter40kw": 1
+    },
+    "ftsValue": 0,
+    "revenueValue": 0,
+    "pqmValue": 0,
+    "locationCoordinates": {
+      "latitude": 0.0,
+      "longitude": 0.0
+    },
+    "createdAt": "2025-07-05T17:15:00Z"
+  },
+  {
+    "projectId": "108",
+    "projectName": "สถานีผลิตน้ำแม่กวง",
+    "address": null,
+    "clientInfo": "108 กปภ.สาขาเชียงใหม่",
+    "status": "Planning",
+    "startDate": "2025-06-09T00:00:00Z",
+    "estimatedEndDate": "2025-08-08T00:00:00Z",
+    "actualEndDate": null,
+    "updatedAt": "2025-07-05T17:15:00Z",
+    "projectManager": {
+      "userId": "c73a80de-c8b2-4a8c-a881-17452dcd1118",
+      "username": "project.manager",
+      "email": "pm@company.com",
+      "fullName": "Project Manager",
+      "roleName": "Manager",
+      "isActive": true
+    },
+    "taskCount": 0,
+    "completedTaskCount": 0,
+    "team": "Solar Team Alpha",
+    "connectionType": "MV",
+    "connectionNotes": "ระบบจำหน่ายแรงสูง",
+    "totalCapacityKw": 112.86,
+    "pvModuleCount": 198,
+    "equipmentDetails": {
+      "inverter125kw": 1,
+      "inverter80kw": 0,
+      "inverter60kw": 3,
+      "inverter40kw": 1
+    },
+    "ftsValue": 0,
+    "revenueValue": 0,
+    "pqmValue": 0,
+    "locationCoordinates": {
+      "latitude": 0.0,
+      "longitude": 0.0
+    },
+    "createdAt": "2025-07-05T17:15:00Z"
+  },
+  {
+    "projectId": "109",
+    "projectName": "สถานีผลิตน้ำแม่แฝก",
+    "address": null,
+    "clientInfo": "109 กปภ.สาขาเชียงใหม่",
+    "status": "Planning",
+    "startDate": "2025-06-09T00:00:00Z",
+    "estimatedEndDate": "2025-09-07T00:00:00Z",
+    "actualEndDate": null,
+    "updatedAt": "2025-07-05T17:15:00Z",
+    "projectManager": {
+      "userId": "c73a80de-c8b2-4a8c-a881-17452dcd1118",
+      "username": "project.manager",
+      "email": "pm@company.com",
+      "fullName": "Project Manager",
+      "roleName": "Manager",
+      "isActive": true
+    },
+    "taskCount": 0,
+    "completedTaskCount": 0,
+    "team": "Solar Team Alpha",
+    "connectionType": "MV",
+    "connectionNotes": "ระบบจำหน่ายแรงสูง",
+    "totalCapacityKw": 314.64,
+    "pvModuleCount": 552,
+    "equipmentDetails": {
+      "inverter125kw": 2,
+      "inverter80kw": 1,
+      "inverter60kw": 8,
+      "inverter40kw": 1
+    },
+    "ftsValue": 0,
+    "revenueValue": 0,
+    "pqmValue": 0,
+    "locationCoordinates": {
+      "latitude": 0.0,
+      "longitude": 0.0
+    },
+    "createdAt": "2025-07-05T17:15:00Z"
+  }
+]
