@@ -1,9 +1,49 @@
 # 📊 Daily Reports
 
-**🔒 Authentication Required**  
-**🎯 Role Required**: Admin, Manager (full access), Users (create own reports), All authenticated users (view)
+**🔒 Authentication Required: JWT Bearer Token**  
+**🎯 Role Requirements**: 
+- **Admin, Manager**: Full access to all operations
+- **ProjectManager**: Project-specific management access
+- **User**: Create and manage own reports
+- **All authenticated users**: View approved reports
 
 Daily reports provide comprehensive tracking of daily work activities, progress, safety compliance, and resource utilization within the context of a specific **Project**. Each Daily Report belongs to a Project and serves as a detailed work log, progress tracker, and compliance record for solar installation projects. Daily reports support advanced workflow management, approval processes, and AI-powered insights for project optimization.
+
+## 🔐 Authorization & Access Control
+
+The Daily Reports API implements JWT-based authentication with role-based access control:
+
+### 🔑 **Login Required**
+All endpoints require a valid JWT token obtained from the authentication endpoint:
+
+```bash
+# Login to get JWT token (Admin account)
+curl -X POST "http://localhost:5001/api/v1/auth/login" \
+  -H "Content-Type: application/json" \
+  -d '{"username": "admin@example.com", "password": "Admin123!"}'
+
+# Alternative: Login with username/email flexibility
+curl -X POST "http://localhost:5001/api/v1/auth/login" \
+  -H "Content-Type: application/json" \
+  -d '{"username": "admin", "password": "Admin123!"}'
+
+# Use token in Authorization header
+curl -X GET "http://localhost:5001/api/v1/daily-reports" \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN"
+```
+
+**Default Test Accounts:**
+- **Admin**: `admin@example.com` / `Admin123!` (Full system access)
+- **Manager**: `manager@example.com` / `Manager123!` (Management access)
+- **User**: `user@example.com` / `User123!` (Limited access)
+
+**Login Flexibility**: The system accepts either username or email in the same login field.
+
+### 👥 **Role-Based Permissions**
+- **🔐 [Authorize]**: All endpoints require authentication
+- **🔐 [Authorize(Roles = "Administrator,Manager")]**: Admin/Manager only
+- **🔐 [Authorize(Roles = "Administrator,Manager,ProjectManager")]**: Management roles
+- **🔐 [Authorize(Roles = "Administrator,ProjectManager")]**: Admin/Project Manager only
 
 ## 🏗️ Project-Daily Report Relationship
 
@@ -17,42 +57,42 @@ Daily reports provide comprehensive tracking of daily work activities, progress,
 
 ## ⚡ Daily Report Capabilities
 
-### Admin & Manager
-- ✅ Create reports for any project and team member
-- ✅ View all reports across projects with advanced filtering
-- ✅ Update any report details and override submission rules
-- ✅ Approve/reject reports with workflow management
-- ✅ Generate comprehensive summary reports and analytics
-- ✅ Export report data in multiple formats (PDF, Excel, CSV)
-- ✅ Access AI-powered insights and recommendations
-- ✅ Configure report templates and validation rules
-- ✅ Manage bulk operations and approval workflows
-- ✅ Delete reports if needed (with audit trail)
+### 🔐 Administrator & Manager (Full System Access)
+- ✅ **Full CRUD Operations**: Create, read, update, delete any daily report
+- ✅ **Cross-Project Access**: View and manage reports across all projects
+- ✅ **Advanced Analytics**: Access comprehensive analytics and AI insights
+- ✅ **Workflow Management**: Approve/reject reports with bulk operations
+- ✅ **Export & Reporting**: Generate reports in multiple formats (PDF, Excel, CSV)
+- ✅ **Template Management**: Configure report templates and validation rules
+- ✅ **User Management**: Manage team assignments and permissions
+- ✅ **Audit Operations**: Full access to approval history and audit trails
 
-### Project Managers
-- ✅ Create and manage reports for assigned projects
-- ✅ View team reports with analytics and insights
-- ✅ Approve reports within their project scope
-- ✅ Generate project-specific progress reports
-- ✅ Access safety and quality analytics
-- ✅ Configure project-specific report templates
+### 🏗️ Project Manager (Project-Scoped Access)
+- ✅ **Project-Specific Management**: Full control within assigned projects
+- ✅ **Team Report Oversight**: View and approve team member reports
+- ✅ **Project Analytics**: Access project-specific insights and trends
+- ✅ **Approval Authority**: Approve/reject reports for managed projects
+- ✅ **Export Project Data**: Generate project-specific reports and analytics
+- ✅ **Template Configuration**: Customize templates for managed projects
+- ❌ **Cross-Project Access**: Limited to assigned projects only
 
-### Users (Technicians)
-- ✅ Create their own daily reports with guided templates
-- ✅ Update their own reports (within configurable time limit)
-- ✅ Attach photos, documents, and evidence to reports
-- ✅ Report safety incidents, quality issues, and blockers
-- ✅ Track personal productivity and contribution metrics
-- ✅ Submit reports for approval workflow
-- ❌ Cannot modify others' reports
-- ❌ Cannot delete submitted reports
-- ❌ Limited access to analytics and insights
+### 👷 User/Technician (Individual Access)
+- ✅ **Personal Reports**: Create and manage own daily reports
+- ✅ **Photo Attachments**: Add progress photos and documentation
+- ✅ **Status Tracking**: Submit reports for approval workflow
+- ✅ **View Own History**: Access personal report history and status
+- ✅ **Template Guidance**: Use project-specific report templates
+- ❌ **Others' Reports**: Cannot view or modify other users' reports
+- ❌ **Management Functions**: No approval or administrative capabilities
+- ❌ **Cross-Project Data**: Limited to assigned project reports
 
-### Viewers
-- ✅ Read-only access to approved reports
-- ✅ View project progress summaries
-- ✅ Access basic analytics and charts
-- ❌ Cannot create, edit, or approve reports
+### 👀 Viewer (Read-Only Access)
+- ✅ **View Approved Reports**: Read-only access to approved daily reports
+- ✅ **Basic Analytics**: View project progress summaries and charts
+- ✅ **Public Information**: Access general project status and milestones
+- ❌ **Report Creation**: Cannot create or modify reports
+- ❌ **Workflow Actions**: No approval or administrative capabilities
+- ❌ **Sensitive Data**: Limited access to detailed operational information
 
 ## 🎯 Daily Report Features & Capabilities
 
@@ -82,37 +122,71 @@ Daily reports provide comprehensive tracking of daily work activities, progress,
 - **Calendar Integration**: Schedule coordination with project timelines and resource allocation
 - **Notification System**: Automated alerts for approvals, issues, and milestone achievements
 
-## � API Overview
+## 🚀 API Overview
 
-The Daily Reports API provides comprehensive endpoints for managing daily work reports with the following capabilities:
+The Daily Reports API provides comprehensive endpoints for managing daily work reports with JWT authentication and role-based authorization. All endpoints require a valid Bearer token.
 
-### 📖 Core CRUD Operations
-- **Create Enhanced Reports**: `/api/v1/daily-reports` and `/api/v1/daily-reports/enhanced`
-- **Retrieve Reports**: `/api/v1/daily-reports`, `/api/v1/daily-reports/{id}`, `/api/v1/daily-reports/projects/{projectId}`
-- **Update Reports**: `/api/v1/daily-reports/{id}` (with role-based time restrictions)
-- **Delete Reports**: `/api/v1/daily-reports/{id}` (Admin/Manager only with audit trail)
+### � **Base URL & Authentication**
+```
+Base URL: http://localhost:5001/api/v1/daily-reports
+Authentication: Bearer JWT Token
+Content-Type: application/json
+```
 
-### 🔄 Workflow Management
-- **Approval Operations**: Submit, approve, reject, and bulk operations
-- **Status Tracking**: Draft → Submitted → Approved/Rejected/Revision Required
-- **History Tracking**: Complete audit trail of all report modifications and approvals
+### 📖 **Core CRUD Operations**
+| Endpoint | Method | Authorization | Description |
+|----------|--------|---------------|-------------|
+| `/` | GET | All Users | Get all daily reports with filtering |
+| `/{id}` | GET | All Users | Get specific daily report by ID |
+| `/` | POST | All Users | Create new daily report |
+| `/enhanced` | POST | All Users | Create enhanced daily report with validation |
+| `/{id}` | PUT | Owner/Admin/Manager | Update existing daily report |
+| `/{id}` | DELETE | Admin/Manager | Delete daily report |
 
-### 📊 Analytics & Reporting
-- **Project Analytics**: `/api/v1/daily-reports/projects/{projectId}/analytics`
-- **Progress Reports**: `/api/v1/daily-reports/projects/{projectId}/weekly-report`
-- **AI Insights**: `/api/v1/daily-reports/projects/{projectId}/insights`
-- **Export Options**: Enhanced export with multiple formats and comprehensive data
+### 🔄 **Workflow Management**
+| Endpoint | Method | Authorization | Description |
+|----------|--------|---------------|-------------|
+| `/{id}/submit` | POST | Owner/Admin/Manager | Submit report for approval |
+| `/{id}/approve` | POST | Admin/ProjectManager | Approve submitted report |
+| `/{id}/reject` | POST | Admin/ProjectManager | Reject submitted report |
+| `/pending-approval` | GET | Admin/Manager/ProjectManager | Get pending approvals |
+| `/{reportId}/approval-history` | GET | Admin/Manager/ProjectManager | Get approval history |
 
-### 🔧 Configuration & Templates
-- **Template Management**: Project-specific report templates with validation rules
-- **Validation Engine**: Real-time validation with suggestions and auto-corrections
-- **Bulk Operations**: Mass operations for efficiency at scale
+### 📊 **Analytics & Insights**
+| Endpoint | Method | Authorization | Description |
+|----------|--------|---------------|-------------|
+| `/projects/{projectId}/analytics` | GET | Admin/Manager/ProjectManager | Get project analytics |
+| `/projects/{projectId}/weekly-report` | GET | Admin/Manager/ProjectManager | Generate weekly report |
+| `/projects/{projectId}/insights` | GET | Admin/Manager/ProjectManager | Get AI-powered insights |
+| `/weekly-summary` | GET | Admin/Manager | Get weekly summary |
 
-## �📋 Get All Daily Reports
+### 🔧 **Bulk Operations**
+| Endpoint | Method | Authorization | Description |
+|----------|--------|---------------|-------------|
+| `/bulk-approve` | POST | Admin/Manager/ProjectManager | Bulk approve reports |
+| `/bulk-reject` | POST | Admin/Manager/ProjectManager | Bulk reject reports |
+| `/export` | GET | Admin/Manager | Export reports (basic) |
+| `/export-enhanced` | POST | Admin/Manager/ProjectManager | Export with analytics |
 
-**GET** `/api/v1/daily-reports`
+### 📎 **File Management**
+| Endpoint | Method | Authorization | Description |
+|----------|--------|---------------|-------------|
+| `/{id}/attachments` | POST | Owner/Admin/Manager | Add file attachment |
+| `/validate` | POST | All Users | Validate report data |
+| `/projects/{projectId}/templates` | GET | All Users | Get project templates |
 
-Retrieve daily reports with filtering options.
+## 📋 Get All Daily Reports
+
+**GET** `/api/v1/daily-reports`  
+**🔒 Authorization**: Bearer JWT Token (All authenticated users)
+
+Retrieve daily reports with advanced filtering options.
+
+**Headers**:
+```
+Authorization: Bearer YOUR_JWT_TOKEN
+Content-Type: application/json
+```
 
 **Query Parameters**:
 - `projectId` (Guid): Filter by specific project
@@ -142,7 +216,7 @@ Retrieve daily reports with filtering options.
         "projectName": "Solar Installation Project Alpha",
         "userId": "789e0123-e89b-12d3-a456-426614174002",
         "userName": "John Technician",
-        "reportDate": "2025-06-14",
+        "reportDate": "2025-07-04",
         "approvalStatus": "Approved",
         "hoursWorked": 8.5,
         "personnelOnSite": 4,
@@ -156,7 +230,7 @@ Retrieve daily reports with filtering options.
         "dailyProgressContribution": 12.5,
         "hasCriticalIssues": false,
         "tasksCompleted": ["Install mounting rails", "Install panels in section A"],
-        "createdAt": "2025-06-14T17:30:00Z",
+        "createdAt": "2025-07-04T17:30:00Z",
         "hasAttachments": true
       },
       {
@@ -205,11 +279,35 @@ Retrieve daily reports with filtering options.
 }
 ```
 
+**Error Responses**:
+```json
+// 401 Unauthorized
+{
+  "success": false,
+  "message": "Unauthorized",
+  "errors": ["Authentication required"]
+}
+
+// 403 Forbidden
+{
+  "success": false,
+  "message": "Insufficient permissions",
+  "errors": ["User lacks required permissions for this resource"]
+}
+```
+
 ## 🔍 Get Daily Report by ID
 
-**GET** `/api/v1/daily-reports/{id}`
+**GET** `/api/v1/daily-reports/{id}`  
+**🔒 Authorization**: Bearer JWT Token (All authenticated users)
 
 Retrieve details of a specific daily report.
+
+**Headers**:
+```
+Authorization: Bearer YOUR_JWT_TOKEN
+Content-Type: application/json
+```
 
 **Path Parameters**:
 - `id` (Guid): Daily report ID
@@ -288,9 +386,16 @@ Retrieve details of a specific daily report.
 
 ## 📝 Create Daily Report
 
-**POST** `/api/v1/daily-reports`
+**POST** `/api/v1/daily-reports`  
+**🔒 Authorization**: Bearer JWT Token (All authenticated users)
 
 Create a new daily report for work completed.
+
+**Headers**:
+```
+Authorization: Bearer YOUR_JWT_TOKEN
+Content-Type: application/json
+```
 
 **Request Body**:
 ```json
@@ -364,11 +469,17 @@ Create a new daily report for work completed.
 
 ## 🔄 Update Daily Report
 
-**PUT** `/api/v1/daily-reports/{id}`
+**PUT** `/api/v1/daily-reports/{id}`  
+**🔒 Authorization**: Bearer JWT Token  
+**🎯 Roles**: Admin, Manager, or report creator
 
-**🔒 Requires**: Admin, Manager, or report creator (within 24h)
+Update an existing daily report. Users can only update their own reports within a configurable time limit (default: 24 hours). Admins and Managers can update any report.
 
-Update an existing daily report.
+**Headers**:
+```
+Authorization: Bearer YOUR_JWT_TOKEN
+Content-Type: application/json
+```
 
 **Path Parameters**:
 - `id` (Guid): Daily report ID
@@ -421,11 +532,16 @@ Update an existing daily report.
 
 ## 🗑️ Delete Daily Report
 
-**DELETE** `/api/v1/daily-reports/{id}`
+**DELETE** `/api/v1/daily-reports/{id}`  
+**🔒 Authorization**: Bearer JWT Token  
+**🎯 Required Roles**: Administrator, Manager
 
-**🔒 Required Roles**: Admin, Manager
+Delete a daily report. Only Administrators and Managers can delete reports.
 
-Delete a daily report.
+**Headers**:
+```
+Authorization: Bearer YOUR_JWT_TOKEN
+```
 
 **Path Parameters**:
 - `id` (Guid): Daily report ID
@@ -440,15 +556,21 @@ Delete a daily report.
 }
 ```
 
-## � Report Approval Workflow
+## 🔄 Report Approval Workflow
 
 ### Submit Report for Approval
 
-**POST** `/api/v1/daily-reports/{id}/submit`
-
-**🔒 Requires**: Report creator or higher authority
+**POST** `/api/v1/daily-reports/{id}/submit`  
+**🔒 Authorization**: Bearer JWT Token  
+**🎯 Roles**: Report creator, Admin, Manager
 
 Submit a daily report for management approval.
+
+**Headers**:
+```
+Authorization: Bearer YOUR_JWT_TOKEN
+Content-Type: application/json
+```
 
 **Path Parameters**:
 - `id` (Guid): Daily report ID
@@ -477,11 +599,17 @@ Submit a daily report for management approval.
 
 ### Approve Daily Report
 
-**POST** `/api/v1/daily-reports/{id}/approve`
-
-**🔒 Required Roles**: Admin, Manager, ProjectManager
+**POST** `/api/v1/daily-reports/{id}/approve`  
+**🔒 Authorization**: Bearer JWT Token  
+**🎯 Required Roles**: Administrator, ProjectManager
 
 Approve a submitted daily report.
+
+**Headers**:
+```
+Authorization: Bearer YOUR_JWT_TOKEN
+Content-Type: application/json
+```
 
 **Path Parameters**:
 - `id` (Guid): Daily report ID
@@ -511,11 +639,17 @@ Approve a submitted daily report.
 
 ### Reject Daily Report
 
-**POST** `/api/v1/daily-reports/{id}/reject`
-
-**🔒 Required Roles**: Admin, Manager, ProjectManager
+**POST** `/api/v1/daily-reports/{id}/reject`  
+**🔒 Authorization**: Bearer JWT Token  
+**🎯 Required Roles**: Administrator, ProjectManager
 
 Reject a submitted daily report with reason.
+
+**Headers**:
+```
+Authorization: Bearer YOUR_JWT_TOKEN
+Content-Type: application/json
+```
 
 **Path Parameters**:
 - `id` (Guid): Daily report ID
@@ -543,13 +677,19 @@ Reject a submitted daily report with reason.
 }
 ```
 
-## �📎 Add Attachment to Report
+## 📎 Add Attachment to Report
 
-**POST** `/api/v1/daily-reports/{id}/attachments`
-
-**🔒 Requires**: Admin, Manager, or report creator
+**POST** `/api/v1/daily-reports/{id}/attachments`  
+**🔒 Authorization**: Bearer JWT Token  
+**🎯 Roles**: Admin, Manager, or report creator
 
 Add a photo or document attachment to a daily report.
+
+**Headers**:
+```
+Authorization: Bearer YOUR_JWT_TOKEN
+Content-Type: multipart/form-data
+```
 
 **Path Parameters**:
 - `id` (Guid): Daily report ID
@@ -1189,7 +1329,7 @@ Validate daily report data before submission with AI-powered suggestions.
         "message": "All required fields are present"
       },
       {
-        "ruleName": "Safety Score Range",
+        "ruleName": "Safety Score Minimum",
         "severity": "Warning", 
         "passed": true,
         "message": "Safety score is within acceptable range",
@@ -1500,4 +1640,203 @@ The Daily Reports system transforms routine documentation into a powerful projec
 | **DR036** | Database connection failed | Contact system administrator |
 
 ---
-*Last Updated: June 29, 2025*
+
+## 🚀 Quick Start Guide
+
+### Step 1: Login and Get JWT Token
+```bash
+# Login with admin credentials
+curl -X POST "http://localhost:5001/api/v1/auth/login" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "username": "admin@example.com",
+    "password": "Admin123!"
+  }'
+
+# Response includes token
+{
+  "success": true,
+  "data": {
+    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+    "user": {
+      "username": "admin",
+      "email": "admin@example.com",
+      "roleName": "Admin"
+    }
+  }
+}
+```
+
+### Step 2: Use Token for API Calls
+```bash
+# Set your token (replace with actual token from login)
+TOKEN="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+
+# Get all daily reports
+curl -X GET "http://localhost:5001/api/v1/daily-reports" \
+  -H "Authorization: Bearer $TOKEN"
+
+# Create a new daily report
+curl -X POST "http://localhost:5001/api/v1/daily-reports" \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "projectId": "your-project-id",
+    "reportDate": "2025-07-05",
+    "hoursWorked": 8.0,
+    "personnelOnSite": 4,
+    "weatherConditions": "Sunny, 78°F",
+    "summary": "Completed installation of 12 solar panels on east wing",
+    "workAccomplished": "Panel mounting and initial electrical connections",
+    "workPlannedNextDay": "Complete wiring and inverter installation",
+    "issues": "None",
+    "safetyScore": 10,
+    "qualityScore": 9,
+    "dailyProgressContribution": 8.5
+  }'
+```
+
+### Step 3: Test Different Endpoints
+```bash
+# Get project-specific reports (all users)
+curl -X GET "http://localhost:5001/api/v1/daily-reports/projects/{projectId}" \
+  -H "Authorization: Bearer $TOKEN"
+
+# Get analytics (Admin/Manager/ProjectManager only)
+curl -X GET "http://localhost:5001/api/v1/daily-reports/projects/{projectId}/analytics" \
+  -H "Authorization: Bearer $TOKEN"
+
+# Submit report for approval
+curl -X POST "http://localhost:5001/api/v1/daily-reports/{reportId}/submit" \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"comments": "Ready for review"}'
+```
+
+### Step 4: Error Handling & Troubleshooting
+```bash
+# Example unauthorized response (401)
+{
+  "success": false,
+  "message": "Unauthorized",
+  "errors": ["Authentication required"]
+}
+
+# Example forbidden response (403)
+{
+  "success": false,
+  "message": "Insufficient permissions",
+  "errors": ["User lacks required permissions for this resource"]
+}
+
+# Example validation error (400)
+{
+  "success": false,
+  "message": "Invalid input data",
+  "errors": [
+    "SafetyScore must be between 1 and 10",
+    "ProjectId is required"
+  ]
+}
+```
+
+## 🔧 Troubleshooting Common Issues
+
+### Authentication Problems
+- **Issue**: Getting 401 Unauthorized errors
+- **Solution**: Ensure your JWT token is valid and not expired
+- **Check**: Login again to get a fresh token
+
+### Permission Denied
+- **Issue**: Getting 403 Forbidden errors
+- **Solution**: Check that your user role has permission for the requested operation
+- **Admin/Manager**: Full access to all endpoints
+- **ProjectManager**: Limited to assigned projects
+- **User**: Can only manage own reports
+
+### Validation Errors
+- **Issue**: Getting 400 Bad Request with validation errors
+- **Solution**: Check required fields and data formats
+- **Common**: Safety/Quality scores (1-10), valid project IDs, proper date formats
+
+### Performance Tips
+- Use pagination for large datasets (`pageSize`, `pageNumber`)
+- Apply filters to reduce response size (`projectId`, `startDate`, `endDate`)
+- Cache responses when possible (automatic with cache headers)
+
+### Rate Limiting
+- API implements rate limiting to prevent abuse
+- If you hit rate limits, wait and retry
+- Contact administrator if you need higher limits
+
+## 📚 Additional Resources
+
+### API Status & Development
+- **Current Version**: v1.0
+- **Environment**: Development (localhost:5001)
+- **Database**: In-Memory (resets on restart)
+- **Authentication**: JWT Bearer Token required
+- **Hot Reload**: Supported via `dotnet watch run`
+
+### Related API Documentation
+- [Projects API](./01_PROJECTS.md) - Manage solar installation projects
+- [Authentication](./00_AUTHENTICATION.md) - JWT authentication and user management
+- [Tasks API](./02_TASKS.md) - Task management and tracking
+
+### Development Notes
+- All endpoints are currently implemented and tested
+- Role-based authorization is enforced on all endpoints
+- CSV import functionality is available for bulk project creation
+- Live reload is enabled for development convenience
+
+### Best Practices
+1. **Always authenticate** before making API calls
+2. **Check permissions** for your user role before attempting operations
+3. **Use filters** to reduce response sizes and improve performance
+4. **Handle errors gracefully** with proper error checking
+5. **Follow rate limits** to avoid service disruption
+6. **Cache responses** when appropriate to reduce API calls
+7. **Test with different user roles** to understand permission boundaries
+8. **Use development environment** for testing before production deployment
+
+---
+
+**🔔 Development Note**: This API is currently running in development mode with in-memory database. Data will be reset when the application restarts. For production use, configure a persistent database connection in `appsettings.json`.
+
+*Last Updated: July 5, 2025*
+
+## 🎯 Current API Status & Features
+
+### ✅ **Fully Implemented & Tested**
+- **CRUD Operations**: Create, Read, Update, Delete daily reports
+- **JWT Authentication**: Role-based access control with Bearer tokens
+- **Project Integration**: Reports linked to solar installation projects
+- **Workflow Management**: Submit, approve, reject reports
+- **File Attachments**: Photo and document uploads
+- **Analytics**: Project-specific insights and reporting
+- **Bulk Operations**: Mass approve/reject capabilities
+- **Export Functions**: CSV, Excel, PDF export support
+- **Hot Reload**: Live development with `dotnet watch run`
+
+### 🔧 **Development Environment**
+- **Local Server**: `http://localhost:5001`
+- **Database**: In-Memory (resets on application restart)
+- **Authentication**: JWT tokens (expire after configured time)
+- **Role System**: Admin, Manager, ProjectManager, User roles
+- **Import Support**: CSV import for bulk project creation
+
+### 📊 **Available Endpoints Summary**
+- **Core CRUD**: 6 endpoints (GET, POST, PUT, DELETE operations)
+- **Workflow**: 3 endpoints (submit, approve, reject)
+- **Analytics**: 4 endpoints (insights, weekly reports, analytics)
+- **Bulk Operations**: 2 endpoints (bulk approve/reject)
+- **File Management**: 2 endpoints (attachments, validation)
+- **Export**: 2 endpoints (basic and enhanced export)
+
+### 🚀 **Recent Updates (July 2025)**
+- Enhanced JWT authentication with role-based authorization
+- Improved Quick Start documentation with troubleshooting
+- Added login flexibility (username or email accepted)
+- Updated examples with current date (July 2025)
+- Added comprehensive error handling guide
+- Documented all available endpoints and permissions
