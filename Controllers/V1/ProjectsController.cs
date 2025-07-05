@@ -11,7 +11,7 @@ namespace dotnet_rest_api.Controllers.V1;
 [ApiController]
 [ApiVersion("1.0")]
 [Route("api/v{version:apiVersion}/[controller]")]
-// [Authorize] // Temporarily disabled for local development with in-memory DB
+[Authorize] // Enable authorization for all endpoints by default
 public class ProjectsController : BaseApiController
 {
     private readonly IProjectService _projectService;
@@ -80,7 +80,7 @@ public class ProjectsController : BaseApiController
     /// Available to: Administrator, ProjectManager (can manage projects)
     /// </summary>
     [HttpPost]
-    // [Authorize(Roles = "Admin,Manager")] // Temporarily disabled for local development
+    [Authorize(Roles = "Admin,Manager")] // Enable role-based authorization for creating projects
     [NoCache] // No caching for write operations
     public async Task<ActionResult<ApiResponse<ProjectDto>>> CreateProject([FromBody] CreateProjectRequest request)
     {
@@ -149,7 +149,7 @@ public class ProjectsController : BaseApiController
     /// Available to: Administrator only (full system access)
     /// </summary>
     [HttpDelete("{id:guid}")]
-    // [Authorize(Roles = "Admin")] // Temporarily disabled for local development
+    [Authorize(Roles = "Admin")] // Enable admin-only authorization for deleting projects
     [CriticalDeleteRateLimit]
     [NoCache] // No caching for write operations
     public async Task<ActionResult<ApiResponse<bool>>> DeleteProject(Guid id)
