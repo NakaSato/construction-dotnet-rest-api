@@ -1,0 +1,38 @@
+# User Registration Test
+# Use this file to test the user registration endpoint
+
+### Register a new user
+POST http://localhost:5001/api/v1/auth/register
+Content-Type: application/json
+
+{
+  "username": "testuser123",
+  "email": "testuser@example.com",
+  "password": "SecurePass123!",
+  "fullName": "Test User",
+  "roleId": 3
+}
+
+### Alternative registration with different role (Admin role)
+POST http://localhost:5001/api/v1/auth/register
+Content-Type: application/json
+
+{
+  "username": "adminuser",
+  "email": "admin@testcompany.com",
+  "password": "AdminPass123!",
+  "fullName": "Admin User",
+  "roleId": 1
+}
+
+### Register with Manager role
+POST http://localhost:5001/api/v1/auth/register
+Content-Type: application/json
+
+{
+  "username": "manager1",
+  "email": "manager@testcompany.com",
+  "password": "ManagerPass123!",
+  "fullName": "Project Manager",
+  "roleId": 2
+}

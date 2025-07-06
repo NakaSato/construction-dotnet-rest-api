@@ -47,22 +47,37 @@ docker-compose up -d
 
 ### 2. Get Authentication Token
 ```bash
-curl -X POST http://localhost:5002/api/v1/auth/login \
+curl -X POST "http://localhost:5001/api/v1/auth/login" \
   -H "Content-Type: application/json" \
-  -d '{"email":"test_admin@example.com","password":"Admin123!"}'
+  -d '{
+    "username": "test_admin",
+    "password": "Admin123!"
+  }'
 ```
 
 ### 3. Test API Access
 ```bash
-curl -X GET http://localhost:5002/api/v1/projects \
-  -H "Authorization: Bearer YOUR_TOKEN"
+# Use the token from step 2
+curl -X GET "http://localhost:5001/api/v1/projects" \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN"
 ```
 
+### 4. Create Your First Project
+```bash
+curl -X POST "http://localhost:5001/api/v1/projects" \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "projectName": "My First Solar Project",
+    "address": "123 Solar Street, Bangkok, Thailand",
+    "clientInfo": "Test Client Company",
+    "startDate": "2025-08-01T00:00:00Z"
 ## API Information
 
 | Environment | Base URL | Status |
 |-------------|----------|---------|
-| Development | `http://localhost:5002/api/v1` | Active |
+| Development | `http://localhost:5001/api/v1` | Active |
+| Docker | `http://localhost:8080/api/v1` | Active |
 | Production | `https://your-domain.com/api/v1` | Configure |
 
 ## Authentication
@@ -72,6 +87,11 @@ All API endpoints require authentication via JWT tokens:
 ```http
 Authorization: Bearer YOUR_JWT_TOKEN
 ```
+
+### Test Account
+- **Username**: `test_admin`
+- **Password**: `Admin123!`
+- **Role**: Admin (full access)
 
 ### User Roles
 
@@ -83,20 +103,66 @@ Authorization: Bearer YOUR_JWT_TOKEN
 
 ## System Status
 
-- Database: PostgreSQL
-- Deployment: Docker containers
-- Performance: Rate limiting configured
-- Security: JWT authentication with role-based access
+- **Database**: PostgreSQL/In-Memory (Docker)
+- **Deployment**: Docker containers + Local development
+- **Performance**: Rate limiting configured
+- **Security**: JWT authentication with role-based access
+- **Real-Time**: SignalR WebSocket connections for live updates
+
+## 🚀 Quick Testing
+
+### Complete API Test Script
+```bash
+#!/bin/bash
+
+# 1. Test authentication
+echo "🔐 Testing authentication..."
+TOKEN=$(curl -s -X POST "http://localhost:5001/api/v1/auth/login" \
+  -H "Content-Type: application/json" \
+  -d '{"username": "test_admin", "password": "Admin123!"}' \
+  | jq -r '.data.token')
+
+echo "Token: ${TOKEN:0:50}..."
+
+# 2. Test project creation
+echo "📋 Testing project creation..."
+PROJECT_RESPONSE=$(curl -s -X POST "http://localhost:5001/api/v1/projects" \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "projectName": "API Test Project",
+    "address": "123 Test Street, Bangkok, Thailand",
+    "clientInfo": "Test Client",
+    "startDate": "2025-08-01T00:00:00Z"
+  }')
+
+PROJECT_ID=$(echo $PROJECT_RESPONSE | jq -r '.data.projectId')
+echo "Created project: $PROJECT_ID"
+
+# 3. Test project retrieval
+echo "🔍 Testing project retrieval..."
+curl -s -X GET "http://localhost:5001/api/v1/projects/$PROJECT_ID" \
+  -H "Authorization: Bearer $TOKEN" | jq '.data.projectName'
+
+# 4. Test real-time features (if SignalR client available)
+echo "⚡ Real-time features available at: ws://localhost:5001/notificationHub"
+
+echo "✅ API test completed successfully!"
+```
+
+## 📚 Additional Resources
+
+- **[User Management Guide](../USER_MANAGEMENT_GUIDE.md)** - Authentication & user creation
+- **[Real-Time Features](./00_REAL_TIME_LIVE_UPDATES.md)** - SignalR implementation
+- **[Curl Commands Reference](../CURL_COMMANDS.md)** - Quick API reference
+- **[Database Schema](../schema.sql)** - Complete database structure
 
 ## Support
 
-For technical support:
-- Email: support@solarproject.com
+For technical support and questions:
+- **Documentation**: Check individual module docs for detailed information
+- **Issues**: Report bugs and feature requests via your preferred method
+- **Updates**: API documentation is updated regularly
 
 ---
-*Last Updated: July 4, 2025*
-- 🐛 **Issues**: Report bugs via your preferred method
-- 📖 **Updates**: Check individual module docs for latest changes
-
----
-*Last Updated: June 15, 2025*
+*Last Updated: July 2025 - Solar Projects API v1.0*

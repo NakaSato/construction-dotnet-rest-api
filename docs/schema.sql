@@ -847,6 +847,27 @@ INSERT INTO "Users" (
     '2024-01-01 00:00:00+00'
 );
 
+-- Insert test admin user (password: Admin123!)
+INSERT INTO "Users" (
+    "UserId", 
+    "Username", 
+    "Email", 
+    "PasswordHash", 
+    "FullName", 
+    "RoleId", 
+    "IsActive", 
+    "CreatedAt"
+) VALUES (
+    '11111111-1111-1111-1111-111111111111',
+    'test_admin',
+    'test_admin@solarprojects.com',
+    '$2a$11$rqiU3ov8V4yGqQpzYpKqY.Y5p3YmXFKJZk8GvOqHqOqh4v7/7gzMu',
+    'Test Administrator',
+    1,
+    TRUE,
+    NOW()
+);
+
 -- Insert Thailand Geographic Regions for Real-Time Regional Updates
 INSERT INTO "ProjectRegions" ("RegionId", "RegionName", "RegionDisplayName", "Provinces", "Description", "IsActive") VALUES 
 (

@@ -55,6 +55,26 @@ Retrieve weekly plans with advanced filtering and analytics.
 - `pageNumber` (int): Page number (default: 1)
 - `pageSize` (int): Items per page (default: 20, max: 100)
 
+### cURL Examples
+
+```bash
+# Get all weekly plans
+curl -X GET "http://localhost:5001/api/v1/weekly-planning" \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN"
+
+# Get plans for specific project with analytics
+curl -X GET "http://localhost:5001/api/v1/weekly-planning?projectId=8f83b2a1-c4e5-4d67-9abc-123456789def&includeAnalytics=true" \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN"
+
+# Get plans for specific week
+curl -X GET "http://localhost:5001/api/v1/weekly-planning?weekStartDate=2024-06-17T00:00:00Z&weekEndDate=2024-06-23T23:59:59Z" \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN"
+
+# Get plans with pagination
+curl -X GET "http://localhost:5001/api/v1/weekly-planning?pageNumber=1&pageSize=10" \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN"
+```
+
 **Success Response (200)**:
 ```json
 {
@@ -164,6 +184,18 @@ Retrieve detailed information for a specific weekly plan.
 **Query Parameters**:
 - `includeDetails` (bool): Include detailed task and resource information (default: true)
 - `includeAnalytics` (bool): Include performance analytics (default: false)
+
+### cURL Examples
+
+```bash
+# Get basic weekly plan details
+curl -X GET "http://localhost:5001/api/v1/weekly-planning/6e729d9a-b2fc-4d54-8e79-81d77bd248d3" \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN"
+
+# Get weekly plan with full details and analytics
+curl -X GET "http://localhost:5001/api/v1/weekly-planning/6e729d9a-b2fc-4d54-8e79-81d77bd248d3?includeDetails=true&includeAnalytics=true" \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN"
+```
 
 **Success Response (200)**:
 ```json
@@ -320,6 +352,75 @@ Create a new weekly plan for a project.
 
 **Authorization**: Admin, Manager, Supervisor (for assigned projects)
 
+### cURL Example
+
+```bash
+curl -X POST "http://localhost:5001/api/v1/weekly-planning" \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "projectId": "8f83b2a1-c4e5-4d67-9abc-123456789def",
+    "weekStartDate": "2024-06-24T00:00:00Z",
+    "weekEndDate": "2024-06-30T23:59:59Z",
+    "description": "Week 26 plan focusing on electrical connections",
+    "objectives": [
+      "Complete electrical panel installation",
+      "Connect 75% of solar panels",
+      "Conduct initial system testing"
+    ],
+    "tasks": [
+      {
+        "title": "Install electrical panel",
+        "description": "Install main electrical panel for solar system",
+        "category": "Electrical",
+        "priority": "Critical",
+        "plannedStartDate": "2024-06-24T08:00:00Z",
+        "plannedEndDate": "2024-06-24T17:00:00Z",
+        "estimatedHours": 8,
+        "assignedUserIds": ["user123"],
+        "dependencies": ["task002"],
+        "requiredMaterials": [
+          {
+            "itemId": "mat002",
+            "quantity": 1,
+            "unit": "piece"
+          }
+        ]
+      }
+    ],
+    "resourceRequirements": {
+      "teamMembers": [
+        {
+          "userId": "user123",
+          "plannedHours": 40,
+          "role": "Lead Technician"
+        }
+      ],
+      "equipment": [
+        {
+          "equipmentId": "eq002",
+          "plannedDays": 2,
+          "purpose": "Panel installation"
+        }
+      ]
+    },
+    "risks": [
+      {
+        "description": "Electrical inspection delay",
+        "probability": "Low",
+        "impact": "Medium",
+        "mitigation": "Pre-schedule inspection for early week"
+      }
+    ],
+    "budgetEstimate": {
+      "laborCost": 4800.00,
+      "materialCost": 2500.00,
+      "equipmentCost": 800.00,
+      "totalEstimate": 8100.00
+    }
+  }'
+```
+
 **Request Body**:
 ```json
 {
@@ -413,6 +514,35 @@ Update an existing weekly plan.
 **Path Parameters**:
 - `id` (guid) - Weekly plan ID
 
+### cURL Example
+
+```bash
+curl -X PUT "http://localhost:5001/api/v1/weekly-planning/6e729d9a-b2fc-4d54-8e79-81d77bd248d3" \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "description": "Updated week 26 plan with revised electrical timeline",
+    "objectives": [
+      "Complete electrical panel installation",
+      "Connect 80% of solar panels",
+      "Conduct initial system testing",
+      "Begin commissioning documentation"
+    ],
+    "tasks": [
+      {
+        "title": "Install electrical panel",
+        "description": "Install main electrical panel for solar system",
+        "category": "Electrical",
+        "priority": "Critical",
+        "plannedStartDate": "2024-06-24T08:00:00Z",
+        "plannedEndDate": "2024-06-24T17:00:00Z",
+        "estimatedHours": 8,
+        "assignedUserIds": ["user123"]
+      }
+    ]
+  }'
+```
+
 **Request Body**: Similar to create request, with updated fields
 
 **Success Response (200)**:
@@ -450,6 +580,13 @@ Delete a weekly plan.
 **Path Parameters**:
 - `id` (guid) - Weekly plan ID
 
+### cURL Example
+
+```bash
+curl -X DELETE "http://localhost:5001/api/v1/weekly-planning/6e729d9a-b2fc-4d54-8e79-81d77bd248d3" \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN"
+```
+
 **Success Response (200)**:
 ```json
 {
@@ -474,6 +611,22 @@ Get comprehensive analytics for weekly planning performance.
 - `dateTo` (datetime): End date for analytics period
 - `granularity` (string): Data granularity ("week", "month", "quarter")
 - `metrics` (string): Comma-separated list of metrics to include
+
+### cURL Examples
+
+```bash
+# Get overall analytics for all projects
+curl -X GET "http://localhost:5001/api/v1/weekly-planning/analytics" \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN"
+
+# Get analytics for specific project and date range
+curl -X GET "http://localhost:5001/api/v1/weekly-planning/analytics?projectId=8f83b2a1-c4e5-4d67-9abc-123456789def&dateFrom=2024-01-01T00:00:00Z&dateTo=2024-06-30T23:59:59Z" \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN"
+
+# Get weekly granularity analytics with specific metrics
+curl -X GET "http://localhost:5001/api/v1/weekly-planning/analytics?granularity=week&metrics=planAccuracy,resourceUtilization,budgetVariance" \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN"
+```
 
 **Success Response (200)**:
 ```json
@@ -580,6 +733,19 @@ Update the status of a weekly plan.
 **Path Parameters**:
 - `id` (guid) - Weekly plan ID
 
+### cURL Example
+
+```bash
+curl -X PATCH "http://localhost:5001/api/v1/weekly-planning/6e729d9a-b2fc-4d54-8e79-81d77bd248d3/status" \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "status": "Active",
+    "reason": "All resources confirmed and ready to proceed",
+    "effectiveDate": "2024-06-24T08:00:00Z"
+  }'
+```
+
 **Request Body**:
 ```json
 {
@@ -608,6 +774,36 @@ Approve a weekly plan for execution.
 
 **Path Parameters**:
 - `id` (guid) - Weekly plan ID
+
+### cURL Examples
+
+```bash
+# Approve a weekly plan
+curl -X POST "http://localhost:5001/api/v1/weekly-planning/6e729d9a-b2fc-4d54-8e79-81d77bd248d3/approve" \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "approved": true,
+    "comments": "Plan approved with minor resource adjustments",
+    "conditions": [
+      "Ensure weather monitoring in place",
+      "Confirm equipment availability before start"
+    ]
+  }'
+
+# Reject a weekly plan
+curl -X POST "http://localhost:5001/api/v1/weekly-planning/6e729d9a-b2fc-4d54-8e79-81d77bd248d3/approve" \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "approved": false,
+    "comments": "Resource allocation needs revision",
+    "requiredChanges": [
+      "Reduce team size due to availability constraints",
+      "Adjust timeline to accommodate equipment delays"
+    ]
+  }'
+```
 
 **Request Body**:
 ```json
@@ -659,6 +855,128 @@ Approve a weekly plan for execution.
 | **WP009** | Resource unavailable | Required resources not available for dates | Adjust dates or find alternatives |
 | **WP010** | Approval required | Plan must be approved before execution | Submit for approval workflow |
 
+## 🧪 Testing Weekly Planning API
+
+### Complete Workflow Test
+
+```bash
+#!/bin/bash
+
+# Set up variables
+API_BASE="http://localhost:5001/api/v1"
+PROJECT_ID="8f83b2a1-c4e5-4d67-9abc-123456789def"
+
+# 1. Login and get token
+echo "🔐 Authenticating..."
+TOKEN=$(curl -s -X POST "$API_BASE/auth/login" \
+  -H "Content-Type: application/json" \
+  -d '{"username": "test_admin", "password": "Admin123!"}' \
+  | jq -r '.data.token')
+
+# 2. Create a weekly plan
+echo "📝 Creating weekly plan..."
+PLAN_RESPONSE=$(curl -s -X POST "$API_BASE/weekly-planning" \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "projectId": "'$PROJECT_ID'",
+    "weekStartDate": "2024-07-08T00:00:00Z",
+    "weekEndDate": "2024-07-14T23:59:59Z",
+    "description": "Test weekly plan for API validation",
+    "objectives": ["Test objective 1", "Test objective 2"],
+    "tasks": [{
+      "title": "Test task",
+      "description": "Sample task for testing",
+      "category": "Installation",
+      "priority": "Medium",
+      "plannedStartDate": "2024-07-08T08:00:00Z",
+      "plannedEndDate": "2024-07-08T16:00:00Z",
+      "estimatedHours": 8
+    }]
+  }')
+
+PLAN_ID=$(echo $PLAN_RESPONSE | jq -r '.data.weeklyPlanId')
+echo "✅ Created plan: $PLAN_ID"
+
+# 3. Get the created plan
+echo "🔍 Retrieving plan details..."
+curl -s -X GET "$API_BASE/weekly-planning/$PLAN_ID" \
+  -H "Authorization: Bearer $TOKEN" | jq '.data.description'
+
+# 4. Update plan status
+echo "🔄 Updating plan status..."
+curl -s -X PATCH "$API_BASE/weekly-planning/$PLAN_ID/status" \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "status": "PendingApproval",
+    "reason": "Ready for review"
+  }' | jq '.success'
+
+# 5. Approve the plan
+echo "✅ Approving plan..."
+curl -s -X POST "$API_BASE/weekly-planning/$PLAN_ID/approve" \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "approved": true,
+    "comments": "Test approval"
+  }' | jq '.data.approvalStatus'
+
+# 6. Get analytics
+echo "📊 Getting analytics..."
+curl -s -X GET "$API_BASE/weekly-planning/analytics" \
+  -H "Authorization: Bearer $TOKEN" | jq '.data.overallMetrics'
+
+# 7. Get all plans
+echo "📋 Getting all plans..."
+curl -s -X GET "$API_BASE/weekly-planning?pageSize=5" \
+  -H "Authorization: Bearer $TOKEN" | jq '.data.pagination'
+
+# 8. Clean up - delete the test plan
+echo "🗑️ Cleaning up..."
+curl -s -X DELETE "$API_BASE/weekly-planning/$PLAN_ID" \
+  -H "Authorization: Bearer $TOKEN" | jq '.success'
+
+echo "🎉 Weekly Planning API test completed!"
+```
+
+### Quick Test Commands
+
+```bash
+# Test authentication first
+curl -X POST "http://localhost:5001/api/v1/auth/login" \
+  -H "Content-Type: application/json" \
+  -d '{"username": "test_admin", "password": "Admin123!"}'
+
+# Test getting weekly plans (replace TOKEN)
+curl -X GET "http://localhost:5001/api/v1/weekly-planning" \
+  -H "Authorization: Bearer YOUR_TOKEN"
+
+# Test creating a simple plan
+curl -X POST "http://localhost:5001/api/v1/weekly-planning" \
+  -H "Authorization: Bearer YOUR_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "projectId": "test-project-id",
+    "weekStartDate": "2024-07-08T00:00:00Z",
+    "weekEndDate": "2024-07-14T23:59:59Z",
+    "description": "Simple test plan"
+  }'
+
+# Test analytics endpoint
+curl -X GET "http://localhost:5001/api/v1/weekly-planning/analytics" \
+  -H "Authorization: Bearer YOUR_TOKEN"
+```
+
+## 📚 Related Documentation
+
+- **[Authentication Guide](02_AUTHENTICATION.md)** - Authentication and authorization
+- **[Project Management](01_PROJECTS.md)** - Project-related endpoints
+- **[Master Planning](09_MASTER_PLAN.md)** - Long-term planning integration
+- **[Daily Reports](07_DAILY_REPORTS.md)** - Progress tracking integration
+- **[Real-Time Updates](00_REAL_TIME_LIVE_UPDATES.md)** - SignalR live updates
+
 ## 📋 Summary
 
 ### Key Features
@@ -683,3 +1001,6 @@ Approve a weekly plan for execution.
 - Use analytics to improve future planning accuracy
 - Maintain clear task dependencies and sequencing
 - Document lessons learned for process improvement
+
+---
+*Last Updated: July 2025 - Solar Projects API v1.0*
