@@ -1,0 +1,267 @@
+# Utilities & Health Check API Tests
+# Tests for system health, utilities, debugging, and general system endpoints
+
+@baseUrl = http://localhost:5001
+@contentType = application/json
+
+### Variables - Update these after setup
+@authToken = YOUR_JWT_TOKEN_HERE
+@imageId = YOUR_IMAGE_ID_HERE
+@documentId = YOUR_DOCUMENT_ID_HERE
+@projectId = YOUR_PROJECT_ID_HERE
+@reportId = YOUR_REPORT_ID_HERE
+@resourceId = YOUR_RESOURCE_ID_HERE
+
+### ========== Health & System Status ==========
+
+### 1. Health Check - Basic
+GET {{baseUrl}}/health
+
+### 2. Health Check - Detailed
+GET {{baseUrl}}/api/v1/health
+Authorization: Bearer {{authToken}}
+
+### 3. Health Check - Database
+GET {{baseUrl}}/api/v1/health/database
+Authorization: Bearer {{authToken}}
+
+### 4. Health Check - Ready
+GET {{baseUrl}}/api/v1/health/ready
+
+### 5. Health Check - Live
+GET {{baseUrl}}/api/v1/health/live
+
+### 6. System Information
+GET {{baseUrl}}/api/v1/debug/system-info
+Authorization: Bearer {{authToken}}
+
+### 7. API Version Information
+GET {{baseUrl}}/api/v1/debug/version
+
+### ========== Debug Endpoints ==========
+
+### 8. Debug - Test Error Handling
+GET {{baseUrl}}/api/v1/debug/test-error
+Authorization: Bearer {{authToken}}
+
+### 9. Debug - Test Exception
+GET {{baseUrl}}/api/v1/debug/test-exception
+Authorization: Bearer {{authToken}}
+
+### 10. Debug - Test Timeout
+GET {{baseUrl}}/api/v1/debug/test-timeout
+Authorization: Bearer {{authToken}}
+
+### 11. Debug - Memory Usage
+GET {{baseUrl}}/api/v1/debug/memory
+Authorization: Bearer {{authToken}}
+
+### 12. Debug - Database Connection Test
+GET {{baseUrl}}/api/v1/debug/database-test
+Authorization: Bearer {{authToken}}
+
+### 13. Debug - Environment Variables
+GET {{baseUrl}}/api/v1/debug/environment
+Authorization: Bearer {{authToken}}
+
+### ========== Images & File Upload ==========
+
+### 14. Upload Image (requires multipart/form-data)
+POST {{baseUrl}}/api/v1/images/upload
+Authorization: Bearer {{authToken}}
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW
+
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="file"; filename="test-image.jpg"
+Content-Type: image/jpeg
+
+(binary image data would go here in actual test)
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="description"
+
+Test image upload for solar project
+------WebKitFormBoundary7MA4YWxkTrZu0gW--
+
+### 15. Get Image Metadata
+GET {{baseUrl}}/api/v1/images/metadata/{{imageId}}
+Authorization: Bearer {{authToken}}
+
+### 16. Download Image
+GET {{baseUrl}}/api/v1/images/download/{{imageId}}
+Authorization: Bearer {{authToken}}
+
+### 17. Delete Image
+DELETE {{baseUrl}}/api/v1/images/{{imageId}}
+Authorization: Bearer {{authToken}}
+
+### ========== Documents Management ==========
+
+### 18. Upload Document
+POST {{baseUrl}}/api/v1/documents/upload
+Authorization: Bearer {{authToken}}
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW
+
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="file"; filename="project-plan.pdf"
+Content-Type: application/pdf
+
+(binary document data would go here in actual test)
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="title"
+
+Project Plan Document
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="category"
+
+ProjectPlan
+------WebKitFormBoundary7MA4YWxkTrZu0gW--
+
+### 19. Get All Documents
+GET {{baseUrl}}/api/v1/documents
+Authorization: Bearer {{authToken}}
+
+### 20. Get Document by ID
+GET {{baseUrl}}/api/v1/documents/{{documentId}}
+Authorization: Bearer {{authToken}}
+
+### 21. Download Document
+GET {{baseUrl}}/api/v1/documents/download/{{documentId}}
+Authorization: Bearer {{authToken}}
+
+### 22. Search Documents
+GET {{baseUrl}}/api/v1/documents/search?query=plan
+Authorization: Bearer {{authToken}}
+
+### 23. Delete Document
+DELETE {{baseUrl}}/api/v1/documents/{{documentId}}
+Authorization: Bearer {{authToken}}
+
+### ========== Weekly Reports ==========
+
+### 24. Get Weekly Reports
+GET {{baseUrl}}/api/v1/weekly-reports
+Authorization: Bearer {{authToken}}
+
+### 25. Create Weekly Report
+POST {{baseUrl}}/api/v1/weekly-reports
+Content-Type: {{contentType}}
+Authorization: Bearer {{authToken}}
+
+{
+  "projectId": "{{projectId}}",
+  "weekStartDate": "2025-07-07T00:00:00Z",
+  "weekEndDate": "2025-07-13T23:59:59Z",
+  "summary": "Weekly progress summary for solar farm installation project",
+  "accomplishments": [
+    "Completed site survey and assessment",
+    "Finalized electrical design plans",
+    "Ordered solar panels and mounting hardware"
+  ],
+  "challenges": [
+    "Weather delays on Tuesday and Wednesday",
+    "Vendor delivery delay for specialized equipment"
+  ],
+  "nextWeekPlans": [
+    "Begin site preparation activities",
+    "Conduct team safety training",
+    "Install temporary power and security systems"
+  ],
+  "budgetStatus": {
+    "plannedSpend": 50000.00,
+    "actualSpend": 47500.00,
+    "variance": -2500.00
+  },
+  "riskAssessment": "Low to medium risk due to weather dependency"
+}
+
+### 26. Get Weekly Report by ID
+GET {{baseUrl}}/api/v1/weekly-reports/{{reportId}}
+Authorization: Bearer {{authToken}}
+
+### ========== Resources Management ==========
+
+### 27. Get All Resources
+GET {{baseUrl}}/api/v1/resources
+Authorization: Bearer {{authToken}}
+
+### 28. Create Resource
+POST {{baseUrl}}/api/v1/resources
+Content-Type: {{contentType}}
+Authorization: Bearer {{authToken}}
+
+{
+  "name": "Solar Panel Installation Crane",
+  "type": "Equipment",
+  "description": "25-ton crane for solar panel installation",
+  "availability": "Available",
+  "hourlyRate": 150.00,
+  "specifications": {
+    "capacity": "25 tons",
+    "reach": "150 feet",
+    "operator": "Included"
+  }
+}
+
+### 29. Get Resource by ID
+GET {{baseUrl}}/api/v1/resources/{{resourceId}}
+Authorization: Bearer {{authToken}}
+
+### 30. Update Resource Availability
+PATCH {{baseUrl}}/api/v1/resources/{{resourceId}}/availability
+Content-Type: {{contentType}}
+Authorization: Bearer {{authToken}}
+
+{
+  "availability": "Booked",
+  "availableFrom": "2025-07-20T08:00:00Z",
+  "bookedUntil": "2025-07-25T17:00:00Z"
+}
+
+### ========== API Testing & Validation ==========
+
+### 31. Test Rate Limiting (multiple rapid requests)
+GET {{baseUrl}}/api/v1/projects
+Authorization: Bearer {{authToken}}
+
+### 32. Test Rate Limiting - Second Request
+GET {{baseUrl}}/api/v1/projects
+Authorization: Bearer {{authToken}}
+
+### 33. Test Rate Limiting - Third Request
+GET {{baseUrl}}/api/v1/projects
+Authorization: Bearer {{authToken}}
+
+### 34. Test Invalid JSON
+POST {{baseUrl}}/api/v1/projects
+Content-Type: {{contentType}}
+Authorization: Bearer {{authToken}}
+
+{
+  "invalid": "json" "missing comma"
+}
+
+### 35. Test Large Payload
+POST {{baseUrl}}/api/v1/debug/test-large-payload
+Content-Type: {{contentType}}
+Authorization: Bearer {{authToken}}
+
+{
+  "data": "Large payload test with repeated data. ".repeat(1000)
+}
+
+### 36. Test CORS
+OPTIONS {{baseUrl}}/api/v1/projects
+Origin: http://localhost:3000
+
+### 37. Test Security Headers
+GET {{baseUrl}}/api/v1/projects
+Authorization: Bearer {{authToken}}
+
+### 38. Test API Documentation (Swagger)
+GET {{baseUrl}}/swagger/index.html
+
+### 39. Test OpenAPI Specification
+GET {{baseUrl}}/swagger/v1/swagger.json
+
+### 40. Test Unauthorized Access (No Token)
+GET {{baseUrl}}/api/v1/users

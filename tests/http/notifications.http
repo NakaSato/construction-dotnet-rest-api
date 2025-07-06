@@ -1,0 +1,267 @@
+# Notifications API Tests
+# Tests for notification management, real-time notifications, and messaging
+
+@baseUrl = http://localhost:5001
+@contentType = application/json
+
+### Variables - Update these after setup
+@authToken = YOUR_JWT_TOKEN_HERE
+@notificationId = YOUR_NOTIFICATION_ID_HERE
+@userId = YOUR_USER_ID_HERE
+@projectId = YOUR_PROJECT_ID_HERE
+
+### 1. Get All Notifications
+GET {{baseUrl}}/api/v1/notifications
+Authorization: Bearer {{authToken}}
+
+### 2. Get Notifications with Pagination
+GET {{baseUrl}}/api/v1/notifications?pageNumber=1&pageSize=10
+Authorization: Bearer {{authToken}}
+
+### 3. Get Notification by ID
+GET {{baseUrl}}/api/v1/notifications/{{notificationId}}
+Authorization: Bearer {{authToken}}
+
+### 4. Get User Notifications
+GET {{baseUrl}}/api/v1/notifications/user/{{userId}}
+Authorization: Bearer {{authToken}}
+
+### 5. Get Unread Notifications
+GET {{baseUrl}}/api/v1/notifications/unread
+Authorization: Bearer {{authToken}}
+
+### 6. Create New Notification - Task Assignment
+POST {{baseUrl}}/api/v1/notifications
+Content-Type: {{contentType}}
+Authorization: Bearer {{authToken}}
+
+{
+  "recipientId": "{{userId}}",
+  "type": "TaskAssignment",
+  "title": "New Task Assigned",
+  "message": "You have been assigned a new task: Site Survey and Assessment for Solar Farm Alpha project",
+  "priority": "Medium",
+  "projectId": "{{projectId}}",
+  "actionUrl": "/tasks/task-id-here",
+  "data": {
+    "taskId": "task-id-here",
+    "taskName": "Site Survey and Assessment",
+    "dueDate": "2025-07-15T17:00:00Z"
+  }
+}
+
+### 7. Create Notification - Project Update
+POST {{baseUrl}}/api/v1/notifications
+Content-Type: {{contentType}}
+Authorization: Bearer {{authToken}}
+
+{
+  "recipientId": "{{userId}}",
+  "type": "ProjectUpdate",
+  "title": "Project Status Update",
+  "message": "Solar Farm Alpha project has been updated to 'In Progress' status",
+  "priority": "Low",
+  "projectId": "{{projectId}}",
+  "actionUrl": "/projects/{{projectId}}",
+  "data": {
+    "projectName": "Solar Farm Alpha",
+    "oldStatus": "Planning",
+    "newStatus": "InProgress"
+  }
+}
+
+### 8. Create Notification - Work Request Approval
+POST {{baseUrl}}/api/v1/notifications
+Content-Type: {{contentType}}
+Authorization: Bearer {{authToken}}
+
+{
+  "recipientId": "{{userId}}",
+  "type": "WorkRequestApproval",
+  "title": "Work Request Needs Approval",
+  "message": "Work request for Solar Panels and Mounting Hardware requires your approval",
+  "priority": "High",
+  "projectId": "{{projectId}}",
+  "actionUrl": "/work-requests/pending-approvals",
+  "data": {
+    "workRequestId": "work-request-id-here",
+    "requestTitle": "Solar Panels and Mounting Hardware",
+    "estimatedCost": 25000.00
+  }
+}
+
+### 9. Create System Notification
+POST {{baseUrl}}/api/v1/notifications
+Content-Type: {{contentType}}
+Authorization: Bearer {{authToken}}
+
+{
+  "recipientId": "{{userId}}",
+  "type": "System",
+  "title": "System Maintenance Scheduled",
+  "message": "System maintenance is scheduled for tonight from 2:00 AM to 4:00 AM EST",
+  "priority": "Medium",
+  "scheduledFor": "2025-07-08T06:00:00Z",
+  "data": {
+    "maintenanceWindow": "2025-07-08T06:00:00Z to 2025-07-08T08:00:00Z",
+    "affectedServices": ["API", "Dashboard", "Reports"]
+  }
+}
+
+### 10. Mark Notification as Read
+PATCH {{baseUrl}}/api/v1/notifications/{{notificationId}}/read
+Authorization: Bearer {{authToken}}
+
+### 11. Mark Multiple Notifications as Read
+PATCH {{baseUrl}}/api/v1/notifications/mark-read
+Content-Type: {{contentType}}
+Authorization: Bearer {{authToken}}
+
+{
+  "notificationIds": ["{{notificationId}}", "another-notification-id"]
+}
+
+### 12. Mark All Notifications as Read
+PATCH {{baseUrl}}/api/v1/notifications/mark-all-read
+Authorization: Bearer {{authToken}}
+
+### 13. Delete Notification
+DELETE {{baseUrl}}/api/v1/notifications/{{notificationId}}
+Authorization: Bearer {{authToken}}
+
+### 14. Delete Multiple Notifications
+DELETE {{baseUrl}}/api/v1/notifications/batch
+Content-Type: {{contentType}}
+Authorization: Bearer {{authToken}}
+
+{
+  "notificationIds": ["{{notificationId}}", "another-notification-id"]
+}
+
+### 15. Get Notification Types
+GET {{baseUrl}}/api/v1/notifications/types
+Authorization: Bearer {{authToken}}
+
+### 16. Get Notifications by Type
+GET {{baseUrl}}/api/v1/notifications/type/TaskAssignment
+Authorization: Bearer {{authToken}}
+
+### 17. Get Notifications by Priority
+GET {{baseUrl}}/api/v1/notifications/priority/High
+Authorization: Bearer {{authToken}}
+
+### 18. Get Notifications by Project
+GET {{baseUrl}}/api/v1/notifications/project/{{projectId}}
+Authorization: Bearer {{authToken}}
+
+### 19. Get Notification Statistics
+GET {{baseUrl}}/api/v1/notifications/statistics
+Authorization: Bearer {{authToken}}
+
+### 20. Get User Notification Preferences
+GET {{baseUrl}}/api/v1/notifications/preferences/{{userId}}
+Authorization: Bearer {{authToken}}
+
+### 21. Update Notification Preferences
+PUT {{baseUrl}}/api/v1/notifications/preferences/{{userId}}
+Content-Type: {{contentType}}
+Authorization: Bearer {{authToken}}
+
+{
+  "emailNotifications": true,
+  "pushNotifications": true,
+  "smsNotifications": false,
+  "preferences": {
+    "TaskAssignment": {
+      "email": true,
+      "push": true,
+      "sms": false
+    },
+    "ProjectUpdate": {
+      "email": true,
+      "push": false,
+      "sms": false
+    },
+    "WorkRequestApproval": {
+      "email": true,
+      "push": true,
+      "sms": true
+    },
+    "System": {
+      "email": true,
+      "push": true,
+      "sms": false
+    }
+  }
+}
+
+### 22. Send Bulk Notifications
+POST {{baseUrl}}/api/v1/notifications/bulk
+Content-Type: {{contentType}}
+Authorization: Bearer {{authToken}}
+
+{
+  "recipients": ["{{userId}}", "another-user-id"],
+  "type": "Announcement",
+  "title": "Project Milestone Achieved",
+  "message": "Solar Farm Alpha project has reached the 50% completion milestone",
+  "priority": "Medium",
+  "projectId": "{{projectId}}"
+}
+
+### 23. Schedule Notification
+POST {{baseUrl}}/api/v1/notifications/schedule
+Content-Type: {{contentType}}
+Authorization: Bearer {{authToken}}
+
+{
+  "recipientId": "{{userId}}",
+  "type": "Reminder",
+  "title": "Task Deadline Reminder",
+  "message": "Reminder: Site Survey task is due tomorrow",
+  "priority": "Medium",
+  "scheduledFor": "2025-07-14T09:00:00Z",
+  "data": {
+    "taskId": "task-id-here",
+    "dueDate": "2025-07-15T17:00:00Z"
+  }
+}
+
+### 24. Get Scheduled Notifications
+GET {{baseUrl}}/api/v1/notifications/scheduled
+Authorization: Bearer {{authToken}}
+
+### 25. Cancel Scheduled Notification
+DELETE {{baseUrl}}/api/v1/notifications/scheduled/{{notificationId}}
+Authorization: Bearer {{authToken}}
+
+### 26. Get Real-time Notification Updates
+GET {{baseUrl}}/api/v1/notifications/realtime/updates
+Authorization: Bearer {{authToken}}
+
+### 27. Test SignalR Connection Hub
+POST {{baseUrl}}/api/v1/notifications/test-signalr
+Content-Type: {{contentType}}
+Authorization: Bearer {{authToken}}
+
+{
+  "message": "Test real-time notification",
+  "userId": "{{userId}}"
+}
+
+### 28. Export Notifications (CSV)
+GET {{baseUrl}}/api/v1/notifications/export?format=csv&startDate=2025-07-01&endDate=2025-07-31
+Authorization: Bearer {{authToken}}
+
+### 29. Search Notifications
+GET {{baseUrl}}/api/v1/notifications/search?query=task&type=TaskAssignment
+Authorization: Bearer {{authToken}}
+
+### 30. Test Invalid Notification Creation
+POST {{baseUrl}}/api/v1/notifications
+Content-Type: {{contentType}}
+Authorization: Bearer {{authToken}}
+
+{
+  "message": "Missing recipient ID and title"
+}

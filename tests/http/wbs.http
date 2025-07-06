@@ -1,0 +1,279 @@
+# WBS (Work Breakdown Structure) API Tests
+# Tests for WBS creation, management, and task breakdown
+
+@baseUrl = http://localhost:5001
+@contentType = application/json
+
+### Variables - Update these after setup
+@authToken = YOUR_JWT_TOKEN_HERE
+@projectId = YOUR_PROJECT_ID_HERE
+@wbsId = YOUR_WBS_ID_HERE
+@taskId = YOUR_WBS_TASK_ID_HERE
+
+### 1. Get All WBS
+GET {{baseUrl}}/api/v1/wbs
+Authorization: Bearer {{authToken}}
+
+### 2. Get WBS with Pagination
+GET {{baseUrl}}/api/v1/wbs?pageNumber=1&pageSize=10
+Authorization: Bearer {{authToken}}
+
+### 3. Get WBS by Project
+GET {{baseUrl}}/api/v1/wbs/project/{{projectId}}
+Authorization: Bearer {{authToken}}
+
+### 4. Get WBS by ID
+GET {{baseUrl}}/api/v1/wbs/{{wbsId}}
+Authorization: Bearer {{authToken}}
+
+### 5. Create New WBS for Solar Project
+POST {{baseUrl}}/api/v1/wbs
+Content-Type: {{contentType}}
+Authorization: Bearer {{authToken}}
+
+{
+  "projectId": "{{projectId}}",
+  "wbsName": "Solar Farm Installation WBS",
+  "description": "Complete work breakdown structure for solar farm installation",
+  "tasks": [
+    {
+      "taskCode": "1.0",
+      "taskName": "Project Initiation",
+      "description": "Project setup and initial planning activities",
+      "parentTaskId": null,
+      "estimatedHours": 80,
+      "level": 1,
+      "orderIndex": 1
+    },
+    {
+      "taskCode": "1.1",
+      "taskName": "Project Charter",
+      "description": "Create and approve project charter",
+      "parentTaskId": null,
+      "estimatedHours": 16,
+      "level": 2,
+      "orderIndex": 1
+    },
+    {
+      "taskCode": "1.2",
+      "taskName": "Stakeholder Analysis",
+      "description": "Identify and analyze project stakeholders",
+      "parentTaskId": null,
+      "estimatedHours": 24,
+      "level": 2,
+      "orderIndex": 2
+    },
+    {
+      "taskCode": "2.0",
+      "taskName": "Site Assessment",
+      "description": "Complete site evaluation and preparation",
+      "parentTaskId": null,
+      "estimatedHours": 120,
+      "level": 1,
+      "orderIndex": 2
+    },
+    {
+      "taskCode": "2.1",
+      "taskName": "Topographical Survey",
+      "description": "Conduct detailed site survey",
+      "parentTaskId": null,
+      "estimatedHours": 40,
+      "level": 2,
+      "orderIndex": 1
+    },
+    {
+      "taskCode": "2.2",
+      "taskName": "Soil Analysis",
+      "description": "Perform geotechnical soil analysis",
+      "parentTaskId": null,
+      "estimatedHours": 32,
+      "level": 2,
+      "orderIndex": 2
+    },
+    {
+      "taskCode": "2.3",
+      "taskName": "Environmental Impact Assessment",
+      "description": "Assess environmental impact and compliance",
+      "parentTaskId": null,
+      "estimatedHours": 48,
+      "level": 2,
+      "orderIndex": 3
+    },
+    {
+      "taskCode": "3.0",
+      "taskName": "Design Phase",
+      "description": "System design and engineering",
+      "parentTaskId": null,
+      "estimatedHours": 200,
+      "level": 1,
+      "orderIndex": 3
+    },
+    {
+      "taskCode": "3.1",
+      "taskName": "Electrical Design",
+      "description": "Design electrical systems and layouts",
+      "parentTaskId": null,
+      "estimatedHours": 80,
+      "level": 2,
+      "orderIndex": 1
+    },
+    {
+      "taskCode": "3.2",
+      "taskName": "Mechanical Design",
+      "description": "Design mounting and support structures",
+      "parentTaskId": null,
+      "estimatedHours": 60,
+      "level": 2,
+      "orderIndex": 2
+    },
+    {
+      "taskCode": "3.3",
+      "taskName": "Civil Design",
+      "description": "Design civil infrastructure and access roads",
+      "parentTaskId": null,
+      "estimatedHours": 60,
+      "level": 2,
+      "orderIndex": 3
+    }
+  ]
+}
+
+### 6. Update WBS
+PUT {{baseUrl}}/api/v1/wbs/{{wbsId}}
+Content-Type: {{contentType}}
+Authorization: Bearer {{authToken}}
+
+{
+  "projectId": "{{projectId}}",
+  "wbsName": "Solar Farm Installation WBS - Updated",
+  "description": "Updated comprehensive work breakdown structure",
+  "status": "Active"
+}
+
+### 7. Add Task to WBS
+POST {{baseUrl}}/api/v1/wbs/{{wbsId}}/tasks
+Content-Type: {{contentType}}
+Authorization: Bearer {{authToken}}
+
+{
+  "taskCode": "4.0",
+  "taskName": "Installation Phase",
+  "description": "Physical installation of solar equipment",
+  "parentTaskId": null,
+  "estimatedHours": 400,
+  "level": 1,
+  "orderIndex": 4
+}
+
+### 8. Update WBS Task
+PUT {{baseUrl}}/api/v1/wbs/{{wbsId}}/tasks/{{taskId}}
+Content-Type: {{contentType}}
+Authorization: Bearer {{authToken}}
+
+{
+  "taskCode": "4.0",
+  "taskName": "Installation Phase - Updated",
+  "description": "Updated physical installation of solar equipment",
+  "estimatedHours": 450,
+  "actualHours": 100,
+  "status": "InProgress"
+}
+
+### 9. Delete WBS Task
+DELETE {{baseUrl}}/api/v1/wbs/{{wbsId}}/tasks/{{taskId}}
+Authorization: Bearer {{authToken}}
+
+### 10. Delete WBS
+DELETE {{baseUrl}}/api/v1/wbs/{{wbsId}}
+Authorization: Bearer {{authToken}}
+
+### 11. Get WBS Tree Structure
+GET {{baseUrl}}/api/v1/wbs/{{wbsId}}/tree
+Authorization: Bearer {{authToken}}
+
+### 12. Get WBS Progress Summary
+GET {{baseUrl}}/api/v1/wbs/{{wbsId}}/progress
+Authorization: Bearer {{authToken}}
+
+### 13. Get WBS Critical Path
+GET {{baseUrl}}/api/v1/wbs/{{wbsId}}/critical-path
+Authorization: Bearer {{authToken}}
+
+### 14. Update Task Progress
+PATCH {{baseUrl}}/api/v1/wbs/{{wbsId}}/tasks/{{taskId}}/progress
+Content-Type: {{contentType}}
+Authorization: Bearer {{authToken}}
+
+{
+  "progressPercentage": 60,
+  "actualHours": 150,
+  "notes": "Task progressing well, on schedule"
+}
+
+### 15. Complete WBS Task
+PATCH {{baseUrl}}/api/v1/wbs/{{wbsId}}/tasks/{{taskId}}/complete
+Content-Type: {{contentType}}
+Authorization: Bearer {{authToken}}
+
+{
+  "actualHours": 380,
+  "completionDate": "2025-07-15T17:00:00Z",
+  "completionNotes": "Task completed successfully"
+}
+
+### 16. Get WBS Tasks by Level
+GET {{baseUrl}}/api/v1/wbs/{{wbsId}}/tasks/level/1
+Authorization: Bearer {{authToken}}
+
+### 17. Get WBS Tasks by Status
+GET {{baseUrl}}/api/v1/wbs/{{wbsId}}/tasks/status/InProgress
+Authorization: Bearer {{authToken}}
+
+### 18. Search WBS Tasks
+GET {{baseUrl}}/api/v1/wbs/{{wbsId}}/tasks/search?query=design
+Authorization: Bearer {{authToken}}
+
+### 19. Export WBS (Excel)
+GET {{baseUrl}}/api/v1/wbs/{{wbsId}}/export?format=excel
+Authorization: Bearer {{authToken}}
+
+### 20. Get WBS Cost Analysis
+GET {{baseUrl}}/api/v1/wbs/{{wbsId}}/cost-analysis
+Authorization: Bearer {{authToken}}
+
+### 21. Get WBS Resource Allocation
+GET {{baseUrl}}/api/v1/wbs/{{wbsId}}/resource-allocation
+Authorization: Bearer {{authToken}}
+
+### 22. Reorder WBS Tasks
+PATCH {{baseUrl}}/api/v1/wbs/{{wbsId}}/tasks/reorder
+Content-Type: {{contentType}}
+Authorization: Bearer {{authToken}}
+
+{
+  "taskOrders": [
+    {
+      "taskId": "{{taskId}}",
+      "newOrderIndex": 2
+    }
+  ]
+}
+
+### 23. Copy WBS to Another Project
+POST {{baseUrl}}/api/v1/wbs/{{wbsId}}/copy
+Content-Type: {{contentType}}
+Authorization: Bearer {{authToken}}
+
+{
+  "targetProjectId": "{{projectId}}",
+  "newWbsName": "Copied WBS for New Project"
+}
+
+### 24. Test Invalid WBS Creation - Missing Required Fields
+POST {{baseUrl}}/api/v1/wbs
+Content-Type: {{contentType}}
+Authorization: Bearer {{authToken}}
+
+{
+  "description": "Missing project ID and WBS name"
+}

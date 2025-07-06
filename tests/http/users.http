@@ -1,0 +1,111 @@
+# Users Management API Tests
+# Tests for user CRUD operations, user management, and user queries
+
+@baseUrl = http://localhost:5001
+@contentType = application/json
+
+### Variables - Update these after login
+@authToken = YOUR_JWT_TOKEN_HERE
+@adminToken = YOUR_ADMIN_JWT_TOKEN_HERE
+@userId = YOUR_USER_ID_HERE
+
+### 1. Get All Users (Admin/Manager only)
+GET {{baseUrl}}/api/v1/users
+Authorization: Bearer {{adminToken}}
+
+### 2. Get All Users with Pagination
+GET {{baseUrl}}/api/v1/users?pageNumber=1&pageSize=5
+Authorization: Bearer {{adminToken}}
+
+### 3. Get All Users with Role Filter
+GET {{baseUrl}}/api/v1/users?role=Admin
+Authorization: Bearer {{adminToken}}
+
+### 4. Get User by ID
+GET {{baseUrl}}/api/v1/users/{{userId}}
+Authorization: Bearer {{authToken}}
+
+### 5. Get User by Username
+GET {{baseUrl}}/api/v1/users/username/admin123
+Authorization: Bearer {{authToken}}
+
+### 6. Create New User (Admin only)
+POST {{baseUrl}}/api/v1/users
+Content-Type: {{contentType}}
+Authorization: Bearer {{adminToken}}
+
+{
+  "username": "createduser",
+  "email": "created@example.com",
+  "password": "CreatedPass123!",
+  "fullName": "Created User",
+  "roleId": 3
+}
+
+### 7. Update User (Admin only)
+PUT {{baseUrl}}/api/v1/users/{{userId}}
+Content-Type: {{contentType}}
+Authorization: Bearer {{adminToken}}
+
+{
+  "username": "updateduser",
+  "email": "updated@example.com",
+  "fullName": "Updated User Name",
+  "roleId": 2,
+  "isActive": true
+}
+
+### 8. Partially Update User (Admin only)
+PATCH {{baseUrl}}/api/v1/users/{{userId}}
+Content-Type: {{contentType}}
+Authorization: Bearer {{adminToken}}
+
+{
+  "fullName": "Partially Updated Name",
+  "isActive": false
+}
+
+### 9. Activate User Account (Admin only)
+PATCH {{baseUrl}}/api/v1/users/{{userId}}/activate
+Authorization: Bearer {{adminToken}}
+
+### 10. Deactivate User Account (Admin only)
+PATCH {{baseUrl}}/api/v1/users/{{userId}}/deactivate
+Authorization: Bearer {{adminToken}}
+
+### 11. Change User Password (Admin only)
+PATCH {{baseUrl}}/api/v1/users/{{userId}}/password
+Content-Type: {{contentType}}
+Authorization: Bearer {{adminToken}}
+
+{
+  "newPassword": "NewSecurePass123!"
+}
+
+### 12. Delete User (Admin only)
+DELETE {{baseUrl}}/api/v1/users/{{userId}}
+Authorization: Bearer {{adminToken}}
+
+### 13. Get User Statistics (Admin only)
+GET {{baseUrl}}/api/v1/users/statistics
+Authorization: Bearer {{adminToken}}
+
+### 14. Search Users (Admin/Manager only)
+GET {{baseUrl}}/api/v1/users/search?query=admin
+Authorization: Bearer {{adminToken}}
+
+### 15. Test Unauthorized Access (No Token)
+GET {{baseUrl}}/api/v1/users
+
+### 16. Test Forbidden Access (Regular User accessing Admin endpoint)
+POST {{baseUrl}}/api/v1/users
+Content-Type: {{contentType}}
+Authorization: Bearer {{authToken}}
+
+{
+  "username": "shouldfail",
+  "email": "fail@example.com",
+  "password": "Password123!",
+  "fullName": "Should Fail",
+  "roleId": 3
+}

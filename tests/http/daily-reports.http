@@ -1,0 +1,152 @@
+# Daily Reports API Tests
+# Tests for daily report creation, retrieval, and management
+
+@baseUrl = http://localhost:5001
+@contentType = application/json
+
+### Variables - Update these after setup
+@authToken = YOUR_JWT_TOKEN_HERE
+@projectId = YOUR_PROJECT_ID_HERE
+@reportId = YOUR_REPORT_ID_HERE
+@userId = YOUR_USER_ID_HERE
+
+### 1. Get All Daily Reports
+GET {{baseUrl}}/api/v1/daily-reports
+Authorization: Bearer {{authToken}}
+
+### 2. Get Daily Reports with Pagination
+GET {{baseUrl}}/api/v1/daily-reports?pageNumber=1&pageSize=10
+Authorization: Bearer {{authToken}}
+
+### 3. Get Daily Reports by Project
+GET {{baseUrl}}/api/v1/daily-reports/project/{{projectId}}
+Authorization: Bearer {{authToken}}
+
+### 4. Get Daily Report by ID
+GET {{baseUrl}}/api/v1/daily-reports/{{reportId}}
+Authorization: Bearer {{authToken}}
+
+### 5. Create New Daily Report
+POST {{baseUrl}}/api/v1/daily-reports
+Content-Type: {{contentType}}
+Authorization: Bearer {{authToken}}
+
+{
+  "projectId": "{{projectId}}",
+  "reportDate": "2025-07-07T00:00:00Z",
+  "workDescription": "Completed site survey for solar panel installation. Measured roof dimensions and assessed structural integrity.",
+  "hoursWorked": 8.5,
+  "materialsUsed": "Survey equipment, measuring tools, safety gear",
+  "issuesEncountered": "Minor access issue to north section of roof",
+  "weatherConditions": "Sunny, 25°C, light breeze",
+  "safetyIncidents": "None",
+  "progress": 25,
+  "notes": "Site is suitable for installation. Proceeding with electrical design phase."
+}
+
+### 6. Create Another Daily Report
+POST {{baseUrl}}/api/v1/daily-reports
+Content-Type: {{contentType}}
+Authorization: Bearer {{authToken}}
+
+{
+  "projectId": "{{projectId}}",
+  "reportDate": "2025-07-08T00:00:00Z",
+  "workDescription": "Started electrical design and layout planning",
+  "hoursWorked": 7.0,
+  "materialsUsed": "Design software, electrical components catalog",
+  "issuesEncountered": "None",
+  "weatherConditions": "Office work - indoor",
+  "safetyIncidents": "None",
+  "progress": 35,
+  "notes": "Electrical design 50% complete"
+}
+
+### 7. Update Daily Report
+PUT {{baseUrl}}/api/v1/daily-reports/{{reportId}}
+Content-Type: {{contentType}}
+Authorization: Bearer {{authToken}}
+
+{
+  "projectId": "{{projectId}}",
+  "reportDate": "2025-07-07T00:00:00Z",
+  "workDescription": "Completed comprehensive site survey for solar panel installation. Measured roof dimensions, assessed structural integrity, and evaluated shading conditions.",
+  "hoursWorked": 9.0,
+  "materialsUsed": "Survey equipment, measuring tools, safety gear, drone for aerial assessment",
+  "issuesEncountered": "Minor access issue to north section of roof - resolved with ladder extension",
+  "weatherConditions": "Sunny, 25°C, light breeze - ideal conditions",
+  "safetyIncidents": "None",
+  "progress": 30,
+  "notes": "Site is excellent for installation. Updated progress based on additional measurements."
+}
+
+### 8. Partially Update Daily Report
+PATCH {{baseUrl}}/api/v1/daily-reports/{{reportId}}
+Content-Type: {{contentType}}
+Authorization: Bearer {{authToken}}
+
+{
+  "progress": 40,
+  "notes": "Updated progress after reviewing measurements"
+}
+
+### 9. Delete Daily Report
+DELETE {{baseUrl}}/api/v1/daily-reports/{{reportId}}
+Authorization: Bearer {{authToken}}
+
+### 10. Get Daily Reports by Date Range
+GET {{baseUrl}}/api/v1/daily-reports/daterange?startDate=2025-07-01&endDate=2025-07-31
+Authorization: Bearer {{authToken}}
+
+### 11. Get Daily Reports by User
+GET {{baseUrl}}/api/v1/daily-reports/user/{{userId}}
+Authorization: Bearer {{authToken}}
+
+### 12. Get Today's Daily Reports
+GET {{baseUrl}}/api/v1/daily-reports/today
+Authorization: Bearer {{authToken}}
+
+### 13. Get This Week's Daily Reports
+GET {{baseUrl}}/api/v1/daily-reports/this-week
+Authorization: Bearer {{authToken}}
+
+### 14. Get Daily Reports Summary
+GET {{baseUrl}}/api/v1/daily-reports/summary
+Authorization: Bearer {{authToken}}
+
+### 15. Search Daily Reports
+GET {{baseUrl}}/api/v1/daily-reports/search?query=survey
+Authorization: Bearer {{authToken}}
+
+### 16. Get Daily Reports with Issues
+GET {{baseUrl}}/api/v1/daily-reports/with-issues
+Authorization: Bearer {{authToken}}
+
+### 17. Get Daily Reports with Safety Incidents
+GET {{baseUrl}}/api/v1/daily-reports/with-safety-incidents
+Authorization: Bearer {{authToken}}
+
+### 18. Export Daily Reports (CSV)
+GET {{baseUrl}}/api/v1/daily-reports/export?format=csv&startDate=2025-07-01&endDate=2025-07-31
+Authorization: Bearer {{authToken}}
+
+### 19. Test Invalid Daily Report Creation - Missing Required Fields
+POST {{baseUrl}}/api/v1/daily-reports
+Content-Type: {{contentType}}
+Authorization: Bearer {{authToken}}
+
+{
+  "reportDate": "2025-07-07T00:00:00Z",
+  "workDescription": "Missing project ID"
+}
+
+### 20. Test Invalid Date Format
+POST {{baseUrl}}/api/v1/daily-reports
+Content-Type: {{contentType}}
+Authorization: Bearer {{authToken}}
+
+{
+  "projectId": "{{projectId}}",
+  "reportDate": "invalid-date",
+  "workDescription": "Test with invalid date"
+}

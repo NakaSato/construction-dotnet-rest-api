@@ -1,0 +1,116 @@
+# Authentication API Tests
+# Tests for user authentication, registration, and token management
+
+@baseUrl = http://localhost:5001
+@contentType = application/json
+
+### Variables - Update these tokens after login
+@authToken = YOUR_JWT_TOKEN_HERE
+@refreshToken = YOUR_REFRESH_TOKEN_HERE
+
+### 1. User Registration
+POST {{baseUrl}}/api/v1/auth/register
+Content-Type: {{contentType}}
+
+{
+  "username": "newuser123",
+  "email": "newuser@example.com",
+  "password": "SecurePass123!",
+  "fullName": "New Test User",
+  "roleId": 3
+}
+
+### 2. User Registration - Admin Role
+POST {{baseUrl}}/api/v1/auth/register
+Content-Type: {{contentType}}
+
+{
+  "username": "admin123",
+  "email": "admin@example.com",
+  "password": "AdminPass123!",
+  "fullName": "Admin User",
+  "roleId": 1
+}
+
+### 3. User Registration - Manager Role
+POST {{baseUrl}}/api/v1/auth/register
+Content-Type: {{contentType}}
+
+{
+  "username": "manager123",
+  "email": "manager@example.com",
+  "password": "ManagerPass123!",
+  "fullName": "Manager User",
+  "roleId": 2
+}
+
+### 4. User Login - Default Admin
+POST {{baseUrl}}/api/v1/auth/login
+Content-Type: {{contentType}}
+
+{
+  "username": "admin@example.com",
+  "password": "Admin123!"
+}
+
+### 5. User Login - Regular User
+POST {{baseUrl}}/api/v1/auth/login
+Content-Type: {{contentType}}
+
+{
+  "username": "newuser123",
+  "password": "SecurePass123!"
+}
+
+### 6. User Login - By Email
+POST {{baseUrl}}/api/v1/auth/login
+Content-Type: {{contentType}}
+
+{
+  "username": "admin@example.com",
+  "password": "AdminPass123!"
+}
+
+### 7. Refresh Token
+POST {{baseUrl}}/api/v1/auth/refresh
+Content-Type: {{contentType}}
+
+"{{refreshToken}}"
+
+### 8. User Logout (Requires Authentication)
+POST {{baseUrl}}/api/v1/auth/logout
+Content-Type: {{contentType}}
+Authorization: Bearer {{authToken}}
+
+### 9. Test Invalid Registration - Weak Password
+POST {{baseUrl}}/api/v1/auth/register
+Content-Type: {{contentType}}
+
+{
+  "username": "testuser",
+  "email": "test@example.com",
+  "password": "weak",
+  "fullName": "Test User",
+  "roleId": 3
+}
+
+### 10. Test Invalid Registration - Invalid Email
+POST {{baseUrl}}/api/v1/auth/register
+Content-Type: {{contentType}}
+
+{
+  "username": "testuser2",
+  "email": "invalid-email",
+  "password": "SecurePass123!",
+  "fullName": "Test User",
+  "roleId": 3
+}
+
+### 11. Test Invalid Login
+POST {{baseUrl}}/api/v1/auth/login
+Content-Type: {{contentType}}
+
+{
+  "username": "nonexistent",
+  "password": "wrongpassword"
+}

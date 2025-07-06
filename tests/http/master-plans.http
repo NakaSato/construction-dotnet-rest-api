@@ -1,0 +1,232 @@
+# Master Plans API Tests
+# Tests for master plan creation, management, and tracking
+
+@baseUrl = http://localhost:5001
+@contentType = application/json
+
+### Variables - Update these after setup
+@authToken = YOUR_JWT_TOKEN_HERE
+@projectId = YOUR_PROJECT_ID_HERE
+@masterPlanId = YOUR_MASTER_PLAN_ID_HERE
+@phaseId = YOUR_PHASE_ID_HERE
+@milestoneId = YOUR_MILESTONE_ID_HERE
+
+### 1. Get All Master Plans
+GET {{baseUrl}}/api/v1/master-plans
+Authorization: Bearer {{authToken}}
+
+### 2. Get Master Plans with Pagination
+GET {{baseUrl}}/api/v1/master-plans?pageNumber=1&pageSize=10
+Authorization: Bearer {{authToken}}
+
+### 3. Get Master Plan by ID
+GET {{baseUrl}}/api/v1/master-plans/{{masterPlanId}}
+Authorization: Bearer {{authToken}}
+
+### 4. Get Master Plans by Project
+GET {{baseUrl}}/api/v1/master-plans/project/{{projectId}}
+Authorization: Bearer {{authToken}}
+
+### 5. Create New Master Plan
+POST {{baseUrl}}/api/v1/master-plans
+Content-Type: {{contentType}}
+Authorization: Bearer {{authToken}}
+
+{
+  "projectId": "{{projectId}}",
+  "planName": "Solar Farm Installation Master Plan",
+  "description": "Comprehensive master plan for large-scale solar farm installation project",
+  "startDate": "2025-08-01T00:00:00Z",
+  "endDate": "2025-12-31T23:59:59Z",
+  "totalBudget": 2500000.00,
+  "phases": [
+    {
+      "phaseName": "Site Preparation",
+      "description": "Site clearing, grading, and infrastructure preparation",
+      "startDate": "2025-08-01T00:00:00Z",
+      "endDate": "2025-08-31T23:59:59Z",
+      "budget": 300000.00,
+      "dependencies": [],
+      "milestones": [
+        {
+          "milestoneName": "Site Survey Complete",
+          "description": "Complete topographical and geotechnical survey",
+          "targetDate": "2025-08-15T00:00:00Z",
+          "isCompleted": false
+        }
+      ]
+    },
+    {
+      "phaseName": "Electrical Infrastructure",
+      "description": "Installation of electrical infrastructure and grid connection",
+      "startDate": "2025-09-01T00:00:00Z",
+      "endDate": "2025-10-15T23:59:59Z",
+      "budget": 800000.00,
+      "dependencies": ["Site Preparation"],
+      "milestones": [
+        {
+          "milestoneName": "Transformer Installation",
+          "description": "Install main transformer and electrical panels",
+          "targetDate": "2025-09-30T00:00:00Z",
+          "isCompleted": false
+        }
+      ]
+    },
+    {
+      "phaseName": "Solar Panel Installation",
+      "description": "Installation of solar panels and mounting systems",
+      "startDate": "2025-10-01T00:00:00Z",
+      "endDate": "2025-11-30T23:59:59Z",
+      "budget": 1200000.00,
+      "dependencies": ["Electrical Infrastructure"],
+      "milestones": [
+        {
+          "milestoneName": "50% Panels Installed",
+          "description": "Install first half of solar panel array",
+          "targetDate": "2025-10-31T00:00:00Z",
+          "isCompleted": false
+        }
+      ]
+    },
+    {
+      "phaseName": "Testing and Commissioning",
+      "description": "System testing, commissioning, and final inspections",
+      "startDate": "2025-12-01T00:00:00Z",
+      "endDate": "2025-12-31T23:59:59Z",
+      "budget": 200000.00,
+      "dependencies": ["Solar Panel Installation"],
+      "milestones": [
+        {
+          "milestoneName": "System Commissioning",
+          "description": "Complete system testing and commissioning",
+          "targetDate": "2025-12-20T00:00:00Z",
+          "isCompleted": false
+        }
+      ]
+    }
+  ]
+}
+
+### 6. Update Master Plan
+PUT {{baseUrl}}/api/v1/master-plans/{{masterPlanId}}
+Content-Type: {{contentType}}
+Authorization: Bearer {{authToken}}
+
+{
+  "projectId": "{{projectId}}",
+  "planName": "Solar Farm Installation Master Plan - Updated",
+  "description": "Updated comprehensive master plan with revised timeline",
+  "startDate": "2025-08-01T00:00:00Z",
+  "endDate": "2025-12-31T23:59:59Z",
+  "totalBudget": 2600000.00,
+  "status": "Active"
+}
+
+### 7. Update Master Plan Status
+PATCH {{baseUrl}}/api/v1/master-plans/{{masterPlanId}}/status
+Content-Type: {{contentType}}
+Authorization: Bearer {{authToken}}
+
+{
+  "status": "InProgress",
+  "notes": "Master plan approved and execution started"
+}
+
+### 8. Update Phase Progress
+PATCH {{baseUrl}}/api/v1/master-plans/{{masterPlanId}}/phases/{{phaseId}}/progress
+Content-Type: {{contentType}}
+Authorization: Bearer {{authToken}}
+
+{
+  "progressPercentage": 75,
+  "actualStartDate": "2025-08-01T08:00:00Z",
+  "notes": "Phase progressing well, ahead of schedule"
+}
+
+### 9. Complete Phase
+PATCH {{baseUrl}}/api/v1/master-plans/{{masterPlanId}}/phases/{{phaseId}}/complete
+Content-Type: {{contentType}}
+Authorization: Bearer {{authToken}}
+
+{
+  "actualEndDate": "2025-08-28T17:00:00Z",
+  "actualCost": 285000.00,
+  "completionNotes": "Phase completed successfully and under budget"
+}
+
+### 10. Add Phase to Master Plan
+POST {{baseUrl}}/api/v1/master-plans/{{masterPlanId}}/phases
+Content-Type: {{contentType}}
+Authorization: Bearer {{authToken}}
+
+{
+  "phaseName": "Maintenance Training",
+  "description": "Training for maintenance and operations team",
+  "startDate": "2025-12-15T00:00:00Z",
+  "endDate": "2025-12-30T23:59:59Z",
+  "budget": 50000.00,
+  "dependencies": ["Testing and Commissioning"]
+}
+
+### 11. Delete Master Plan
+DELETE {{baseUrl}}/api/v1/master-plans/{{masterPlanId}}
+Authorization: Bearer {{authToken}}
+
+### 12. Get Master Plan Progress Summary
+GET {{baseUrl}}/api/v1/master-plans/{{masterPlanId}}/progress
+Authorization: Bearer {{authToken}}
+
+### 13. Get Master Plan Critical Path
+GET {{baseUrl}}/api/v1/master-plans/{{masterPlanId}}/critical-path
+Authorization: Bearer {{authToken}}
+
+### 14. Get Master Plans by Status
+GET {{baseUrl}}/api/v1/master-plans/status/Active
+Authorization: Bearer {{authToken}}
+
+### 15. Get Master Plan Timeline
+GET {{baseUrl}}/api/v1/master-plans/{{masterPlanId}}/timeline
+Authorization: Bearer {{authToken}}
+
+### 16. Get Master Plan Budget Analysis
+GET {{baseUrl}}/api/v1/master-plans/{{masterPlanId}}/budget-analysis
+Authorization: Bearer {{authToken}}
+
+### 17. Get Master Plan Dependencies
+GET {{baseUrl}}/api/v1/master-plans/{{masterPlanId}}/dependencies
+Authorization: Bearer {{authToken}}
+
+### 18. Get Master Plan Milestones
+GET {{baseUrl}}/api/v1/master-plans/{{masterPlanId}}/milestones
+Authorization: Bearer {{authToken}}
+
+### 19. Update Milestone Status
+PATCH {{baseUrl}}/api/v1/master-plans/{{masterPlanId}}/milestones/{{milestoneId}}/complete
+Content-Type: {{contentType}}
+Authorization: Bearer {{authToken}}
+
+{
+  "actualCompletionDate": "2025-08-14T16:30:00Z",
+  "completionNotes": "Survey completed ahead of schedule"
+}
+
+### 20. Export Master Plan (PDF)
+GET {{baseUrl}}/api/v1/master-plans/{{masterPlanId}}/export?format=pdf
+Authorization: Bearer {{authToken}}
+
+### 21. Search Master Plans
+GET {{baseUrl}}/api/v1/master-plans/search?query=solar
+Authorization: Bearer {{authToken}}
+
+### 22. Get Master Plan Statistics
+GET {{baseUrl}}/api/v1/master-plans/statistics
+Authorization: Bearer {{authToken}}
+
+### 23. Test Invalid Master Plan Creation - Missing Required Fields
+POST {{baseUrl}}/api/v1/master-plans
+Content-Type: {{contentType}}
+Authorization: Bearer {{authToken}}
+
+{
+  "description": "Missing project ID and plan name"
+}

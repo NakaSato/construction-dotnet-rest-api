@@ -1,0 +1,200 @@
+# Work Requests API Tests
+# Tests for work request creation, approval workflow, and management
+
+@baseUrl = http://localhost:5001
+@contentType = application/json
+
+### Variables - Update these after setup
+@authToken = YOUR_JWT_TOKEN_HERE
+@managerToken = YOUR_MANAGER_JWT_TOKEN_HERE
+@projectId = YOUR_PROJECT_ID_HERE
+@workRequestId = YOUR_WORK_REQUEST_ID_HERE
+@requesterId = YOUR_REQUESTER_ID_HERE
+
+### 1. Get All Work Requests
+GET {{baseUrl}}/api/v1/work-requests
+Authorization: Bearer {{authToken}}
+
+### 2. Get Work Requests with Pagination
+GET {{baseUrl}}/api/v1/work-requests?pageNumber=1&pageSize=10
+Authorization: Bearer {{authToken}}
+
+### 3. Get Work Requests by Project
+GET {{baseUrl}}/api/v1/work-requests/project/{{projectId}}
+Authorization: Bearer {{authToken}}
+
+### 4. Get Work Request by ID
+GET {{baseUrl}}/api/v1/work-requests/{{workRequestId}}
+Authorization: Bearer {{authToken}}
+
+### 5. Create New Work Request - Material Request
+POST {{baseUrl}}/api/v1/work-requests
+Content-Type: {{contentType}}
+Authorization: Bearer {{authToken}}
+
+{
+  "projectId": "{{projectId}}",
+  "requesterId": "{{requesterId}}",
+  "requestType": "Material",
+  "title": "Solar Panels and Mounting Hardware",
+  "description": "Request for 50 solar panels (400W each) and corresponding mounting hardware for Phase 1 installation",
+  "priority": "High",
+  "requestedDate": "2025-07-15T00:00:00Z",
+  "estimatedCost": 25000.00,
+  "justification": "Required for scheduled installation phase starting July 15th",
+  "specifications": "Monocrystalline panels, 400W minimum, tier-1 manufacturer, 25-year warranty"
+}
+
+### 6. Create Work Request - Equipment Request
+POST {{baseUrl}}/api/v1/work-requests
+Content-Type: {{contentType}}
+Authorization: Bearer {{authToken}}
+
+{
+  "projectId": "{{projectId}}",
+  "requesterId": "{{requesterId}}",
+  "requestType": "Equipment",
+  "title": "Crane Rental for Installation",
+  "description": "Request for crane rental for solar panel installation on commercial building",
+  "priority": "Medium",
+  "requestedDate": "2025-07-20T00:00:00Z",
+  "estimatedCost": 3500.00,
+  "justification": "Required for safe installation of panels on 3-story building",
+  "specifications": "25-ton capacity, 150ft boom reach, certified operator included"
+}
+
+### 7. Create Work Request - Service Request
+POST {{baseUrl}}/api/v1/work-requests
+Content-Type: {{contentType}}
+Authorization: Bearer {{authToken}}
+
+{
+  "projectId": "{{projectId}}",
+  "requesterId": "{{requesterId}}",
+  "requestType": "Service",
+  "title": "Electrical Inspection Services",
+  "description": "Request for certified electrical inspection before system commissioning",
+  "priority": "High",
+  "requestedDate": "2025-07-25T00:00:00Z",
+  "estimatedCost": 1200.00,
+  "justification": "Required by local regulations before system activation",
+  "specifications": "Licensed electrical inspector, NEC compliance verification"
+}
+
+### 8. Update Work Request
+PUT {{baseUrl}}/api/v1/work-requests/{{workRequestId}}
+Content-Type: {{contentType}}
+Authorization: Bearer {{authToken}}
+
+{
+  "projectId": "{{projectId}}",
+  "requesterId": "{{requesterId}}",
+  "requestType": "Material",
+  "title": "Solar Panels and Mounting Hardware - Updated",
+  "description": "Updated request for 60 solar panels (400W each) and corresponding mounting hardware",
+  "priority": "High",
+  "requestedDate": "2025-07-15T00:00:00Z",
+  "estimatedCost": 30000.00,
+  "justification": "Updated quantity based on revised project scope",
+  "specifications": "Monocrystalline panels, 400W minimum, tier-1 manufacturer, 25-year warranty"
+}
+
+### 9. Update Work Request Status
+PATCH {{baseUrl}}/api/v1/work-requests/{{workRequestId}}/status
+Content-Type: {{contentType}}
+Authorization: Bearer {{managerToken}}
+
+{
+  "status": "UnderReview",
+  "comments": "Request is being reviewed by procurement team"
+}
+
+### 10. Approve Work Request (Manager/Admin)
+POST {{baseUrl}}/api/v1/work-requests/{{workRequestId}}/approve
+Content-Type: {{contentType}}
+Authorization: Bearer {{managerToken}}
+
+{
+  "approvedAmount": 28000.00,
+  "approvalComments": "Approved with budget adjustment. Proceed with procurement.",
+  "conditions": "Must use approved vendor list, delivery by July 10th"
+}
+
+### 11. Reject Work Request (Manager/Admin)
+POST {{baseUrl}}/api/v1/work-requests/{{workRequestId}}/reject
+Content-Type: {{contentType}}
+Authorization: Bearer {{managerToken}}
+
+{
+  "rejectionReason": "Budget constraints - request exceeds allocated budget for this phase",
+  "suggestions": "Consider alternative suppliers or phased procurement"
+}
+
+### 12. Request Revision
+POST {{baseUrl}}/api/v1/work-requests/{{workRequestId}}/request-revision
+Content-Type: {{contentType}}
+Authorization: Bearer {{managerToken}}
+
+{
+  "revisionComments": "Please provide detailed cost breakdown and alternative options"
+}
+
+### 13. Complete Work Request
+PATCH {{baseUrl}}/api/v1/work-requests/{{workRequestId}}/complete
+Content-Type: {{contentType}}
+Authorization: Bearer {{authToken}}
+
+{
+  "actualCost": 27500.00,
+  "completionNotes": "Materials delivered on time and in good condition",
+  "deliveryDate": "2025-07-10T14:30:00Z"
+}
+
+### 14. Delete Work Request
+DELETE {{baseUrl}}/api/v1/work-requests/{{workRequestId}}
+Authorization: Bearer {{authToken}}
+
+### 15. Get Work Requests by Status
+GET {{baseUrl}}/api/v1/work-requests/status/Pending
+Authorization: Bearer {{authToken}}
+
+### 16. Get Work Requests by Type
+GET {{baseUrl}}/api/v1/work-requests/type/Material
+Authorization: Bearer {{authToken}}
+
+### 17. Get Work Requests by Priority
+GET {{baseUrl}}/api/v1/work-requests/priority/High
+Authorization: Bearer {{authToken}}
+
+### 18. Get Work Requests by Requester
+GET {{baseUrl}}/api/v1/work-requests/requester/{{requesterId}}
+Authorization: Bearer {{authToken}}
+
+### 19. Get Pending Approvals (Manager/Admin)
+GET {{baseUrl}}/api/v1/work-requests/pending-approvals
+Authorization: Bearer {{managerToken}}
+
+### 20. Get Work Request Statistics
+GET {{baseUrl}}/api/v1/work-requests/statistics
+Authorization: Bearer {{authToken}}
+
+### 21. Search Work Requests
+GET {{baseUrl}}/api/v1/work-requests/search?query=solar
+Authorization: Bearer {{authToken}}
+
+### 22. Get Work Requests by Date Range
+GET {{baseUrl}}/api/v1/work-requests/daterange?startDate=2025-07-01&endDate=2025-07-31
+Authorization: Bearer {{authToken}}
+
+### 23. Export Work Requests (CSV)
+GET {{baseUrl}}/api/v1/work-requests/export?format=csv
+Authorization: Bearer {{authToken}}
+
+### 24. Test Invalid Work Request - Missing Required Fields
+POST {{baseUrl}}/api/v1/work-requests
+Content-Type: {{contentType}}
+Authorization: Bearer {{authToken}}
+
+{
+  "description": "Missing required fields like project ID and title"
+}

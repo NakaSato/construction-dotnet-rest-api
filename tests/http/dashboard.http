@@ -1,0 +1,206 @@
+# Dashboard API Tests
+# Tests for dashboard data, analytics, and reporting endpoints
+
+@baseUrl = http://localhost:5001
+@contentType = application/json
+
+### Variables - Update these after setup
+@authToken = YOUR_JWT_TOKEN_HERE
+@projectId = YOUR_PROJECT_ID_HERE
+@userId = YOUR_USER_ID_HERE
+
+### 1. Get Main Dashboard Overview
+GET {{baseUrl}}/api/v1/dashboard/overview
+Authorization: Bearer {{authToken}}
+
+### 2. Get Project Dashboard
+GET {{baseUrl}}/api/v1/dashboard/projects
+Authorization: Bearer {{authToken}}
+
+### 3. Get Project-specific Dashboard
+GET {{baseUrl}}/api/v1/dashboard/projects/{{projectId}}
+Authorization: Bearer {{authToken}}
+
+### 4. Get User Dashboard
+GET {{baseUrl}}/api/v1/dashboard/user/{{userId}}
+Authorization: Bearer {{authToken}}
+
+### 5. Get Task Dashboard
+GET {{baseUrl}}/api/v1/dashboard/tasks
+Authorization: Bearer {{authToken}}
+
+### 6. Get Financial Dashboard
+GET {{baseUrl}}/api/v1/dashboard/financial
+Authorization: Bearer {{authToken}}
+
+### 7. Get Performance Metrics
+GET {{baseUrl}}/api/v1/dashboard/performance
+Authorization: Bearer {{authToken}}
+
+### 8. Get Project Statistics
+GET {{baseUrl}}/api/v1/dashboard/statistics/projects
+Authorization: Bearer {{authToken}}
+
+### 9. Get Task Statistics
+GET {{baseUrl}}/api/v1/dashboard/statistics/tasks
+Authorization: Bearer {{authToken}}
+
+### 10. Get User Statistics
+GET {{baseUrl}}/api/v1/dashboard/statistics/users
+Authorization: Bearer {{authToken}}
+
+### 11. Get Work Request Statistics
+GET {{baseUrl}}/api/v1/dashboard/statistics/work-requests
+Authorization: Bearer {{authToken}}
+
+### 12. Get Recent Activities
+GET {{baseUrl}}/api/v1/dashboard/activities/recent?limit=10
+Authorization: Bearer {{authToken}}
+
+### 13. Get Upcoming Deadlines
+GET {{baseUrl}}/api/v1/dashboard/deadlines/upcoming?days=7
+Authorization: Bearer {{authToken}}
+
+### 14. Get Overdue Tasks
+GET {{baseUrl}}/api/v1/dashboard/tasks/overdue
+Authorization: Bearer {{authToken}}
+
+### 15. Get Active Projects Summary
+GET {{baseUrl}}/api/v1/dashboard/projects/active
+Authorization: Bearer {{authToken}}
+
+### 16. Get Project Progress Report
+GET {{baseUrl}}/api/v1/dashboard/projects/progress
+Authorization: Bearer {{authToken}}
+
+### 17. Get Budget Overview
+GET {{baseUrl}}/api/v1/dashboard/budget/overview
+Authorization: Bearer {{authToken}}
+
+### 18. Get Budget Utilization
+GET {{baseUrl}}/api/v1/dashboard/budget/utilization
+Authorization: Bearer {{authToken}}
+
+### 19. Get Resource Allocation
+GET {{baseUrl}}/api/v1/dashboard/resources/allocation
+Authorization: Bearer {{authToken}}
+
+### 20. Get Team Performance
+GET {{baseUrl}}/api/v1/dashboard/team/performance
+Authorization: Bearer {{authToken}}
+
+### 21. Get Workload Distribution
+GET {{baseUrl}}/api/v1/dashboard/workload/distribution
+Authorization: Bearer {{authToken}}
+
+### 22. Get Project Timeline
+GET {{baseUrl}}/api/v1/dashboard/timeline/projects
+Authorization: Bearer {{authToken}}
+
+### 23. Get Critical Path Analysis
+GET {{baseUrl}}/api/v1/dashboard/analysis/critical-path
+Authorization: Bearer {{authToken}}
+
+### 24. Get Risk Assessment
+GET {{baseUrl}}/api/v1/dashboard/risk/assessment
+Authorization: Bearer {{authToken}}
+
+### 25. Get Quality Metrics
+GET {{baseUrl}}/api/v1/dashboard/quality/metrics
+Authorization: Bearer {{authToken}}
+
+### 26. Get Productivity Report
+GET {{baseUrl}}/api/v1/dashboard/productivity/report
+Authorization: Bearer {{authToken}}
+
+### 27. Get Custom Dashboard Data
+POST {{baseUrl}}/api/v1/dashboard/custom
+Content-Type: {{contentType}}
+Authorization: Bearer {{authToken}}
+
+{
+  "widgets": [
+    {
+      "type": "ProjectProgress",
+      "projectId": "{{projectId}}",
+      "dateRange": "last30days"
+    },
+    {
+      "type": "TaskSummary",
+      "userId": "{{userId}}",
+      "status": ["InProgress", "Pending"]
+    },
+    {
+      "type": "BudgetChart",
+      "projectId": "{{projectId}}",
+      "chartType": "pie"
+    }
+  ]
+}
+
+### 28. Export Dashboard Data (Excel)
+GET {{baseUrl}}/api/v1/dashboard/export?format=excel&type=overview
+Authorization: Bearer {{authToken}}
+
+### 29. Export Dashboard Data (PDF)
+GET {{baseUrl}}/api/v1/dashboard/export?format=pdf&type=projects
+Authorization: Bearer {{authToken}}
+
+### 30. Get Dashboard Alerts
+GET {{baseUrl}}/api/v1/dashboard/alerts
+Authorization: Bearer {{authToken}}
+
+### 31. Get Dashboard Notifications
+GET {{baseUrl}}/api/v1/dashboard/notifications?limit=5
+Authorization: Bearer {{authToken}}
+
+### 32. Get KPI Dashboard
+GET {{baseUrl}}/api/v1/dashboard/kpi
+Authorization: Bearer {{authToken}}
+
+### 33. Get Trend Analysis
+GET {{baseUrl}}/api/v1/dashboard/trends?metric=productivity&period=quarterly
+Authorization: Bearer {{authToken}}
+
+### 34. Get Comparison Report
+GET {{baseUrl}}/api/v1/dashboard/compare?projectIds={{projectId}}&metric=progress
+Authorization: Bearer {{authToken}}
+
+### 35. Get Real-time Updates
+GET {{baseUrl}}/api/v1/dashboard/realtime/updates
+Authorization: Bearer {{authToken}}
+
+### 36. Update Dashboard Preferences
+POST {{baseUrl}}/api/v1/dashboard/preferences
+Content-Type: {{contentType}}
+Authorization: Bearer {{authToken}}
+
+{
+  "defaultView": "overview",
+  "refreshInterval": 300,
+  "widgets": [
+    {
+      "type": "ProjectProgress",
+      "position": 1,
+      "size": "large"
+    },
+    {
+      "type": "TaskSummary",
+      "position": 2,
+      "size": "medium"
+    },
+    {
+      "type": "UpcomingDeadlines",
+      "position": 3,
+      "size": "small"
+    }
+  ]
+}
+
+### 37. Test Dashboard with Date Range
+GET {{baseUrl}}/api/v1/dashboard/overview?startDate=2025-07-01&endDate=2025-07-31
+Authorization: Bearer {{authToken}}
+
+### 38. Test Invalid Dashboard Request
+GET {{baseUrl}}/api/v1/dashboard/invalid-endpoint
+Authorization: Bearer {{authToken}}

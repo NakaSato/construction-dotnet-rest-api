@@ -1,0 +1,229 @@
+# Calendar API Tests
+# Tests for calendar events, scheduling, and calendar management
+
+@baseUrl = http://localhost:5001
+@contentType = application/json
+
+### Variables - Update these after setup
+@authToken = YOUR_JWT_TOKEN_HERE
+@eventId = YOUR_EVENT_ID_HERE
+@userId = YOUR_USER_ID_HERE
+@projectId = YOUR_PROJECT_ID_HERE
+
+### 1. Get All Calendar Events
+GET {{baseUrl}}/api/v1/calendar/events
+Authorization: Bearer {{authToken}}
+
+### 2. Get Calendar Events by Date Range
+GET {{baseUrl}}/api/v1/calendar/events?startDate=2025-07-01&endDate=2025-07-31
+Authorization: Bearer {{authToken}}
+
+### 3. Get Calendar Event by ID
+GET {{baseUrl}}/api/v1/calendar/events/{{eventId}}
+Authorization: Bearer {{authToken}}
+
+### 4. Create New Calendar Event - Project Meeting
+POST {{baseUrl}}/api/v1/calendar/events
+Content-Type: {{contentType}}
+Authorization: Bearer {{authToken}}
+
+{
+  "title": "Solar Project Kickoff Meeting",
+  "description": "Initial project kickoff meeting with stakeholders to discuss project scope, timeline, and deliverables",
+  "startDate": "2025-07-10T09:00:00Z",
+  "endDate": "2025-07-10T11:00:00Z",
+  "location": "Conference Room A, Main Office",
+  "eventType": "Meeting",
+  "priority": "High",
+  "isAllDay": false,
+  "projectId": "{{projectId}}",
+  "organizerId": "{{userId}}",
+  "attendees": ["manager@company.com", "engineer@company.com"],
+  "reminders": [
+    {
+      "reminderTime": 15,
+      "reminderType": "Email"
+    },
+    {
+      "reminderTime": 60,
+      "reminderType": "Notification"
+    }
+  ]
+}
+
+### 5. Create Calendar Event - Site Visit
+POST {{baseUrl}}/api/v1/calendar/events
+Content-Type: {{contentType}}
+Authorization: Bearer {{authToken}}
+
+{
+  "title": "Site Survey and Assessment",
+  "description": "On-site visit to conduct detailed survey and assessment for solar installation",
+  "startDate": "2025-07-15T08:00:00Z",
+  "endDate": "2025-07-15T16:00:00Z",
+  "location": "Customer Site - 123 Industrial Blvd, City, State",
+  "eventType": "SiteVisit",
+  "priority": "High",
+  "isAllDay": false,
+  "projectId": "{{projectId}}",
+  "organizerId": "{{userId}}",
+  "attendees": ["surveyor@company.com", "engineer@company.com"],
+  "reminders": [
+    {
+      "reminderTime": 30,
+      "reminderType": "Email"
+    }
+  ]
+}
+
+### 6. Create All-Day Event
+POST {{baseUrl}}/api/v1/calendar/events
+Content-Type: {{contentType}}
+Authorization: Bearer {{authToken}}
+
+{
+  "title": "Solar Industry Conference",
+  "description": "Annual solar industry conference and exhibition",
+  "startDate": "2025-08-01T00:00:00Z",
+  "endDate": "2025-08-03T23:59:59Z",
+  "location": "Convention Center, Las Vegas",
+  "eventType": "Conference",
+  "priority": "Medium",
+  "isAllDay": true,
+  "organizerId": "{{userId}}"
+}
+
+### 7. Create Recurring Event
+POST {{baseUrl}}/api/v1/calendar/events
+Content-Type: {{contentType}}
+Authorization: Bearer {{authToken}}
+
+{
+  "title": "Weekly Project Status Meeting",
+  "description": "Weekly status update meeting for ongoing projects",
+  "startDate": "2025-07-08T14:00:00Z",
+  "endDate": "2025-07-08T15:00:00Z",
+  "location": "Conference Room B",
+  "eventType": "Meeting",
+  "priority": "Medium",
+  "isAllDay": false,
+  "projectId": "{{projectId}}",
+  "organizerId": "{{userId}}",
+  "recurrence": {
+    "pattern": "Weekly",
+    "interval": 1,
+    "daysOfWeek": ["Monday"],
+    "endDate": "2025-12-31T23:59:59Z"
+  }
+}
+
+### 8. Update Calendar Event
+PUT {{baseUrl}}/api/v1/calendar/events/{{eventId}}
+Content-Type: {{contentType}}
+Authorization: Bearer {{authToken}}
+
+{
+  "title": "Solar Project Kickoff Meeting - Updated",
+  "description": "Updated project kickoff meeting with additional stakeholders",
+  "startDate": "2025-07-10T10:00:00Z",
+  "endDate": "2025-07-10T12:00:00Z",
+  "location": "Conference Room A, Main Office",
+  "eventType": "Meeting",
+  "priority": "High",
+  "isAllDay": false,
+  "projectId": "{{projectId}}",
+  "organizerId": "{{userId}}"
+}
+
+### 9. Update Event Status
+PATCH {{baseUrl}}/api/v1/calendar/events/{{eventId}}/status
+Content-Type: {{contentType}}
+Authorization: Bearer {{authToken}}
+
+{
+  "status": "Confirmed",
+  "notes": "All attendees confirmed their availability"
+}
+
+### 10. Cancel Event
+PATCH {{baseUrl}}/api/v1/calendar/events/{{eventId}}/cancel
+Content-Type: {{contentType}}
+Authorization: Bearer {{authToken}}
+
+{
+  "cancellationReason": "Rescheduled due to weather conditions",
+  "notifyAttendees": true
+}
+
+### 11. Delete Calendar Event
+DELETE {{baseUrl}}/api/v1/calendar/events/{{eventId}}
+Authorization: Bearer {{authToken}}
+
+### 12. Get Calendar Events by User
+GET {{baseUrl}}/api/v1/calendar/events/user/{{userId}}
+Authorization: Bearer {{authToken}}
+
+### 13. Get Calendar Events by Project
+GET {{baseUrl}}/api/v1/calendar/events/project/{{projectId}}
+Authorization: Bearer {{authToken}}
+
+### 14. Get Today's Events
+GET {{baseUrl}}/api/v1/calendar/events/today
+Authorization: Bearer {{authToken}}
+
+### 15. Get This Week's Events
+GET {{baseUrl}}/api/v1/calendar/events/this-week
+Authorization: Bearer {{authToken}}
+
+### 16. Get Upcoming Events
+GET {{baseUrl}}/api/v1/calendar/events/upcoming?days=7
+Authorization: Bearer {{authToken}}
+
+### 17. Get Events by Type
+GET {{baseUrl}}/api/v1/calendar/events/type/Meeting
+Authorization: Bearer {{authToken}}
+
+### 18. Search Calendar Events
+GET {{baseUrl}}/api/v1/calendar/events/search?query=solar
+Authorization: Bearer {{authToken}}
+
+### 19. Get Calendar View - Month
+GET {{baseUrl}}/api/v1/calendar/view/month?year=2025&month=7
+Authorization: Bearer {{authToken}}
+
+### 20. Get Calendar View - Week
+GET {{baseUrl}}/api/v1/calendar/view/week?startDate=2025-07-07
+Authorization: Bearer {{authToken}}
+
+### 21. Get Calendar View - Day
+GET {{baseUrl}}/api/v1/calendar/view/day?date=2025-07-10
+Authorization: Bearer {{authToken}}
+
+### 22. Check Availability
+GET {{baseUrl}}/api/v1/calendar/availability?userId={{userId}}&startDate=2025-07-10T09:00:00Z&endDate=2025-07-10T11:00:00Z
+Authorization: Bearer {{authToken}}
+
+### 23. Find Available Time Slots
+GET {{baseUrl}}/api/v1/calendar/find-slots?participants={{userId}}&duration=60&startDate=2025-07-10&endDate=2025-07-11
+Authorization: Bearer {{authToken}}
+
+### 24. Export Calendar (ICS)
+GET {{baseUrl}}/api/v1/calendar/export?format=ics&startDate=2025-07-01&endDate=2025-07-31
+Authorization: Bearer {{authToken}}
+
+### 25. Get Calendar Statistics
+GET {{baseUrl}}/api/v1/calendar/statistics
+Authorization: Bearer {{authToken}}
+
+### 26. Test Invalid Event Creation - Missing Required Fields
+POST {{baseUrl}}/api/v1/calendar/events
+Content-Type: {{contentType}}
+Authorization: Bearer {{authToken}}
+
+{
+  "description": "Missing title and date fields"
+}
+
+### 27. Test Invalid Date Range
+GET {{baseUrl}}/api/v1/calendar/events?startDate=2025-12-31&endDate=2025-01-01
+Authorization: Bearer {{authToken}}

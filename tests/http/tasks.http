@@ -1,0 +1,159 @@
+# Tasks Management API Tests
+# Tests for task CRUD operations, task assignments, and task tracking
+
+@baseUrl = http://localhost:5001
+@contentType = application/json
+
+### Variables - Update these after setup
+@authToken = YOUR_JWT_TOKEN_HERE
+@projectId = YOUR_PROJECT_ID_HERE
+@taskId = YOUR_TASK_ID_HERE
+@assigneeId = YOUR_ASSIGNEE_ID_HERE
+
+### 1. Get All Tasks
+GET {{baseUrl}}/api/v1/tasks
+Authorization: Bearer {{authToken}}
+
+### 2. Get All Tasks with Pagination
+GET {{baseUrl}}/api/v1/tasks?pageNumber=1&pageSize=10
+Authorization: Bearer {{authToken}}
+
+### 3. Get Tasks by Project
+GET {{baseUrl}}/api/v1/tasks/project/{{projectId}}
+Authorization: Bearer {{authToken}}
+
+### 4. Get Task by ID
+GET {{baseUrl}}/api/v1/tasks/{{taskId}}
+Authorization: Bearer {{authToken}}
+
+### 5. Create New Task
+POST {{baseUrl}}/api/v1/tasks
+Content-Type: {{contentType}}
+Authorization: Bearer {{authToken}}
+
+{
+  "taskName": "Site Survey and Assessment",
+  "description": "Conduct comprehensive site survey for solar panel installation",
+  "projectId": "{{projectId}}",
+  "assigneeId": "{{assigneeId}}",
+  "startDate": "2025-07-10T08:00:00Z",
+  "endDate": "2025-07-15T17:00:00Z",
+  "priority": "High",
+  "status": "NotStarted",
+  "estimatedHours": 40
+}
+
+### 6. Create Another Task
+POST {{baseUrl}}/api/v1/tasks
+Content-Type: {{contentType}}
+Authorization: Bearer {{authToken}}
+
+{
+  "taskName": "Electrical Design",
+  "description": "Design electrical layout and wiring diagrams",
+  "projectId": "{{projectId}}",
+  "assigneeId": "{{assigneeId}}",
+  "startDate": "2025-07-16T08:00:00Z",
+  "endDate": "2025-07-25T17:00:00Z",
+  "priority": "Medium",
+  "status": "NotStarted",
+  "estimatedHours": 60
+}
+
+### 7. Update Task
+PUT {{baseUrl}}/api/v1/tasks/{{taskId}}
+Content-Type: {{contentType}}
+Authorization: Bearer {{authToken}}
+
+{
+  "taskName": "Site Survey and Assessment - Updated",
+  "description": "Updated comprehensive site survey for solar panel installation",
+  "projectId": "{{projectId}}",
+  "assigneeId": "{{assigneeId}}",
+  "startDate": "2025-07-10T08:00:00Z",
+  "endDate": "2025-07-15T17:00:00Z",
+  "priority": "High",
+  "status": "InProgress",
+  "estimatedHours": 45,
+  "actualHours": 10
+}
+
+### 8. Partially Update Task Status
+PATCH {{baseUrl}}/api/v1/tasks/{{taskId}}
+Content-Type: {{contentType}}
+Authorization: Bearer {{authToken}}
+
+{
+  "status": "InProgress",
+  "actualHours": 20
+}
+
+### 9. Update Task Progress
+PATCH {{baseUrl}}/api/v1/tasks/{{taskId}}/progress
+Content-Type: {{contentType}}
+Authorization: Bearer {{authToken}}
+
+{
+  "progressPercentage": 75,
+  "notes": "Almost completed the site survey"
+}
+
+### 10. Assign Task to User
+PATCH {{baseUrl}}/api/v1/tasks/{{taskId}}/assign
+Content-Type: {{contentType}}
+Authorization: Bearer {{authToken}}
+
+{
+  "assigneeId": "{{assigneeId}}"
+}
+
+### 11. Complete Task
+PATCH {{baseUrl}}/api/v1/tasks/{{taskId}}/complete
+Content-Type: {{contentType}}
+Authorization: Bearer {{authToken}}
+
+{
+  "actualHours": 42,
+  "completionNotes": "Site survey completed successfully"
+}
+
+### 12. Delete Task
+DELETE {{baseUrl}}/api/v1/tasks/{{taskId}}
+Authorization: Bearer {{authToken}}
+
+### 13. Get Tasks by Assignee
+GET {{baseUrl}}/api/v1/tasks/assignee/{{assigneeId}}
+Authorization: Bearer {{authToken}}
+
+### 14. Get Tasks by Status
+GET {{baseUrl}}/api/v1/tasks/status/InProgress
+Authorization: Bearer {{authToken}}
+
+### 15. Get Tasks by Priority
+GET {{baseUrl}}/api/v1/tasks/priority/High
+Authorization: Bearer {{authToken}}
+
+### 16. Get Task Statistics
+GET {{baseUrl}}/api/v1/tasks/statistics
+Authorization: Bearer {{authToken}}
+
+### 17. Search Tasks
+GET {{baseUrl}}/api/v1/tasks/search?query=survey
+Authorization: Bearer {{authToken}}
+
+### 18. Get Overdue Tasks
+GET {{baseUrl}}/api/v1/tasks/overdue
+Authorization: Bearer {{authToken}}
+
+### 19. Get Tasks Due This Week
+GET {{baseUrl}}/api/v1/tasks/due-this-week
+Authorization: Bearer {{authToken}}
+
+### 20. Test Invalid Task Creation - Missing Required Fields
+POST {{baseUrl}}/api/v1/tasks
+Content-Type: {{contentType}}
+Authorization: Bearer {{authToken}}
+
+{
+  "description": "Missing task name and project ID"
+}
