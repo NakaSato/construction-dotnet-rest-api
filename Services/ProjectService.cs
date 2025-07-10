@@ -69,6 +69,26 @@ public class ProjectService : IProjectService
 
             var totalCount = await query.CountAsync();
 
+            // Calculate project statistics for enhanced response
+            var allProjectsQuery = _context.Projects.AsQueryable();
+            var projectStats = new ProjectStatistics
+            {
+                TotalProjects = await allProjectsQuery.CountAsync(),
+                ActiveProjects = await allProjectsQuery.CountAsync(p => p.Status == ProjectStatus.InProgress),
+                CompletedProjects = await allProjectsQuery.CountAsync(p => p.Status == ProjectStatus.Completed),
+                PlanningProjects = await allProjectsQuery.CountAsync(p => p.Status == ProjectStatus.Planning),
+                OnHoldProjects = await allProjectsQuery.CountAsync(p => p.Status == ProjectStatus.OnHold),
+                CancelledProjects = await allProjectsQuery.CountAsync(p => p.Status == ProjectStatus.Cancelled),
+                TotalCapacityKw = await allProjectsQuery.SumAsync(p => p.TotalCapacityKw ?? 0),
+                TotalPvModules = await allProjectsQuery.SumAsync(p => p.PvModuleCount ?? 0),
+                TotalFtsValue = await allProjectsQuery.SumAsync(p => p.FtsValue ?? 0),
+                TotalRevenueValue = await allProjectsQuery.SumAsync(p => p.RevenueValue ?? 0),
+                TotalPqmValue = await allProjectsQuery.SumAsync(p => p.PqmValue ?? 0),
+                ProjectManagerCount = await allProjectsQuery.Select(p => p.ProjectManagerId).Distinct().CountAsync(),
+                GeographicCoverage = "Multiple provinces and regions",
+                LastUpdated = DateTime.UtcNow
+            };
+
             // Apply pagination
             var projects = await query
                 .Skip((parameters.PageNumber - 1) * parameters.PageSize)
@@ -109,7 +129,8 @@ public class ProjectService : IProjectService
                 Items = projects,
                 TotalCount = totalCount,
                 PageNumber = parameters.PageNumber,
-                PageSize = parameters.PageSize
+                PageSize = parameters.PageSize,
+                Statistics = projectStats
             };
 
             return ServiceResult<EnhancedPagedResult<ProjectDto>>.SuccessResult(result, "Projects retrieved successfully");

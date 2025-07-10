@@ -46,6 +46,18 @@ else if (builder.Environment.IsDevelopment())
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 
+// Add CORS for Flutter mobile app
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("FlutterAppPolicy", builder =>
+    {
+        builder.AllowAnyOrigin()
+               .AllowAnyMethod()
+               .AllowAnyHeader()
+               .WithExposedHeaders("X-Pagination");
+    });
+});
+
 // SignalR Configuration with enhanced features
 builder.Services.AddSignalR(options =>
 {
@@ -290,7 +302,7 @@ if (!app.Environment.IsDevelopment() ||
 }
 
 // Middleware Pipeline
-app.UseCors();
+app.UseCors("FlutterAppPolicy"); // Enable CORS for Flutter app
 
 // Rate Limiting Middleware (conditionally enabled)
 if (rateLimitEnabled)

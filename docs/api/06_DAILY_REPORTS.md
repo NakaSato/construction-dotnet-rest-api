@@ -17,23 +17,14 @@ Daily reports provide comprehensive tracking of daily work activities, progress,
 The Daily Reports API implements JWT-based authentication with role-based access control:
 
 ### 🔑 **Login Required**
-All endpoints require a valid JWT token obtained from the authentication endpoint:
+All endpoints require a valid JWT token obtained from the authentication endpoint.
 
-```bash
-# Login to get JWT token (Admin account)
-curl -X POST "http://localhost:5001/api/v1/auth/login" \
-  -H "Content-Type: application/json" \
-  -d '{"username": "admin@example.com", "password": "Admin123!"}'
+You need to:
+1. Log in with admin account credentials
+2. Use username or email flexibility options
+3. Include the token in the Authorization header for all API requests
 
-# Alternative: Login with username/email flexibility
-curl -X POST "http://localhost:5001/api/v1/auth/login" \
-  -H "Content-Type: application/json" \
-  -d '{"username": "admin", "password": "Admin123!"}'
-
-# Use token in Authorization header
-curl -X GET "http://localhost:5001/api/v1/daily-reports" \
-  -H "Authorization: Bearer YOUR_JWT_TOKEN"
-```
+*Code example removed - see implementation guide*
 
 **Default Test Accounts:**
 - **Admin**: `admin@example.com` / `Admin123!` (Full system access)
@@ -186,10 +177,7 @@ Content-Type: application/json
 Retrieve daily reports with advanced filtering options.
 
 **Headers**:
-```
-Authorization: Bearer YOUR_JWT_TOKEN
-Content-Type: application/json
-```
+*Authentication headers removed - requires Bearer token and application/json content type*
 
 **Query Parameters**:
 - `projectId` (Guid): Filter by specific project
@@ -207,35 +195,35 @@ Content-Type: application/json
 - `pageSize` (int): Items per page (default: 10, max: 100)
 
 **Success Response (200)**:
-```json
-{
-  "success": true,
-  "message": "Daily reports retrieved successfully",
-  "data": {
-    "reports": [
-      {
-        "id": "123e4567-e89b-12d3-a456-426614174000",
-        "projectId": "456e7890-e89b-12d3-a456-426614174001",
-        "projectName": "Solar Installation Project Alpha",
-        "userId": "789e0123-e89b-12d3-a456-426614174002",
-        "userName": "John Technician",
-        "reportDate": "2025-07-04",
-        "approvalStatus": "Approved",
-        "hoursWorked": 8.5,
-        "personnelOnSite": 4,
-        "weatherConditions": "Sunny, 85°F",
-        "temperature": 85.0,
-        "humidity": 45,
-        "summary": "Completed installation of 24 solar panels on south-facing roof section",
-        "issues": "None",
-        "safetyScore": 10,
-        "qualityScore": 9,
-        "dailyProgressContribution": 12.5,
-        "hasCriticalIssues": false,
-        "tasksCompleted": ["Install mounting rails", "Install panels in section A"],
-        "createdAt": "2025-07-04T17:30:00Z",
-        "hasAttachments": true
-      },
+
+**Response Structure:**
+- `success`: Boolean indicating success status
+- `message`: Response message
+- `data`: Object containing daily reports information
+  - `reports`: Array of daily report objects
+    - `id`: Unique report identifier
+    - `projectId`: Associated project ID
+    - `projectName`: Name of the project
+    - `userId`: Report creator user ID
+    - `userName`: Name of the report creator
+    - `reportDate`: Date of the report
+    - `approvalStatus`: Current approval status (e.g., "Approved", "Submitted", "Rejected")
+    - `hoursWorked`: Number of hours worked
+    - `personnelOnSite`: Number of personnel on site
+    - `weatherConditions`: Weather condition description
+    - `temperature`: Temperature value
+    - `humidity`: Humidity percentage
+    - `summary`: Report summary text
+    - `issues`: Issues encountered
+    - `safetyScore`: Safety score (1-10)
+    - `qualityScore`: Quality score (1-10)
+    - `dailyProgressContribution`: Progress contribution percentage
+    - `hasCriticalIssues`: Boolean indicating presence of critical issues
+    - `tasksCompleted`: Array of completed tasks
+    - `createdAt`: Report creation timestamp
+    - `hasAttachments`: Boolean indicating attachment presence
+
+*JSON response example removed - see implementation guide*
       {
         "id": "234f6789-e89b-12d3-a456-426614174000",
         "projectId": "456e7890-e89b-12d3-a456-426614174001",
@@ -283,21 +271,18 @@ Content-Type: application/json
 ```
 
 **Error Responses**:
-```json
-// 401 Unauthorized
-{
-  "success": false,
-  "message": "Unauthorized",
-  "errors": ["Authentication required"]
-}
 
-// 403 Forbidden
-{
-  "success": false,
-  "message": "Insufficient permissions",
-  "errors": ["User lacks required permissions for this resource"]
-}
-```
+**401 Unauthorized**:
+- `success`: false
+- `message`: "Unauthorized"
+- `errors`: Array containing error messages
+
+**403 Forbidden**:
+- `success`: false
+- `message`: "Insufficient permissions"
+- `errors`: Array containing detailed error messages
+
+*JSON error examples removed - see implementation guide*
 
 ## 🔍 Get Daily Report by ID
 
@@ -307,29 +292,23 @@ Content-Type: application/json
 Retrieve details of a specific daily report.
 
 **Headers**:
-```
-Authorization: Bearer YOUR_JWT_TOKEN
-Content-Type: application/json
-```
+*Authentication headers removed - requires Bearer token and application/json content type*
 
 **Path Parameters**:
 - `id` (Guid): Daily report ID
 
 **Success Response (200)**:
-```json
-{
-  "success": true,
-  "message": "Daily report retrieved successfully",
-  "data": {
-    "id": "123e4567-e89b-12d3-a456-426614174000",
-    "projectId": "456e7890-e89b-12d3-a456-426614174001",
-    "projectName": "Solar Installation Project Alpha",
-    "userId": "789e0123-e89b-12d3-a456-426614174002",
-    "userName": "John Technician",
-    "reportDate": "2025-06-14",
-    "approvalStatus": "Approved",
-    "approvedBy": "Sarah Manager",
-    "approvedAt": "2025-06-14T18:30:00Z",
+**Response Structure**:
+- `success`: Boolean indicating success
+- `message`: Response message
+- `data`: Daily report object containing:
+  - Report identification details (id, projectId, userName)
+  - Report content (summary, issues, tasks completed)
+  - Approval information (status, approver, timestamp)
+  - Weather conditions and site information
+  - Performance metrics (safety score, quality score)
+
+*JSON response example removed - see implementation guide*
     "hoursWorked": 8.5,
     "personnelOnSite": 4,
     "weatherConditions": "Sunny, 85°F",
@@ -395,80 +374,50 @@ Content-Type: application/json
 Create a new daily report for work completed.
 
 **Headers**:
-```
-Authorization: Bearer YOUR_JWT_TOKEN
-Content-Type: application/json
-```
+*Authentication headers removed - requires Bearer token and application/json content type*
 
 **Request Body**:
-```json
-{
-  "projectId": "456e7890-e89b-12d3-a456-426614174001",
-  "reportDate": "2025-06-15",
-  "hoursWorked": 9.0,
-  "personnelOnSite": 4,
-  "weatherConditions": "Partly cloudy, 82°F",
-  "temperature": 82.0,
-  "humidity": 55,
-  "windSpeed": 12.0,
-  "weatherImpact": "Slight delay due to cloud cover affecting panel testing",
-  "summary": "Completed electrical connections and initial testing of inverter system",
-  "workAccomplished": "Electrical connections completed, inverter testing 75% complete",
-  "workPlannedNextDay": "Complete inverter testing and begin system commissioning",
-  "issues": "Waiting for city inspector clearance before final connection",
-  "safetyScore": 10,
-  "qualityScore": 9,
-  "dailyProgressContribution": 8.5,
-  "additionalNotes": "Team maintained excellent safety standards throughout electrical work",
-  "tasksCompleted": [
-    {
-      "taskId": "task3-id",
-      "completionPercentage": 100
-    },
-    {
-      "taskId": "task4-id",
-      "completionPercentage": 75
-    }
-  ],
-  "materialsUsed": [
-    {
-      "name": "Electrical cable",
-      "quantity": 150,
-      "unit": "feet",
-      "unitCost": 2.50
-    },
-    {
-      "name": "Conduit",
-      "quantity": 40,
-      "unit": "feet",
-      "unitCost": 3.75
-    }
-  ]
-}
-```
+*JSON request body removed - includes the following fields:*
+
+- `projectId`: Project identifier (GUID)
+- `reportDate`: Date of the report (YYYY-MM-DD)
+- `hoursWorked`: Number of hours worked
+- `personnelOnSite`: Count of personnel present
+- `weatherConditions`: Text description of weather
+- `temperature`: Temperature in degrees Fahrenheit
+- `humidity`: Humidity percentage
+- `windSpeed`: Wind speed in mph
+- `weatherImpact`: Description of weather impact on work
+- `summary`: Brief summary of daily work
+- `workAccomplished`: Detailed work description
+- `workPlannedNextDay`: Next day planning
+- `issues`: Issues or challenges encountered
+- `safetyScore`: Safety rating (0-10)
+- `qualityScore`: Quality rating (0-10)
+- `dailyProgressContribution`: Progress percentage
+- `additionalNotes`: Any additional information
+- `tasksCompleted`: List of completed tasks with details
+- `materialsUsed`: List of materials with quantities and costs
 
 **Success Response (201)**:
-```json
-{
-  "success": true,
-  "message": "Daily report created successfully",
-  "data": {
-    "id": "345g7890-e89b-12d3-a456-426614174000",
-    "projectId": "456e7890-e89b-12d3-a456-426614174001",
-    "projectName": "Solar Installation Project Alpha",
-    "reportDate": "2025-06-15",
-    "approvalStatus": "Draft",
-    "hoursWorked": 9.0,
-    "safetyScore": 10,
-    "qualityScore": 9,
-    "dailyProgressContribution": 8.5,
-    "createdAt": "2025-06-15T18:15:00Z",
-    "canEdit": true,
-    "canSubmit": true
-  },
-  "errors": []
-}
-```
+*JSON success response removed - includes the following fields:*
+
+- `success`: Operation status (boolean)
+- `message`: Confirmation message
+- `data`: Created daily report object with:
+  - `id`: Report identifier (GUID)
+  - `projectId`: Associated project ID
+  - `projectName`: Project name
+  - `reportDate`: Date of the report
+  - `approvalStatus`: Current status (e.g., "Draft")
+  - `hoursWorked`: Number of hours worked
+  - `safetyScore`: Safety rating (0-10)
+  - `qualityScore`: Quality rating (0-10)
+  - `dailyProgressContribution`: Progress percentage
+  - `createdAt`: Creation timestamp
+  - `canEdit`: User permission to edit
+  - `canSubmit`: User permission to submit
+- `errors`: Array of validation errors (empty on success)
 
 ## 🔄 Update Daily Report
 
@@ -479,20 +428,13 @@ Content-Type: application/json
 Update an existing daily report. Users can only update their own reports within a configurable time limit (default: 24 hours). Admins and Managers can update any report.
 
 **Headers**:
-```
-Authorization: Bearer YOUR_JWT_TOKEN
-Content-Type: application/json
-```
+*Authentication headers removed - requires Bearer token and application/json content type*
 
 **Path Parameters**:
 - `id` (Guid): Daily report ID
 
 **Request Body**:
-```json
-{
-  "hoursWorked": 9.5,
-  "weatherConditions": "Partly cloudy with afternoon rain, 80°F",
-  "summary": "Completed electrical connections and initial testing of inverter system. Rain delayed final testing.",
+*JSON request body removed - includes fields similar to the create endpoint that need to be updated*
   "issues": "Waiting for city inspector clearance before final connection. Weather delays.",
   "tasksCompleted": [
     {
@@ -542,22 +484,13 @@ Content-Type: application/json
 Delete a daily report. Only Administrators and Managers can delete reports.
 
 **Headers**:
-```
-Authorization: Bearer YOUR_JWT_TOKEN
-```
+*Authentication headers removed - requires Bearer token*
 
 **Path Parameters**:
 - `id` (Guid): Daily report ID
 
 **Success Response (200)**:
-```json
-{
-  "success": true,
-  "message": "Daily report deleted successfully",
-  "data": null,
-  "errors": []
-}
-```
+*JSON success response removed - includes confirmation of successful deletion with empty data field*
 
 ## 🔄 Report Approval Workflow
 
@@ -570,35 +503,16 @@ Authorization: Bearer YOUR_JWT_TOKEN
 Submit a daily report for management approval.
 
 **Headers**:
-```
-Authorization: Bearer YOUR_JWT_TOKEN
-Content-Type: application/json
-```
+*Authentication headers removed - requires Bearer token and application/json content type*
 
 **Path Parameters**:
 - `id` (Guid): Daily report ID
 
 **Request Body**:
-```json
-{
-  "comments": "Report ready for review - all safety protocols followed"
-}
-```
+*JSON request body removed - includes submission comments field*
 
 **Success Response (200)**:
-```json
-{
-  "success": true,
-  "message": "Report submitted for approval",
-  "data": {
-    "id": "345g7890-e89b-12d3-a456-426614174000",
-    "approvalStatus": "Submitted",
-    "submittedAt": "2025-06-15T19:00:00Z",
-    "submittedBy": "John Technician"
-  },
-  "errors": []
-}
-```
+*JSON success response removed - includes confirmation of submission with report ID, status, timestamp, and submitter information*
 
 ### Approve Daily Report
 

@@ -25,4 +25,10 @@ public class BaseQueryParameters
     public string? SortOrder { get; set; } = "asc";
     public string? Search { get; set; }
     public string? Fields { get; set; }
+    
+    /// <summary>
+    /// Comma-separated list of fields to include in the response
+    /// Used for mobile/Flutter app to optimize payload size
+    /// </summary>
+    public string? IncludeFields { get; set; }
 }

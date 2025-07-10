@@ -25,6 +25,7 @@ public class ProjectQueryParameters : BaseQueryParameters, IFilterableQuery
     public DateTime? EstimatedEndDateAfter { get; set; }
     public DateTime? EstimatedEndDateBefore { get; set; }
     public Guid? ManagerId { get; set; }
+    public Guid? UserId { get; set; } // Used for mobile app to filter by assigned user
     public string? Address { get; set; }
     
     // Generic filtering support

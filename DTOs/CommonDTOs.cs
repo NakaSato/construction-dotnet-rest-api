@@ -434,6 +434,9 @@ public class EnhancedPagedResult<T> : PagedResult<T>
     public PaginationInfo Pagination { get; set; } = new();
     public bool HasNextPage => PageNumber < TotalPages;
     public bool HasPreviousPage => PageNumber > 1;
+    
+    // Project-specific statistics (only populated for project queries)
+    public ProjectStatistics? Statistics { get; set; }
 }
 
 // New rich API response format with enhanced pagination
@@ -891,8 +894,6 @@ public class WorkRequestTaskDto
     public double? EstimatedHours { get; set; }
     public double? ActualHours { get; set; }
     public string? Notes { get; set; } = string.Empty;
-    public DateTime CreatedAt { get; set; }
-    public DateTime? UpdatedAt { get; set; }
 }
 
 public class CreateWorkRequestTaskRequest
@@ -1083,4 +1084,23 @@ public class NotificationDto
     public DateTime? SentAt { get; set; }
     public DateTime? ReadAt { get; set; }
     public bool IsRead { get; set; }
+}
+
+// Project statistics summary
+public class ProjectStatistics
+{
+    public int TotalProjects { get; set; }
+    public int ActiveProjects { get; set; }
+    public int CompletedProjects { get; set; }
+    public int PlanningProjects { get; set; }
+    public int OnHoldProjects { get; set; }
+    public int CancelledProjects { get; set; }
+    public decimal TotalCapacityKw { get; set; }
+    public int TotalPvModules { get; set; }
+    public decimal TotalFtsValue { get; set; }
+    public decimal TotalRevenueValue { get; set; }
+    public decimal TotalPqmValue { get; set; }
+    public int ProjectManagerCount { get; set; }
+    public string GeographicCoverage { get; set; } = string.Empty;
+    public DateTime LastUpdated { get; set; } = DateTime.UtcNow;
 }

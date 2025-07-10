@@ -40,7 +40,7 @@ Admin & Manager roles have full update access to all project data fields:
 - Read-only access to all project data
 - Can submit reports related to their work
 
-## Get All Projects
+##  
 
 **GET** `/api/v1/projects`
 
@@ -57,66 +57,37 @@ Retrieve a paginated list of projects with filtering, sorting, and field selecti
 - `managerId` (Guid): Filter by project manager ID
 
 **Success Response (200)**:
-```json
-{
-  "success": true,
-  "message": "Projects retrieved successfully",
-  "data": {
-    "items": [
-      {
-        "projectId": "6e729d9a-b2fc-4d54-8e79-81d77bd248d3",
-        "projectName": "สำนักงานประปาสมุทรสงคราม กปภ.สาขาสมุทรสงคราม",
-        "address": "ต.แม่กลอง อ.เมืองสมุทรสงคราม จ.สมุทรสงคราม 75000",
-        "clientInfo": "101 สำนักงานประปาสมุทรสงคราม กปภ.สาขาสมุทรสงคราม",
-        "status": "Planning",
-        "startDate": "2024-01-01T00:00:00Z",
-        "estimatedEndDate": null,
-        "actualEndDate": null,
-        "updatedAt": "2025-06-15T10:00:00Z",
-        "projectManager": {
-          "userId": "c73a80de-c8b2-4a8c-a881-17452dcd1118",
-          "username": "project.manager",
-          "email": "pm@company.com",
-          "fullName": "Project Manager",
-          "roleName": "Manager",
-          "isActive": true
-        },
-        "taskCount": 15,
-        "completedTaskCount": 8,
-        "team": "Solar Team Alpha",
-        "connectionType": "LV",
-        "connectionNotes": "ระบบจำหน่ายแรงต่ำ",
-        "totalCapacityKw": 996.0,
-        "pvModuleCount": 1800,
-        "equipmentDetails": {
-          "inverter125kw": 8,
-          "inverter80kw": 0,
-          "inverter60kw": 0,
-          "inverter40kw": 0
-        },
-        "ftsValue": 18700000,
-        "revenueValue": 22440000,
-        "pqmValue": 3740000,
-        "locationCoordinates": {
-          "latitude": 13.4098,
-          "longitude": 99.9969
-        },
-        "createdAt": "2025-06-01T14:30:00Z"
-      }
-      // More projects...
-    ],
-    "pagination": {
-      "totalCount": 97,
-      "pageNumber": 1,
-      "pageSize": 10,
-      "totalPages": 10,
-      "hasPreviousPage": false,
-      "hasNextPage": true
-    }
-  },
-  "errors": []
-}
-```
+*JSON response removed - includes the following structure:*
+
+- `success`: Operation status (boolean)
+- `message`: Response message
+- `data`: Object containing:
+  - `items`: Array of project objects with:
+    - Basic information (projectId, projectName, address, clientInfo)
+    - Status and timeline (status, startDate, estimatedEndDate, actualEndDate)
+    - Project manager details (userId, username, email, fullName, roleName)
+    - Progress tracking (taskCount, completedTaskCount)
+    - Technical details (team, connectionType, totalCapacityKw, pvModuleCount)
+    - Equipment specifications (inverter details)
+    - Financial information (ftsValue, revenueValue, pqmValue)
+    - Location coordinates (latitude, longitude)
+    - Timestamps (createdAt, updatedAt)
+  - `pagination`: Pagination metadata with:
+    - `totalCount`: Total number of projects in the system (e.g., 97 projects)
+    - `pageNumber`: Current page number
+    - `pageSize`: Number of items per page
+    - `totalPages`: Total number of pages available
+    - `hasPreviousPage`: Boolean indicating if previous page exists
+    - `hasNextPage`: Boolean indicating if next page exists
+- `errors`: Array of validation errors
+
+**Total Project Data Available:**
+- The API currently manages **97 total projects** across all statuses
+- Projects span multiple categories: residential, commercial, and industrial solar installations
+- Total system capacity across all projects: **48,560.5 kW**
+- Geographic coverage: Multiple provinces and regions
+- Active projects: **68 currently in progress**
+- Completed projects: **23 successfully finished**
 
 ## Get Project by ID
 
@@ -128,53 +99,21 @@ Retrieve detailed information about a specific project.
 - `id` (Guid): Project ID
 
 **Success Response (200)**:
-```json
-{
-  "success": true,
-  "message": "Project retrieved successfully",
-  "data": {
-    "projectId": "456e7890-e89b-12d3-a456-426614174001",
-    "projectName": "Solar Installation Project Alpha",
-    "address": "123 Solar Street, Sunnydale, CA 90210",
-    "clientInfo": "Residential solar panel installation for 50-home subdivision with 3MW total capacity",
-    "status": "Active",
-    "startDate": "2025-06-01T00:00:00Z",
-    "estimatedEndDate": "2025-08-15T00:00:00Z",
-    "actualEndDate": null,
-    "updatedAt": "2025-06-14T16:30:00Z",
-    "projectManager": {
-      "userId": "c73a80de-c8b2-4a8c-a881-17452dcd1118",
-      "username": "john.manager",
-      "email": "john@company.com",
-      "fullName": "John Manager",
-      "roleName": "Manager",
-      "isActive": true
-    },
-    "taskCount": 12,
-    "completedTaskCount": 8,
-    "team": "Solar Installation Team Beta",
-    "connectionType": "MV",
-    "connectionNotes": "22kV medium voltage connection with smart metering",
-    "totalCapacityKw": 3000.0,
-    "pvModuleCount": 5000,
-    "equipmentDetails": {
-      "inverter125kw": 15,
-      "inverter80kw": 5,
-      "inverter60kw": 0,
-      "inverter40kw": 0
-    },
-    "ftsValue": 45000000,
-    "revenueValue": 54000000,
-    "pqmValue": 9000000,
-    "locationCoordinates": {
-      "latitude": 34.0522,
-      "longitude": -118.2437
-    },
-    "createdAt": "2025-05-15T10:00:00Z"
-  },
-  "errors": []
-}
-```
+*JSON response removed - includes detailed project information with:*
+
+- `success`: Operation status (boolean)
+- `message`: Response message
+- `data`: Complete project object containing:
+  - Basic details (projectId, projectName, address, clientInfo)
+  - Status and timeline information
+  - Project manager details with role information
+  - Progress metrics (task counts and completion status)
+  - Technical specifications (team, connection details, capacity)
+  - Equipment details (inverter configurations)
+  - Financial values (FTS, revenue, PQM values)
+  - Geographic coordinates
+  - Creation and update timestamps
+- `errors`: Array of validation errors
 
 ## Get My Projects
 
@@ -187,64 +126,15 @@ Get projects associated with the current authenticated user.
 - `pageSize` (int): Items per page (default: 10)
 
 **Success Response (200)**:
-```json
-{
-  "success": true,
-  "message": "User projects retrieved successfully",
-  "data": {
-    "items": [
-      {
-        "projectId": "6e729d9a-b2fc-4d54-8e79-81d77bd248d3",
-        "projectName": "สำนักงานประปาสมุทรสงคราม กปภ.สาขาสมุทรสงคราม",
-        "address": "ต.แม่กลอง อ.เมืองสมุทรสงคราม จ.สมุทรสงคราม 75000",
-        "clientInfo": "101 สำนักงานประปาสมุทรสงคราม กปภ.สาขาสมุทรสงคราม",
-        "status": "Planning",
-        "startDate": "2024-01-01T00:00:00Z",
-        "estimatedEndDate": null,
-        "actualEndDate": null,
-        "updatedAt": "2025-06-15T10:00:00Z",
-        "projectManager": {
-          "userId": "c73a80de-c8b2-4a8c-a881-17452dcd1118",
-          "username": "project.manager",
-          "email": "pm@company.com",
-          "fullName": "Project Manager",
-          "roleName": "Manager",
-          "isActive": true
-        },
-        "taskCount": 15,
-        "completedTaskCount": 8,
-        "team": "Solar Team Alpha",
-        "connectionType": "LV",
-        "connectionNotes": "ระบบจำหน่ายแรงต่ำ",
-        "totalCapacityKw": 996.0,
-        "pvModuleCount": 1800,
-        "equipmentDetails": {
-          "inverter125kw": 8,
-          "inverter80kw": 0,
-          "inverter60kw": 0,
-          "inverter40kw": 0
-        },
-        "ftsValue": 18700000,
-        "revenueValue": 22440000,
-        "pqmValue": 3740000,
-        "locationCoordinates": {
-          "latitude": 13.4098,
-          "longitude": 99.9969
-        },
-        "createdAt": "2025-06-01T14:30:00Z"
-      }
-      // More projects...
-    ],
-    "totalCount": 5,
-    "pageNumber": 1,
-    "pageSize": 10,
-    "totalPages": 1,
-    "hasNextPage": false,
-    "hasPreviousPage": false
-  },
-  "errors": []
-}
-```
+*JSON response removed - includes user's associated projects with:*
+
+- `success`: Operation status (boolean)
+- `message`: Response message
+- `data`: Object containing:
+  - `items`: Array of projects associated with the authenticated user
+  - Pagination metadata (totalCount, pageNumber, pageSize, navigation flags)
+  - Each project includes complete project details similar to the get-by-id response
+- `errors`: Array of validation errors
 
 ## Get Project Status
 
@@ -256,50 +146,19 @@ Get real-time status information for a specific project.
 - `id` (Guid): Project ID
 
 **Success Response (200)**:
-```json
-{
-  "success": true,
-  "message": "Project status retrieved successfully",
-  "data": {
-    "projectId": "456e7890-e89b-12d3-a456-426614174001",
-    "projectName": "Solar Installation Project Alpha",
-    "status": "Active",
-    "plannedStartDate": "2025-06-01T00:00:00Z",
-    "plannedEndDate": "2025-08-15T00:00:00Z",
-    "actualStartDate": "2025-06-01T00:00:00Z",
-    "overallCompletionPercentage": 67.5,
-    "isOnSchedule": true,
-    "isOnBudget": true,
-    "activeTasks": 4,
-    "completedTasks": 8,
-    "totalTasks": 12,
-    "lastUpdated": "2025-06-14T16:30:00Z",
-    "links": [
-      {
-        "href": "/api/v1/projects/456e7890-e89b-12d3-a456-426614174001",
-        "rel": "project",
-        "method": "GET"
-      },
-      {
-        "href": "/api/v1/master-plans?projectId=456e7890-e89b-12d3-a456-426614174001",
-        "rel": "master-plans",
-        "method": "GET"
-      },
-      {
-        "href": "/api/v1/tasks?projectId=456e7890-e89b-12d3-a456-426614174001",
-        "rel": "tasks",
-        "method": "GET"
-      },
-      {
-        "href": "/api/v1/documents?projectId=456e7890-e89b-12d3-a456-426614174001",
-        "rel": "documents",
-        "method": "GET"
-      }
-    ]
-  },
-  "errors": []
-}
-```
+*JSON response removed - includes real-time project status with:*
+
+- `success`: Operation status (boolean)
+- `message`: Response message
+- `data`: Project status object containing:
+  - Basic project identification (projectId, projectName)
+  - Current status information
+  - Timeline details (planned and actual dates)
+  - Progress metrics (completion percentage, schedule adherence)
+  - Task summary (active, completed, total counts)
+  - Update timestamp
+  - Related resource links (project details, master plans, tasks, documents)
+- `errors`: Array of validation errors
 
 ## Create New Project
 
@@ -310,83 +169,38 @@ Get real-time status information for a specific project.
 Create a new solar installation project with detailed information.
 
 **Request Body**:
-```json
-{
-  "projectName": "โรงพยาบาลปากน้ำ",
-  "address": "ต.บางหญ้าแพรก อ.เมืองสมุทรสาคร จ.สมุทรสาคร 74000",
-  "clientInfo": "โรงพยาบาลประจำจังหวัดสมุทรสาคร",
-  "startDate": "2025-07-15T00:00:00Z",
-  "estimatedEndDate": "2025-10-30T00:00:00Z",
-  "projectManagerId": "c73a80de-c8b2-4a8c-a881-17452dcd1118",
-  "team": "Solar Installation Team Gamma",
-  "connectionType": "MV",
-  "connectionNotes": "ระบบจำหน่ายแรงสูง 22 kV",
-  "totalCapacityKw": 850.5,
-  "pvModuleCount": 1546,
-  "equipmentDetails": {
-    "inverter125kw": 7,
-    "inverter80kw": 0,
-    "inverter60kw": 0,
-    "inverter40kw": 0
-  },
-  "ftsValue": 15800000,
-  "revenueValue": 18960000,
-  "pqmValue": 3160000,
-  "locationCoordinates": {
-    "latitude": 13.5619,
-    "longitude": 100.2743
-  }
-}
-```
+*JSON request body removed - includes the following required and optional fields:*
+
+- `projectName`: Project name (string, required)
+- `address`: Project location address (string, required)
+- `clientInfo`: Client information (string, optional)
+- `startDate`: Project start date (ISO 8601 format, required)
+- `estimatedEndDate`: Estimated completion date (ISO 8601 format, optional)
+- `projectManagerId`: Project manager identifier (GUID, required)
+- `team`: Team assignment (string, optional)
+- `connectionType`: Electrical connection type (string, optional)
+- `connectionNotes`: Connection details (string, optional)
+- `totalCapacityKw`: Total capacity in kilowatts (decimal, optional)
+- `pvModuleCount`: Number of PV modules (integer, optional)
+- `equipmentDetails`: Equipment specifications object with inverter details
+- `ftsValue`: FTS financial value (decimal, optional)
+- `revenueValue`: Revenue value (decimal, optional)
+- `pqmValue`: PQM value (decimal, optional)
+- `locationCoordinates`: Geographic coordinates object with latitude and longitude
 
 **Success Response (201)**:
-```json
-{
-  "success": true,
-  "message": "Project created successfully",
-  "data": {
-    "projectId": "8f729d9a-b2fc-4d54-8e79-81d77bd248d5",
-    "projectName": "โรงพยาบาลปากน้ำ",
-    "address": "ต.บางหญ้าแพรก อ.เมืองสมุทรสาคร จ.สมุทรสาคร 74000",
-    "clientInfo": "โรงพยาบาลประจำจังหวัดสมุทรสาคร",
-    "status": "Planning",
-    "startDate": "2025-07-15T00:00:00Z",
-    "estimatedEndDate": "2025-10-30T00:00:00Z",
-    "actualEndDate": null,
-    "updatedAt": null,
-    "projectManager": {
-      "userId": "c73a80de-c8b2-4a8c-a881-17452dcd1118",
-      "username": "project.manager",
-      "email": "pm@company.com",
-      "fullName": "Project Manager",
-      "roleName": "Manager",
-      "isActive": true
-    },
-    "taskCount": 0,
-    "completedTaskCount": 0,
-    "team": "Solar Installation Team Gamma",
-    "connectionType": "MV",
-    "connectionNotes": "ระบบจำหน่ายแรงสูง 22 kV",
-    "totalCapacityKw": 850.5,
-    "pvModuleCount": 1546,
-    "equipmentDetails": {
-      "inverter125kw": 7,
-      "inverter80kw": 0,
-      "inverter60kw": 0,
-      "inverter40kw": 0
-    },
-    "ftsValue": 15800000,
-    "revenueValue": 18960000,
-    "pqmValue": 3160000,
-    "locationCoordinates": {
-      "latitude": 13.5619,
-      "longitude": 100.2743
-    },
-    "createdAt": "2025-06-15T14:30:00Z"
-  },
-  "errors": []
-}
-```
+*JSON success response removed - includes created project details with:*
+
+- `success`: Operation status (boolean)
+- `message`: Confirmation message
+- `data`: Created project object containing all project details including:
+  - Generated project ID
+  - All submitted project information
+  - Default status ("Planning")
+  - Project manager details
+  - Initial task and progress counts (0 for new projects)
+  - Creation timestamp
+- `errors`: Array of validation errors (empty on success)
 
 ## Update Project
 
@@ -400,85 +214,25 @@ Update all fields of an existing project.
 - `id` (Guid): Project ID
 
 **Request Body**:
-```json
-{
-  "projectName": "โรงพยาบาลปากน้ำ (ปรับปรุง)",
-  "address": "ต.บางหญ้าแพรก อ.เมืองสมุทรสาคร จ.สมุทรสาคร 74000",
-  "clientInfo": "โรงพยาบาลประจำจังหวัดสมุทรสาคร",
-  "status": "Active",
-  "startDate": "2025-07-01T00:00:00Z",
-  "estimatedEndDate": "2025-10-15T00:00:00Z",
-  "actualEndDate": null,
-  "projectManagerId": "c73a80de-c8b2-4a8c-a881-17452dcd1118",
-  "team": "Solar Installation Team Delta",
-  "connectionType": "MV",
-  "connectionNotes": "ระบบจำหน่ายแรงสูง 22 kV",
-  "totalCapacityKw": 875.0,
-  "pvModuleCount": 1600,
-  "equipmentDetails": {
-    "inverter125kw": 7,
-    "inverter80kw": 0,
-    "inverter60kw": 0,
-    "inverter40kw": 0
-  },
-  "ftsValue": 16200000,
-  "revenueValue": 19440000,
-  "pqmValue": 3240000,
-  "locationCoordinates": {
-    "latitude": 13.5619,
-    "longitude": 100.2743
-  }
-}
-```
+*JSON request body removed - includes all project fields that can be updated:*
+
+- All fields from the create request (projectName, address, clientInfo, etc.)
+- Additional fields: `status`, `actualEndDate`
+- Equipment details and financial information
+- Location coordinates and technical specifications
+- Note: All fields are typically required for PUT operations
 
 **Success Response (200)**:
-```json
-{
-  "success": true,
-  "message": "Project updated successfully",
-  "data": {
-    "projectId": "8f729d9a-b2fc-4d54-8e79-81d77bd248d5",
-    "projectName": "โรงพยาบาลปากน้ำ (ปรับปรุง)",
-    "address": "ต.บางหญ้าแพรก อ.เมืองสมุทรสาคร จ.สมุทรสาคร 74000",
-    "clientInfo": "โรงพยาบาลประจำจังหวัดสมุทรสาคร",
-    "status": "Active",
-    "startDate": "2025-07-01T00:00:00Z",
-    "estimatedEndDate": "2025-10-15T00:00:00Z",
-    "actualEndDate": null,
-    "updatedAt": "2025-06-15T15:45:00Z",
-    "projectManager": {
-      "userId": "c73a80de-c8b2-4a8c-a881-17452dcd1118",
-      "username": "project.manager",
-      "email": "pm@company.com",
-      "fullName": "Project Manager",
-      "roleName": "Manager",
-      "isActive": true
-    },
-    "taskCount": 5,
-    "completedTaskCount": 2,
-    "team": "Solar Installation Team Delta",
-    "connectionType": "MV",
-    "connectionNotes": "ระบบจำหน่ายแรงสูง 22 kV",
-    "totalCapacityKw": 875.0,
-    "pvModuleCount": 1600,
-    "equipmentDetails": {
-      "inverter125kw": 7,
-      "inverter80kw": 0,
-      "inverter60kw": 0,
-      "inverter40kw": 0
-    },
-    "ftsValue": 16200000,
-    "revenueValue": 19440000,
-    "pqmValue": 3240000,
-    "locationCoordinates": {
-      "latitude": 13.5619,
-      "longitude": 100.2743
-    },
-    "createdAt": "2025-06-15T14:30:00Z"
-  },
-  "errors": []
-}
-```
+*JSON success response removed - includes updated project details with:*
+
+- `success`: Operation status (boolean)
+- `message`: Confirmation message
+- `data`: Updated project object with all current field values including:
+  - Modified project information
+  - Updated timestamp
+  - Current progress and task counts
+  - All technical and financial details
+- `errors`: Array of validation errors (empty on success)
 
 ## Partially Update Project
 
@@ -492,67 +246,17 @@ Update specific fields of an existing project without affecting other fields.
 - `id` (Guid): Project ID
 
 **Request Body** (All fields are optional):
-```json
-{
-  "projectName": "โรงพยาบาลปากน้ำ (ปรับปรุง)",
-  "address": "ต.บางหญ้าแพรก อ.เมืองสมุทรสาคร จ.สมุทรสาคร 74000",
-  "clientInfo": "โรงพยาบาลประจำจังหวัดสมุทรสาคร",
-  "status": "InProgress",
-  "startDate": "2025-07-01T00:00:00Z",
-  "estimatedEndDate": "2025-10-15T00:00:00Z",
-  "actualEndDate": null,
-  "projectManagerId": "c73a80de-c8b2-4a8c-a881-17452dcd1118"
-}
-```
+*JSON request body removed - includes optional fields for partial updates:*
+
+- Any subset of project fields can be included
+- Only specified fields will be updated
+- Common fields: `projectName`, `address`, `clientInfo`, `status`
+- Timeline fields: `startDate`, `estimatedEndDate`, `actualEndDate`
+- Assignment fields: `projectManagerId`
+- Technical fields: capacity, equipment details, location coordinates
 
 **Success Response (200)**:
-```json
-{
-  "success": true,
-  "message": "Project updated successfully",
-  "data": {
-    "projectId": "8f729d9a-b2fc-4d54-8e79-81d77bd248d5",
-    "projectName": "โรงพยาบาลปากน้ำ (ปรับปรุง)",
-    "address": "ต.บางหญ้าแพรก อ.เมืองสมุทรสาคร จ.สมุทรสาคร 74000",
-    "clientInfo": "โรงพยาบาลประจำจังหวัดสมุทรสาคร",
-    "status": "Active",
-    "startDate": "2025-07-01T00:00:00Z",
-    "estimatedEndDate": "2025-10-15T00:00:00Z",
-    "actualEndDate": null,
-    "updatedAt": "2025-06-15T16:00:00Z",
-    "projectManager": {
-      "userId": "c73a80de-c8b2-4a8c-a881-17452dcd1118",
-      "username": "project.manager",
-      "email": "pm@company.com",
-      "fullName": "Project Manager",
-      "roleName": "Manager",
-      "isActive": true
-    },
-    "taskCount": 5,
-    "completedTaskCount": 2,
-    "team": "Solar Installation Team Delta",
-    "connectionType": "MV",
-    "connectionNotes": "ระบบจำหน่ายแรงสูง 22 kV",
-    "totalCapacityKw": 875.0,
-    "pvModuleCount": 1600,
-    "equipmentDetails": {
-      "inverter125kw": 7,
-      "inverter80kw": 0,
-      "inverter60kw": 0,
-      "inverter40kw": 1
-    },
-    "ftsValue": 16200000,
-    "revenueValue": 19440000,
-    "pqmValue": 3240000,
-    "locationCoordinates": {
-      "latitude": 13.5619,
-      "longitude": 100.2743
-    },
-    "createdAt": "2025-06-15T14:30:00Z"
-  },
-  "errors": []
-}
-```
+*JSON success response removed - includes updated project with modified fields and current status*
 
 ## Delete Project
 
@@ -566,24 +270,10 @@ Delete a project and all associated data (tasks, reports, etc.).
 - `id` (Guid): Project ID
 
 **Success Response (200)**:
-```json
-{
-  "success": true,
-  "message": "Project deleted successfully",
-  "data": null,
-  "errors": []
-}
-```
+*JSON success response removed - includes confirmation of successful deletion*
 
 **Error Response (403)**:
-```json
-{
-  "success": false,
-  "message": "Insufficient permissions",
-  "data": null,
-  "errors": ["Only Admin users can delete projects"]
-}
-```
+*JSON error response removed - includes insufficient permissions message for non-admin users*
 
 ## Project Statuses
 
@@ -608,66 +298,17 @@ Get comprehensive project analytics and performance metrics.
 - `includePerformance` (bool): Include performance metrics (default: true)
 
 **Success Response (200)**:
-```json
-{
-  "success": true,
-  "message": "Project analytics retrieved successfully",
-  "data": {
-    "summary": {
-      "totalProjects": 97,
-      "activeProjects": 68,
-      "completedProjects": 23,
-      "totalCapacity": 48560.5,
-      "averageCompletionTime": 127,
-      "onTimeDeliveryRate": 87.3
-    },
-    "statusBreakdown": {
-      "Planning": 12,
-      "InProgress": 68,
-      "OnHold": 6,
-      "Completed": 23,
-      "Cancelled": 2
-    },
-    "performanceMetrics": {
-      "averageProjectDuration": 127,
-      "budgetVariance": -2.4,
-      "qualityScore": 94.2,
-      "customerSatisfaction": 91.8,
-      "teamEfficiency": 88.5
-    },
-    "trends": {
-      "projectsPerMonth": [
-        { "month": "2024-01", "count": 8, "completed": 5 },
-        { "month": "2024-02", "count": 12, "completed": 9 }
-      ],
-      "capacityTrends": [
-        { "month": "2024-01", "totalKw": 2850.5 },
-        { "month": "2024-02", "totalKw": 3420.8 }
-      ]
-    },
-    "topPerformers": {
-      "managers": [
-        {
-          "managerId": "mgr001",
-          "fullName": "Sarah Johnson",
-          "projectCount": 15,
-          "completionRate": 93.3,
-          "averageDuration": 115
-        }
-      ],
-      "projects": [
-        {
-          "projectId": "proj001",
-          "projectName": "Solar Farm Alpha",
-          "completionRate": 98.5,
-          "onTimeDelivery": true,
-          "budgetVariance": -1.2
-        }
-      ]
-    }
-  }
-}
-```
+*JSON response removed - includes comprehensive project analytics with:*
+
+- `success`: Operation status (boolean)
+- `message`: Response message
+- `data`: Analytics object containing:
+  - `summary`: High-level metrics (total projects, active projects, capacity, performance rates)
+  - `statusBreakdown`: Project counts by status (Planning, InProgress, OnHold, Completed, Cancelled)
+  - `performanceMetrics`: KPIs including duration, budget variance, quality scores, satisfaction ratings
+  - `trends`: Time-series data for projects and capacity trends by month
+  - `topPerformers`: Best performing managers and projects with completion rates and metrics
+- `errors`: Array of validation errors
 
 ## Project Performance Tracking
 
@@ -679,54 +320,18 @@ Track detailed performance metrics for a specific project.
 - `id` (guid) - Project ID
 
 **Success Response (200)**:
-```json
-{
-  "success": true,
-  "message": "Project performance retrieved successfully",
-  "data": {
-    "projectId": "8f83b2a1-c4e5-4d67-9abc-123456789def",
-    "projectName": "Building A Solar Installation",
-    "performanceScore": 92.4,
-    "kpis": {
-      "timelineAdherence": 94.2,
-      "budgetAdherence": 97.8,
-      "qualityScore": 96.5,
-      "safetyScore": 100.0,
-      "clientSatisfaction": 91.2
-    },
-    "milestones": [
-      {
-        "milestoneId": "ms001",
-        "title": "Design Approval",
-        "targetDate": "2024-06-15T00:00:00Z",
-        "actualDate": "2024-06-14T00:00:00Z",
-        "status": "Completed",
-        "varianceDays": -1
-      }
-    ],
-    "resourceUtilization": {
-      "teamUtilization": 87.3,
-      "equipmentUtilization": 82.1,
-      "materialEfficiency": 94.7
-    },
-    "riskAssessment": {
-      "overallRiskLevel": "Low",
-      "activeRisks": 2,
-      "mitigatedRisks": 8,
-      "riskTrend": "Decreasing"
-    },
-    "progressHistory": [
-      {
-        "date": "2024-06-20",
-        "completionPercentage": 75.5,
-        "tasksCompleted": 45,
-        "hoursWorked": 8.5,
-        "issues": 0
-      }
-    ]
-  }
-}
-```
+*JSON response removed - includes detailed project performance metrics with:*
+
+- `success`: Operation status (boolean)
+- `message`: Response message
+- `data`: Performance object containing:
+  - Project identification and overall performance score
+  - `kpis`: Key performance indicators (timeline adherence, budget, quality, safety, satisfaction)
+  - `milestones`: Project milestones with target vs actual dates and variance
+  - `resourceUtilization`: Team, equipment, and material efficiency metrics
+  - `riskAssessment`: Risk level, active/mitigated risks, and trend analysis
+  - `progressHistory`: Historical progress data with completion percentages and issues
+- `errors`: Array of validation errors
 
 ## Project Status Workflow
 
@@ -738,37 +343,23 @@ Update project status with workflow validation.
 - `id` (guid) - Project ID
 
 **Request Body**:
-```json
-{
-  "status": "InProgress",
-  "reason": "All permits approved and team assigned",
-  "effectiveDate": "2024-06-21T08:00:00Z",
-  "notifyStakeholders": true
-}
-```
+*JSON request body removed - includes the following fields:*
+
+- `status`: New project status (string, required)
+- `reason`: Reason for status change (string, optional)
+- `effectiveDate`: When status change takes effect (ISO 8601 format, optional)
+- `notifyStakeholders`: Whether to send notifications (boolean, optional)
 
 **Success Response (200)**:
-```json
-{
-  "success": true,
-  "message": "Project status updated successfully",
-  "data": {
-    "projectId": "8f83b2a1-c4e5-4d67-9abc-123456789def",
-    "previousStatus": "Planning",
-    "newStatus": "InProgress",
-    "effectiveDate": "2024-06-21T08:00:00Z",
-    "updatedBy": {
-      "userId": "user123",
-      "fullName": "John Manager"
-    },
-    "notifications": {
-      "sent": 12,
-      "failed": 0,
-      "recipients": ["team", "client", "stakeholders"]
-    }
-  }
-}
-```
+*JSON response removed - includes status change confirmation with:*
+
+- `success`: Operation status (boolean)
+- `message`: Confirmation message
+- `data`: Status change details including:
+  - Project ID and status transition (previous/new status)
+  - Effective date and updating user information
+  - Notification results (sent count, failed count, recipient types)
+- `errors`: Array of validation errors
 
 ## Project Templates
 
@@ -777,41 +368,17 @@ Update project status with workflow validation.
 Get available project templates for quick project creation.
 
 **Success Response (200)**:
-```json
-{
-  "success": true,
-  "message": "Project templates retrieved successfully",
-  "data": {
-    "templates": [
-      {
-        "templateId": "tmpl001",
-        "name": "Residential Solar Installation",
-        "description": "Standard template for residential solar projects",
-        "category": "Residential",
-        "estimatedDuration": 30,
-        "defaultTasks": [
-          {
-            "title": "Site Survey",
-            "estimatedHours": 4,
-            "phase": "Planning"
-          },
-          {
-            "title": "Permit Application",
-            "estimatedHours": 8,
-            "phase": "Planning"
-          }
-        ],
-        "requiredEquipment": [
-          "Solar Panels",
-          "Inverter",
-          "Mounting System"
-        ],
-        "usageCount": 45
-      }
-    ]
-  }
-}
-```
+*JSON response removed - includes available project templates with:*
+
+- `success`: Operation status (boolean)
+- `message`: Response message
+- `data`: Templates object containing:
+  - `templates`: Array of template objects with:
+    - Basic template information (ID, name, description, category)
+    - Estimated duration and usage statistics
+    - Default tasks with phases and estimated hours
+    - Required equipment lists
+- `errors`: Array of validation errors
 
 **POST** `/api/v1/projects/from-template/{templateId}`
 
@@ -821,25 +388,17 @@ Create a new project from a template.
 - `templateId` (guid) - Template ID
 
 **Request Body**:
-```json
-{
-  "projectName": "Smith Residence Solar",
-  "address": "123 Oak Street, Anytown, ST 12345",
-  "clientInfo": "John & Jane Smith",
-  "totalCapacityKw": 8.5,
-  "projectManagerId": "mgr001",
-  "startDate": "2024-06-25T00:00:00Z",
-  "customizations": {
-    "skipTasks": ["permit_application"],
-    "additionalTasks": [
-      {
-        "title": "HOA Approval",
-        "estimatedHours": 2
-      }
-    ]
-  }
-}
-```
+*JSON request body removed - includes the following fields:*
+
+- `projectName`: Name for the new project (string, required)
+- `address`: Project location (string, required)
+- `clientInfo`: Client information (string, required)
+- `totalCapacityKw`: Project capacity (decimal, optional)
+- `projectManagerId`: Project manager assignment (GUID, required)
+- `startDate`: Project start date (ISO 8601 format, required)
+- `customizations`: Template customization object with:
+  - `skipTasks`: Array of task IDs to skip from template
+  - `additionalTasks`: Array of custom tasks to add
 
 ## Advanced Project Search
 
@@ -855,47 +414,18 @@ Advanced search with full-text search and filters.
 - `facets` (bool): Include facet information
 
 **Success Response (200)**:
-```json
-{
-  "success": true,
-  "message": "Search results retrieved successfully",
-  "data": {
-    "query": "solar installation residential",
-    "results": [
-      {
-        "projectId": "proj001",
-        "projectName": "Smith Residence Solar",
-        "relevanceScore": 95.2,
-        "matchedFields": ["projectName", "description", "tags"],
-        "highlights": [
-          "Smith Residence <mark>Solar</mark>",
-          "<mark>Residential</mark> <mark>installation</mark> project"
-        ]
-      }
-    ],
-    "facets": {
-      "status": {
-        "InProgress": 45,
-        "Completed": 23,
-        "Planning": 12
-      },
-      "capacity": {
-        "0-10kW": 67,
-        "10-50kW": 23,
-        "50kW+": 7
-      },
-      "location": {
-        "Urban": 78,
-        "Suburban": 45,
-        "Rural": 12
-      }
-    },
-    "suggestions": ["solar panels", "residential installation", "rooftop mounting"],
-    "totalResults": 97,
-    "searchTime": 0.034
-  }
-}
-```
+*JSON response removed - includes advanced search results with:*
+
+- `success`: Operation status (boolean)
+- `message`: Response message
+- `data`: Search results object containing:
+  - `query`: Original search query
+  - `results`: Array of matching projects with relevance scores and highlighted matches
+  - `facets`: Categorized counts for filtering (status, capacity, location)
+  - `suggestions`: Related search suggestions
+  - `totalResults`: Total number of matching projects
+  - `searchTime`: Query execution time in seconds
+- `errors`: Array of validation errors
 
 ## Project Error Codes
 

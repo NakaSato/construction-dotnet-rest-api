@@ -2,9 +2,9 @@
 
 **🔒 Authentication Required**  
 **⚡ Real-Time Support**: All API endpoints in this system support live data updates  
-**📅 Version**: 2.0  
-**🔄 Last Updated**: July 5, 2025  
-**🏗️ Architecture**: SignalR + WebSocket + Entity Framework Core  
+**📅 Version**: 2.1  
+**🔄 Last Updated**: July 7, 2025  
+**🏗️ Architecture**: SignalR + WebSocket + Entity Framework Core + Enhanced Collaborative Features  
 
 ## 🎯 Overview: Universal Real-Time Data Synchronization
 
@@ -16,11 +16,13 @@
 - **Cross-Platform Synchronization**: Changes on web, mobile, or desktop are instantly reflected everywhere
 - **Permission-Based Updates**: Users only receive updates for data they have access to
 - **Collaborative Editing**: Multiple users can work on the same data with real-time conflict prevention
-- **Automatic UI Refresh**: Client interfaces update automatically when data changes
-- **No Configuration Required**: Real-time updates work out of the box for all endpoints
+- **Live Report Collaboration**: Real-time daily report editing with typing indicators and field-level updates
 - **Geographic Location Updates**: Real-time GPS coordinate synchronization for project locations
 - **Status Change Notifications**: Instant project status updates (Planning → In Progress → Completed)
 - **Address and Location Tracking**: Live updates for project addresses and facility locations
+- **User Presence Indicators**: See who's online and what they're working on
+- **Regional Group Management**: Join/leave geographic and facility-based notification groups
+- **Map Integration**: Real-time location updates for map viewers and project teams
 
 ## 📡 Technical Implementation: SignalR WebSocket Hub
 
@@ -52,8 +54,12 @@ All API operations trigger corresponding real-time events:
 | `DELETE /api/v1/*` | `EntityDeleted` | Relevant users | Data removed |
 | `PATCH /api/v1/*` | `EntityPatched` | Relevant users | Partial data update |
 | `Project Status Change` | `ProjectStatusChanged` | Project team | Status transitions (Planning/In Progress/Completed) |
-| `Location Update` | `LocationUpdated` | Map viewers | GPS coordinates and address changes |
-| `Progress Update` | `ProgressUpdated` | Stakeholders | Task completion and milestone updates |
+| `Location Update` | `ProjectLocationUpdated` | Map viewers | GPS coordinates and address changes |
+| `Progress Update` | `ProjectProgressUpdated` | Stakeholders | Task completion and milestone updates |
+| `Report Field Edit` | `ReportFieldUpdated` | Report collaborators | Real-time field changes in daily reports |
+| `User Typing` | `UserTyping` | Report session | Live typing indicators for collaborative editing |
+| `Connection Status` | `UserJoinedProject`/`UserLeftProject` | Project members | User presence in project groups |
+| `Map Location` | `LocationDataUpdated` | Map viewers | Real-time GPS and address synchronization |
 
 ### 🆕 Enhanced Real-Time Features (July 2025)
 
@@ -63,6 +69,13 @@ All API operations trigger corresponding real-time events:
 - **🚧 Progress Monitoring**: Real-time task completion and project milestone updates
 - **🌍 Geographic Visualization**: Live map updates with accurate Thai province coordinates
 - **⏰ Timeline Synchronization**: Automatic start/end date updates with actual completion tracking
+- **👥 Collaborative Report Editing**: Multiple users can edit daily reports simultaneously with live field updates
+- **⌨️ Typing Indicators**: See who's editing which fields in real-time
+- **🏢 Regional Group Management**: Join geographic regions (northern, western, central) for targeted updates
+- **🏭 Facility-Based Notifications**: Subscribe to facility-type specific updates (solar, water treatment)
+- **🗂️ Enhanced Group Features**: Project groups, user groups, role groups, and map viewer groups
+- **📱 Connection Health Monitoring**: Advanced reconnection logic with exponential backoff
+- **🔄 User Presence System**: Real-time online/offline status and activity indicators
 
 ## 🏗️ API Endpoints with Real-Time Live Update Support
 
@@ -83,26 +96,44 @@ All API operations trigger corresponding real-time events:
 connection.on("ProjectCreated", (projectData) => {
     // New project instantly appears in project lists
     addProjectToUI(projectData);
+    showNotification(`New project created: ${projectData.projectName}`);
 });
 
 connection.on("ProjectUpdated", (projectData) => {
     // Project changes instantly reflected everywhere
     updateProjectInUI(projectData);
+    showUpdateNotification(`Project updated: ${projectData.projectName}`);
 });
 
 connection.on("ProjectStatusChanged", (statusData) => {
     // Real-time status updates with completion tracking
     updateProjectStatus(statusData.projectId, statusData.newStatus, statusData.actualEndDate);
+    broadcastStatusChange(statusData);
 });
 
 connection.on("ProjectLocationUpdated", (locationData) => {
     // Live GPS coordinate and address updates
     updateProjectLocation(locationData.projectId, locationData.coordinates, locationData.address);
+    refreshMapDisplay(locationData);
 });
 
 connection.on("ProjectProgressUpdated", (progressData) => {
     // Real-time progress updates on dashboards
     updateProgressBar(progressData.projectId, progressData.percentage);
+    updateMilestoneStatus(progressData);
+});
+
+// Enhanced user presence features
+connection.on("UserJoinedProject", (userData) => {
+    // Show who's working on the project
+    addUserToPresenceList(userData.userId, userData.userName);
+    showPresenceNotification(`${userData.userName} joined project`);
+});
+
+connection.on("UserLeftProject", (userData) => {
+    // Update presence indicators
+    removeUserFromPresenceList(userData.userId);
+    updatePresenceDisplay();
 });
 ```
 
@@ -252,6 +283,9 @@ connection.on("TaskStatusChanged", (taskData) => {
 **Real-Time Features**:
 - ✅ Instant daily report submission notifications
 - ✅ Live collaborative editing with typing indicators
+- ✅ Real-time field-level updates with conflict resolution
+- ✅ User presence indicators for active editors
+- ✅ Automatic save and synchronization
 - ✅ Real-time approval status updates
 - ✅ Automatic report aggregation and dashboard updates
 
@@ -260,17 +294,46 @@ connection.on("TaskStatusChanged", (taskData) => {
 connection.on("DailyReportCreated", (reportData) => {
     // New reports appear instantly for managers
     addReportToApprovalQueue(reportData);
+    showNotification(`New daily report from ${reportData.reportedByName}`);
 });
 
+// Enhanced collaborative editing features
 connection.on("ReportFieldUpdated", (fieldData) => {
-    // Collaborative editing with live field updates
+    // Real-time field updates with user context
     updateReportField(fieldData.fieldName, fieldData.value);
+    showFieldUpdateIndicator(fieldData.updatedByName, fieldData.fieldName);
 });
 
-connection.on("UserStartedTyping", (typingData) => {
-    // Show who's editing what field in real-time
-    showTypingIndicator(typingData.userName, typingData.fieldName);
+connection.on("UserTyping", (typingData) => {
+    // Live typing indicators with field specificity
+    if (typingData.isTyping) {
+        showTypingIndicator(typingData.userName, typingData.fieldName);
+    } else {
+        hideTypingIndicator(typingData.userName, typingData.fieldName);
+    }
 });
+
+connection.on("UserJoinedReportSession", (sessionData) => {
+    // Show who's editing the report
+    addEditorToPresenceList(sessionData.userId, sessionData.userName);
+    showCollaborationNotification(`${sessionData.userName} joined editing session`);
+});
+
+connection.on("UserLeftReportSession", (sessionData) => {
+    // Update editor presence
+    removeEditorFromPresenceList(sessionData.userId);
+    updateCollaborationDisplay();
+});
+
+// Join/leave report editing sessions
+await connection.invoke("JoinDailyReportSession", reportId);
+await connection.invoke("LeaveDailyReportSession", reportId);
+
+// Send real-time field updates
+await connection.invoke("UpdateReportField", reportId, "workDescription", "Updated work details");
+
+// Send typing indicators
+await connection.invoke("SendTypingIndicator", reportId, "workDescription", true);
 ```
 
 ### 5. 🔧 Work Requests API (`/api/v1/workrequests`)
@@ -428,8 +491,12 @@ connection.on("LiveActivityUpdate", (activityData) => {
 Users are automatically subscribed to relevant update groups based on their roles and project access:
 
 - **Project Groups**: `project_{projectId}` - All users assigned to a project
-- **Role Groups**: `role_admin`, `role_manager`, `role_user` - Role-based updates
+- **Role Groups**: `role_admin`, `role_manager`, `role_user`, `role_viewer` - Role-based updates
 - **User Groups**: `user_{userId}` - Personal notifications and updates
+- **Report Session Groups**: `report_session_{reportId}` - Collaborative editing sessions
+- **Region Groups**: `region_{regionName}` - Geographic-based updates (northern, western, central)
+- **Facility Groups**: `facility_{facilityType}` - Facility-type specific updates (solar_installation, water_treatment)
+- **Map Viewer Groups**: `map_viewers` - Real-time location and map updates
 - **Global Groups**: `all_users` - System-wide announcements
 
 ### Permission-Based Broadcasting
@@ -459,14 +526,40 @@ export const useRealTimeUpdates = (token: string) => {
         // Universal update listeners
         newConnection.on("EntityCreated", (data) => {
             handleEntityCreated(data);
+            showCreationNotification(data);
         });
 
         newConnection.on("EntityUpdated", (data) => {
             handleEntityUpdated(data);
+            showUpdateNotification(data);
         });
 
         newConnection.on("EntityDeleted", (data) => {
             handleEntityDeleted(data);
+            showDeletionNotification(data);
+        });
+
+        // Enhanced collaborative features
+        newConnection.on("UserJoinedProject", (userData) => {
+            updateUserPresence(userData);
+        });
+
+        newConnection.on("ReportFieldUpdated", (fieldData) => {
+            updateCollaborativeField(fieldData);
+        });
+
+        newConnection.on("UserTyping", (typingData) => {
+            updateTypingIndicators(typingData);
+        });
+
+        // Geographic and location updates
+        newConnection.on("ProjectLocationUpdated", (locationData) => {
+            updateMapDisplay(locationData);
+        });
+
+        // Connection status management
+        newConnection.on("Connected", (connectionData) => {
+            handleConnectionConfirmation(connectionData);
         });
 
         newConnection.start().then(() => {
@@ -500,8 +593,15 @@ export function useRealTimeUpdates(token: string) {
         await connection.value.start();
         isConnected.value = true;
 
-        // Setup universal listeners
+        // Setup universal listeners with enhanced features
         connection.value.on("EntityUpdated", updateEntityInStore);
+        connection.value.on("UserPresenceChanged", updateUserPresence);
+        connection.value.on("CollaborativeEdit", handleCollaborativeEditing);
+        connection.value.on("LocationUpdate", updateMapData);
+        
+        // Auto-join user groups
+        await connection.value.invoke("JoinUserGroup");
+        await connection.value.invoke("JoinRoleGroup");
     });
 
     onUnmounted(() => {
@@ -834,34 +934,92 @@ await connection.invoke("JoinRegionGroup", "northern_thailand");
 // Join facility type updates
 await connection.invoke("JoinFacilityGroup", "water_treatment");
 
-// Join user-specific updates
-await connection.invoke("JoinUserGroup", userId);
+// Join map viewers for location updates
+await connection.invoke("JoinMapViewersGroup");
+
+// Join daily report editing session
+await connection.invoke("JoinDailyReportSession", reportId);
+
+// Join user-specific updates (automatically done on connection)
+await connection.invoke("JoinUserGroup");
 ```
 
 ### 4. Advanced Real-Time Features
 ```javascript
-// Monitor connection health
-connection.onreconnecting(() => {
+// Enhanced connection management with exponential backoff
+const connection = new signalR.HubConnectionBuilder()
+    .withUrl("/notificationHub", {
+        accessTokenFactory: () => localStorage.getItem("jwtToken"),
+        transport: signalR.HttpTransportType.WebSockets
+    })
+    .withAutomaticReconnect([0, 2000, 10000, 30000]) // Exponential backoff
+    .configureLogging(signalR.LogLevel.Information)
+    .build();
+
+// Monitor connection health with enhanced status tracking
+connection.onreconnecting((error) => {
     console.log("🔄 Reconnecting to real-time updates...");
     showConnectionStatus("reconnecting");
+    pauseRealTimeFeatures();
 });
 
-connection.onreconnected(() => {
-    console.log("✅ Reconnected to real-time updates");
+connection.onreconnected((connectionId) => {
+    console.log("✅ Reconnected to real-time updates:", connectionId);
     showConnectionStatus("connected");
+    resumeRealTimeFeatures();
+    
+    // Re-join all groups after reconnection
+    rejoinAllGroups();
+    
     // Refresh current data to ensure synchronization
     refreshCurrentView();
 });
 
-connection.onclose(() => {
-    console.log("❌ Real-time connection closed");
+connection.onclose((error) => {
+    console.log("❌ Real-time connection closed:", error);
     showConnectionStatus("disconnected");
+    enableOfflineMode();
 });
 
-// Handle real-time errors gracefully
+// Handle real-time errors gracefully with retry logic
 connection.on("Error", (errorData) => {
     console.error("Real-time error:", errorData);
     showErrorNotification(errorData.message);
+    
+    // Implement automatic retry for recoverable errors
+    if (errorData.isRecoverable) {
+        scheduleReconnectionAttempt();
+    }
+});
+
+// Enhanced user presence and collaboration features
+connection.on("UserOnline", (userData) => {
+    updateUserPresenceIndicator(userData.userId, "online");
+    showPresenceNotification(`${userData.userName} is now online`);
+});
+
+connection.on("UserOffline", (userData) => {
+    updateUserPresenceIndicator(userData.userId, "offline");
+    updateCollaborationStatus(userData.userId, "inactive");
+});
+
+// Real-time collaboration conflict resolution
+connection.on("ConflictDetected", (conflictData) => {
+    handleEditingConflict(conflictData);
+    showConflictResolutionDialog(conflictData);
+});
+
+// Advanced typing indicators with field-level granularity
+connection.on("UserTyping", (typingData) => {
+    const { userId, userName, fieldName, isTyping, reportId } = typingData;
+    
+    if (isTyping) {
+        showFieldTypingIndicator(fieldName, userName);
+        addToActiveEditors(userId, fieldName);
+    } else {
+        hideFieldTypingIndicator(fieldName, userName);
+        removeFromActiveEditors(userId, fieldName);
+    }
 });
 ```
 
@@ -888,6 +1046,10 @@ connection.on("Error", (errorData) => {
 - **⏰ Accurate Timeline Tracking**: Real-time updates of actual completion dates vs estimated timelines
 - **🌍 Geographic Visualization**: Enhanced map-based real-time updates for regional project monitoring
 - **📈 Performance Metrics**: Live dashboard updates showing completion rates, regional progress, and facility status
+- **👥 Advanced Collaboration**: Multi-user daily report editing with conflict resolution and typing indicators
+- **🔄 Enhanced Connection Management**: Improved reconnection logic with exponential backoff and health monitoring
+- **📱 Mobile Optimization**: Better mobile experience with optimized real-time features for field workers
+- **🛡️ Security Enhancements**: Improved JWT validation and role-based real-time access control
 
 The system transforms traditional API interactions into a **live, collaborative experience** where all team members stay synchronized and informed in real-time, leading to better coordination, faster decision-making, and improved project outcomes.
 
@@ -903,7 +1065,7 @@ The system transforms traditional API interactions into a **live, collaborative 
 ---
 *🔄 All API endpoints automatically broadcast real-time updates to connected users. No additional configuration required for live data synchronization.*
 
-**Last Updated**: July 5, 2025 | **Version**: 2.0 | **API**: Solar Project Management | **Coverage**: 25 Thai Water Authority Projects
+**Last Updated**: July 7, 2025 | **Version**: 2.1 | **API**: Solar Project Management | **Coverage**: 25 Thai Water Authority Projects
 
 ## 📚 Additional Documentation
 
