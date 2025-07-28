@@ -4,7 +4,6 @@ using dotnet_rest_api.Data;
 using dotnet_rest_api.DTOs;
 using dotnet_rest_api.Models;
 using dotnet_rest_api.Common;
-using TaskModel = dotnet_rest_api.Models.Task;
 using TaskStatus = dotnet_rest_api.Models.TaskStatus;
 
 namespace dotnet_rest_api.Services.Tasks;
@@ -153,14 +152,14 @@ public class TaskService : ITaskService
     {
         try
         {
-            var task = new TaskModel
+            var task = new ProjectTask
             {
                 TaskId = Guid.NewGuid(),
                 Title = request.Title,
                 Description = request.Description,
                 DueDate = request.DueDate,
                 AssignedTechnicianId = request.AssignedTechnicianId,
-                Status = TaskStatus.Pending,
+                Status = TaskStatus.NotStarted,
                 CreatedAt = DateTime.UtcNow
             };
 
@@ -191,7 +190,7 @@ public class TaskService : ITaskService
     {
         try
         {
-            var task = new TaskModel
+            var task = new ProjectTask
             {
                 TaskId = Guid.NewGuid(),
                 ProjectId = projectId,
@@ -199,7 +198,7 @@ public class TaskService : ITaskService
                 Description = request.Description,
                 DueDate = request.DueDate,
                 AssignedTechnicianId = request.AssignedTechnicianId,
-                Status = TaskStatus.Pending,
+                Status = TaskStatus.NotStarted,
                 CreatedAt = DateTime.UtcNow
             };
 
@@ -563,7 +562,6 @@ public class TaskService : ITaskService
         // Basic implementation - return empty DTO for now
         var reportDto = new TaskProgressReportDto
         {
-            Id = Guid.NewGuid(),
             TaskId = taskId,
             CreatedAt = DateTime.UtcNow
         };

@@ -19,11 +19,12 @@ public static class RefactoredServiceExtensions
     public static IServiceCollection AddRefactoredMasterPlanServices(this IServiceCollection services)
     {
         // Register focused services
-        services.AddScoped<IMasterPlanCrudService, MasterPlanCrudService>();
-        services.AddScoped<IMasterPlanAnalyticsService, MasterPlanAnalyticsService>();
-        services.AddScoped<IPhaseManagementService, PhaseManagementService>();
-        services.AddScoped<IMilestoneService, MilestoneService>();
-        services.AddScoped<IMasterPlanReportingService, MasterPlanReportingService>();
+        // TODO: Implement these services
+        // services.AddScoped<IMasterPlanCrudService, MasterPlanCrudService>();
+        // services.AddScoped<IMasterPlanAnalyticsService, MasterPlanAnalyticsService>();
+        // services.AddScoped<IPhaseManagementService, PhaseManagementService>();
+        // services.AddScoped<IMilestoneService, MilestoneService>();
+        // services.AddScoped<IMasterPlanReportingService, MasterPlanReportingService>();
 
         // Register the orchestrator service that implements the original interface
         // services.AddScoped<IMasterPlanService, MasterPlanOrchestratorService>();

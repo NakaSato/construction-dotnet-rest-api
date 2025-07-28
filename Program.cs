@@ -243,7 +243,7 @@ builder.Services.AddCors(options =>
 });
 
 // Business Services Registration
-builder.Services.AddScoped<dotnet_rest_api.Services.Shared.IDailyReportService, dotnet_rest_api.Services.Infrastructure.StubDailyReportService>();
+builder.Services.AddScoped<dotnet_rest_api.Services.Infrastructure.IDailyReportService, dotnet_rest_api.Services.Infrastructure.StubDailyReportService>();
 
 // WBS Services Registration
 builder.Services.AddScoped<dotnet_rest_api.Services.WBS.WbsDataSeeder>();
@@ -255,41 +255,21 @@ builder.Services.AddScoped<dotnet_rest_api.Services.Shared.IResponseBuilderServi
 builder.Services.AddScoped<dotnet_rest_api.Services.Shared.IValidationHelperService, dotnet_rest_api.Services.Shared.ValidationHelperService>();
 
 // Service implementations
-builder.Services.AddScoped<dotnet_rest_api.Services.Shared.ICacheService, dotnet_rest_api.Services.Shared.CacheService>();
+builder.Services.AddScoped<dotnet_rest_api.Services.ICacheService, dotnet_rest_api.Services.CacheService>();
 builder.Services.AddScoped<dotnet_rest_api.Services.Users.IAuthService, dotnet_rest_api.Services.Users.AuthService>();
 
 // Project Services - Feature-based organization
-builder.Services.AddScoped<dotnet_rest_api.Services.Projects.IProjectService, dotnet_rest_api.Services.Projects.ProjectService>();
+// builder.Services.AddScoped<dotnet_rest_api.Services.Projects.IProjectService, dotnet_rest_api.Services.Projects.ProjectService>();
 builder.Services.AddScoped<dotnet_rest_api.Services.Projects.IProjectAnalyticsService, dotnet_rest_api.Services.Projects.ProjectAnalyticsService>();
 builder.Services.AddScoped<dotnet_rest_api.Services.Tasks.ITaskService, dotnet_rest_api.Services.Tasks.TaskService>(); // Real implementation
 builder.Services.AddScoped<dotnet_rest_api.Services.MasterPlans.IMasterPlanService, dotnet_rest_api.Services.MasterPlans.MasterPlanService>(); // Real implementation
 
 // Infrastructure Services - NotificationService
-// TODO: Fix SignalRNotificationService to implement INotificationService properly
-// builder.Services.AddScoped<dotnet_rest_api.Services.Infrastructure.INotificationService, dotnet_rest_api.Services.Infrastructure.SignalRNotificationService>();
 builder.Services.AddScoped<dotnet_rest_api.Services.Infrastructure.INotificationService, dotnet_rest_api.Services.Infrastructure.StubNotificationService>();
 
 // Other Services
 builder.Services.AddScoped<dotnet_rest_api.Services.Users.IUserService, dotnet_rest_api.Services.Users.UserService>();
 builder.Services.AddScoped<dotnet_rest_api.Services.Shared.IQueryService, dotnet_rest_api.Services.Shared.QueryService>();
-
-// Stub Services for missing implementations - these should be replaced with real implementations
-// TODO: Implement these services properly
-// builder.Services.AddScoped<dotnet_rest_api.Services.Infrastructure.IDocumentService, dotnet_rest_api.Services.Infrastructure.StubDocumentService>();
-// builder.Services.AddScoped<dotnet_rest_api.Services.Infrastructure.IImageService, dotnet_rest_api.Services.Infrastructure.StubImageService>();
-// builder.Services.AddScoped<dotnet_rest_api.Services.Infrastructure.IResourceService, dotnet_rest_api.Services.Infrastructure.StubResourceService>();
-// builder.Services.AddScoped<dotnet_rest_api.Services.Infrastructure.ICalendarService, dotnet_rest_api.Services.Infrastructure.StubCalendarService>();
-// builder.Services.AddScoped<dotnet_rest_api.Services.Infrastructure.IWeeklyReportService, dotnet_rest_api.Services.Infrastructure.StubWeeklyReportService>();
-// builder.Services.AddScoped<dotnet_rest_api.Services.Infrastructure.IWorkRequestService, dotnet_rest_api.Services.Infrastructure.StubWorkRequestService>();
-// builder.Services.AddScoped<dotnet_rest_api.Services.Infrastructure.IWorkRequestApprovalService, dotnet_rest_api.Services.Infrastructure.StubWorkRequestApprovalService>();
-// builder.Services.AddScoped<dotnet_rest_api.Services.Infrastructure.IWeeklyWorkRequestService, dotnet_rest_api.Services.Infrastructure.StubWeeklyWorkRequestService>();
-
-// Add refactored master plan services with CQRS handlers (currently incomplete)
-// builder.Services.AddAllRefactoredServices();
-
-// Background Services
-// TODO: Implement background service registration
-// builder.Services.AddNotificationBackgroundService();
 
 // ===================================
 // APPLICATION PIPELINE CONFIGURATION
