@@ -1,7 +1,13 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using dotnet_rest_api.DTOs;
-using dotnet_rest_api.Services;
+using dotnet_rest_api.Services.Shared;
+using dotnet_rest_api.Services.Users;
+using dotnet_rest_api.Services.Tasks;
+using dotnet_rest_api.Services.Projects;
+using dotnet_rest_api.Services.MasterPlans;
+using dotnet_rest_api.Services.WBS;
+using dotnet_rest_api.Services.Infrastructure;
 using dotnet_rest_api.Attributes;
 using Asp.Versioning;
 

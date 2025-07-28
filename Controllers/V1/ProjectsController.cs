@@ -7,7 +7,8 @@ using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using dotnet_rest_api.DTOs;
-using dotnet_rest_api.Services;
+using dotnet_rest_api.Services.Projects;
+using dotnet_rest_api.Services.Shared;
 using dotnet_rest_api.Attributes;
 using Asp.Versioning;
 
@@ -20,12 +21,18 @@ namespace dotnet_rest_api.Controllers.V1;
 public class ProjectsController : BaseApiController
 {
     private readonly IProjectService _projectService;
+    private readonly IProjectAnalyticsService _analyticsService;
     private readonly IQueryService _queryService;
     private readonly ILogger<ProjectsController> _logger;
 
-    public ProjectsController(IProjectService projectService, IQueryService queryService, ILogger<ProjectsController> logger)
+    public ProjectsController(
+        IProjectService projectService, 
+        IProjectAnalyticsService analyticsService,
+        IQueryService queryService, 
+        ILogger<ProjectsController> logger)
     {
         _projectService = projectService;
+        _analyticsService = analyticsService;
         _queryService = queryService;
         _logger = logger;
     }
@@ -46,23 +53,6 @@ public class ProjectsController : BaseApiController
         ApplyFiltersFromQuery(parameters, filterString);
 
         var result = await _projectService.GetProjectsAsync(parameters);
-        return ToApiResponse(result);
-    }
-
-    /// <summary>
-    /// Get all projects with pagination (legacy endpoint for backward compatibility)
-    /// </summary>
-    [HttpGet("legacy")]
-    [MediumCache] // 15 minute cache for legacy project lists
-    public async Task<ActionResult<ApiResponse<PagedResult<ProjectDto>>>> GetProjectsLegacy(
-        [FromQuery] int pageNumber = 1,
-        [FromQuery] int pageSize = 10,
-        [FromQuery] Guid? managerId = null)
-    {
-        // Log controller action for debugging
-        LogControllerAction(_logger, "GetProjectsLegacy", new { pageNumber, pageSize, managerId });
-
-        var result = await _projectService.GetProjectsLegacyAsync(pageNumber, pageSize, managerId);
         return ToApiResponse(result);
     }
 
@@ -558,6 +548,21 @@ public class ProjectsController : BaseApiController
             RecentProjects = new List<MobileProjectDto>(),
             LastSyncTimestamp = DateTime.UtcNow
         };
+    }
+
+    /// <summary>
+    /// Get comprehensive project analytics and statistics
+    /// Available to: All authenticated users
+    /// </summary>
+    [HttpGet("analytics")]
+    [LongCache] // 1 hour cache for analytics data
+    public async Task<ActionResult<ApiResponse<ProjectStatistics>>> GetProjectAnalytics()
+    {
+        // Log controller action for debugging
+        LogControllerAction(_logger, "GetProjectAnalytics", null);
+
+        var result = await _analyticsService.GetProjectAnalyticsAsync();
+        return ToApiResponse(result);
     }
 
     #endregion
