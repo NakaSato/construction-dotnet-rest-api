@@ -1,176 +1,177 @@
-# GitHub Copilot Instructions for .NET REST API
+# GitHub Copilot Instructions for Solar Projects API
 
-This project is a .NET 9.0 REST API for solar project management. Follow these instructions when working with this codebase.
+This is a comprehensive .NET 9.0 REST API for solar project management with real-time capabilities, featuring JWT authentication, SignalR integration, and extensive project management functionality.
 
-## Project Overview
+## 🏗️ Architecture Overview
 
-- **Framework**: .NET 9.0
-- **Architecture**: Clean Architecture with Controllers, Services, and Data layers
-- **Database**: Entity Framework Core with PostgreSQL Database
-- **API Documentation**: Swagger/OpenAPI
-- **Main Entities**: Project, Task, User, DailyReport, WorkRequest
+**Core Stack**: .NET 9.0 + PostgreSQL + Entity Framework Core + SignalR + JWT Auth
+**Domain**: Solar PV installation project management (WBS, Daily Reports, Work Requests)
+**Pattern**: Clean Architecture with feature-based service organization
 
-## Code Style Guidelines
+### Key Architectural Decisions
+- **Feature Controllers**: Most controllers are `.disabled` - rename to `.cs` to activate
+- **Real-time Integration**: SignalR hub at `/notificationHub` for live updates
+- **JWT Blacklisting**: Custom middleware for token revocation in `JwtBlacklistMiddleware`
+- **Service Result Pattern**: All services return `ServiceResult<T>` for consistent error handling
+- **Base Controllers**: Inherit from `BaseApiController` for common functionality
 
-### C# Conventions
-- Use **file-scoped namespaces** (e.g., `namespace MyProject.Controllers;`)
-- Use **nullable reference types** and handle null values appropriately
-- Follow **PascalCase** for public members, **camelCase** for private/local variables
-- Use **async/await** patterns for database operations
-- Prefer **dependency injection** over static dependencies
+## 🔐 Authentication & Security
 
-### API Development
-- Controllers should be lightweight and delegate business logic to services
-- Use appropriate HTTP status codes (200, 201, 400, 404, etc.)
-- Include proper error handling with meaningful error messages
-- Use DTOs for data transfer when needed
-- Follow RESTful conventions for endpoint naming
-
-### Entity Framework
-- Use `DbContext` for database operations
-- Implement repository pattern when needed
-- Use migrations for database schema changes
-- Handle database exceptions appropriately
-
-## Project Structure
-
-```
-/Controllers     - API controllers (V1 versioned controllers)
-/Models         - Domain models (Project, Task, User, DailyReport, WorkRequest)
-/Services       - Business logic interfaces and implementations
-/Data           - Database context (ApplicationDbContext.cs)
-/Program.cs     - Application entry point with DI configuration
-```
-
-## Common Patterns
-
-### Controller Pattern
+### JWT Implementation
 ```csharp
-[Route("api/v1/[controller]")]
-[ApiController]
-public class ProjectsController : ControllerBase
+// Authentication configured in Program.cs with SignalR support
+options.Events = new JwtBearerEvents
 {
-    private readonly IProjectService _projectService;
-    
-    public ProjectsController(IProjectService projectService)
+    OnMessageReceived = context =>
     {
-        _projectService = projectService;
+        var accessToken = context.Request.Query["access_token"];
+        if (!string.IsNullOrEmpty(accessToken) && 
+            path.StartsWithSegments("/notificationHub"))
+        {
+            context.Token = accessToken;
+        }
+        return Task.CompletedTask;
     }
-    
-    [HttpGet]
-    public async Task<ActionResult<IEnumerable<Project>>> GetProjects()
-    {
-        var projects = await _projectService.GetAllProjectsAsync();
-        return Ok(projects);
-    }
+};
+```
+
+### Default Credentials (Development)
+- **Admin**: `admin@example.com` / `Admin123!`
+- **JWT Blacklisting**: Tokens stored in `IMemoryCache` with expiration
+
+## 🚀 Real-Time Architecture
+
+### SignalR Hub Pattern
+```csharp
+[Authorize]
+public class NotificationHub : Hub
+{
+    // Group-based messaging for projects, regions, facilities
+    await Groups.AddToGroupAsync(Context.ConnectionId, $"project_{projectId}");
+    await Clients.Group($"project_{projectId}").SendAsync("ProjectUpdate", data);
 }
+```
+
+### Integration in Services
+```csharp
+// Pass user context from controllers to services for real-time notifications
+var userId = HttpContext.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+var userName = HttpContext.User.FindFirst(ClaimTypes.Name)?.Value;
+var result = await _service.CreateAsync(request, userId, userName);
+```
+
+## 📁 Critical File Patterns
+
+### Service Registration (`Program.cs`)
+- **Environment Detection**: Auto-configures URLs for Docker vs local development
+- **Database Strategy**: PostgreSQL (production) or In-Memory (testing) based on env vars
+- **Conditional Features**: Rate limiting, CORS policies, middleware pipeline
+
+### Controller Activation
+```bash
+# Enable disabled controllers by renaming
+mv Controllers/V1/ProjectsController.cs.disabled Controllers/V1/ProjectsController.cs
 ```
 
 ### Service Pattern
 ```csharp
-public class ProjectService : IProjectService
+public class AuthService : IAuthService
 {
-    private readonly ApplicationDbContext _context;
+    // JWT generation with blacklist support
+    private readonly IMemoryCache _cache;
     
-    public ProjectService(ApplicationDbContext context)
+    public async Task<ServiceResult<bool>> LogoutAsync(string token)
     {
-        _context = context;
-    }
-    
-    public async Task<IEnumerable<Project>> GetAllProjectsAsync()
-    {
-        return await _context.Projects.ToListAsync();
+        // Add to blacklist cache with token expiration
+        _cache.Set($"blacklisted_token_{tokenId}", true, expiration);
     }
 }
 ```
 
-## Development Guidelines
+## 🔧 Development Workflows
 
-### When Adding New Features
-1. **Models**: Create/update domain models in `/Models`
-2. **Services**: Add business logic interfaces in `/Services`
-3. **Data**: Update DbContext if new entities are added
-4. **Controllers**: Create API endpoints following RESTful conventions
-5. **DI**: Register new services in `Program.cs`
-
-### When Adding New Endpoints
-- Use appropriate HTTP verbs (GET, POST, PUT, DELETE)
-- Include proper route attributes
-- Add input validation
-- Handle errors gracefully
-- Document with XML comments for Swagger
-
-### Database Operations
-- Use async methods (`async/await`)
-- Handle `DbUpdateException` and other EF exceptions
-- Use transactions for complex operations
-- Implement proper error logging
-
-### Testing Considerations
-- Write unit tests for services
-- Use in-memory database for testing
-- Mock external dependencies
-- Test both success and error scenarios
-
-## Package Dependencies
-
-Current NuGet packages:
-- `Microsoft.EntityFrameworkCore` (9.0.0)
-- `Microsoft.EntityFrameworkCore.InMemory` (9.0.0)
-- `Microsoft.EntityFrameworkCore.SqlServer` (9.0.0)
-- `Microsoft.AspNetCore.Mvc.NewtonsoftJson` (9.0.0)
-- `Swashbuckle.AspNetCore` (6.8.0)
-
-## API Endpoints
-
-Current Solar Projects API endpoints:
-- `GET /api/v1/projects` - Get all projects
-- `GET /api/v1/projects/{id}` - Get project by ID
-- `POST /api/v1/projects` - Create new project
-- `PUT /api/v1/projects/{id}` - Update existing project
-- `DELETE /api/v1/projects/{id}` - Delete project
-- `GET /api/v1/daily-reports` - Get daily reports
-- `GET /api/v1/work-requests` - Get work requests
-
-## Development Commands
-
+### Docker Development
 ```bash
-# Restore packages
-dotnet restore
+# Complete stack with PostgreSQL
+docker-compose up -d
 
-# Build project
-dotnet build
-
-# Run application
-dotnet run --urls "http://localhost:5001"
-
-# Run with watch mode for development
-dotnet watch run --urls "http://localhost:5001"
-
-# Add new migration (if using SQL Server)
-dotnet ef migrations add <MigrationName>
-
-# Update database
-dotnet ef database update
+# API available at http://localhost:5001
+# Database on localhost:5432
 ```
 
-## Best Practices
+### Local Development
+```bash
+# Auto-configures to localhost:5001
+dotnet watch run --urls "http://localhost:5001"
 
-1. **Always validate input** in controllers
-2. **Use appropriate return types** (ActionResult<T>)
-3. **Implement proper error handling** with try-catch blocks
-4. **Use dependency injection** for loose coupling
-5. **Follow async patterns** for I/O operations
-6. **Write meaningful commit messages**
-7. **Keep controllers thin** - move logic to services
-8. **Use configuration** for environment-specific settings
+# Swagger UI at root: http://localhost:5001
+```
 
-## Security Considerations
+### Feature Activation
+1. **Enable Controllers**: Remove `.disabled` extension
+2. **Register Services**: Add to `Program.cs` service registration
+3. **Database Migrations**: Run `dotnet ef database update`
 
-- Validate all input parameters
-- Use HTTPS in production
-- Implement authentication/authorization when needed
-- Sanitize data before database operations
-- Log security events appropriately
+## 🎯 Project-Specific Patterns
 
-Remember to keep this file updated as the project evolves and new patterns emerge.
+### WBS (Work Breakdown Structure)
+- **Hierarchical Tasks**: Parent-child relationships with unlimited nesting
+- **Dependencies**: Task prerequisite validation and critical path analysis
+- **Evidence Management**: Photo/document attachments per task
+- **Installation Areas**: Carport, Water Tank Roof, Inverter Room, etc.
+
+### Data Flow Architecture
+```
+Controller → Service (with user context) → Repository → Database
+    ↓
+SignalR Hub → Real-time client updates
+```
+
+### Error Handling Strategy
+```csharp
+// Consistent error responses using ServiceResult<T>
+return ServiceResult<T>.ErrorResult("Message");
+return ServiceResult<T>.SuccessResult(data, "Message");
+
+// Controllers use ToApiResponse() extension
+return ToApiResponse(result);
+```
+
+## 🧪 Testing & Development
+
+### HTTP Test Files
+- **Location**: `tests/http/` directory
+- **Usage**: VS Code REST Client extension
+- **Coverage**: All major endpoints with authentication
+
+### Environment Configuration
+- **Development**: Swagger enabled, detailed errors, in-memory database option
+- **Docker**: Production-like setup with PostgreSQL
+- **Variables**: `.env` file support for local development
+
+## 🔑 Key Integration Points
+
+### Mobile/Flutter Support
+- **CORS**: Pre-configured for mobile apps
+- **Mobile DTOs**: Lightweight data transfer objects in `/DTOs/MobileDTOs.cs`
+- **Endpoints**: Optimized mobile endpoints for project data
+
+### Real-time Features
+- **Project Updates**: Automatic notifications for CRUD operations
+- **Geographic Groups**: Regional grouping (Northern, Western, Central Thailand)
+- **Role-based Groups**: Admin, ProjectManager, User group messaging
+
+## ⚠️ Important Conventions
+
+- **Never edit** disabled controllers directly - rename first
+- **Always pass user context** (userId, userName) from controllers to services
+- **Use AutoMapper** for entity-DTO transformations (configured in `MappingProfile.cs`)
+- **Rate limiting** enabled by default - configure in `RateLimit:Enabled`
+- **Cache attributes** available: `[ShortCache]`, `[MediumCache]`, `[LongCache]`
+
+## 🔍 Debugging Tips
+
+- **Health Check**: `GET /health` for API status
+- **Swagger**: Available at root URL in development
+- **SignalR**: Connection endpoint `/notificationHub` with JWT query param
+- **Logs**: Detailed logging configured for development environment

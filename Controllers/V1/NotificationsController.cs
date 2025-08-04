@@ -346,7 +346,8 @@ public class NotificationsController : BaseApiController
     {
         try
         {
-            await _notificationService.SendSystemAnnouncementAsync(
+            await _notificationService.
+            SendSystemAnnouncementAsync(
                 request.Title, 
                 request.Message, 
                 request.Priority);

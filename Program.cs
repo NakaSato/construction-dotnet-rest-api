@@ -259,13 +259,26 @@ builder.Services.AddScoped<dotnet_rest_api.Services.ICacheService, dotnet_rest_a
 builder.Services.AddScoped<dotnet_rest_api.Services.Users.IAuthService, dotnet_rest_api.Services.Users.AuthService>();
 
 // Project Services - Feature-based organization
-// builder.Services.AddScoped<dotnet_rest_api.Services.Projects.IProjectService, dotnet_rest_api.Services.Projects.ProjectService>();
+builder.Services.AddScoped<dotnet_rest_api.Services.Projects.IProjectService, dotnet_rest_api.Services.Projects.ProjectService>();
 builder.Services.AddScoped<dotnet_rest_api.Services.Projects.IProjectAnalyticsService, dotnet_rest_api.Services.Projects.ProjectAnalyticsService>();
 builder.Services.AddScoped<dotnet_rest_api.Services.Tasks.ITaskService, dotnet_rest_api.Services.Tasks.TaskService>(); // Real implementation
 builder.Services.AddScoped<dotnet_rest_api.Services.MasterPlans.IMasterPlanService, dotnet_rest_api.Services.MasterPlans.MasterPlanService>(); // Real implementation
 
 // Infrastructure Services - NotificationService
 builder.Services.AddScoped<dotnet_rest_api.Services.Infrastructure.INotificationService, dotnet_rest_api.Services.Infrastructure.StubNotificationService>();
+
+// Work Request Services
+builder.Services.AddScoped<dotnet_rest_api.Services.Infrastructure.IWorkRequestService, dotnet_rest_api.Services.Infrastructure.StubWorkRequestService>();
+builder.Services.AddScoped<dotnet_rest_api.Services.Infrastructure.IWorkRequestApprovalService, dotnet_rest_api.Services.Infrastructure.StubWorkRequestApprovalService>();
+
+// Weekly Services
+builder.Services.AddScoped<dotnet_rest_api.Services.Infrastructure.IWeeklyReportService, dotnet_rest_api.Services.Infrastructure.StubWeeklyReportService>();
+builder.Services.AddScoped<dotnet_rest_api.Services.Infrastructure.IWeeklyWorkRequestService, dotnet_rest_api.Services.Infrastructure.StubWeeklyWorkRequestService>();
+
+// Miscellaneous Services
+builder.Services.AddScoped<dotnet_rest_api.Services.Infrastructure.ICalendarService, dotnet_rest_api.Services.Infrastructure.StubCalendarService>();
+builder.Services.AddScoped<dotnet_rest_api.Services.Infrastructure.IImageService, dotnet_rest_api.Services.Infrastructure.StubImageService>();
+builder.Services.AddScoped<dotnet_rest_api.Services.Infrastructure.IResourceService, dotnet_rest_api.Services.Infrastructure.StubResourceService>();
 
 // Other Services
 builder.Services.AddScoped<dotnet_rest_api.Services.Users.IUserService, dotnet_rest_api.Services.Users.UserService>();
