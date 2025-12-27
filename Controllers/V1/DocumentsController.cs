@@ -22,12 +22,12 @@ namespace dotnet_rest_api.Controllers.V1;
 [Authorize]
 public class DocumentsController : BaseApiController
 {
-    // private readonly IDocumentService _documentService;
+    private readonly IDocumentService _documentService;
     private readonly IQueryService _queryService;
     private readonly ILogger<DocumentsController> _logger;
 
     public DocumentsController(
-        // IDocumentService documentService,
+        IDocumentService documentService,
         IQueryService queryService,
         ILogger<DocumentsController> logger)
     {
@@ -35,6 +35,7 @@ public class DocumentsController : BaseApiController
         _queryService = queryService;
         _logger = logger;
     }
+
 
     /// <summary>
     /// Get all documents with filtering (top-level collection)

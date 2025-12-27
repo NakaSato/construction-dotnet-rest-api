@@ -34,10 +34,10 @@ FAILED_IMPORTS=0
 SKIPPED_IMPORTS=0
 
 # Valid project manager ID (from database)
-VALID_MANAGER_ID="cface76b-1457-44a1-89fa-6b4ccc2f5f66"
+VALID_MANAGER_ID="00000000-0000-0000-0000-000000000002"
 
 # Admin credentials
-ADMIN_USERNAME="test_admin"
+ADMIN_USERNAME="admin"
 ADMIN_PASSWORD="Admin123!"
 
 # Utility functions

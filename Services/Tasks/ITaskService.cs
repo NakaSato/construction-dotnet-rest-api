@@ -39,4 +39,8 @@ public interface ITaskService
     System.Threading.Tasks.Task<ServiceResult<PagedResult<TaskProgressReportDto>>> GetTaskProgressReportsAsync(Guid taskId, int pageNumber, int pageSize);
     System.Threading.Tasks.Task<ServiceResult<TaskProgressReportDto>> CreateTaskProgressReportAsync(Guid taskId, CreateTaskProgressReportRequest request);
     System.Threading.Tasks.Task<ServiceResult<TaskDto>> AddTaskProgressReportAsync(Guid taskId, CreateTaskProgressReportRequest request);
+    
+    // Phase-related operations
+    System.Threading.Tasks.Task<ServiceResult<PagedResult<TaskDto>>> GetPhaseTasksAsync(Guid phaseId, int pageNumber, int pageSize);
 }
+

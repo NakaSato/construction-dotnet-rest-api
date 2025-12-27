@@ -13,6 +13,12 @@ public class StubNotificationService : INotificationService
         return Task.CompletedTask;
     }
 
+    public Task SendNotificationAsync(string message, Guid userId)
+    {
+        // Stub implementation - does nothing
+        return Task.CompletedTask;
+    }
+
     public Task SendNotificationToAllAsync(string message, string type = "info")
     {
         // Stub implementation - does nothing
@@ -51,5 +57,35 @@ public class StubNotificationService : INotificationService
     public Task<ServiceResult<bool>> MarkAllNotificationsAsReadAsync(Guid userId)
     {
         return Task.FromResult(ServiceResult<bool>.SuccessResult(true, "Stub implementation"));
+    }
+
+    public Task SendNotificationCountUpdateAsync(Guid userId)
+    {
+        // Stub implementation - does nothing
+        return Task.CompletedTask;
+    }
+
+    public Task SendSystemAnnouncementAsync(string title, string message, string priority)
+    {
+        // Stub implementation - does nothing
+        return Task.CompletedTask;
+    }
+
+    public Task SendWbsTaskCreatedNotificationAsync(Guid notificationId, string wbsId, string taskName, Guid projectId, string userName)
+    {
+        // Stub implementation - does nothing
+        return Task.CompletedTask;
+    }
+
+    public Task SendWbsTaskUpdatedNotificationAsync(Guid notificationId, string wbsId, string taskName, Guid projectId, string userName)
+    {
+        // Stub implementation - does nothing
+        return Task.CompletedTask;
+    }
+
+    public Task SendWbsTaskDeletedNotificationAsync(string wbsId, string taskName, Guid projectId, string userName)
+    {
+        // Stub implementation - does nothing
+        return Task.CompletedTask;
     }
 }

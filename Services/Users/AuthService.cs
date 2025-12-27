@@ -60,22 +60,14 @@ public class AuthService : IAuthService
             // Fallback for testing purposes - hardcoded admin credentials
             if (request.Username == "admin@example.com" && request.Password == "Admin123!")
             {
+                // ... (existing fallback code)
                 var token = GenerateJwtTokenForTestUser();
-                var response = new LoginResponse
-                {
-                    Token = token,
-                    User = new UserDto
-                    {
-                        UserId = Guid.NewGuid(),
-                        Username = "admin",
-                        Email = "admin@example.com",
-                        FullName = "Admin User",
-                        RoleName = "Admin",
-                        IsActive = true
-                    }
-                };
-
-                return ServiceResult<LoginResponse>.SuccessResult(response, "Login successful");
+                // ...
+                return ServiceResult<LoginResponse>.SuccessResult(new LoginResponse 
+                { 
+                    Token = token, 
+                    User = new UserDto { UserId = Guid.NewGuid(), Username = "admin", Email = "admin@example.com", FullName = "Admin User", RoleName = "Admin", IsActive = true } 
+                }, "Login successful");
             }
 
             return ServiceResult<LoginResponse>.ErrorResult("Invalid username or password");

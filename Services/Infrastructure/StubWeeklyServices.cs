@@ -1,4 +1,6 @@
 using dotnet_rest_api.DTOs;
+using dotnet_rest_api.Models;
+using Task = System.Threading.Tasks.Task;
 
 namespace dotnet_rest_api.Services.Infrastructure;
 
@@ -10,6 +12,7 @@ public interface IWeeklyReportService
     Task<ServiceResult<WeeklyReportDto>> UpdateWeeklyReportAsync(Guid id, UpdateWeeklyReportDto request);
     Task<ServiceResult<bool>> DeleteWeeklyReportAsync(Guid id);
     Task<ServiceResult<EnhancedPagedResult<WeeklyReportDto>>> GetProjectWeeklyReportsAsync(Guid projectId, WeeklyReportQueryParameters parameters);
+    Task<ServiceResult<WeeklyReportDto>> UpdateWeeklyReportStatusAsync(Guid id, WeeklyReportStatus status);
 }
 
 public interface IWeeklyWorkRequestService
@@ -20,6 +23,7 @@ public interface IWeeklyWorkRequestService
     Task<ServiceResult<WeeklyWorkRequestDto>> UpdateWeeklyWorkRequestAsync(Guid id, UpdateWeeklyWorkRequestDto request);
     Task<ServiceResult<bool>> DeleteWeeklyWorkRequestAsync(Guid id);
     Task<ServiceResult<EnhancedPagedResult<WeeklyWorkRequestDto>>> GetProjectWeeklyWorkRequestsAsync(Guid projectId, WeeklyWorkRequestQueryParameters parameters);
+    Task<ServiceResult<WeeklyWorkRequestDto>> UpdateWeeklyWorkRequestStatusAsync(Guid id, WeeklyRequestStatus status);
 }
 
 /// <summary>
@@ -30,7 +34,14 @@ public class StubWeeklyReportService : IWeeklyReportService
     public async Task<ServiceResult<EnhancedPagedResult<WeeklyReportDto>>> GetWeeklyReportsAsync(WeeklyReportQueryParameters parameters)
     {
         await Task.CompletedTask;
-        return ServiceResult<EnhancedPagedResult<WeeklyReportDto>>.ErrorResult("WeeklyReportService not implemented yet");
+        var result = new EnhancedPagedResult<WeeklyReportDto>
+        {
+            Items = new List<WeeklyReportDto>(),
+            TotalCount = 0,
+            PageNumber = parameters.PageNumber,
+            PageSize = parameters.PageSize
+        };
+        return ServiceResult<EnhancedPagedResult<WeeklyReportDto>>.SuccessResult(result);
     }
 
     public async Task<ServiceResult<WeeklyReportDto>> GetWeeklyReportByIdAsync(Guid id)
@@ -60,7 +71,20 @@ public class StubWeeklyReportService : IWeeklyReportService
     public async Task<ServiceResult<EnhancedPagedResult<WeeklyReportDto>>> GetProjectWeeklyReportsAsync(Guid projectId, WeeklyReportQueryParameters parameters)
     {
         await Task.CompletedTask;
-        return ServiceResult<EnhancedPagedResult<WeeklyReportDto>>.ErrorResult("WeeklyReportService not implemented yet");
+        var result = new EnhancedPagedResult<WeeklyReportDto>
+        {
+            Items = new List<WeeklyReportDto>(),
+            TotalCount = 0,
+            PageNumber = parameters.PageNumber,
+            PageSize = parameters.PageSize
+        };
+        return ServiceResult<EnhancedPagedResult<WeeklyReportDto>>.SuccessResult(result);
+    }
+
+    public async Task<ServiceResult<WeeklyReportDto>> UpdateWeeklyReportStatusAsync(Guid id, WeeklyReportStatus status)
+    {
+        await Task.CompletedTask;
+        return ServiceResult<WeeklyReportDto>.ErrorResult("WeeklyReportService not implemented yet");
     }
 }
 
@@ -72,7 +96,14 @@ public class StubWeeklyWorkRequestService : IWeeklyWorkRequestService
     public async Task<ServiceResult<EnhancedPagedResult<WeeklyWorkRequestDto>>> GetWeeklyWorkRequestsAsync(WeeklyWorkRequestQueryParameters parameters)
     {
         await Task.CompletedTask;
-        return ServiceResult<EnhancedPagedResult<WeeklyWorkRequestDto>>.ErrorResult("WeeklyWorkRequestService not implemented yet");
+        var result = new EnhancedPagedResult<WeeklyWorkRequestDto>
+        {
+            Items = new List<WeeklyWorkRequestDto>(),
+            TotalCount = 0,
+            PageNumber = parameters.PageNumber,
+            PageSize = parameters.PageSize
+        };
+        return ServiceResult<EnhancedPagedResult<WeeklyWorkRequestDto>>.SuccessResult(result);
     }
 
     public async Task<ServiceResult<WeeklyWorkRequestDto>> GetWeeklyWorkRequestByIdAsync(Guid id)
@@ -102,6 +133,19 @@ public class StubWeeklyWorkRequestService : IWeeklyWorkRequestService
     public async Task<ServiceResult<EnhancedPagedResult<WeeklyWorkRequestDto>>> GetProjectWeeklyWorkRequestsAsync(Guid projectId, WeeklyWorkRequestQueryParameters parameters)
     {
         await Task.CompletedTask;
-        return ServiceResult<EnhancedPagedResult<WeeklyWorkRequestDto>>.ErrorResult("WeeklyWorkRequestService not implemented yet");
+        var result = new EnhancedPagedResult<WeeklyWorkRequestDto>
+        {
+            Items = new List<WeeklyWorkRequestDto>(),
+            TotalCount = 0,
+            PageNumber = parameters.PageNumber,
+            PageSize = parameters.PageSize
+        };
+        return ServiceResult<EnhancedPagedResult<WeeklyWorkRequestDto>>.SuccessResult(result);
+    }
+
+    public async Task<ServiceResult<WeeklyWorkRequestDto>> UpdateWeeklyWorkRequestStatusAsync(Guid id, WeeklyRequestStatus status)
+    {
+        await Task.CompletedTask;
+        return ServiceResult<WeeklyWorkRequestDto>.ErrorResult("WeeklyWorkRequestService not implemented yet");
     }
 }

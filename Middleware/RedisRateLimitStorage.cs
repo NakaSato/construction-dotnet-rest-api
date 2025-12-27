@@ -31,7 +31,7 @@ public class RedisRateLimitStorage : IRateLimitStorage
                 return null;
             }
 
-            return JsonSerializer.Deserialize<ClientRateLimit>(data!);
+            return JsonSerializer.Deserialize<ClientRateLimit>(data.ToString());
         }
         catch (Exception ex)
         {
@@ -113,7 +113,7 @@ public class RedisRateLimitStorage : IRateLimitStorage
                     var data = await _database.StringGetAsync(key);
                     if (data.HasValue)
                     {
-                        var rateLimit = JsonSerializer.Deserialize<ClientRateLimit>(data!);
+                        var rateLimit = JsonSerializer.Deserialize<ClientRateLimit>(data.ToString());
                         if (rateLimit != null && rateLimit.LastRequest < cutoffTime)
                         {
                             expiredKeys.Add(key);

@@ -185,20 +185,20 @@ public class TasksController : BaseApiController
     /// </summary>
     /// <param name="id">Task ID</param>
     /// <param name="status">New task status</param>
-    /// <returns>Success result</returns>
+    /// <returns>Updated task</returns>
     [HttpPatch("{id:guid}/status")]
     [NoCache] // No caching for write operations
-    public async Task<ActionResult<ApiResponse<bool>>> UpdateTaskStatus(Guid id, [FromBody] string status)
+    public async Task<ActionResult<ApiResponse<TaskDto>>> UpdateTaskStatus(Guid id, [FromBody] string status)
     {
         try
         {
             if (string.IsNullOrWhiteSpace(status))
-                return CreateErrorResponse<bool>("Status cannot be empty", 400);
+                return CreateErrorResponse<TaskDto>("Status cannot be empty", 400);
 
             // Parse string status to enum
             if (!Enum.TryParse<dotnet_rest_api.Models.TaskStatus>(status, true, out var taskStatus))
             {
-                return CreateErrorResponse<bool>($"Invalid task status: {status}", 400);
+                return CreateErrorResponse<TaskDto>($"Invalid task status: {status}", 400);
             }
 
             var result = await _taskService.UpdateTaskStatusAsync(id, taskStatus);
@@ -206,7 +206,7 @@ public class TasksController : BaseApiController
         }
         catch (Exception ex)
         {
-            return HandleException<bool>(_logger, ex, "updating task status");
+            return HandleException<TaskDto>(_logger, ex, "updating task status");
         }
     }
 

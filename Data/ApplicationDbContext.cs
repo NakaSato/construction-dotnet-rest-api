@@ -200,9 +200,42 @@ public class ApplicationDbContext : DbContext
                 UserId = Guid.Parse("00000000-0000-0000-0000-000000000001"),
                 Username = "admin",
                 Email = "admin@solarprojects.com",
-                PasswordHash = "$2a$11$rqiU3ov8V4yGqQpzYpKqY.Y5p3YmXFKJZk8GvOqHqOqh4v7/7gzMu", // Admin123!
+                PasswordHash = "$2a$11$OMrjsU5wl02tYlgxX4g9Eu7RuRDcjM2H4hZvDKOdi8YMDNSbMpuey", // Admin123!
                 FullName = "System Administrator",
                 RoleId = 1,
+                IsActive = true,
+                CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, DateTimeKind.Utc)
+            },
+            new User
+            {
+                UserId = Guid.Parse("00000000-0000-0000-0000-000000000002"),
+                Username = "manager",
+                Email = "manager@solarprojects.com",
+                PasswordHash = "$2a$11$OMrjsU5wl02tYlgxX4g9Eu7RuRDcjM2H4hZvDKOdi8YMDNSbMpuey", // Admin123!
+                FullName = "Project Manager",
+                RoleId = 2,
+                IsActive = true,
+                CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, DateTimeKind.Utc)
+            },
+            new User
+            {
+                UserId = Guid.Parse("00000000-0000-0000-0000-000000000003"),
+                Username = "engineer",
+                Email = "engineer@solarprojects.com",
+                PasswordHash = "$2a$11$OMrjsU5wl02tYlgxX4g9Eu7RuRDcjM2H4hZvDKOdi8YMDNSbMpuey", // Admin123!
+                FullName = "Solar Engineer",
+                RoleId = 3,
+                IsActive = true,
+                CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, DateTimeKind.Utc)
+            },
+            new User
+            {
+                UserId = Guid.Parse("00000000-0000-0000-0000-000000000004"),
+                Username = "viewer",
+                Email = "viewer@solarprojects.com",
+                PasswordHash = "$2a$11$OMrjsU5wl02tYlgxX4g9Eu7RuRDcjM2H4hZvDKOdi8YMDNSbMpuey", // Admin123!
+                FullName = "Stakeholder Viewer",
+                RoleId = 4,
                 IsActive = true,
                 CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, DateTimeKind.Utc)
             }

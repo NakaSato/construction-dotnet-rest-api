@@ -13,6 +13,11 @@ public interface INotificationService
     Task SendNotificationAsync(Guid userId, string message, string type = "info");
     
     /// <summary>
+    /// Send notification to specific user (alternate signature)
+    /// </summary>
+    Task SendNotificationAsync(string message, Guid userId);
+    
+    /// <summary>
     /// Send notification to all users
     /// </summary>
     Task SendNotificationToAllAsync(string message, string type = "info");
@@ -46,4 +51,29 @@ public interface INotificationService
     /// Mark all notifications as read for user
     /// </summary>
     Task<ServiceResult<bool>> MarkAllNotificationsAsReadAsync(Guid userId);
+    
+    /// <summary>
+    /// Send notification count update to user
+    /// </summary>
+    Task SendNotificationCountUpdateAsync(Guid userId);
+    
+    /// <summary>
+    /// Send system announcement to all users
+    /// </summary>
+    Task SendSystemAnnouncementAsync(string title, string message, string priority);
+
+    /// <summary>
+    /// Send WBS task created notification
+    /// </summary>
+    Task SendWbsTaskCreatedNotificationAsync(Guid notificationId, string wbsId, string taskName, Guid projectId, string userName);
+
+    /// <summary>
+    /// Send WBS task updated notification
+    /// </summary>
+    Task SendWbsTaskUpdatedNotificationAsync(Guid notificationId, string wbsId, string taskName, Guid projectId, string userName);
+
+    /// <summary>
+    /// Send WBS task deleted notification
+    /// </summary>
+    Task SendWbsTaskDeletedNotificationAsync(string wbsId, string taskName, Guid projectId, string userName);
 }
