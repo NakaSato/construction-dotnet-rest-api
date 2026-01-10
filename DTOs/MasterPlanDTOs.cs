@@ -119,6 +119,8 @@ public class UpdateProjectMilestoneRequest
     public string? Description { get; set; }
     public DateTime DueDate { get; set; }
     public MilestoneImportance Priority { get; set; } = MilestoneImportance.Medium;
+    public MilestoneStatus? Status { get; set; }
+    public DateTime? ActualDate { get; set; }
     
     // For compatibility with mapping profile
     public string MilestoneName => Name;

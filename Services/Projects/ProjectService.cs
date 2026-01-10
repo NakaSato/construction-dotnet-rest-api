@@ -21,7 +21,7 @@ public class ProjectService : IProjectService
         _mapper = mapper;
     }
 
-    public async Task<ServiceResult<EnhancedPagedResult<ProjectDto>>> GetProjectsAsync(ProjectQueryParameters parameters)
+    public async Task<ServiceResult<EnhancedPagedResult<ProjectDto>>> GetProjectsAsync(ProjectQueryParameters parameters, CancellationToken cancellationToken = default)
     {
         var query = _context.Projects
             .Include(p => p.ProjectManager)
@@ -46,7 +46,7 @@ public class ProjectService : IProjectService
         }
 
         // Count total items
-        var totalCount = await query.CountAsync();
+        var totalCount = await query.CountAsync(cancellationToken);
 
         // Apply sorting
         bool sortDescending = parameters.SortOrder?.ToLower() == "desc";
@@ -70,7 +70,7 @@ public class ProjectService : IProjectService
         var items = await query
             .Skip((parameters.PageNumber - 1) * parameters.PageSize)
             .Take(parameters.PageSize)
-            .ToListAsync();
+            .ToListAsync(cancellationToken);
 
         var projectDtos = _mapper.Map<List<ProjectDto>>(items);
 
@@ -85,11 +85,11 @@ public class ProjectService : IProjectService
         return ServiceResult<EnhancedPagedResult<ProjectDto>>.SuccessResult(result, "Projects retrieved successfully");
     }
 
-    public async Task<ServiceResult<ProjectDto>> GetProjectByIdAsync(Guid id)
+    public async Task<ServiceResult<ProjectDto>> GetProjectByIdAsync(Guid id, CancellationToken cancellationToken = default)
     {
         var project = await _context.Projects
             .Include(p => p.ProjectManager)
-            .FirstOrDefaultAsync(p => p.ProjectId == id);
+            .FirstOrDefaultAsync(p => p.ProjectId == id, cancellationToken);
 
         if (project == null)
         {
@@ -100,13 +100,12 @@ public class ProjectService : IProjectService
         return ServiceResult<ProjectDto>.SuccessResult(dto);
     }
 
-    public async Task<ServiceResult<ProjectDto>> CreateProjectAsync(CreateProjectRequest request)
+    public async Task<ServiceResult<ProjectDto>> CreateProjectAsync(CreateProjectRequest request, CancellationToken cancellationToken = default)
     {
-        // Use a default user if none provided (for seed scripts) usually handled by controller but here we can support overload
-        return await CreateProjectAsync(request, "system");
+        return await CreateProjectAsync(request, "system", cancellationToken);
     }
 
-    public async Task<ServiceResult<ProjectDto>> CreateProjectAsync(CreateProjectRequest request, string userName)
+    public async Task<ServiceResult<ProjectDto>> CreateProjectAsync(CreateProjectRequest request, string userName, CancellationToken cancellationToken = default)
     {
         try
         {
@@ -134,12 +133,12 @@ public class ProjectService : IProjectService
             }
 
             _context.Projects.Add(project);
-            await _context.SaveChangesAsync();
+            await _context.SaveChangesAsync(cancellationToken);
 
             // Fetch created project with relationships
             var createdProject = await _context.Projects
                 .Include(p => p.ProjectManager)
-                .FirstOrDefaultAsync(p => p.ProjectId == project.ProjectId);
+                .FirstOrDefaultAsync(p => p.ProjectId == project.ProjectId, cancellationToken);
 
             var dto = _mapper.Map<ProjectDto>(createdProject);
             return ServiceResult<ProjectDto>.SuccessResult(dto, "Project created successfully");
@@ -150,14 +149,14 @@ public class ProjectService : IProjectService
         }
     }
 
-    public async Task<ServiceResult<ProjectDto>> UpdateProjectAsync(Guid id, UpdateProjectRequest request)
+    public async Task<ServiceResult<ProjectDto>> UpdateProjectAsync(Guid id, UpdateProjectRequest request, CancellationToken cancellationToken = default)
     {
-        return await UpdateProjectAsync(id, request, "system");
+        return await UpdateProjectAsync(id, request, "system", cancellationToken);
     }
 
-    public async Task<ServiceResult<ProjectDto>> UpdateProjectAsync(Guid id, UpdateProjectRequest request, string userName)
+    public async Task<ServiceResult<ProjectDto>> UpdateProjectAsync(Guid id, UpdateProjectRequest request, string userName, CancellationToken cancellationToken = default)
     {
-        var project = await _context.Projects.FindAsync(id);
+        var project = await _context.Projects.FindAsync(new object[] { id }, cancellationToken);
         if (project == null)
         {
             return ServiceResult<ProjectDto>.ErrorResult("Project not found");
@@ -172,14 +171,14 @@ public class ProjectService : IProjectService
             project.Status = status;
         }
 
-        await _context.SaveChangesAsync();
+        await _context.SaveChangesAsync(cancellationToken);
         var dto = _mapper.Map<ProjectDto>(project);
         return ServiceResult<ProjectDto>.SuccessResult(dto, "Project updated successfully");
     }
 
-    public async Task<ServiceResult<ProjectDto>> PatchProjectAsync(Guid id, PatchProjectRequest request, string userName)
+    public async Task<ServiceResult<ProjectDto>> PatchProjectAsync(Guid id, PatchProjectRequest request, string userName, CancellationToken cancellationToken = default)
     {
-         var project = await _context.Projects.FindAsync(id);
+         var project = await _context.Projects.FindAsync(new object[] { id }, cancellationToken);
         if (project == null)
         {
             return ServiceResult<ProjectDto>.ErrorResult("Project not found");
@@ -195,43 +194,43 @@ public class ProjectService : IProjectService
         }
 
         project.UpdatedAt = DateTime.UtcNow;
-        await _context.SaveChangesAsync();
+        await _context.SaveChangesAsync(cancellationToken);
 
         var dto = _mapper.Map<ProjectDto>(project);
         return ServiceResult<ProjectDto>.SuccessResult(dto, "Project patched successfully");
     }
 
-    public async Task<ServiceResult<bool>> DeleteProjectAsync(Guid id)
+    public async Task<ServiceResult<bool>> DeleteProjectAsync(Guid id, CancellationToken cancellationToken = default)
     {
-        return await DeleteProjectAsync(id, "system");
+        return await DeleteProjectAsync(id, "system", cancellationToken);
     }
 
-    public async Task<ServiceResult<bool>> DeleteProjectAsync(Guid id, string userName)
+    public async Task<ServiceResult<bool>> DeleteProjectAsync(Guid id, string userName, CancellationToken cancellationToken = default)
     {
-        var project = await _context.Projects.FindAsync(id);
+        var project = await _context.Projects.FindAsync(new object[] { id }, cancellationToken);
         if (project == null)
         {
             return ServiceResult<bool>.ErrorResult("Project not found");
         }
 
         _context.Projects.Remove(project);
-        await _context.SaveChangesAsync();
+        await _context.SaveChangesAsync(cancellationToken);
 
         return ServiceResult<bool>.SuccessResult(true, "Project deleted successfully");
     }
 
-    public async Task<ServiceResult<PagedResult<ProjectDto>>> GetUserProjectsAsync(Guid userId, int pageNumber, int pageSize)
+    public async Task<ServiceResult<PagedResult<ProjectDto>>> GetUserProjectsAsync(Guid userId, int pageNumber, int pageSize, CancellationToken cancellationToken = default)
     {
         var query = _context.Projects
             .Include(p => p.ProjectManager)
             .Where(p => p.ProjectManagerId == userId || p.Tasks.Any(t => t.AssignedTechnicianId == userId));
 
-        var totalCount = await query.CountAsync();
+        var totalCount = await query.CountAsync(cancellationToken);
         var items = await query
             .OrderByDescending(p => p.CreatedAt)
             .Skip((pageNumber - 1) * pageSize)
             .Take(pageSize)
-            .ToListAsync();
+            .ToListAsync(cancellationToken);
 
         var dtos = _mapper.Map<List<ProjectDto>>(items);
 
@@ -244,5 +243,188 @@ public class ProjectService : IProjectService
         };
 
         return ServiceResult<PagedResult<ProjectDto>>.SuccessResult(result);
+    }
+
+    // Milestone Management Implementation
+    
+    public async Task<ServiceResult<PerformanceMilestoneDto>> AddMilestoneAsync(Guid projectId, CreateProjectMilestoneRequest request, CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            // Ensure project exists
+            var project = await _context.Projects
+                .Include(p => p.MasterPlan)
+                .FirstOrDefaultAsync(p => p.ProjectId == projectId, cancellationToken);
+                
+            if (project == null)
+                return ServiceResult<PerformanceMilestoneDto>.ErrorResult("Project not found");
+                
+            if (project.MasterPlan == null)
+            {
+                var masterPlan = new MasterPlan
+                {
+                    MasterPlanId = Guid.NewGuid(),
+                    ProjectId = projectId,
+                    PlanName = $"{project.ProjectName} Master Plan",
+                    Status = MasterPlanStatus.Draft,
+                    CreatedById = project.ProjectManagerId ?? Guid.Empty, // Handle nullable Guid
+                    CreatedAt = DateTime.UtcNow,
+                    UpdatedAt = DateTime.UtcNow
+                };
+                
+                _context.MasterPlans.Add(masterPlan);
+                await _context.SaveChangesAsync(cancellationToken);
+                
+                // Reload project to get the relationship
+                project = await _context.Projects
+                    .Include(p => p.MasterPlan)
+                    .FirstOrDefaultAsync(p => p.ProjectId == projectId, cancellationToken);
+            }
+            
+            var milestone = new ProjectMilestone
+            {
+                MilestoneId = Guid.NewGuid(),
+                MasterPlanId = project!.MasterPlan!.MasterPlanId,
+                MilestoneName = request.Name,
+                Description = request.Description,
+                TargetDate = request.DueDate,
+                PlannedDate = request.DueDate,
+                Status = MilestoneStatus.Pending,
+                Importance = request.Priority,
+                CreatedAt = DateTime.UtcNow,
+                UpdatedAt = DateTime.UtcNow
+            };
+            
+            _context.ProjectMilestones.Add(milestone);
+            await _context.SaveChangesAsync(cancellationToken);
+            
+            var dto = new PerformanceMilestoneDto
+            {
+                MilestoneId = milestone.MilestoneId,
+                Title = milestone.MilestoneName,
+                TargetDate = milestone.TargetDate,
+                ActualDate = milestone.ActualDate,
+                Status = milestone.Status.ToString(),
+                VarianceDays = 0 // New milestone
+            };
+            
+            return ServiceResult<PerformanceMilestoneDto>.SuccessResult(dto, "Milestone created successfully");
+        }
+        catch (Exception ex)
+        {
+            return ServiceResult<PerformanceMilestoneDto>.ErrorResult($"Failed to create milestone: {ex.Message}");
+        }
+    }
+
+    public async Task<ServiceResult<List<PerformanceMilestoneDto>>> GetProjectMilestonesAsync(Guid projectId, CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            var project = await _context.Projects
+                .Include(p => p.MasterPlan)
+                .ThenInclude(mp => mp.Milestones)
+                .FirstOrDefaultAsync(p => p.ProjectId == projectId, cancellationToken);
+                
+            if (project == null)
+                return ServiceResult<List<PerformanceMilestoneDto>>.ErrorResult("Project not found");
+                
+            if (project.MasterPlan == null || project.MasterPlan.Milestones == null)
+                return ServiceResult<List<PerformanceMilestoneDto>>.SuccessResult(new List<PerformanceMilestoneDto>());
+                
+            var dtos = project.MasterPlan.Milestones.Select(m => new PerformanceMilestoneDto
+            {
+                MilestoneId = m.MilestoneId,
+                Title = m.MilestoneName,
+                TargetDate = m.TargetDate,
+                ActualDate = m.ActualDate,
+                Status = m.Status.ToString(),
+                VarianceDays = m.ActualDate.HasValue 
+                    ? (int)(m.ActualDate.Value - m.TargetDate).TotalDays 
+                    : (m.TargetDate < DateTime.UtcNow && m.Status != MilestoneStatus.Completed ? (int)(DateTime.UtcNow - m.TargetDate).TotalDays : 0)
+            }).OrderBy(m => m.TargetDate).ToList();
+            
+            return ServiceResult<List<PerformanceMilestoneDto>>.SuccessResult(dtos);
+        }
+        catch (Exception ex)
+        {
+            return ServiceResult<List<PerformanceMilestoneDto>>.ErrorResult($"Failed to retrieve milestones: {ex.Message}");
+        }
+    }
+
+    public async Task<ServiceResult<PerformanceMilestoneDto>> UpdateMilestoneAsync(Guid projectId, Guid milestoneId, UpdateProjectMilestoneRequest request, CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            var milestone = await _context.ProjectMilestones
+                .Include(m => m.MasterPlan)
+                .FirstOrDefaultAsync(m => m.MilestoneId == milestoneId && m.MasterPlan.ProjectId == projectId, cancellationToken);
+                
+            if (milestone == null)
+                return ServiceResult<PerformanceMilestoneDto>.ErrorResult("Milestone not found");
+                
+            milestone.MilestoneName = request.Name;
+            milestone.Description = request.Description;
+            milestone.TargetDate = request.DueDate;
+            milestone.PlannedDate = request.DueDate;
+            milestone.Importance = request.Priority;
+            milestone.UpdatedAt = DateTime.UtcNow;
+
+            if (request.Status.HasValue)
+            {
+                milestone.Status = request.Status.Value;
+            }
+
+            if (request.ActualDate.HasValue)
+            {
+                milestone.ActualDate = request.ActualDate.Value;
+            }
+            else if (milestone.Status == MilestoneStatus.Completed && !milestone.ActualDate.HasValue)
+            {
+                // Auto-set actual date if completed and not provided
+                milestone.ActualDate = DateTime.UtcNow; 
+            }
+            
+            await _context.SaveChangesAsync(cancellationToken);
+            
+            var dto = new PerformanceMilestoneDto
+            {
+                MilestoneId = milestone.MilestoneId,
+                Title = milestone.MilestoneName,
+                TargetDate = milestone.TargetDate,
+                ActualDate = milestone.ActualDate,
+                Status = milestone.Status.ToString(),
+                VarianceDays = milestone.ActualDate.HasValue 
+                    ? (int)(milestone.ActualDate.Value - milestone.TargetDate).TotalDays 
+                    : 0
+            };
+            
+            return ServiceResult<PerformanceMilestoneDto>.SuccessResult(dto, "Milestone updated successfully");
+        }
+        catch (Exception ex)
+        {
+            return ServiceResult<PerformanceMilestoneDto>.ErrorResult($"Failed to update milestone: {ex.Message}");
+        }
+    }
+
+    public async Task<ServiceResult<bool>> DeleteMilestoneAsync(Guid projectId, Guid milestoneId, CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            var milestone = await _context.ProjectMilestones
+                .Include(m => m.MasterPlan)
+                .FirstOrDefaultAsync(m => m.MilestoneId == milestoneId && m.MasterPlan.ProjectId == projectId, cancellationToken);
+                
+            if (milestone == null)
+                return ServiceResult<bool>.ErrorResult("Milestone not found");
+                
+            _context.ProjectMilestones.Remove(milestone);
+            await _context.SaveChangesAsync(cancellationToken);
+            
+            return ServiceResult<bool>.SuccessResult(true, "Milestone deleted successfully");
+        }
+        catch (Exception ex)
+        {
+            return ServiceResult<bool>.ErrorResult($"Failed to delete milestone: {ex.Message}");
+        }
     }
 }

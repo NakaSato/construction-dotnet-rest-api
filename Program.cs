@@ -10,6 +10,7 @@ using dotnet_rest_api.Middleware;
 using dotnet_rest_api.Extensions;
 using Asp.Versioning;
 using DotNetEnv;
+using FluentValidation;
 
 // Load environment variables from .env file (local development)
 var envPath = Path.Combine(Directory.GetCurrentDirectory(), ".env");
@@ -45,6 +46,15 @@ else if (builder.Environment.IsDevelopment())
 // Basic Services
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
+
+// FluentValidation - register all validators from this assembly
+builder.Services.AddValidatorsFromAssemblyContaining<Program>();
+
+// Health Checks with database connectivity
+builder.Services.AddHealthChecks()
+    .AddDbContextCheck<ApplicationDbContext>(
+        name: "database",
+        tags: new[] { "db", "postgresql" });
 
 // Add CORS for Flutter mobile app
 builder.Services.AddCors(options =>
@@ -139,7 +149,23 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 });
 
 // Authentication & Authorization Configuration
-var jwtKey = builder.Configuration["Jwt:Key"] ?? "DefaultSecretKeyForDevelopmentOnlyNotForProduction123456789";
+// Priority: Environment variable > appsettings.json > development fallback
+var jwtKey = Environment.GetEnvironmentVariable("JWT_KEY") 
+    ?? builder.Configuration["Jwt:Key"];
+
+if (string.IsNullOrEmpty(jwtKey))
+{
+    if (builder.Environment.IsDevelopment())
+    {
+        jwtKey = "DevelopmentOnlySecretKeyNotForProduction123456789";
+        Console.WriteLine("WARNING: Using development JWT key. Set JWT_KEY environment variable for production.");
+    }
+    else
+    {
+        throw new InvalidOperationException("JWT_KEY environment variable is required in production.");
+    }
+}
+
 var jwtIssuer = builder.Configuration["Jwt:Issuer"] ?? "SolarProjectsAPI";
 var jwtAudience = builder.Configuration["Jwt:Audience"] ?? "SolarProjectsClient";
 
@@ -285,6 +311,15 @@ builder.Services.AddScoped<dotnet_rest_api.Services.Users.IUserService, dotnet_r
 builder.Services.AddScoped<dotnet_rest_api.Services.Shared.IQueryService, dotnet_rest_api.Services.Shared.QueryService>();
 builder.Services.AddScoped<dotnet_rest_api.Services.Shared.IDocumentService, dotnet_rest_api.Services.Shared.StubDocumentService>();
 
+// Background Task Queue for async operations (report generation, notifications, etc.)
+var queueCapacity = builder.Configuration.GetValue<int>("BackgroundQueue:Capacity", 100);
+builder.Services.AddSingleton<dotnet_rest_api.Services.Infrastructure.IBackgroundTaskQueue>(sp =>
+{
+    var logger = sp.GetRequiredService<ILogger<dotnet_rest_api.Services.Infrastructure.BackgroundTaskQueue>>();
+    return new dotnet_rest_api.Services.Infrastructure.BackgroundTaskQueue(queueCapacity, logger);
+});
+builder.Services.AddHostedService<dotnet_rest_api.Services.Infrastructure.QueuedHostedService>();
+
 // ===================================
 // APPLICATION PIPELINE CONFIGURATION
 // ===================================
@@ -310,6 +345,7 @@ if (!app.Environment.IsDevelopment() ||
 }
 
 // Middleware Pipeline
+app.UseGlobalExceptionHandler(); // Global exception handling (first in pipeline)
 app.UseCors("FlutterAppPolicy"); // Enable CORS for Flutter app
 
 // Rate Limiting Middleware (conditionally enabled)
@@ -336,6 +372,13 @@ app.UseAuthentication();
 app.UseMiddleware<dotnet_rest_api.Middleware.JwtBlacklistMiddleware>();
 app.UseAuthorization();
 app.MapControllers();
+
+// Built-in Health Check Endpoints (Kubernetes standard)
+app.MapHealthChecks("/healthz"); // Liveness probe
+app.MapHealthChecks("/ready", new Microsoft.AspNetCore.Diagnostics.HealthChecks.HealthCheckOptions
+{
+    Predicate = check => check.Tags.Contains("db") // Only database checks for readiness
+});
 
 // SignalR Hub Configuration for Real-Time Updates
 app.MapHub<dotnet_rest_api.Hubs.NotificationHub>("/notificationHub");

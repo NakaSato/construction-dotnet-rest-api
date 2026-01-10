@@ -319,6 +319,284 @@ public class ProjectsController : BaseApiController
     }
 
     /// <summary>
+    /// Get project performance metrics including KPIs, milestones, and resource utilization
+    /// Available to: All authenticated users
+    /// </summary>
+    [HttpGet("{id:guid}/performance")]
+    [MediumCache] // 15 minute cache for performance data
+    public async Task<ActionResult<ApiResponse<ProjectPerformanceDto>>> GetProjectPerformance(Guid id)
+    {
+        try
+        {
+            LogControllerAction(_logger, "GetProjectPerformance", new { id });
+
+            // Get project basic info
+            var projectResult = await _projectService.GetProjectByIdAsync(id);
+            if (!projectResult.IsSuccess)
+                return NotFound(new ApiResponse<ProjectPerformanceDto> { Success = false, Message = projectResult.Message ?? "Project not found" });
+
+            var project = projectResult.Data!;
+            
+            // Calculate task-based progress
+            var taskProgress = project.TaskCount > 0 
+                ? (int)Math.Round((decimal)project.CompletedTaskCount / project.TaskCount * 100) 
+                : 0;
+
+            // Calculate dates
+            var startDate = project.StartDate;
+            var endDate = project.EstimatedEndDate ?? DateTime.UtcNow.AddMonths(3);
+            var totalDays = (endDate - startDate).TotalDays;
+            var elapsedDays = (DateTime.UtcNow - startDate).TotalDays;
+            var timeProgress = totalDays > 0 ? Math.Min(100, Math.Max(0, elapsedDays / totalDays * 100)) : 0;
+            
+            // Determine if on schedule (task progress should be >= time progress)
+            var isOnSchedule = taskProgress >= (timeProgress - 10); // 10% tolerance
+
+            // Fetch real milestones
+            var milestoneResult = await _projectService.GetProjectMilestonesAsync(id);
+            var milestones = milestoneResult.IsSuccess && milestoneResult.Data != null && milestoneResult.Data.Any()
+                ? milestoneResult.Data 
+                : GenerateMilestones(project); // Fallback to mock data if no real milestones exist
+
+            // Create performance DTO
+            var performanceDto = new ProjectPerformanceDto
+            {
+                ProjectId = id,
+                ProjectName = project.ProjectName ?? "Unknown Project",
+                PerformanceScore = CalculatePerformanceScore(taskProgress, isOnSchedule),
+                KPIs = new ProjectKPIs
+                {
+                    TimelineAdherence = isOnSchedule ? 90m : 70m,
+                    BudgetAdherence = 85m, // Would need financial data
+                    QualityScore = 88m,    // Would need quality metrics
+                    SafetyScore = 95m,     // Would need safety reports
+                    ClientSatisfaction = 85m // Would need feedback data
+                },
+                Milestones = milestones,
+                ResourceUtilization = new ResourceUtilization
+                {
+                    TeamUtilization = 75m,
+                    EquipmentUtilization = 80m,
+                    MaterialEfficiency = 85m
+                },
+                RiskAssessment = new RiskAssessment
+                {
+                    OverallRiskLevel = taskProgress < 50 && timeProgress > 75 ? "Medium" : "Low",
+                    ActiveRisks = taskProgress < 50 && timeProgress > 75 ? 2 : 0,
+                    MitigatedRisks = 5,
+                    RiskTrend = isOnSchedule ? "Stable" : "Increasing"
+                },
+                ProgressHistory = GenerateProgressHistory(project)
+            };
+
+            return CreateSuccessResponse(performanceDto, "Project performance retrieved successfully");
+        }
+        catch (Exception ex)
+        {
+            return HandleException<ProjectPerformanceDto>(_logger, ex, $"retrieving project performance for {id}");
+        }
+    }
+
+    // Helper method to calculate performance score
+    private static int CalculatePerformanceScore(int taskProgress, bool isOnSchedule)
+    {
+        var baseScore = taskProgress;
+        if (isOnSchedule) baseScore += 10;
+        return Math.Min(100, Math.Max(0, baseScore));
+    }
+
+    // Helper method to generate milestones based on project data
+    private static List<PerformanceMilestoneDto> GenerateMilestones(ProjectDto project)
+    {
+        // This method is kept for backward compatibility or when real milestones are empty, 
+        // but the main GetProjectPerformance method should now rely on service data if available.
+        // For now, we'll leave it as a fallback generator.
+        
+        var startDate = project.StartDate;
+        var endDate = project.EstimatedEndDate ?? DateTime.UtcNow.AddMonths(3);
+        var totalDays = (int)(endDate - startDate).TotalDays;
+        
+        var milestones = new List<PerformanceMilestoneDto>
+        {
+            new()
+            {
+                MilestoneId = Guid.NewGuid(),
+                Title = "Project Kickoff",
+                TargetDate = startDate,
+                ActualDate = startDate,
+                Status = "Completed",
+                VarianceDays = 0
+            },
+            new()
+            {
+                MilestoneId = Guid.NewGuid(),
+                Title = "Site Survey Complete",
+                TargetDate = startDate.AddDays(totalDays * 0.1),
+                ActualDate = startDate.AddDays(totalDays * 0.1),
+                Status = DateTime.UtcNow > startDate.AddDays(totalDays * 0.1) ? "Completed" : "Pending",
+                VarianceDays = 0
+            },
+            new()
+            {
+                MilestoneId = Guid.NewGuid(),
+                Title = "Design Approval",
+                TargetDate = startDate.AddDays(totalDays * 0.25),
+                Status = DateTime.UtcNow > startDate.AddDays(totalDays * 0.25) ? "Completed" : "In Progress",
+                VarianceDays = 0
+            },
+            new()
+            {
+                MilestoneId = Guid.NewGuid(),
+                Title = "Equipment Installation",
+                TargetDate = startDate.AddDays(totalDays * 0.6),
+                Status = DateTime.UtcNow > startDate.AddDays(totalDays * 0.6) ? "Completed" : "Pending",
+                VarianceDays = 0
+            },
+            new()
+            {
+                MilestoneId = Guid.NewGuid(),
+                Title = "Project Completion",
+                TargetDate = endDate,
+                Status = "Pending",
+                VarianceDays = 0
+            }
+        };
+
+        return milestones;
+    }
+
+    /// <summary>
+    /// Get project milestones
+    /// Available to: All authenticated users
+    /// </summary>
+    [HttpGet("{id:guid}/milestones")]
+    [MediumCache]
+    public async Task<ActionResult<ApiResponse<List<PerformanceMilestoneDto>>>> GetProjectMilestones(Guid id)
+    {
+        try
+        {
+            LogControllerAction(_logger, "GetProjectMilestones", new { id });
+            
+            var result = await _projectService.GetProjectMilestonesAsync(id);
+            if (!result.IsSuccess)
+                return BadRequest(new ApiResponse<List<PerformanceMilestoneDto>> { Success = false, Message = result.Message });
+                
+            return CreateSuccessResponse(result.Data!, "Milestones retrieved successfully");
+        }
+        catch (Exception ex)
+        {
+            return HandleException<List<PerformanceMilestoneDto>>(_logger, ex, $"retrieving milestones for {id}");
+        }
+    }
+
+    /// <summary>
+    /// Add a new milestone to project
+    /// Available to: Project Managers, Administrators
+    /// </summary>
+    [HttpPost("{id:guid}/milestones")]
+    [Authorize(Roles = "Admin,Manager")]
+    [NoCache]
+    public async Task<ActionResult<ApiResponse<PerformanceMilestoneDto>>> AddMilestone(Guid id, [FromBody] CreateProjectMilestoneRequest request)
+    {
+        try
+        {
+            LogControllerAction(_logger, "AddMilestone", new { id, request });
+            
+            var result = await _projectService.AddMilestoneAsync(id, request);
+            if (!result.IsSuccess)
+                return BadRequest(new ApiResponse<PerformanceMilestoneDto> { Success = false, Message = result.Message });
+                
+            return CreateSuccessResponse(result.Data!, "Milestone added successfully");
+        }
+        catch (Exception ex)
+        {
+            return HandleException<PerformanceMilestoneDto>(_logger, ex, $"adding milestone to project {id}");
+        }
+    }
+
+    /// <summary>
+    /// Update a milestone
+    /// Available to: Project Managers, Administrators
+    /// </summary>
+    [HttpPut("{id:guid}/milestones/{milestoneId:guid}")]
+    [Authorize(Roles = "Admin,Manager")]
+    [NoCache]
+    public async Task<ActionResult<ApiResponse<PerformanceMilestoneDto>>> UpdateMilestone(Guid id, Guid milestoneId, [FromBody] UpdateProjectMilestoneRequest request)
+    {
+        try
+        {
+            LogControllerAction(_logger, "UpdateMilestone", new { id, milestoneId, request });
+            
+            var result = await _projectService.UpdateMilestoneAsync(id, milestoneId, request);
+            if (!result.IsSuccess)
+                return BadRequest(new ApiResponse<PerformanceMilestoneDto> { Success = false, Message = result.Message });
+                
+            return CreateSuccessResponse(result.Data!, "Milestone updated successfully");
+        }
+        catch (Exception ex)
+        {
+            return HandleException<PerformanceMilestoneDto>(_logger, ex, $"updating milestone {milestoneId} for project {id}");
+        }
+    }
+
+    /// <summary>
+    /// Delete a milestone
+    /// Available to: Project Managers, Administrators
+    /// </summary>
+    [HttpDelete("{id:guid}/milestones/{milestoneId:guid}")]
+    [Authorize(Roles = "Admin,Manager")]
+    [NoCache]
+    public async Task<ActionResult<ApiResponse<bool>>> DeleteMilestone(Guid id, Guid milestoneId)
+    {
+        try
+        {
+            LogControllerAction(_logger, "DeleteMilestone", new { id, milestoneId });
+            
+            var result = await _projectService.DeleteMilestoneAsync(id, milestoneId);
+            if (!result.IsSuccess)
+                return BadRequest(new ApiResponse<bool> { Success = false, Message = result.Message });
+                
+            return CreateSuccessResponse(true, "Milestone deleted successfully");
+        }
+        catch (Exception ex)
+        {
+            return HandleException<bool>(_logger, ex, $"deleting milestone {milestoneId} from project {id}");
+        }
+    }
+
+    // Helper method to generate progress history
+    private static List<ProgressHistoryEntry> GenerateProgressHistory(ProjectDto project)
+    {
+        var history = new List<ProgressHistoryEntry>();
+        var startDate = project.StartDate;
+        var today = DateTime.UtcNow;
+        var totalProgress = project.TaskCount > 0 
+            ? (decimal)project.CompletedTaskCount / project.TaskCount * 100 
+            : 0;
+
+        // Generate weekly history entries
+        var currentDate = startDate;
+        var weekNumber = 0;
+        while (currentDate < today && weekNumber < 12)
+        {
+            var progressAtDate = Math.Min(totalProgress, (decimal)weekNumber * (totalProgress / 12m));
+            history.Add(new ProgressHistoryEntry
+            {
+                Date = currentDate,
+                CompletionPercentage = Math.Round(progressAtDate, 1),
+                TasksCompleted = (int)(project.CompletedTaskCount * (progressAtDate / Math.Max(1, totalProgress))),
+                HoursWorked = 40m * (weekNumber + 1),
+                Issues = weekNumber % 3 == 0 ? 1 : 0
+            });
+            
+            currentDate = currentDate.AddDays(7);
+            weekNumber++;
+        }
+
+        return history;
+    }
+
+    /// <summary>
     /// Test endpoint for API health check - no authentication required
     /// </summary>
     /// <returns>Test data to verify the Projects API is working</returns>
@@ -381,8 +659,12 @@ public class ProjectsController : BaseApiController
                     Message = result.Message ?? "Error retrieving projects" 
                 });
 
-            // Transform to mobile-optimized response
-            var mobileProjects = result.Data!.Items.Select(p => new MobileProjectDto
+            // Transform to mobile-optimized response with proper async handling
+            var projectItems = result.Data!.Items.ToList();
+            var completionTasks = projectItems.Select(p => GetProjectCompletionPercentage(p.Id())).ToArray();
+            var completionPercentages = await Task.WhenAll(completionTasks);
+            
+            var mobileProjects = projectItems.Select((p, index) => new MobileProjectDto
             {
                 Id = p.Id(),
                 Name = p.ProjectName,
@@ -392,7 +674,7 @@ public class ProjectsController : BaseApiController
                 Location = p.Location(),
                 ClientName = p.ClientName(),
                 ThumbnailUrl = p.ThumbnailUrl(),
-                CompletionPercentage = GetProjectCompletionPercentage(p.Id()).Result
+                CompletionPercentage = completionPercentages[index]
             }).ToList();
 
             return CreateSuccessResponse(mobileProjects, "Mobile projects retrieved successfully");
