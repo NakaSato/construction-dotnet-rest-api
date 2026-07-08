@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Authorization;
+using dotnet_rest_api.Common;
 using Microsoft.AspNetCore.Mvc;
 using dotnet_rest_api.DTOs;
 using dotnet_rest_api.Services.Shared;
@@ -102,7 +103,7 @@ public class TasksController : BaseApiController
     /// <returns>Created task</returns>
     [HttpPost]
     [NoCache] // No caching for write operations
-    [Authorize(Roles = "Admin,Manager,Supervisor")]
+    [Authorize(Roles = Roles.AdminOrManager)]
     public async Task<ActionResult<ApiResponse<TaskDto>>> CreateTask(
         [FromQuery] Guid projectId,
         [FromBody] CreateTaskRequest request)
@@ -133,7 +134,7 @@ public class TasksController : BaseApiController
     /// <returns>Updated task</returns>
     [HttpPut("{id:guid}")]
     [NoCache] // No caching for write operations
-    [Authorize(Roles = "Admin,Manager,Supervisor")]
+    [Authorize(Roles = Roles.AdminOrManager)]
     public async Task<ActionResult<ApiResponse<TaskDto>>> UpdateTask(Guid id, [FromBody] UpdateTaskRequest updateTaskRequest)
     {
         try
@@ -162,7 +163,7 @@ public class TasksController : BaseApiController
     /// <returns>Updated task</returns>
     [HttpPatch("{id:guid}")]
     [NoCache] // No caching for write operations
-    [Authorize(Roles = "Admin,Manager,Supervisor")]
+    [Authorize(Roles = Roles.AdminOrManager)]
     public async Task<ActionResult<ApiResponse<TaskDto>>> PatchTask(Guid id, [FromBody] PatchTaskRequest patchTaskRequest)
     {
         try
@@ -218,7 +219,7 @@ public class TasksController : BaseApiController
     /// <returns>Success result</returns>
     [HttpDelete("{id:guid}")]
     [NoCache] // No caching for write operations
-    [Authorize(Roles = "Admin,Manager")]
+    [Authorize(Roles = Roles.AdminOrManager)]
     public async Task<ActionResult<ApiResponse<bool>>> DeleteTask(Guid id)
     {
         try

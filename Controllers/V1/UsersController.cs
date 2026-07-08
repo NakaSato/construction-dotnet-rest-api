@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Authorization;
+using dotnet_rest_api.Common;
 using Microsoft.AspNetCore.Mvc;
 using dotnet_rest_api.DTOs;
 using dotnet_rest_api.Services.Shared;
@@ -41,7 +42,7 @@ public class UsersController : BaseApiController
     /// <param name="role">Filter by role name</param>
     /// <returns>Paginated list of users</returns>
     [HttpGet]
-    [Authorize(Roles = "Admin,Manager")]
+    [Authorize(Roles = Roles.AdminOrManager)]
     [MediumCache] // 15 minute cache for user lists
     public async Task<ActionResult<ApiResponse<PagedResult<UserDto>>>> GetUsers(
         [FromQuery] int pageNumber = 1,
@@ -112,7 +113,7 @@ public class UsersController : BaseApiController
     /// <param name="createUserRequest">User creation data</param>
     /// <returns>Created user</returns>
     [HttpPost]
-    [Authorize(Roles = "Admin")]
+    [Authorize(Roles = Roles.Admin)]
     [NoCache] // No caching for write operations
     public async Task<ActionResult<ApiResponse<UserDto>>> CreateUser([FromBody] CreateUserRequest createUserRequest)
     {
@@ -152,7 +153,7 @@ public class UsersController : BaseApiController
     /// <param name="updateUserRequest">User update data</param>
     /// <returns>Updated user</returns>
     [HttpPut("{id:guid}")]
-    [Authorize(Roles = "Admin")]
+    [Authorize(Roles = Roles.Admin)]
     [NoCache] // No caching for write operations
     public async Task<ActionResult<ApiResponse<UserDto>>> UpdateUser(Guid id, [FromBody] UpdateUserRequest updateUserRequest)
     {
@@ -177,7 +178,7 @@ public class UsersController : BaseApiController
     /// <param name="patchUserRequest">User partial update data</param>
     /// <returns>Updated user</returns>
     [HttpPatch("{id:guid}")]
-    [Authorize(Roles = "Admin")]
+    [Authorize(Roles = Roles.Admin)]
     [NoCache] // No caching for write operations
     public async Task<ActionResult<ApiResponse<UserDto>>> PatchUser(Guid id, [FromBody] PatchUserRequest patchUserRequest)
     {
@@ -201,7 +202,7 @@ public class UsersController : BaseApiController
     /// <param name="id">User ID</param>
     /// <returns>Updated user</returns>
     [HttpPatch("{id:guid}/activate")]
-    [Authorize(Roles = "Admin")]
+    [Authorize(Roles = Roles.Admin)]
     [NoCache] // No caching for write operations
     public async Task<ActionResult<ApiResponse<bool>>> ActivateUser(Guid id)
     {
@@ -222,7 +223,7 @@ public class UsersController : BaseApiController
     /// <param name="id">User ID</param>
     /// <returns>Updated user</returns>
     [HttpPatch("{id:guid}/deactivate")]
-    [Authorize(Roles = "Admin")]
+    [Authorize(Roles = Roles.Admin)]
     [NoCache] // No caching for write operations
     public async Task<ActionResult<ApiResponse<bool>>> DeactivateUser(Guid id)
     {
@@ -243,7 +244,7 @@ public class UsersController : BaseApiController
     /// <param name="id">User ID</param>
     /// <returns>No content if successful</returns>
     [HttpDelete("{id:guid}")]
-    [Authorize(Roles = "Admin")]
+    [Authorize(Roles = Roles.Admin)]
     [NoCache] // No caching for write operations
     public async Task<ActionResult<ApiResponse<bool>>> DeleteUser(Guid id)
     {

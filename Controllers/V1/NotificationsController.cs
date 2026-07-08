@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Authorization;
+using dotnet_rest_api.Common;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
@@ -212,7 +213,7 @@ public class NotificationsController : BaseApiController
     /// Available to: Administrators only
     /// </summary>
     [HttpPost("test")]
-    [Authorize(Roles = "Administrator")]
+    [Authorize(Roles = Roles.Admin)]
     public async Task<ActionResult<ApiResponse<bool>>> SendTestNotification(
         [FromBody] TestNotificationRequest request)
     {
@@ -234,7 +235,7 @@ public class NotificationsController : BaseApiController
     /// Available to: Administrators only
     /// </summary>
     [HttpPost("announcement")]
-    [Authorize(Roles = "Administrator")]
+    [Authorize(Roles = Roles.Admin)]
     public async Task<ActionResult<ApiResponse<bool>>> SendAnnouncement(
         [FromBody] SystemAnnouncementRequest request)
     {
@@ -259,7 +260,7 @@ public class NotificationsController : BaseApiController
     /// Available to: Administrators and Managers
     /// </summary>
     [HttpGet("statistics")]
-    [Authorize(Roles = "Administrator,Manager")]
+    [Authorize(Roles = Roles.AdminOrManager)]
     public async Task<ActionResult<ApiResponse<NotificationStatisticsDto>>> GetStatistics(
         [FromQuery] DateTime? startDate = null,
         [FromQuery] DateTime? endDate = null)
@@ -337,7 +338,7 @@ public class NotificationsController : BaseApiController
     /// </summary>
     /// <param name="request">System announcement details</param>
     [HttpPost("system-announcement")]
-    [Authorize(Roles = "Administrator")]
+    [Authorize(Roles = Roles.Admin)]
     [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]

@@ -1,4 +1,6 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using dotnet_rest_api.Common;
 using dotnet_rest_api.Services.Shared;
 using dotnet_rest_api.Services.Users;
 using dotnet_rest_api.Services.Tasks;
@@ -15,6 +17,7 @@ namespace dotnet_rest_api.Controllers.V1;
 /// </summary>
 [Route("api/v1/[controller]")]
 [ApiController]
+[Authorize]
 public class CalendarController : BaseApiController
 {
     private readonly ICalendarService _calendarService;
@@ -75,6 +78,7 @@ public class CalendarController : BaseApiController
     /// </summary>
     /// <param name="request">Calendar event creation request</param>
     /// <returns>Created calendar event</returns>
+    [Authorize(Roles = Roles.AdminOrManager)]
     [HttpPost]
     [ProducesResponseType(typeof(ApiResponse<CalendarEventResponseDto>), 201)]
     [ProducesResponseType(typeof(ApiResponse<CalendarEventResponseDto>), 400)]
@@ -116,6 +120,7 @@ public class CalendarController : BaseApiController
     /// <summary>
     /// Update an existing calendar event
     /// </summary>
+    [Authorize(Roles = Roles.AdminOrManager)]
     [HttpPut("{id:guid}")]
     [ProducesResponseType(typeof(ApiResponse<CalendarEventResponseDto>), 200)]
     [ProducesResponseType(typeof(ApiResponse<CalendarEventResponseDto>), 400)]
@@ -144,6 +149,7 @@ public class CalendarController : BaseApiController
     /// </summary>
     /// <param name="id">The calendar event ID</param>
     /// <returns>Success status</returns>
+    [Authorize(Roles = Roles.AdminOrManager)]
     [HttpDelete("{id:guid}")]
     [ProducesResponseType(typeof(ApiResponse<bool>), 200)]
     [ProducesResponseType(typeof(ApiResponse<bool>), 404)]
@@ -315,6 +321,7 @@ public class CalendarController : BaseApiController
     /// </summary>
     /// <param name="request">Recurring calendar event creation request</param>
     /// <returns>Created recurring calendar event</returns>
+    [Authorize(Roles = Roles.AdminOrManager)]
     [HttpPost("recurring")]
     [ProducesResponseType(typeof(ApiResponse<CalendarEventResponseDto>), 201)]
     [ProducesResponseType(typeof(ApiResponse<CalendarEventResponseDto>), 400)]
@@ -345,6 +352,7 @@ public class CalendarController : BaseApiController
     /// <param name="seriesId">The recurring event series ID</param>
     /// <param name="request">Recurring calendar event update request</param>
     /// <returns>Success status</returns>
+    [Authorize(Roles = Roles.AdminOrManager)]
     [HttpPut("recurring/{seriesId:guid}")]
     [ProducesResponseType(typeof(ApiResponse<bool>), 200)]
     [ProducesResponseType(typeof(ApiResponse<bool>), 400)]
@@ -365,6 +373,7 @@ public class CalendarController : BaseApiController
     /// </summary>
     /// <param name="seriesId">The recurring event series ID</param>
     /// <returns>Success status</returns>
+    [Authorize(Roles = Roles.AdminOrManager)]
     [HttpDelete("recurring/{seriesId:guid}")]
     [ProducesResponseType(typeof(ApiResponse<bool>), 200)]
     [ProducesResponseType(typeof(ApiResponse<bool>), 404)]

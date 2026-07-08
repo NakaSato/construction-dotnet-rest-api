@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Authorization;
+using dotnet_rest_api.Common;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Cors;
 using System;
@@ -75,7 +76,7 @@ public class ProjectsController : BaseApiController
     /// Available to: Administrator, ProjectManager (can manage projects)
     /// </summary>
     [HttpPost]
-    [Authorize(Roles = "Admin,Manager")] // Enable role-based authorization for creating projects
+    [Authorize(Roles = Roles.AdminOrManager)] // Enable role-based authorization for creating projects
     [NoCache] // No caching for write operations
     public async Task<ActionResult<ApiResponse<ProjectDto>>> CreateProject([FromBody] CreateProjectRequest request)
     {
@@ -105,7 +106,7 @@ public class ProjectsController : BaseApiController
     /// Available to: Administrator, ProjectManager (can manage projects)
     /// </summary>
     [HttpPut("{id:guid}")]
-    [Authorize(Roles = "Admin,Manager")]
+    [Authorize(Roles = Roles.AdminOrManager)]
     [NoCache] // No caching for write operations
     public async Task<ActionResult<ApiResponse<ProjectDto>>> UpdateProject(Guid id, [FromBody] UpdateProjectRequest request)
     {
@@ -129,7 +130,7 @@ public class ProjectsController : BaseApiController
     /// Available to: Administrator, ProjectManager (can manage projects)
     /// </summary>
     [HttpPatch("{id:guid}")]
-    [Authorize(Roles = "Admin,Manager")]
+    [Authorize(Roles = Roles.AdminOrManager)]
     [NoCache] // No caching for write operations
     public async Task<ActionResult<ApiResponse<ProjectDto>>> PatchProject(Guid id, [FromBody] PatchProjectRequest request)
     {
@@ -153,7 +154,7 @@ public class ProjectsController : BaseApiController
     /// Available to: Administrator only (full system access)
     /// </summary>
     [HttpDelete("{id:guid}")]
-    [Authorize(Roles = "Admin")] // Enable admin-only authorization for deleting projects
+    [Authorize(Roles = Roles.Admin)] // Enable admin-only authorization for deleting projects
     [CriticalDeleteRateLimit]
     [NoCache] // No caching for write operations
     public async Task<ActionResult<ApiResponse<bool>>> DeleteProject(Guid id)
@@ -494,7 +495,7 @@ public class ProjectsController : BaseApiController
     /// Available to: Project Managers, Administrators
     /// </summary>
     [HttpPost("{id:guid}/milestones")]
-    [Authorize(Roles = "Admin,Manager")]
+    [Authorize(Roles = Roles.AdminOrManager)]
     [NoCache]
     public async Task<ActionResult<ApiResponse<PerformanceMilestoneDto>>> AddMilestone(Guid id, [FromBody] CreateProjectMilestoneRequest request)
     {
@@ -519,7 +520,7 @@ public class ProjectsController : BaseApiController
     /// Available to: Project Managers, Administrators
     /// </summary>
     [HttpPut("{id:guid}/milestones/{milestoneId:guid}")]
-    [Authorize(Roles = "Admin,Manager")]
+    [Authorize(Roles = Roles.AdminOrManager)]
     [NoCache]
     public async Task<ActionResult<ApiResponse<PerformanceMilestoneDto>>> UpdateMilestone(Guid id, Guid milestoneId, [FromBody] UpdateProjectMilestoneRequest request)
     {
@@ -544,7 +545,7 @@ public class ProjectsController : BaseApiController
     /// Available to: Project Managers, Administrators
     /// </summary>
     [HttpDelete("{id:guid}/milestones/{milestoneId:guid}")]
-    [Authorize(Roles = "Admin,Manager")]
+    [Authorize(Roles = Roles.AdminOrManager)]
     [NoCache]
     public async Task<ActionResult<ApiResponse<bool>>> DeleteMilestone(Guid id, Guid milestoneId)
     {

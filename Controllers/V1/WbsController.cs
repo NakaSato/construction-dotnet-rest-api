@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Authorization;
+using dotnet_rest_api.Common;
 using Microsoft.AspNetCore.Mvc;
 using dotnet_rest_api.Models;
 using dotnet_rest_api.DTOs;
@@ -144,7 +145,7 @@ public class WbsController : ControllerBase
     /// <param name="createDto">WBS task creation data</param>
     /// <returns>Created WBS task</returns>
     [HttpPost]
-    [Authorize(Roles = "Admin,ProjectManager")]
+    [Authorize(Roles = Roles.AdminOrManager)]
     public async Task<ActionResult<ApiResponse<WbsTaskDto>>> CreateTask([FromBody] CreateWbsTaskDto createDto)
     {
         try
@@ -198,7 +199,7 @@ public class WbsController : ControllerBase
     /// <param name="updateDto">Updated task data</param>
     /// <returns>Updated WBS task</returns>
     [HttpPut("{wbsId}")]
-    [Authorize(Roles = "Admin,ProjectManager")]
+    [Authorize(Roles = Roles.AdminOrManager)]
     public async Task<ActionResult<ApiResponse<WbsTaskDto>>> UpdateTask(string wbsId, [FromBody] UpdateWbsTaskDto updateDto)
     {
         try
@@ -250,7 +251,7 @@ public class WbsController : ControllerBase
     /// <param name="wbsId">WBS ID of the task to delete</param>
     /// <returns>Confirmation of deletion</returns>
     [HttpDelete("{wbsId}")]
-    [Authorize(Roles = "Admin")]
+    [Authorize(Roles = Roles.Admin)]
     public async Task<ActionResult<ApiResponse<object>>> DeleteTask(string wbsId)
     {
         try
@@ -488,7 +489,7 @@ public class WbsController : ControllerBase
     /// <param name="projectId">Project ID</param>
     /// <returns>Confirmation message</returns>
     [HttpPost("seed-data/{projectId}")]
-    [Authorize(Roles = "Admin")]
+    [Authorize(Roles = Roles.Admin)]
     public async Task<ActionResult<ApiResponse<object>>> SeedSampleData(Guid projectId)
     {
         try

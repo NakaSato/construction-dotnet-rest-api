@@ -1,7 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
-using Microsoft.OpenApi.Models;
+using Microsoft.OpenApi;
 using Microsoft.Extensions.FileProviders;
 using System.Text;
 using dotnet_rest_api.Data;
@@ -102,18 +102,11 @@ builder.Services.AddSwaggerGen(options =>
         Scheme = "Bearer"
     });
 
-    options.AddSecurityRequirement(new OpenApiSecurityRequirement
+    options.AddSecurityRequirement(_ => new OpenApiSecurityRequirement
     {
         {
-            new OpenApiSecurityScheme
-            {
-                Reference = new OpenApiReference
-                {
-                    Type = ReferenceType.SecurityScheme,
-                    Id = "Bearer"
-                }
-            },
-            Array.Empty<string>()
+            new OpenApiSecuritySchemeReference("Bearer"),
+            new List<string>()
         }
     });
 });
@@ -239,7 +232,7 @@ builder.Services.AddMemoryCache();
 builder.Services.AddDistributedMemoryCache();
 
 // AutoMapper Configuration
-builder.Services.AddAutoMapper(typeof(Program));
+builder.Services.AddAutoMapper(cfg => cfg.AddMaps(typeof(Program).Assembly));
 
 // Rate Limiting (conditionally enabled)
 var rateLimitEnabled = builder.Configuration.GetValue<bool>("RateLimit:Enabled", true);
@@ -435,3 +428,6 @@ using (var scope = app.Services.CreateScope())
 // ===================================
 
 await app.RunAsync();
+
+// Exposed so integration tests can host the app via WebApplicationFactory<Program>.
+public partial class Program { }

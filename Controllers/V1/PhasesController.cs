@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Authorization;
+using dotnet_rest_api.Common;
 using Microsoft.AspNetCore.Mvc;
 using dotnet_rest_api.DTOs;
 using dotnet_rest_api.Services.Shared;
@@ -63,7 +64,7 @@ public class PhasesController : BaseApiController
     /// Available to: Project Managers, Administrators
     /// </summary>
     [HttpPatch("{phaseId:guid}")]
-    [Authorize(Roles = "Administrator,ProjectManager")]
+    [Authorize(Roles = Roles.AdminOrManager)]
     [NoCache]
     public async Task<ActionResult<ApiResponse<ProjectPhaseDto>>> UpdatePhase(Guid phaseId, [FromBody] UpdateProjectPhaseRequest request)
     {
@@ -90,7 +91,7 @@ public class PhasesController : BaseApiController
     /// Available to: Administrators
     /// </summary>
     [HttpDelete("{phaseId:guid}")]
-    [Authorize(Roles = "Administrator")]
+    [Authorize(Roles = Roles.Admin)]
     [NoCache]
     public async Task<ActionResult<ApiResponse<bool>>> DeletePhase(Guid phaseId)
     {

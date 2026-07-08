@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Authorization;
+using dotnet_rest_api.Common;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
@@ -272,7 +273,7 @@ public class DashboardController : BaseApiController
     /// Send a live system announcement to all connected users
     /// </summary>
     [HttpPost("system-announcement")]
-    [Authorize(Roles = "Admin,Manager")]
+    [Authorize(Roles = Roles.AdminOrManager)]
     public async Task<ActionResult<ApiResponse<string>>> SendSystemAnnouncement(
         [FromBody] SystemAnnouncementRequestForDashboard request)
     {

@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Authorization;
+using dotnet_rest_api.Common;
 using Microsoft.AspNetCore.Mvc;
 using dotnet_rest_api.Services.Shared;
 using dotnet_rest_api.Services.Users;
@@ -110,7 +111,7 @@ public class WorkRequestsController : BaseApiController
     /// Update an existing work request
     /// </summary>
     [HttpPut("{id:guid}")]
-    [Authorize(Roles = "Administrator,ProjectManager")]
+    [Authorize(Roles = Roles.AdminOrManager)]
     [NoCache]
     public async Task<ActionResult<ApiResponse<WorkRequestDto>>> UpdateWorkRequest(Guid id, [FromBody] UpdateWorkRequestRequest request)
     {
@@ -136,7 +137,7 @@ public class WorkRequestsController : BaseApiController
     /// Delete a work request
     /// </summary>
     [HttpDelete("{id:guid}")]
-    [Authorize(Roles = "Administrator")]
+    [Authorize(Roles = Roles.Admin)]
     [CriticalDeleteRateLimit]
     [NoCache]
     public async Task<ActionResult<ApiResponse<bool>>> DeleteWorkRequest(Guid id)
@@ -157,7 +158,7 @@ public class WorkRequestsController : BaseApiController
     /// Assign work request to user
     /// </summary>
     [HttpPost("{id:guid}/assign/{userId:guid}")]
-    [Authorize(Roles = "Administrator,ProjectManager")]
+    [Authorize(Roles = Roles.AdminOrManager)]
     [NoCache]
     public async Task<ActionResult<ApiResponse<bool>>> AssignWorkRequest(Guid id, Guid userId)
     {
@@ -227,7 +228,7 @@ public class WorkRequestsController : BaseApiController
     /// Process approval/rejection for work request
     /// </summary>
     [HttpPost("{id:guid}/process-approval")]
-    [Authorize(Roles = "Administrator,ProjectManager")]
+    [Authorize(Roles = Roles.AdminOrManager)]
     [NoCache]
     public async Task<ActionResult<ApiResponse<bool>>> ProcessApproval(Guid id, [FromBody] ApprovalRequest request)
     {

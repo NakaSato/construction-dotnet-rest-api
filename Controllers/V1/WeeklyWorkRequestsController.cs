@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Authorization;
+using dotnet_rest_api.Common;
 using Microsoft.AspNetCore.Mvc;
 using dotnet_rest_api.DTOs;
 using dotnet_rest_api.Services.Shared;
@@ -71,7 +72,7 @@ public class WeeklyWorkRequestsController : BaseApiController
     /// Available to: Administrator, ProjectManager, Planner (planning responsibilities)
     /// </summary>
     [HttpPost]
-    [Authorize(Roles = "Administrator,ProjectManager,Planner")]
+    [Authorize(Roles = Roles.AdminOrManager)]
     public async Task<ActionResult<ApiResponse<WeeklyWorkRequestDto>>> CreateWeeklyWorkRequest(
         [FromBody] CreateWeeklyWorkRequestDto request)
     {
@@ -91,7 +92,7 @@ public class WeeklyWorkRequestsController : BaseApiController
     /// Available to: Administrator, ProjectManager, Planner (can manage work requests)
     /// </summary>
     [HttpPut("{requestId:guid}")]
-    [Authorize(Roles = "Administrator,ProjectManager,Planner")]
+    [Authorize(Roles = Roles.AdminOrManager)]
     public async Task<ActionResult<ApiResponse<WeeklyWorkRequestDto>>> UpdateWeeklyWorkRequest(
         Guid requestId, [FromBody] UpdateWeeklyWorkRequestDto request)
     {
@@ -111,7 +112,7 @@ public class WeeklyWorkRequestsController : BaseApiController
     /// Available to: Administrator, ProjectManager, Planner (can submit requests)
     /// </summary>
     [HttpPost("{requestId:guid}/submit")]
-    [Authorize(Roles = "Administrator,ProjectManager,Planner")]
+    [Authorize(Roles = Roles.AdminOrManager)]
     public async Task<ActionResult<ApiResponse<WeeklyWorkRequestDto>>> SubmitWeeklyWorkRequest(Guid requestId)
     {
         LogControllerAction(_logger, "SubmitWeeklyWorkRequest", requestId);
@@ -126,7 +127,7 @@ public class WeeklyWorkRequestsController : BaseApiController
     /// Available to: Administrator, ProjectManager (approval authority)
     /// </summary>
     [HttpPost("{requestId:guid}/approve")]
-    [Authorize(Roles = "Administrator,ProjectManager")]
+    [Authorize(Roles = Roles.AdminOrManager)]
     public async Task<ActionResult<ApiResponse<WeeklyWorkRequestDto>>> ApproveWeeklyWorkRequest(Guid requestId)
     {
         LogControllerAction(_logger, "ApproveWeeklyWorkRequest", requestId);
@@ -141,7 +142,7 @@ public class WeeklyWorkRequestsController : BaseApiController
     /// Available to: Administrator only (full system access)
     /// </summary>
     [HttpDelete("{requestId:guid}")]
-    [Authorize(Roles = "Administrator")]
+    [Authorize(Roles = Roles.Admin)]
     [CriticalDeleteRateLimit]
     public async Task<ActionResult<ApiResponse<bool>>> DeleteWeeklyWorkRequest(Guid requestId)
     {
@@ -197,7 +198,7 @@ public class ProjectWeeklyWorkRequestsController : BaseApiController
     /// Available to: Administrator, ProjectManager, Planner (planning responsibilities)
     /// </summary>
     [HttpPost]
-    [Authorize(Roles = "Administrator,ProjectManager,Planner")]
+    [Authorize(Roles = Roles.AdminOrManager)]
     public async Task<ActionResult<ApiResponse<WeeklyWorkRequestDto>>> CreateProjectWeeklyWorkRequest(
         Guid projectId, [FromBody] CreateWeeklyWorkRequestDto request)
     {

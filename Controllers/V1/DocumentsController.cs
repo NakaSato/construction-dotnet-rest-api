@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Authorization;
+using dotnet_rest_api.Common;
 using Microsoft.AspNetCore.Mvc;
 using dotnet_rest_api.DTOs;
 using dotnet_rest_api.Services.Shared;
@@ -87,7 +88,7 @@ public class DocumentsController : BaseApiController
     /// Available to: Administrator, ProjectManager, Technician
     /// </summary>
     [HttpPost]
-    [Authorize(Roles = "Administrator,ProjectManager,Technician")]
+    [Authorize(Roles = Roles.AdminOrManager)]
     [NoCache]
     public async Task<ActionResult<ApiResponse<DocumentDto>>> CreateDocument([FromBody] CreateDocumentRequest request)
     {
@@ -112,7 +113,7 @@ public class DocumentsController : BaseApiController
     /// Available to: Administrator, ProjectManager, Document Creator
     /// </summary>
     [HttpPatch("{documentId:guid}")]
-    [Authorize(Roles = "Administrator,ProjectManager,Technician")]
+    [Authorize(Roles = Roles.AdminOrManager)]
     [NoCache]
     public async Task<ActionResult<ApiResponse<DocumentDto>>> UpdateDocument(Guid documentId, [FromBody] UpdateDocumentRequest request)
     {
@@ -137,7 +138,7 @@ public class DocumentsController : BaseApiController
     /// Available to: Administrator, Document Creator
     /// </summary>
     [HttpDelete("{documentId:guid}")]
-    [Authorize(Roles = "Administrator")]
+    [Authorize(Roles = Roles.Admin)]
     [NoCache]
     public async Task<ActionResult<ApiResponse<bool>>> DeleteDocument(Guid documentId)
     {

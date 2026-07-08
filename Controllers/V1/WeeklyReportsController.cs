@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Authorization;
+using dotnet_rest_api.Common;
 using Microsoft.AspNetCore.Mvc;
 using dotnet_rest_api.DTOs;
 using dotnet_rest_api.Services.Shared;
@@ -71,7 +72,7 @@ public class WeeklyReportsController : BaseApiController
     /// Available to: Administrator, ProjectManager (reporting authority - Planner cannot create reports)
     /// </summary>
     [HttpPost]
-    [Authorize(Roles = "Administrator,ProjectManager")]
+    [Authorize(Roles = Roles.AdminOrManager)]
     public async Task<ActionResult<ApiResponse<WeeklyReportDto>>> CreateWeeklyReport(
         [FromBody] CreateWeeklyReportDto request)
     {
@@ -91,7 +92,7 @@ public class WeeklyReportsController : BaseApiController
     /// Available to: Administrator, ProjectManager (can manage reports)
     /// </summary>
     [HttpPut("{reportId:guid}")]
-    [Authorize(Roles = "Administrator,ProjectManager")]
+    [Authorize(Roles = Roles.AdminOrManager)]
     public async Task<ActionResult<ApiResponse<WeeklyReportDto>>> UpdateWeeklyReport(
         Guid reportId, [FromBody] UpdateWeeklyReportDto request)
     {
@@ -111,7 +112,7 @@ public class WeeklyReportsController : BaseApiController
     /// Available to: Administrator, ProjectManager (can submit reports)
     /// </summary>
     [HttpPost("{reportId:guid}/submit")]
-    [Authorize(Roles = "Administrator,ProjectManager")]
+    [Authorize(Roles = Roles.AdminOrManager)]
     public async Task<ActionResult<ApiResponse<WeeklyReportDto>>> SubmitWeeklyReport(Guid reportId)
     {
         LogControllerAction(_logger, "SubmitWeeklyReport", reportId);
@@ -126,7 +127,7 @@ public class WeeklyReportsController : BaseApiController
     /// Available to: Administrator, ProjectManager (approval authority)
     /// </summary>
     [HttpPost("{reportId:guid}/approve")]
-    [Authorize(Roles = "Administrator,ProjectManager")]
+    [Authorize(Roles = Roles.AdminOrManager)]
     public async Task<ActionResult<ApiResponse<WeeklyReportDto>>> ApproveWeeklyReport(Guid reportId)
     {
         LogControllerAction(_logger, "ApproveWeeklyReport", reportId);
@@ -141,7 +142,7 @@ public class WeeklyReportsController : BaseApiController
     /// Available to: Administrator only (full system access)
     /// </summary>
     [HttpDelete("{reportId:guid}")]
-    [Authorize(Roles = "Administrator")]
+    [Authorize(Roles = Roles.Admin)]
     public async Task<ActionResult<ApiResponse<bool>>> DeleteWeeklyReport(Guid reportId)
     {
         LogControllerAction(_logger, "DeleteWeeklyReport", reportId);
@@ -196,7 +197,7 @@ public class ProjectWeeklyReportsController : BaseApiController
     /// Available to: Administrator, ProjectManager (reporting authority - Planner cannot create reports)
     /// </summary>
     [HttpPost]
-    [Authorize(Roles = "Administrator,ProjectManager")]
+    [Authorize(Roles = Roles.AdminOrManager)]
     public async Task<ActionResult<ApiResponse<WeeklyReportDto>>> CreateProjectWeeklyReport(
         Guid projectId, [FromBody] CreateWeeklyReportDto request)
     {

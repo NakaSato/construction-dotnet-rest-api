@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Authorization;
+using dotnet_rest_api.Common;
 using Microsoft.AspNetCore.Mvc;
 using dotnet_rest_api.DTOs;
 using dotnet_rest_api.Services.Shared;
@@ -86,7 +87,7 @@ public class ResourcesController : BaseApiController
     /// Available to: Administrator, ProjectManager
     /// </summary>
     [HttpPost]
-    [Authorize(Roles = "Administrator,ProjectManager")]
+    [Authorize(Roles = Roles.AdminOrManager)]
     [NoCache]
     public async Task<ActionResult<ApiResponse<ResourceDto>>> CreateResource([FromBody] CreateResourceRequest request)
     {
@@ -111,7 +112,7 @@ public class ResourcesController : BaseApiController
     /// Available to: Administrator, ProjectManager
     /// </summary>
     [HttpPatch("{resourceId:guid}")]
-    [Authorize(Roles = "Administrator,ProjectManager")]
+    [Authorize(Roles = Roles.AdminOrManager)]
     [NoCache]
     public async Task<ActionResult<ApiResponse<ResourceDto>>> UpdateResource(Guid resourceId, [FromBody] UpdateResourceRequest request)
     {
@@ -136,7 +137,7 @@ public class ResourcesController : BaseApiController
     /// Available to: Administrator
     /// </summary>
     [HttpDelete("{resourceId:guid}")]
-    [Authorize(Roles = "Administrator")]
+    [Authorize(Roles = Roles.Admin)]
     [NoCache]
     public async Task<ActionResult<ApiResponse<bool>>> DeleteResource(Guid resourceId)
     {

@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Authorization;
+using dotnet_rest_api.Common;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 using dotnet_rest_api.DTOs;
@@ -151,7 +152,7 @@ public class DailyReportsController : BaseApiController
     /// Available to: Administrator, Manager only
     /// </summary>
     [HttpDelete("{id:guid}")]
-    [Authorize(Roles = "Administrator,Manager")]
+    [Authorize(Roles = Roles.AdminOrManager)]
     [DeleteRateLimit]
     [NoCache]
     public async Task<ActionResult<ApiResponse<bool>>> DeleteDailyReport(Guid id)
@@ -203,7 +204,7 @@ public class DailyReportsController : BaseApiController
     /// Available to: Administrator, Manager
     /// </summary>
     [HttpGet("weekly-summary")]
-    [Authorize(Roles = "Administrator,Manager")]
+    [Authorize(Roles = Roles.AdminOrManager)]
     [ShortCache] // 5 minute cache
     public async Task<ActionResult<ApiResponse<WeeklySummaryDto>>> GetWeeklySummary(
         [FromQuery] Guid? projectId = null,
@@ -227,7 +228,7 @@ public class DailyReportsController : BaseApiController
     /// Available to: Administrator, Manager
     /// </summary>
     [HttpGet("export")]
-    [Authorize(Roles = "Administrator,Manager")]
+    [Authorize(Roles = Roles.AdminOrManager)]
     [NoCache]
     public async Task<IActionResult> ExportDailyReports(
         [FromQuery] Guid? projectId = null,
@@ -300,7 +301,7 @@ public class DailyReportsController : BaseApiController
     /// <param name="id">The daily report ID</param>
     /// <returns>Success status</returns>
     [HttpPost("{id:guid}/approve")]
-    [Authorize(Roles = "Administrator,ProjectManager")]
+    [Authorize(Roles = Roles.AdminOrManager)]
     [ProducesResponseType(typeof(ApiResponse<DailyReportDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status404NotFound)]
@@ -336,7 +337,7 @@ public class DailyReportsController : BaseApiController
     /// <param name="rejectionReason">Reason for rejection</param>
     /// <returns>Success status</returns>
     [HttpPost("{id:guid}/reject")]
-    [Authorize(Roles = "Administrator,ProjectManager")]
+    [Authorize(Roles = Roles.AdminOrManager)]
     [ProducesResponseType(typeof(ApiResponse<DailyReportDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status404NotFound)]
@@ -556,7 +557,7 @@ public class DailyReportsController : BaseApiController
     /// <param name="endDate">Analysis end date</param>
     /// <returns>Comprehensive analytics data</returns>
     [HttpGet("projects/{projectId:guid}/analytics")]
-    [Authorize(Roles = "Administrator,Manager,ProjectManager")]
+    [Authorize(Roles = Roles.AdminOrManager)]
     [LongCache] // 1 hour cache for analytics
     [ProducesResponseType(typeof(ApiResponse<DailyReportAnalyticsDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status400BadRequest)]
@@ -595,7 +596,7 @@ public class DailyReportsController : BaseApiController
     /// <param name="weekStartDate">Week start date (defaults to current week)</param>
     /// <returns>Weekly progress report</returns>
     [HttpGet("projects/{projectId:guid}/weekly-report")]
-    [Authorize(Roles = "Administrator,Manager,ProjectManager")]
+    [Authorize(Roles = Roles.AdminOrManager)]
     [ShortCache] // 5 minute cache for weekly reports
     [ProducesResponseType(typeof(ApiResponse<WeeklySummaryDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status400BadRequest)]
@@ -628,7 +629,7 @@ public class DailyReportsController : BaseApiController
     /// <param name="request">Bulk approval request</param>
     /// <returns>Approval results</returns>
     [HttpPost("bulk-approve")]
-    [Authorize(Roles = "Administrator,Manager,ProjectManager")]
+    [Authorize(Roles = Roles.AdminOrManager)]
     [NoCache]
     [ProducesResponseType(typeof(ApiResponse<BulkOperationResultDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status400BadRequest)]
@@ -664,7 +665,7 @@ public class DailyReportsController : BaseApiController
     /// <param name="request">Bulk rejection request</param>
     /// <returns>Rejection results</returns>
     [HttpPost("bulk-reject")]
-    [Authorize(Roles = "Administrator,Manager,ProjectManager")]
+    [Authorize(Roles = Roles.AdminOrManager)]
     [NoCache]
     [ProducesResponseType(typeof(ApiResponse<BulkOperationResultDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status400BadRequest)]
@@ -700,7 +701,7 @@ public class DailyReportsController : BaseApiController
     /// <param name="request">Export request parameters</param>
     /// <returns>File download</returns>
     [HttpPost("export-enhanced")]
-    [Authorize(Roles = "Administrator,Manager,ProjectManager")]
+    [Authorize(Roles = Roles.AdminOrManager)]
     [NoCache]
     [ProducesResponseType(typeof(FileResult), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status400BadRequest)]
@@ -746,7 +747,7 @@ public class DailyReportsController : BaseApiController
     /// <param name="reportId">Specific report ID (optional)</param>
     /// <returns>AI-generated insights and recommendations</returns>
     [HttpGet("projects/{projectId:guid}/insights")]
-    [Authorize(Roles = "Administrator,Manager,ProjectManager")]
+    [Authorize(Roles = Roles.AdminOrManager)]
     [MediumCache] // 15 minute cache for insights
     [ProducesResponseType(typeof(ApiResponse<DailyReportInsightsDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status400BadRequest)]
@@ -833,7 +834,7 @@ public class DailyReportsController : BaseApiController
     /// <param name="projectId">Project ID (optional)</param>
     /// <returns>List of reports pending approval</returns>
     [HttpGet("pending-approval")]
-    [Authorize(Roles = "Administrator,Manager,ProjectManager")]
+    [Authorize(Roles = Roles.AdminOrManager)]
     [ShortCache] // 5 minute cache for pending approvals
     [ProducesResponseType(typeof(ApiResponse<EnhancedPagedResult<DailyReportDto>>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -863,7 +864,7 @@ public class DailyReportsController : BaseApiController
     /// <param name="reportId">Daily report ID</param>
     /// <returns>Complete approval history</returns>
     [HttpGet("{reportId:guid}/approval-history")]
-    [Authorize(Roles = "Administrator,Manager,ProjectManager")]
+    [Authorize(Roles = Roles.AdminOrManager)]
     [MediumCache] // 15 minute cache for approval history
     [ProducesResponseType(typeof(ApiResponse<List<ApprovalHistoryDto>>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status404NotFound)]

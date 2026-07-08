@@ -53,7 +53,7 @@ public class MasterPlansController : BaseApiController
     /// Available to: Project Managers, Administrators
     /// </summary>
     [HttpPost]
-    [Authorize(Roles = "Administrator,ProjectManager")]
+    [Authorize(Roles = Roles.AdminOrManager)]
     [NoCache]
     public async Task<ActionResult<ApiResponse<MasterPlanDto>>> CreateMasterPlan([FromBody] CreateMasterPlanRequest request)
     {
@@ -121,7 +121,7 @@ public class MasterPlansController : BaseApiController
     /// Available to: Project Managers, Administrators
     /// </summary>
     [HttpPut("{id:guid}")]
-    [Authorize(Roles = "Administrator,ProjectManager")]
+    [Authorize(Roles = Roles.AdminOrManager)]
     [NoCache]
     public async Task<ActionResult<ApiResponse<MasterPlanDto>>> UpdateMasterPlan(Guid id, [FromBody] UpdateMasterPlanRequest request)
     {
@@ -149,7 +149,7 @@ public class MasterPlansController : BaseApiController
     /// Available to: Administrators
     /// </summary>
     [HttpPost("{id:guid}/approve")]
-    [Authorize(Roles = "Administrator")]
+    [Authorize(Roles = Roles.Admin)]
     [NoCache]
     public async Task<ActionResult<ApiResponse<bool>>> ApproveMasterPlan(Guid id, [FromBody] string? notes = null)
     {
@@ -179,7 +179,7 @@ public class MasterPlansController : BaseApiController
     /// Available to: Project Managers, Administrators
     /// </summary>
     [HttpPost("{id:guid}/activate")]
-    [Authorize(Roles = "Administrator,ProjectManager")]
+    [Authorize(Roles = Roles.AdminOrManager)]
     [NoCache]
     public async Task<ActionResult<ApiResponse<bool>>> ActivateMasterPlan(Guid id)
     {
@@ -253,7 +253,7 @@ public class MasterPlansController : BaseApiController
     /// Available to: Project Managers, Administrators
     /// </summary>
     [HttpPost("{id:guid}/phases")]
-    [Authorize(Roles = "Administrator,ProjectManager")]
+    [Authorize(Roles = Roles.AdminOrManager)]
     [NoCache]
     public async Task<ActionResult<ApiResponse<ProjectPhaseDto>>> AddPhase(Guid id, [FromBody] CreateProjectPhaseRequest request)
     {
@@ -281,7 +281,7 @@ public class MasterPlansController : BaseApiController
     /// Available to: Project Managers, Site Supervisors
     /// </summary>
     [HttpPatch("{masterPlanId:guid}/phases/{phaseId:guid}/progress")]
-    [Authorize(Roles = "Administrator,ProjectManager,SiteSupervisor")]
+    [Authorize(Roles = Roles.AdminOrManager)]
     [NoCache]
     public async Task<ActionResult<ApiResponse<bool>>> UpdatePhaseProgress(
         Guid masterPlanId, 
@@ -331,7 +331,7 @@ public class MasterPlansController : BaseApiController
     /// Available to: Project Managers, Administrators
     /// </summary>
     [HttpPost("{id:guid}/milestones")]
-    [Authorize(Roles = "Administrator,ProjectManager")]
+    [Authorize(Roles = Roles.AdminOrManager)]
     [NoCache]
     public async Task<ActionResult<ApiResponse<ProjectMilestoneDto>>> AddMilestone(Guid id, [FromBody] CreateProjectMilestoneRequest request)
     {
@@ -359,7 +359,7 @@ public class MasterPlansController : BaseApiController
     /// Available to: Project Managers, Site Supervisors
     /// </summary>
     [HttpPost("{masterPlanId:guid}/milestones/{milestoneId:guid}/complete")]
-    [Authorize(Roles = "Administrator,ProjectManager,SiteSupervisor")]
+    [Authorize(Roles = Roles.AdminOrManager)]
     [NoCache]
     public async Task<ActionResult<ApiResponse<bool>>> CompleteMilestone(
         Guid masterPlanId, 
@@ -410,7 +410,7 @@ public class MasterPlansController : BaseApiController
     /// Available to: Project Managers, Site Supervisors
     /// </summary>
     [HttpPost("{id:guid}/progress-reports")]
-    [Authorize(Roles = "Administrator,ProjectManager,SiteSupervisor")]
+    [Authorize(Roles = Roles.AdminOrManager)]
     [NoCache]
     public async Task<ActionResult<ApiResponse<ProgressReportDto>>> CreateProgressReport(Guid id, [FromBody] CreateProgressReportRequest request)
     {
@@ -474,7 +474,7 @@ public class MasterPlansController : BaseApiController
     /// Available to: Project Managers, Administrators
     /// </summary>
     [HttpDelete("{id:guid}")]
-    [Authorize(Roles = "Administrator,ProjectManager")]
+    [Authorize(Roles = Roles.AdminOrManager)]
     [NoCache]
     public async Task<ActionResult<ApiResponse<object>>> DeleteMasterPlan(Guid id)
     {
@@ -559,7 +559,7 @@ public class MasterPlansController : BaseApiController
     /// Available to: Project Managers, Administrators
     /// </summary>
     [HttpPost("{id:guid}/dependencies")]
-    [Authorize(Roles = "Administrator,ProjectManager")]
+    [Authorize(Roles = Roles.AdminOrManager)]
     [NoCache]
     public async Task<ActionResult<ApiResponse<TaskDependencyDto>>> CreateTaskDependency(Guid id, [FromBody] CreateTaskDependencyRequest request)
     {
@@ -587,7 +587,7 @@ public class MasterPlansController : BaseApiController
     /// Available to: Project Managers, Administrators
     /// </summary>
     [HttpPost("{id:guid}/validate-constraints")]
-    [Authorize(Roles = "Administrator,ProjectManager")]
+    [Authorize(Roles = Roles.AdminOrManager)]
     [NoCache]
     public async Task<ActionResult<ApiResponse<ConstraintValidationResultDto>>> ValidateScheduleConstraints(Guid id)
     {
@@ -607,7 +607,7 @@ public class MasterPlansController : BaseApiController
     /// Available to: Project Managers, Administrators
     /// </summary>
     [HttpPost("{id:guid}/trigger-workflow")]
-    [Authorize(Roles = "Administrator,ProjectManager")]
+    [Authorize(Roles = Roles.AdminOrManager)]
     [NoCache]
     public async Task<ActionResult<ApiResponse<WorkflowExecutionResultDto>>> TriggerWorkflowAutomation(Guid id, [FromBody] TriggerWorkflowRequest request)
     {
@@ -635,7 +635,7 @@ public class MasterPlansController : BaseApiController
     /// Available to: Administrators, Project Managers, Executives
     /// </summary>
     [HttpGet("{id:guid}/executive-dashboard")]
-    [Authorize(Roles = "Administrator,ProjectManager,Executive")]
+    [Authorize(Roles = Roles.AdminOrManager)]
     [ShortCache] // 5 minute cache
     public async Task<ActionResult<ApiResponse<ExecutiveDashboardDto>>> GenerateExecutiveDashboard(Guid id)
     {
@@ -655,7 +655,7 @@ public class MasterPlansController : BaseApiController
     /// Available to: Administrators, Project Managers
     /// </summary>
     [HttpGet("{id:guid}/export")]
-    [Authorize(Roles = "Administrator,ProjectManager")]
+    [Authorize(Roles = Roles.AdminOrManager)]
     [NoCache]
     public async Task<ActionResult<ApiResponse<ProjectExportDto>>> ExportProjectReport(
         Guid id, 
@@ -686,7 +686,7 @@ public class MasterPlansController : BaseApiController
     /// Available to: Administrators, Project Managers
     /// </summary>
     [HttpPost("{id:guid}/stakeholder-communication")]
-    [Authorize(Roles = "Administrator,ProjectManager")]
+    [Authorize(Roles = Roles.AdminOrManager)]
     [NoCache]
     public async Task<ActionResult<ApiResponse<StakeholderCommunicationDto>>> GenerateStakeholderCommunication(Guid id, [FromBody] CreateStakeholderCommunicationRequest request)
     {
