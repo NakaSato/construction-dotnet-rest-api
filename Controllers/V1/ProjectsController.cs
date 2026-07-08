@@ -610,7 +610,6 @@ public class ProjectsController : BaseApiController
     /// Available to: All authenticated users
     /// </summary>
     [HttpGet("mobile")]
-    [AllowAnonymous] // For easy testing - update to [Authorize] for production
     [ShortCache] // 5 minute cache for mobile endpoints
     public async Task<ActionResult<ApiResponse<List<MobileProjectDto>>>> GetMobileProjects(
         [FromQuery] int limit = 20,
@@ -674,7 +673,6 @@ public class ProjectsController : BaseApiController
     /// Get project details for the Flutter app with optimized payload size
     /// </summary>
     [HttpGet("mobile/{id:guid}")]
-    [AllowAnonymous] // For easy testing - update to [Authorize] for production
     [ShortCache] // 5 minute cache
     public async Task<ActionResult<ApiResponse<MobileProjectDetailDto>>> GetMobileProjectDetail(Guid id)
     {
@@ -728,7 +726,6 @@ public class ProjectsController : BaseApiController
     /// Get daily summary of project progress for Flutter app dashboard
     /// </summary>
     [HttpGet("mobile/dashboard")]
-    [AllowAnonymous] // For easy testing - update to [Authorize] for production
     [ShortCache] // 5 minute cache
     public async Task<ActionResult<ApiResponse<MobileDashboardDto>>> GetMobileDashboard(
         [FromQuery] Guid? userId = null)

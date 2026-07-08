@@ -64,6 +64,17 @@ public class Phase1AuthorizationTests : IClassFixture<ApiFactory>
         Assert.Equal(HttpStatusCode.Unauthorized, res.StatusCode);
     }
 
+    // ---- mobile endpoints are no longer [AllowAnonymous] -------------------
+
+    [Theory]
+    [InlineData("/api/v1/projects/mobile")]
+    [InlineData("/api/v1/projects/mobile/dashboard")]
+    public async Task Mobile_Endpoints_Require_Authentication(string path)
+    {
+        var res = await _factory.CreateClient().GetAsync(path);
+        Assert.Equal(HttpStatusCode.Unauthorized, res.StatusCode);
+    }
+
     // ---- P0-2: role gates now match the seeded role set --------------------
 
     [Fact]
