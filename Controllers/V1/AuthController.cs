@@ -14,7 +14,7 @@ namespace dotnet_rest_api.Controllers.V1;
 
 [ApiController]
 [ApiVersion("1.0")]
-[Route("api/v{version:apiVersion}/[controller]")]
+[Route("api/v{version:apiVersion}/auth")]
 public class AuthController : BaseApiController
 {
     private readonly IAuthService _authService;

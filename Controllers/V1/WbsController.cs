@@ -10,6 +10,7 @@ using dotnet_rest_api.Services.Projects;
 using dotnet_rest_api.Services.MasterPlans;
 using dotnet_rest_api.Services.WBS;
 using dotnet_rest_api.Services.Infrastructure;
+using Asp.Versioning;
 using System.Security.Claims;
 
 namespace dotnet_rest_api.Controllers.V1;
@@ -18,7 +19,8 @@ namespace dotnet_rest_api.Controllers.V1;
 /// Controller for managing Work Breakdown Structure (WBS) tasks for solar PV installation projects
 /// Supports real-time notifications for all CRUD operations
 /// </summary>
-[Route("api/v1/wbs")]
+[ApiVersion("1.0")]
+[Route("api/v{version:apiVersion}/wbs")]
 [ApiController]
 [Authorize]
 public class WbsController : ControllerBase

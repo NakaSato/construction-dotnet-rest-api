@@ -17,7 +17,7 @@ namespace dotnet_rest_api.Controllers.V1;
 
 [ApiController]
 [ApiVersion("1.0")]
-[Route("api/v{version:apiVersion}/[controller]")]
+[Route("api/v{version:apiVersion}/projects")]
 [Authorize] // Enable authorization for all endpoints by default
 public class ProjectsController : BaseApiController
 {

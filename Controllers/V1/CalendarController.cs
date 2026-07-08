@@ -1,3 +1,4 @@
+using Asp.Versioning;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using dotnet_rest_api.Common;
@@ -15,7 +16,8 @@ namespace dotnet_rest_api.Controllers.V1;
 /// <summary>
 /// Calendar API controller for managing calendar events and scheduling
 /// </summary>
-[Route("api/v1/[controller]")]
+[ApiVersion("1.0")]
+[Route("api/v{version:apiVersion}/calendar")]
 [ApiController]
 [Authorize]
 public class CalendarController : BaseApiController
