@@ -1,0 +1,81 @@
+using dotnet_rest_api.Services;
+using dotnet_rest_api.Services.Infrastructure;
+using dotnet_rest_api.Services.MasterPlans;
+using dotnet_rest_api.Services.Projects;
+using dotnet_rest_api.Services.Shared;
+using dotnet_rest_api.Services.Tasks;
+using dotnet_rest_api.Services.Users;
+using dotnet_rest_api.Services.WBS;
+
+namespace dotnet_rest_api.Extensions;
+
+/// <summary>
+/// Registers the application's business/feature services. Extracted from Program.cs
+/// to keep composition-root wiring in one focused place.
+///
+/// NOTE: several registrations are still Stub* implementations (daily reports,
+/// notifications, work requests, weekly reports, calendar, images, resources,
+/// documents) — see docs/API_DESIGN_REVIEW.md Phase 5.
+/// </summary>
+public static class ApplicationServiceExtensions
+{
+    public static IServiceCollection AddApplicationServices(
+        this IServiceCollection services, IConfiguration configuration)
+    {
+        // Business Services
+        // (IDailyReportService exists in both Infrastructure and Shared — use Infrastructure.)
+        services.AddScoped<Services.Infrastructure.IDailyReportService, StubDailyReportService>();
+
+        // WBS Services
+        services.AddScoped<WbsDataSeeder>();
+        services.AddScoped<IWbsService, WbsService>();
+
+        // Core / shared abstractions
+        services.AddScoped<IUserContextService, UserContextService>();
+        services.AddScoped<IResponseBuilderService, ResponseBuilderService>();
+        services.AddScoped<IValidationHelperService, ValidationHelperService>();
+
+        // Service implementations
+        // (ICacheService/CacheService exist in both Services and Services.Shared — use root Services.)
+        services.AddScoped<Services.ICacheService, Services.CacheService>();
+        services.AddScoped<IAuthService, AuthService>();
+
+        // Project services (feature-based)
+        services.AddScoped<IProjectService, ProjectService>();
+        services.AddScoped<IProjectAnalyticsService, ProjectAnalyticsService>();
+        services.AddScoped<ITaskService, TaskService>();
+        services.AddScoped<IMasterPlanService, MasterPlanService>();
+
+        // Notifications
+        services.AddScoped<INotificationService, StubNotificationService>();
+
+        // Work requests
+        services.AddScoped<IWorkRequestService, StubWorkRequestService>();
+        services.AddScoped<IWorkRequestApprovalService, StubWorkRequestApprovalService>();
+
+        // Weekly
+        services.AddScoped<IWeeklyReportService, StubWeeklyReportService>();
+        services.AddScoped<IWeeklyWorkRequestService, StubWeeklyWorkRequestService>();
+
+        // Misc
+        services.AddScoped<ICalendarService, StubCalendarService>();
+        services.AddScoped<IImageService, StubImageService>();
+        services.AddScoped<IResourceService, StubResourceService>();
+
+        // Other
+        services.AddScoped<IUserService, UserService>();
+        services.AddScoped<IQueryService, QueryService>();
+        services.AddScoped<IDocumentService, StubDocumentService>();
+
+        // Background task queue for async operations (reports, notifications, ...)
+        var queueCapacity = configuration.GetValue<int>("BackgroundQueue:Capacity", 100);
+        services.AddSingleton<IBackgroundTaskQueue>(sp =>
+        {
+            var logger = sp.GetRequiredService<ILogger<BackgroundTaskQueue>>();
+            return new BackgroundTaskQueue(queueCapacity, logger);
+        });
+        services.AddHostedService<QueuedHostedService>();
+
+        return services;
+    }
+}

@@ -56,32 +56,6 @@ builder.Services.AddHealthChecks()
         name: "database",
         tags: new[] { "db", "postgresql" });
 
-// Add CORS for Flutter mobile app
-builder.Services.AddCors(options =>
-{
-    options.AddPolicy("FlutterAppPolicy", builder =>
-    {
-        builder.AllowAnyOrigin()
-               .AllowAnyMethod()
-               .AllowAnyHeader()
-               .WithExposedHeaders("X-Pagination");
-    });
-});
-
-// SignalR Configuration with enhanced features
-builder.Services.AddSignalR(options =>
-{
-    // Enable detailed errors in development
-    options.EnableDetailedErrors = builder.Environment.IsDevelopment();
-    
-    // Configure client timeout and keep alive
-    options.ClientTimeoutInterval = TimeSpan.FromMinutes(5);
-    options.KeepAliveInterval = TimeSpan.FromMinutes(2);
-    
-    // Set maximum message size (1MB)
-    options.MaximumReceiveMessageSize = 1024 * 1024;
-});
-
 // Swagger Configuration
 builder.Services.AddSwaggerGen(options =>
 {
@@ -225,6 +199,7 @@ builder.Services.AddSignalR(options =>
     options.KeepAliveInterval = TimeSpan.FromSeconds(15);
     options.ClientTimeoutInterval = TimeSpan.FromSeconds(30);
     options.HandshakeTimeout = TimeSpan.FromSeconds(15);
+    options.MaximumReceiveMessageSize = 1024 * 1024; // 1 MB
 });
 
 // Caching & Performance Services
@@ -241,77 +216,36 @@ if (rateLimitEnabled)
     builder.Services.AddRateLimit(builder.Configuration);
 }
 
-// CORS Configuration with SignalR support
+// CORS Configuration
+// Explicit origins for credentialed SignalR connections come from config
+// (Cors:AllowedOrigins); falls back to local dev front-ends.
+var allowedOrigins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>()
+    ?? new[] { "http://localhost:3000", "http://localhost:5173" };
+
 builder.Services.AddCors(options =>
 {
-    options.AddDefaultPolicy(policy =>
+    // Mobile / general REST clients (no credentials) — permissive.
+    options.AddPolicy("FlutterAppPolicy", policy =>
     {
         policy.AllowAnyOrigin()
               .AllowAnyMethod()
-              .AllowAnyHeader();
+              .AllowAnyHeader()
+              .WithExposedHeaders("X-Pagination");
     });
-    
-    // Specific policy for SignalR with credentials
+
+    // SignalR sends credentials, so it requires explicit origins (cannot combine
+    // AllowCredentials with AllowAnyOrigin).
     options.AddPolicy("SignalRPolicy", policy =>
     {
-        policy.WithOrigins("http://localhost:3000", "http://localhost:5173", "https://your-frontend-domain.com")
+        policy.WithOrigins(allowedOrigins)
               .AllowAnyMethod()
               .AllowAnyHeader()
               .AllowCredentials();
     });
 });
 
-// Business Services Registration
-builder.Services.AddScoped<dotnet_rest_api.Services.Infrastructure.IDailyReportService, dotnet_rest_api.Services.Infrastructure.StubDailyReportService>();
-
-// WBS Services Registration
-builder.Services.AddScoped<dotnet_rest_api.Services.WBS.WbsDataSeeder>();
-builder.Services.AddScoped<dotnet_rest_api.Services.WBS.IWbsService, dotnet_rest_api.Services.WBS.WbsService>();
-
-// Core Services - New abstractions for better code quality
-builder.Services.AddScoped<dotnet_rest_api.Services.Shared.IUserContextService, dotnet_rest_api.Services.Shared.UserContextService>();
-builder.Services.AddScoped<dotnet_rest_api.Services.Shared.IResponseBuilderService, dotnet_rest_api.Services.Shared.ResponseBuilderService>();
-builder.Services.AddScoped<dotnet_rest_api.Services.Shared.IValidationHelperService, dotnet_rest_api.Services.Shared.ValidationHelperService>();
-
-// Service implementations
-builder.Services.AddScoped<dotnet_rest_api.Services.ICacheService, dotnet_rest_api.Services.CacheService>();
-builder.Services.AddScoped<dotnet_rest_api.Services.Users.IAuthService, dotnet_rest_api.Services.Users.AuthService>();
-
-// Project Services - Feature-based organization
-builder.Services.AddScoped<dotnet_rest_api.Services.Projects.IProjectService, dotnet_rest_api.Services.Projects.ProjectService>();
-builder.Services.AddScoped<dotnet_rest_api.Services.Projects.IProjectAnalyticsService, dotnet_rest_api.Services.Projects.ProjectAnalyticsService>();
-builder.Services.AddScoped<dotnet_rest_api.Services.Tasks.ITaskService, dotnet_rest_api.Services.Tasks.TaskService>(); // Real implementation
-builder.Services.AddScoped<dotnet_rest_api.Services.MasterPlans.IMasterPlanService, dotnet_rest_api.Services.MasterPlans.MasterPlanService>(); // Real implementation
-
-// Infrastructure Services - NotificationService
-builder.Services.AddScoped<dotnet_rest_api.Services.Infrastructure.INotificationService, dotnet_rest_api.Services.Infrastructure.StubNotificationService>();
-
-// Work Request Services
-builder.Services.AddScoped<dotnet_rest_api.Services.Infrastructure.IWorkRequestService, dotnet_rest_api.Services.Infrastructure.StubWorkRequestService>();
-builder.Services.AddScoped<dotnet_rest_api.Services.Infrastructure.IWorkRequestApprovalService, dotnet_rest_api.Services.Infrastructure.StubWorkRequestApprovalService>();
-
-// Weekly Services
-builder.Services.AddScoped<dotnet_rest_api.Services.Infrastructure.IWeeklyReportService, dotnet_rest_api.Services.Infrastructure.StubWeeklyReportService>();
-builder.Services.AddScoped<dotnet_rest_api.Services.Infrastructure.IWeeklyWorkRequestService, dotnet_rest_api.Services.Infrastructure.StubWeeklyWorkRequestService>();
-
-// Miscellaneous Services
-builder.Services.AddScoped<dotnet_rest_api.Services.Infrastructure.ICalendarService, dotnet_rest_api.Services.Infrastructure.StubCalendarService>();
-builder.Services.AddScoped<dotnet_rest_api.Services.Infrastructure.IImageService, dotnet_rest_api.Services.Infrastructure.StubImageService>();
-builder.Services.AddScoped<dotnet_rest_api.Services.Infrastructure.IResourceService, dotnet_rest_api.Services.Infrastructure.StubResourceService>();
-
-// Other Services
-builder.Services.AddScoped<dotnet_rest_api.Services.Users.IUserService, dotnet_rest_api.Services.Users.UserService>();
-builder.Services.AddScoped<dotnet_rest_api.Services.Shared.IQueryService, dotnet_rest_api.Services.Shared.QueryService>();
-builder.Services.AddScoped<dotnet_rest_api.Services.Shared.IDocumentService, dotnet_rest_api.Services.Shared.StubDocumentService>();
-
-// Background Task Queue for async operations (report generation, notifications, etc.)
-var queueCapacity = builder.Configuration.GetValue<int>("BackgroundQueue:Capacity", 100);
-builder.Services.AddSingleton<dotnet_rest_api.Services.Infrastructure.IBackgroundTaskQueue>(sp =>
-{
-    var logger = sp.GetRequiredService<ILogger<dotnet_rest_api.Services.Infrastructure.BackgroundTaskQueue>>();
-    return new dotnet_rest_api.Services.Infrastructure.BackgroundTaskQueue(queueCapacity, logger);
-});
-builder.Services.AddHostedService<dotnet_rest_api.Services.Infrastructure.QueuedHostedService>();
+// Business & feature service registrations (see Extensions/ApplicationServiceExtensions.cs)
+builder.Services.AddApplicationServices(builder.Configuration);
 
 // ===================================
 // APPLICATION PIPELINE CONFIGURATION
@@ -374,7 +308,8 @@ app.MapHealthChecks("/ready", new Microsoft.AspNetCore.Diagnostics.HealthChecks.
 });
 
 // SignalR Hub Configuration for Real-Time Updates
-app.MapHub<dotnet_rest_api.Hubs.NotificationHub>("/notificationHub");
+app.MapHub<dotnet_rest_api.Hubs.NotificationHub>("/notificationHub")
+   .RequireCors("SignalRPolicy"); // credentialed origins, distinct from the permissive REST policy
 
 // ===================================
 // DATABASE INITIALIZATION
