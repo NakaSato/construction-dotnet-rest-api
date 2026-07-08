@@ -399,3 +399,5 @@ azure-config.json
 # Azure deployment sensitive files
 azure-resources-info.txt
 scripts/setup-github-secrets-with-values.sh
+# Added by code-review-graph
+.code-review-graph/

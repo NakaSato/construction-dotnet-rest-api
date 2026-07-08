@@ -1,0 +1,14 @@
+{
+  "mcpServers": {
+    "code-review-graph": {
+      "command": "uvx",
+      "args": [
+        "code-review-graph",
+        "serve"
+      ],
+      "cwd": "/Users/chanthawat/Developments/solar/construction-dotnet-rest-api",
+      "type": "stdio",
+      "env": []
+    }
+  }
+}
