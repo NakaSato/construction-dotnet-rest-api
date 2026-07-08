@@ -1,3 +1,5 @@
+using System.Net.Http.Json;
+using System.Text.Json;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.Hosting;
 
@@ -29,5 +31,15 @@ public class ApiFactory : WebApplicationFactory<Program>
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
         builder.UseEnvironment("Test");
+    }
+
+    /// <summary>Logs in and returns a bearer token. Seeded users all use password "Admin123!".</summary>
+    public async Task<string> GetTokenAsync(string username, string password = "Admin123!")
+    {
+        var client = CreateClient();
+        var res = await client.PostAsJsonAsync("/api/v1/auth/login", new { username, password });
+        res.EnsureSuccessStatusCode();
+        using var doc = JsonDocument.Parse(await res.Content.ReadAsStringAsync());
+        return doc.RootElement.GetProperty("data").GetProperty("token").GetString() ?? "";
     }
 }

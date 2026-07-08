@@ -28,12 +28,14 @@ public class WbsController : ControllerBase
     private readonly IWbsService _wbsService;
     private readonly INotificationService _notificationService;
     private readonly ILogger<WbsController> _logger;
+    private readonly IWebHostEnvironment _environment;
 
-    public WbsController(IWbsService wbsService, INotificationService notificationService, ILogger<WbsController> logger)
+    public WbsController(IWbsService wbsService, INotificationService notificationService, ILogger<WbsController> logger, IWebHostEnvironment environment)
     {
         _wbsService = wbsService;
         _notificationService = notificationService;
         _logger = logger;
+        _environment = environment;
     }
 
     /// <summary>
@@ -494,6 +496,12 @@ public class WbsController : ControllerBase
     [Authorize(Roles = Roles.Admin)]
     public async Task<ActionResult<ApiResponse<object>>> SeedSampleData(Guid projectId)
     {
+        // Sample-data seeding is a development-only convenience; hide it elsewhere.
+        if (!_environment.IsDevelopment())
+        {
+            return NotFound();
+        }
+
         try
         {
             await _wbsService.SeedSampleDataAsync(projectId);

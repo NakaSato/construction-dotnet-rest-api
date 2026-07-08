@@ -201,7 +201,7 @@ public class UsersController : BaseApiController
     /// </summary>
     /// <param name="id">User ID</param>
     /// <returns>Updated user</returns>
-    [HttpPatch("{id:guid}/activate")]
+    [HttpPost("{id:guid}/activate")]
     [Authorize(Roles = Roles.Admin)]
     [NoCache] // No caching for write operations
     public async Task<ActionResult<ApiResponse<bool>>> ActivateUser(Guid id)
@@ -222,7 +222,7 @@ public class UsersController : BaseApiController
     /// </summary>
     /// <param name="id">User ID</param>
     /// <returns>Updated user</returns>
-    [HttpPatch("{id:guid}/deactivate")]
+    [HttpPost("{id:guid}/deactivate")]
     [Authorize(Roles = Roles.Admin)]
     [NoCache] // No caching for write operations
     public async Task<ActionResult<ApiResponse<bool>>> DeactivateUser(Guid id)
@@ -237,6 +237,20 @@ public class UsersController : BaseApiController
             return HandleException<bool>(_logger, ex, $"deactivating user {id}");
         }
     }
+
+    /// <summary>Deprecated: use POST api/v1/users/{id}/activate. Alias remains functional.</summary>
+    [Obsolete("Use POST api/v1/users/{id}/activate instead.")]
+    [HttpPatch("{id:guid}/activate")]
+    [Authorize(Roles = Roles.Admin)]
+    [NoCache]
+    public Task<ActionResult<ApiResponse<bool>>> ActivateUserLegacy(Guid id) => ActivateUser(id);
+
+    /// <summary>Deprecated: use POST api/v1/users/{id}/deactivate. Alias remains functional.</summary>
+    [Obsolete("Use POST api/v1/users/{id}/deactivate instead.")]
+    [HttpPatch("{id:guid}/deactivate")]
+    [Authorize(Roles = Roles.Admin)]
+    [NoCache]
+    public Task<ActionResult<ApiResponse<bool>>> DeactivateUserLegacy(Guid id) => DeactivateUser(id);
 
     /// <summary>
     /// Deletes a user

@@ -95,7 +95,12 @@ public class ProjectsController : BaseApiController
         
         if (result.IsSuccess)
         {
-            return StatusCode(201, CreateSuccessResponse(result.Data!, "Project created successfully"));
+            return StatusCode(201, new ApiResponse<ProjectDto>
+            {
+                Success = true,
+                Data = result.Data!,
+                Message = "Project created successfully"
+            });
         }
 
         return ToApiResponse(result);
@@ -597,32 +602,6 @@ public class ProjectsController : BaseApiController
         return history;
     }
 
-    /// <summary>
-    /// Test endpoint for API health check - no authentication required
-    /// </summary>
-    /// <returns>Test data to verify the Projects API is working</returns>
-    [HttpGet("test")]
-    [AllowAnonymous]
-    public ActionResult<object> GetTestProjects()
-    {
-        var testData = new
-        {
-            message = "Projects API is working",
-            timestamp = DateTime.UtcNow,
-            environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? "Unknown",
-            apiVersion = "v1.0",
-            sampleProjects = new[]
-            {
-                new { id = 1, name = "Solar Farm Project A", status = "Active", location = "California" },
-                new { id = 2, name = "Solar Installation B", status = "Planning", location = "Texas" },
-                new { id = 3, name = "Residential Solar C", status = "Completed", location = "Florida" }
-            }
-        };
-
-        _logger.LogInformation("Test endpoint accessed at {Timestamp}", testData.timestamp);
-        
-        return Ok(testData);
-    }
 
     #region Flutter App API Support
 

@@ -117,7 +117,7 @@ public class TasksController : BaseApiController
                 return CreateErrorResponse<TaskDto>("Invalid input data", 400);
 
             var result = await _taskService.CreateTaskAsync(projectId, request);
-            return ToApiResponse(result);
+            return ToCreatedResponse(result);
         }
         catch (Exception ex)
         {

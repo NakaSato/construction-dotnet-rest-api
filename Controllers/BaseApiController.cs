@@ -223,6 +223,31 @@ public abstract class BaseApiController : ControllerBase
     }
 
     /// <summary>
+    /// Maps a create result to 201 Created (with an optional Location header) on success,
+    /// or the standard 400 error envelope on failure. Use for POST endpoints that create a resource.
+    /// </summary>
+    protected ActionResult<ApiResponse<T>> ToCreatedResponse<T>(ServiceResult<T> serviceResult, string? location = null)
+    {
+        if (serviceResult.Success)
+        {
+            var body = new ApiResponse<T>
+            {
+                Success = true,
+                Data = serviceResult.Data,
+                Message = serviceResult.Message ?? "Resource created"
+            };
+            return location != null ? Created(location, body) : StatusCode(StatusCodes.Status201Created, body);
+        }
+
+        return BadRequest(new ApiResponse<T>
+        {
+            Success = false,
+            Message = serviceResult.Message ?? "Operation failed",
+            Errors = serviceResult.Errors ?? new List<string>()
+        });
+    }
+
+    /// <summary>
     /// Creates a success response
     /// </summary>
     /// <typeparam name="T">Response type</typeparam>

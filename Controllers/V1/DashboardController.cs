@@ -270,8 +270,11 @@ public class DashboardController : BaseApiController
     }
 
     /// <summary>
-    /// Send a live system announcement to all connected users
+    /// Send a live system announcement to all connected users.
     /// </summary>
+    /// <remarks>Deprecated: system announcements are consolidated under
+    /// POST api/v1/notifications/system-announcement. This alias remains functional.</remarks>
+    [Obsolete("Use POST api/v1/notifications/system-announcement instead.")]
     [HttpPost("system-announcement")]
     [Authorize(Roles = Roles.AdminOrManager)]
     public async Task<ActionResult<ApiResponse<string>>> SendSystemAnnouncement(

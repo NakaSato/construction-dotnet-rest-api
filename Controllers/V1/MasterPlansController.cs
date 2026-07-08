@@ -75,8 +75,13 @@ public class MasterPlansController : BaseApiController
         var handler = HttpContext.RequestServices.GetRequiredService<ICommandHandler<CreateMasterPlanCommand, MasterPlanDto>>();
         var result = await handler.HandleAsync(command);
 
-        return result.IsSuccess ? 
-            CreateSuccessResponse(result.Data!, result.Message) : 
+        return result.IsSuccess ?
+            StatusCode(201, new ApiResponse<MasterPlanDto>
+            {
+                Success = true,
+                Data = result.Data!,
+                Message = result.Message ?? "Master plan created successfully"
+            }) :
             CreateErrorResponse<MasterPlanDto>(result.Message ?? "Operation failed", 400);
     }
 

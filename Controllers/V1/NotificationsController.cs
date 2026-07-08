@@ -209,31 +209,10 @@ public class NotificationsController : BaseApiController
     }
 
     /// <summary>
-    /// Send test notification (for development/testing)
-    /// Available to: Administrators only
+    /// Send system announcement.
     /// </summary>
-    [HttpPost("test")]
-    [Authorize(Roles = Roles.Admin)]
-    public async Task<ActionResult<ApiResponse<bool>>> SendTestNotification(
-        [FromBody] TestNotificationRequest request)
-    {
-        try
-        {
-            await _notificationService.SendNotificationAsync(request.Message, request.UserId);
-
-            return ToApiResponse(ServiceResult<bool>.SuccessResult(true));
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error sending test notification");
-            return CreateErrorResponse<bool>("Error sending test notification", 500);
-        }
-    }
-
-    /// <summary>
-    /// Send system announcement
-    /// Available to: Administrators only
-    /// </summary>
+    /// <remarks>Deprecated: use POST api/v1/notifications/system-announcement instead.</remarks>
+    [Obsolete("Use POST api/v1/notifications/system-announcement instead.")]
     [HttpPost("announcement")]
     [Authorize(Roles = Roles.Admin)]
     public async Task<ActionResult<ApiResponse<bool>>> SendAnnouncement(
@@ -305,32 +284,6 @@ public class NotificationsController : BaseApiController
     }
 
     #region Real-time SignalR Enhancements
-
-    /// <summary>
-    /// Send a test notification to verify SignalR connectivity
-    /// Available to: All authenticated users
-    /// </summary>
-    [HttpPost("test-signalr")]
-    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    public async Task<ActionResult<ApiResponse<object>>> SendTestNotification([FromBody] string message)
-    {
-        try
-        {
-            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            if (!Guid.TryParse(userIdClaim, out var userId))
-                return CreateErrorResponse<object>("Invalid user ID in token", 401);
-
-            await _notificationService.SendNotificationAsync(message, userId);
-
-            return CreateSuccessResponse((object)new { Message = "Test notification sent successfully" }, 
-                "Test notification sent");
-        }
-        catch (Exception ex)
-        {
-            return HandleException<object>(_logger, ex, "sending test notification");
-        }
-    }
 
     /// <summary>
     /// Send system-wide announcement
