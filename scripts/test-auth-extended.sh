@@ -56,7 +56,7 @@ echo "📝 Test 1.2: Attempting Database Admin Login (Email)..."
 DB_EMAIL_LOGIN=$(curl -s -X POST "$API_BASE/auth/login" \
   -H "Content-Type: application/json" \
   -d '{
-    "username": "admin@solarprojects.com",
+    "username": "admin@example.com",
     "password": "Admin123!"
   }')
 
@@ -176,12 +176,12 @@ echo ""
 echo "Available Login Methods:"
 echo "• Fallback Admin (Email): admin@example.com / Admin123! (always works)"
 echo "• Database Admin (Username): admin / Admin123! (if seeded)"
-echo "• Database Admin (Email): admin@solarprojects.com / Admin123! (if seeded)"
+echo "• Database Admin (Email): admin@example.com / Admin123! (if seeded)"
 echo ""
 echo "Login Field Flexibility:"
 echo "• The 'username' field accepts BOTH username AND email address"
 echo "• You can login with either your username or email in the same field"
-echo "• Example: Both 'admin' and 'admin@solarprojects.com' work for the same user"
+echo "• Example: Both 'admin' and 'admin@example.com' work for the same user"
 echo ""
 echo "Authorization Features:"
 echo "• JWT Bearer token authentication"

@@ -16,7 +16,7 @@ echo "   Password: Admin123!"
 echo ""
 echo "2. Database Admin (If Seeded):"
 echo "   Username: admin"
-echo "   Email: admin@solarprojects.com" 
+echo "   Email: admin@example.com" 
 echo "   Password: Admin123!"
 echo ""
 
@@ -93,7 +93,7 @@ echo "Request:"
 echo 'curl -X POST "http://localhost:5001/api/v1/auth/login" \'
 echo '  -H "Content-Type: application/json" \'
 echo '  -d '"'"'{'
-echo '    "username": "admin@solarprojects.com",'
+echo '    "username": "admin@example.com",'
 echo '    "password": "Admin123!"'
 echo '  }'"'"''
 echo ""
@@ -101,7 +101,7 @@ echo ""
 DB_EMAIL_LOGIN=$(curl -s -X POST "$API_BASE/auth/login" \
   -H "Content-Type: application/json" \
   -d '{
-    "username": "admin@solarprojects.com",
+    "username": "admin@example.com",
     "password": "Admin123!"
   }')
 
@@ -131,7 +131,7 @@ if [ "$DB_USERNAME_SUCCESS" = "true" ]; then
 fi
 
 if [ "$DB_EMAIL_SUCCESS" = "true" ]; then
-    echo "✅ Database Admin (email): admin@solarprojects.com / Admin123!"
+    echo "✅ Database Admin (email): admin@example.com / Admin123!"
 fi
 
 echo ""

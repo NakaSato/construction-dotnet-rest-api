@@ -199,7 +199,7 @@ public class ApplicationDbContext : DbContext
             {
                 UserId = Guid.Parse("00000000-0000-0000-0000-000000000001"),
                 Username = "admin",
-                Email = "admin@solarprojects.com",
+                Email = "admin@example.com",
                 PasswordHash = "$2a$11$OMrjsU5wl02tYlgxX4g9Eu7RuRDcjM2H4hZvDKOdi8YMDNSbMpuey", // Admin123!
                 FullName = "System Administrator",
                 RoleId = 1,

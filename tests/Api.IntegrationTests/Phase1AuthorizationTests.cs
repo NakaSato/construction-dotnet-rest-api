@@ -17,7 +17,7 @@ public class Phase1AuthorizationTests : IClassFixture<ApiFactory>
     private static readonly JsonSerializerOptions JsonOpts = new() { PropertyNameCaseInsensitive = true };
 
     // Seeded users (ApplicationDbContext.HasData), all password "Admin123!".
-    private const string AdminEmail = "admin@solarprojects.com";     // RoleId 1 = Admin
+    private const string AdminEmail = "admin@example.com";     // RoleId 1 = Admin
     private const string UserEmail = "engineer@solarprojects.com";   // RoleId 3 = User
     private const string Password = "Admin123!";
 

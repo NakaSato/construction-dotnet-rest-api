@@ -57,19 +57,6 @@ public class AuthService : IAuthService
                 return ServiceResult<LoginResponse>.SuccessResult(response, "Login successful");
             }
 
-            // Fallback for testing purposes - hardcoded admin credentials
-            if (request.Username == "admin@example.com" && request.Password == "Admin123!")
-            {
-                // ... (existing fallback code)
-                var token = GenerateJwtTokenForTestUser();
-                // ...
-                return ServiceResult<LoginResponse>.SuccessResult(new LoginResponse 
-                { 
-                    Token = token, 
-                    User = new UserDto { UserId = Guid.NewGuid(), Username = "admin", Email = "admin@example.com", FullName = "Admin User", RoleName = "Admin", IsActive = true } 
-                }, "Login successful");
-            }
-
             return ServiceResult<LoginResponse>.ErrorResult("Invalid username or password");
         }
         catch (Exception ex)
@@ -314,31 +301,6 @@ public class AuthService : IAuthService
             new Claim(ClaimTypes.Name, user.Username),
             new Claim(ClaimTypes.Email, user.Email),
             new Claim(ClaimTypes.Role, user.Role?.RoleName ?? "User")
-        };
-
-        var token = new JwtSecurityToken(
-            issuer: _configuration["Jwt:Issuer"] ?? "SolarProjectsAPI",
-            audience: _configuration["Jwt:Audience"] ?? "SolarProjectsClient",
-            claims: claims,
-            expires: DateTime.UtcNow.AddHours(24),
-            signingCredentials: creds);
-
-        return new JwtSecurityTokenHandler().WriteToken(token);
-    }
-
-    private string GenerateJwtTokenForTestUser()
-    {
-        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"] ?? "DefaultSecretKeyForDevelopmentOnlyNotForProduction123456789"));
-        var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
-
-        var claims = new[]
-        {
-            new Claim("sub", Guid.NewGuid().ToString()),
-            new Claim("id", Guid.NewGuid().ToString()),
-            new Claim("jti", Guid.NewGuid().ToString()), // JWT ID for token tracking
-            new Claim(ClaimTypes.Name, "admin"),
-            new Claim(ClaimTypes.Email, "admin@example.com"),
-            new Claim(ClaimTypes.Role, "Admin")
         };
 
         var token = new JwtSecurityToken(

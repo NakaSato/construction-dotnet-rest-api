@@ -60,13 +60,13 @@ echo '{
 echo ""
 echo "Option B - Using EMAIL:"
 echo '{
-  "username": "admin@solarprojects.com", ← EMAIL in username field  
+  "username": "admin@example.com", ← EMAIL in username field  
   "password": "Admin123!"
 }'
 echo ""
 echo "Both would authenticate the SAME user because the system checks:"
 echo "  (u.Username == 'admin' || u.Email == 'admin') OR"
-echo "  (u.Username == 'admin@solarprojects.com' || u.Email == 'admin@solarprojects.com')"
+echo "  (u.Username == 'admin@example.com' || u.Email == 'admin@example.com')"
 echo ""
 
 # Test the database user options
@@ -80,7 +80,7 @@ DB_USERNAME_TEST=$(curl -s -X POST "$API_BASE/auth/login" \
 DB_EMAIL_TEST=$(curl -s -X POST "$API_BASE/auth/login" \
   -H "Content-Type: application/json" \
   -d '{
-    "username": "admin@solarprojects.com",
+    "username": "admin@example.com",
     "password": "Admin123!"
   }')
 
@@ -107,7 +107,7 @@ echo "• The login 'username' field is flexible and accepts both username and e
 echo "• This provides a better user experience - users can login with either"
 echo "• The backend automatically matches against both User.Username and User.Email"
 echo "• Currently working: admin@example.com (fallback credentials)"
-echo "• Future: admin or admin@solarprojects.com (when database user is seeded)"
+echo "• Future: admin or admin@example.com (when database user is seeded)"
 echo ""
 echo "💡 Frontend Integration Tip:"
 echo "Your login form can have a single 'Username or Email' field instead of separate fields!"

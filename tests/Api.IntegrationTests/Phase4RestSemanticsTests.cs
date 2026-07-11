@@ -13,7 +13,7 @@ namespace Api.IntegrationTests;
 public class Phase4RestSemanticsTests : IClassFixture<ApiFactory>
 {
     private readonly ApiFactory _factory;
-    private const string AdminEmail = "admin@solarprojects.com";
+    private const string AdminEmail = "admin@example.com";
 
     public Phase4RestSemanticsTests(ApiFactory factory) => _factory = factory;
 
