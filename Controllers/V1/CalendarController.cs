@@ -20,7 +20,6 @@ namespace dotnet_rest_api.Controllers.V1;
 [Route("api/v{version:apiVersion}/calendar")]
 [ApiController]
 [Authorize]
-[Preview("schema + recurrence engine pending")]
 public class CalendarController : BaseApiController
 {
     private readonly ICalendarService _calendarService;

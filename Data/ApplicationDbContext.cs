@@ -37,6 +37,9 @@ public class ApplicationDbContext : DbContext
     public DbSet<WorkRequestNotification> WorkRequestNotifications { get; set; }
     public DbSet<WorkRequestApproval> WorkRequestApprovals { get; set; }
     public DbSet<ImageMetadata> Images { get; set; }
+    public DbSet<WeeklyReport> WeeklyReports { get; set; }
+    public DbSet<WeeklyWorkRequest> WeeklyWorkRequests { get; set; }
+    public DbSet<CalendarEvent> CalendarEvents { get; set; }
 
     // WBS (Work Breakdown Structure) DbSets
     public DbSet<WbsTask> WbsTasks { get; set; }

@@ -19,7 +19,6 @@ namespace dotnet_rest_api.Controllers.V1;
 [ApiVersion("1.0")]
 [Route("api/v{version:apiVersion}/weekly-requests")]
 [Authorize]
-[Preview("schema pending migration")]
 public class WeeklyWorkRequestsController : BaseApiController
 {
     private readonly IWeeklyWorkRequestService _weeklyWorkRequestService;

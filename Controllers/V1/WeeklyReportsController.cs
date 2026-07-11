@@ -19,7 +19,6 @@ namespace dotnet_rest_api.Controllers.V1;
 [ApiVersion("1.0")]
 [Route("api/v{version:apiVersion}/weekly-reports")]
 [Authorize]
-[Preview("schema pending migration")]
 public class WeeklyReportsController : BaseApiController
 {
     private readonly IWeeklyReportService _weeklyReportService;

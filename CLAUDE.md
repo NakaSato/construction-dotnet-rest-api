@@ -37,8 +37,8 @@ Default admin: `admin@example.com` / `Admin123!` (seeded by `Services/Infrastruc
 - A CQRS pattern (`Services/Interfaces/ICommandQueryInterfaces.cs`: `ICommand`/`IQuery` + handlers) is used by MasterPlans (`Services/Handlers/`); most other features use plain service classes.
 
 **Services are feature-folder organized** (`Projects`, `Tasks`, `Users`, `MasterPlans`, `WBS`, `Infrastructure`, `Shared`). **Many are stubs** — check `Program.cs` DI registrations before assuming an implementation is real:
-- Real: `ProjectService`, `ProjectAnalyticsService`, `TaskService`, `MasterPlanService`, `WbsService`, `AuthService`, `UserService`, `DailyReportService`, `NotificationService`, `WorkRequestService`(+`WorkRequestApprovalService`), `ImageService`.
-- Stub (`Services/Infrastructure/Stub*`): Weekly(Report/WorkRequest), Calendar. (Resource/Document removed in Phase 5.)
+- Real: `ProjectService`, `ProjectAnalyticsService`, `TaskService`, `MasterPlanService`, `WbsService`, `AuthService`, `UserService`, `DailyReportService`, `NotificationService`, `WorkRequestService`(+`WorkRequestApprovalService`), `ImageService`, `WeeklyReportService`, `WeeklyWorkRequestService`, `CalendarService`.
+- Stub: none remaining. (Resource/Document removed in Phase 5.) All feature services are now real EF Core implementations.
 
 **Cross-cutting (wired in `Program.cs`, in pipeline order):** `GlobalExceptionMiddleware` → CORS → `RateLimitMiddleware` (Redis-backed, `RateLimitService`; toggled by `RateLimit:Enabled`) → static files (`/files` → `uploads/`) → auth → `JwtBlacklistMiddleware` → authorization. Background work goes through `IBackgroundTaskQueue` + `QueuedHostedService`.
 

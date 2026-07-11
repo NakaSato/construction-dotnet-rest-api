@@ -54,11 +54,11 @@ public static class ApplicationServiceExtensions
         services.AddScoped<IWorkRequestApprovalService, WorkRequestApprovalService>();
 
         // Weekly
-        services.AddScoped<IWeeklyReportService, StubWeeklyReportService>();
-        services.AddScoped<IWeeklyWorkRequestService, StubWeeklyWorkRequestService>();
+        services.AddScoped<IWeeklyReportService, WeeklyReportService>();
+        services.AddScoped<IWeeklyWorkRequestService, WeeklyWorkRequestService>();
 
         // Misc
-        services.AddScoped<ICalendarService, StubCalendarService>();
+        services.AddScoped<ICalendarService, CalendarService>();
         services.AddScoped<IImageService, ImageService>();
 
         // Other
