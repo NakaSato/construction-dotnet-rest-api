@@ -22,6 +22,7 @@ namespace dotnet_rest_api.Controllers.V1;
 [ApiController]
 [ApiVersion("1.0")]
 [Authorize]
+[Preview("schema ready — Phase 5")]
 public class WorkRequestsController : BaseApiController
 {
     private readonly IWorkRequestService _workRequestService;

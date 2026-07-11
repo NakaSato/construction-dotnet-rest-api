@@ -9,6 +9,7 @@ using dotnet_rest_api.Services.Projects;
 using dotnet_rest_api.Services.MasterPlans;
 using dotnet_rest_api.Services.WBS;
 using dotnet_rest_api.Services.Infrastructure;
+using dotnet_rest_api.Common;
 using Asp.Versioning;
 
 namespace dotnet_rest_api.Controllers.V1;
@@ -20,6 +21,7 @@ namespace dotnet_rest_api.Controllers.V1;
 [ApiVersion("1.0")]
 [Route("api/v{version:apiVersion}/images")]
 [Authorize]
+[Preview("implementation prioritized — Phase 5")]
 public class ImagesController : BaseApiController
 {
     private readonly IImageService _imageService;

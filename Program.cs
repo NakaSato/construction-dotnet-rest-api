@@ -66,6 +66,9 @@ builder.Services.AddSwaggerGen(options =>
         Description = "RESTful API for managing solar projects, tasks, and daily reports"
     });
 
+    // Flag stub-backed endpoints ([Preview]) as deprecated with a warning note (Phase 5).
+    options.OperationFilter<dotnet_rest_api.Common.Swagger.PreviewOperationFilter>();
+
     // JWT authentication for Swagger
     options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {

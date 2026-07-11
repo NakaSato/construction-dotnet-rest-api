@@ -34,17 +34,6 @@ public interface IImageService
     Task<ServiceResult<bool>> DeleteImageAsync(Guid imageId);
 }
 
-public interface IResourceService
-{
-    Task<ServiceResult<object>> GetResourcesAsync();
-    Task<ServiceResult<EnhancedPagedResult<ResourceDto>>> GetResourcesAsync(ResourceQueryParameters parameters);
-    Task<ServiceResult<ResourceDto>> GetResourceByIdAsync(Guid id);
-    Task<ServiceResult<object>> CreateResourceAsync(object request);
-    Task<ServiceResult<ResourceDto>> CreateResourceAsync(CreateResourceRequest request);
-    Task<ServiceResult<ResourceDto>> UpdateResourceAsync(Guid id, UpdateResourceRequest request);
-    Task<ServiceResult<bool>> DeleteResourceAsync(Guid id);
-}
-
 /// <summary>
 /// Stub implementation of ICalendarService for development purposes
 /// </summary>
@@ -206,60 +195,5 @@ public class StubImageService : IImageService
     {
         await Task.CompletedTask;
         return ServiceResult<bool>.ErrorResult("Image not found");
-    }
-}
-
-/// <summary>
-/// Stub implementation of IResourceService for development purposes
-/// </summary>
-public class StubResourceService : IResourceService
-{
-    public async Task<ServiceResult<object>> GetResourcesAsync()
-    {
-        await Task.CompletedTask;
-        return ServiceResult<object>.ErrorResult("ResourceService not implemented yet");
-    }
-
-    public async Task<ServiceResult<EnhancedPagedResult<ResourceDto>>> GetResourcesAsync(ResourceQueryParameters parameters)
-    {
-        await Task.CompletedTask;
-        var result = new EnhancedPagedResult<ResourceDto>
-        {
-            Items = new List<ResourceDto>(),
-            TotalCount = 0,
-            PageNumber = parameters.PageNumber,
-            PageSize = parameters.PageSize
-        };
-        return ServiceResult<EnhancedPagedResult<ResourceDto>>.SuccessResult(result);
-    }
-
-    public async Task<ServiceResult<ResourceDto>> GetResourceByIdAsync(Guid id)
-    {
-        await Task.CompletedTask;
-        return ServiceResult<ResourceDto>.ErrorResult("Resource not found");
-    }
-
-    public async Task<ServiceResult<object>> CreateResourceAsync(object request)
-    {
-        await Task.CompletedTask;
-        return ServiceResult<object>.ErrorResult("ResourceService not implemented yet");
-    }
-
-    public async Task<ServiceResult<ResourceDto>> CreateResourceAsync(CreateResourceRequest request)
-    {
-        await Task.CompletedTask;
-        return ServiceResult<ResourceDto>.ErrorResult("ResourceService not implemented yet");
-    }
-
-    public async Task<ServiceResult<ResourceDto>> UpdateResourceAsync(Guid id, UpdateResourceRequest request)
-    {
-        await Task.CompletedTask;
-        return ServiceResult<ResourceDto>.ErrorResult("ResourceService not implemented yet");
-    }
-
-    public async Task<ServiceResult<bool>> DeleteResourceAsync(Guid id)
-    {
-        await Task.CompletedTask;
-        return ServiceResult<bool>.ErrorResult("ResourceService not implemented yet");
     }
 }

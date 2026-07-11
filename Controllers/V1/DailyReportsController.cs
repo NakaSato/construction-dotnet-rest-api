@@ -19,6 +19,7 @@ namespace dotnet_rest_api.Controllers.V1;
 [Route("api/v{version:apiVersion}/daily-reports")]
 [Authorize]
 [Produces("application/json")]
+[Preview("implementation prioritized — Phase 5, schema ready")]
 public class DailyReportsController : BaseApiController
 {
     private readonly IDailyReportService _dailyReportService;

@@ -60,12 +60,10 @@ public static class ApplicationServiceExtensions
         // Misc
         services.AddScoped<ICalendarService, StubCalendarService>();
         services.AddScoped<IImageService, StubImageService>();
-        services.AddScoped<IResourceService, StubResourceService>();
 
         // Other
         services.AddScoped<IUserService, UserService>();
         services.AddScoped<IQueryService, QueryService>();
-        services.AddScoped<IDocumentService, StubDocumentService>();
 
         // Background task queue for async operations (reports, notifications, ...)
         var queueCapacity = configuration.GetValue<int>("BackgroundQueue:Capacity", 100);
