@@ -136,7 +136,7 @@ public class WorkRequestService : IWorkRequestService
     {
         var workRequest = await BuildBaseQuery().FirstOrDefaultAsync(w => w.WorkRequestId == id);
         if (workRequest == null)
-            return ServiceResult<WorkRequestDto>.ErrorResult("Work request not found");
+            return ServiceResult<WorkRequestDto>.NotFoundResult("Work request not found");
 
         return ServiceResult<WorkRequestDto>.SuccessResult(await ToDtoAsync(workRequest), "Work request retrieved successfully");
     }
@@ -174,7 +174,7 @@ public class WorkRequestService : IWorkRequestService
     {
         var workRequest = await _context.WorkRequests.FirstOrDefaultAsync(w => w.WorkRequestId == id);
         if (workRequest == null)
-            return ServiceResult<WorkRequestDto>.ErrorResult("Work request not found");
+            return ServiceResult<WorkRequestDto>.NotFoundResult("Work request not found");
 
         if (request.AssignedToId.HasValue &&
             !await _context.Users.AnyAsync(u => u.UserId == request.AssignedToId.Value))
@@ -206,7 +206,7 @@ public class WorkRequestService : IWorkRequestService
             .Include(w => w.Notifications)
             .FirstOrDefaultAsync(w => w.WorkRequestId == id);
         if (workRequest == null)
-            return ServiceResult<bool>.ErrorResult("Work request not found");
+            return ServiceResult<bool>.NotFoundResult("Work request not found");
 
         _context.WorkRequestTasks.RemoveRange(workRequest.Tasks);
         _context.WorkRequestComments.RemoveRange(workRequest.Comments);
@@ -222,7 +222,7 @@ public class WorkRequestService : IWorkRequestService
     {
         var workRequest = await _context.WorkRequests.FirstOrDefaultAsync(w => w.WorkRequestId == id);
         if (workRequest == null)
-            return ServiceResult<bool>.ErrorResult("Work request not found");
+            return ServiceResult<bool>.NotFoundResult("Work request not found");
 
         if (!await _context.Users.AnyAsync(u => u.UserId == userId))
             return ServiceResult<bool>.ErrorResult("Assigned user not found");
@@ -247,7 +247,7 @@ public class WorkRequestService : IWorkRequestService
     {
         var workRequest = await _context.WorkRequests.FirstOrDefaultAsync(w => w.WorkRequestId == id);
         if (workRequest == null)
-            return ServiceResult<WorkRequestDto>.ErrorResult("Work request not found");
+            return ServiceResult<WorkRequestDto>.NotFoundResult("Work request not found");
 
         if (workRequest.Status is WorkRequestStatus.Completed or WorkRequestStatus.Cancelled)
             return ServiceResult<WorkRequestDto>.ErrorResult($"Cannot complete a work request with status '{workRequest.Status}'");
@@ -407,7 +407,7 @@ public class WorkRequestApprovalService : IWorkRequestApprovalService
     {
         var workRequest = await _context.WorkRequests.FirstOrDefaultAsync(w => w.WorkRequestId == id);
         if (workRequest == null)
-            return ServiceResult<bool>.ErrorResult("Work request not found");
+            return ServiceResult<bool>.NotFoundResult("Work request not found");
 
         if (workRequest.Status is not (WorkRequestStatus.Open or WorkRequestStatus.Rejected or WorkRequestStatus.OnHold))
             return ServiceResult<bool>.ErrorResult($"Cannot submit a work request with status '{workRequest.Status}' for approval");
@@ -469,7 +469,7 @@ public class WorkRequestApprovalService : IWorkRequestApprovalService
     {
         var workRequest = await _context.WorkRequests.FirstOrDefaultAsync(w => w.WorkRequestId == id);
         if (workRequest == null)
-            return ServiceResult<bool>.ErrorResult("Work request not found");
+            return ServiceResult<bool>.NotFoundResult("Work request not found");
 
         if (workRequest.Status is not (WorkRequestStatus.PendingManagerApproval or WorkRequestStatus.PendingAdminApproval))
             return ServiceResult<bool>.ErrorResult($"Work request is not pending approval (status '{workRequest.Status}')");
@@ -576,7 +576,7 @@ public class WorkRequestApprovalService : IWorkRequestApprovalService
             .Include(w => w.ApprovalHistory)
             .FirstOrDefaultAsync(w => w.WorkRequestId == id);
         if (workRequest == null)
-            return ServiceResult<ApprovalWorkflowStatusDto>.ErrorResult("Work request not found");
+            return ServiceResult<ApprovalWorkflowStatusDto>.NotFoundResult("Work request not found");
 
         var history = workRequest.ApprovalHistory.OrderBy(h => h.CreatedAt).ToList();
         var approverIds = history.Select(h => h.ApproverId)

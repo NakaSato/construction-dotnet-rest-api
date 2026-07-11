@@ -214,12 +214,14 @@ public abstract class BaseApiController : ControllerBase
             });
         }
 
-        return BadRequest(new ApiResponse<T>
+        var errorBody = new ApiResponse<T>
         {
             Success = false,
             Message = serviceResult.Message ?? "Operation failed",
             Errors = serviceResult.Errors ?? new List<string>()
-        });
+        };
+        // Honor an explicit status hint (e.g. 404 for a missing resource); default to 400.
+        return StatusCode(serviceResult.StatusCode ?? StatusCodes.Status400BadRequest, errorBody);
     }
 
     /// <summary>
@@ -239,12 +241,13 @@ public abstract class BaseApiController : ControllerBase
             return location != null ? Created(location, body) : StatusCode(StatusCodes.Status201Created, body);
         }
 
-        return BadRequest(new ApiResponse<T>
+        var errorBody = new ApiResponse<T>
         {
             Success = false,
             Message = serviceResult.Message ?? "Operation failed",
             Errors = serviceResult.Errors ?? new List<string>()
-        });
+        };
+        return StatusCode(serviceResult.StatusCode ?? StatusCodes.Status400BadRequest, errorBody);
     }
 
     /// <summary>
