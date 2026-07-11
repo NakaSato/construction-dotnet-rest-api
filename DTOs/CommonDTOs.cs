@@ -6,8 +6,10 @@ namespace dotnet_rest_api.DTOs;
 // Authentication DTOs
 public class LoginRequest
 {
+    // Accepts a username or an email address (LoginAsync matches on either), so the
+    // cap follows the RFC 5321 email max (254) rather than a username length.
     [Required(ErrorMessage = "Username is required")]
-    [StringLength(50, MinimumLength = 3, ErrorMessage = "Username must be between 3 and 50 characters")]
+    [StringLength(254, MinimumLength = 3, ErrorMessage = "Username or email must be between 3 and 254 characters")]
     public string Username { get; set; } = string.Empty;
 
     [Required(ErrorMessage = "Password is required")]
