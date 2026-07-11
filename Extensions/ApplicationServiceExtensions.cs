@@ -74,6 +74,9 @@ public static class ApplicationServiceExtensions
         });
         services.AddHostedService<QueuedHostedService>();
 
+        // Periodic purge of expired refresh tokens
+        services.AddHostedService<RefreshTokenCleanupService>();
+
         return services;
     }
 }
