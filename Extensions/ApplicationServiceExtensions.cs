@@ -24,7 +24,7 @@ public static class ApplicationServiceExtensions
     {
         // Business Services
         // (IDailyReportService exists in both Infrastructure and Shared — use Infrastructure.)
-        services.AddScoped<Services.Infrastructure.IDailyReportService, StubDailyReportService>();
+        services.AddScoped<Services.Infrastructure.IDailyReportService, DailyReportService>();
 
         // WBS Services
         services.AddScoped<WbsDataSeeder>();

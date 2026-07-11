@@ -253,7 +253,7 @@ public class MappingProfile : Profile
         // Daily Report mappings
         CreateMap<DailyReport, DailyReportDto>()
             .ForMember(dest => dest.ReporterName, opt => opt.MapFrom(src => src.Reporter != null ? src.Reporter.FullName : string.Empty))
-            .ForMember(dest => dest.ProjectName, opt => opt.MapFrom(src => src.Project.ProjectName))
+            .ForMember(dest => dest.ProjectName, opt => opt.MapFrom(src => src.Project != null ? src.Project.ProjectName : string.Empty))
             .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status.ToString()))
             .ForMember(dest => dest.WeatherCondition, opt => opt.MapFrom(src => src.WeatherCondition.ToString()));
 
@@ -284,6 +284,10 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.MaterialUsages, opt => opt.Ignore())
             .ForMember(dest => dest.EquipmentLogs, opt => opt.Ignore())
             .ForMember(dest => dest.Images, opt => opt.Ignore());
+
+        // Enhanced Daily Report projection (project-context fields filled in the service)
+        CreateMap<DailyReport, EnhancedDailyReportDto>()
+            .IncludeBase<DailyReport, DailyReportDto>();
 
         // Work Progress Item mappings
         CreateMap<WorkProgressItem, WorkProgressItemDto>()
