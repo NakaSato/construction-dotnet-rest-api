@@ -39,10 +39,27 @@ public class AuthService : IAuthService
         return Encoding.UTF8.GetBytes(key);
     }
 
+    // Brute-force throttle: after MaxFailedLoginAttempts failures for the same
+    // identifier the account is locked for LockoutDuration. Backed by IMemoryCache,
+    // so it is per-instance (a supplement to, not a replacement for, the
+    // Redis-backed RateLimitMiddleware).
+    private const int MaxFailedLoginAttempts = 5;
+    private static readonly TimeSpan LockoutDuration = TimeSpan.FromMinutes(15);
+
+    private static string LoginAttemptsKey(string identifier) => $"login_fail_{identifier.Trim().ToLowerInvariant()}";
+
     public async Task<ServiceResult<LoginResponse>> LoginAsync(LoginRequest request)
     {
         try
         {
+            var attemptsKey = LoginAttemptsKey(request.Username);
+            if (_cache.TryGetValue(attemptsKey, out int failedAttempts) && failedAttempts >= MaxFailedLoginAttempts)
+            {
+                _logger.LogWarning("Login blocked for {Username}: too many failed attempts", request.Username);
+                return ServiceResult<LoginResponse>.ErrorResult(
+                    "Account temporarily locked due to repeated failed login attempts. Please try again later.");
+            }
+
             // First try to authenticate against database users
             var user = await _context.Users
                 .Include(u => u.Role)
@@ -50,6 +67,9 @@ public class AuthService : IAuthService
 
             if (user != null && BCrypt.Net.BCrypt.Verify(request.Password, user.PasswordHash))
             {
+                // Successful login clears the failure counter.
+                _cache.Remove(attemptsKey);
+
                 var token = GenerateJwtToken(user);
                 var refreshToken = GenerateRefreshToken();
 
@@ -73,6 +93,9 @@ public class AuthService : IAuthService
                 return ServiceResult<LoginResponse>.SuccessResult(response, "Login successful");
             }
 
+            // Failed attempt: increment the counter (absolute expiry resets the
+            // lockout window on each miss).
+            _cache.Set(attemptsKey, failedAttempts + 1, LockoutDuration);
             return ServiceResult<LoginResponse>.ErrorResult("Invalid username or password");
         }
         catch (Exception ex)
