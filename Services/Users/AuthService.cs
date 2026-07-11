@@ -1,12 +1,14 @@
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
+using System.Security.Cryptography;
 using System.Text;
 using Microsoft.EntityFrameworkCore;
 using dotnet_rest_api.Data;
 using dotnet_rest_api.DTOs;
 using dotnet_rest_api.Models;
 using Microsoft.Extensions.Caching.Memory;
+using Task = System.Threading.Tasks.Task;
 
 namespace dotnet_rest_api.Services.Users;
 
@@ -48,6 +50,10 @@ public class AuthService : IAuthService
 
     private static string LoginAttemptsKey(string identifier) => $"login_fail_{identifier.Trim().ToLowerInvariant()}";
 
+    // Refresh tokens are opaque random strings, single-use, and rotated on every
+    // refresh. Only their SHA-256 hash is persisted (RefreshTokens table).
+    private static readonly TimeSpan RefreshTokenLifetime = TimeSpan.FromDays(7);
+
     public async Task<ServiceResult<LoginResponse>> LoginAsync(LoginRequest request)
     {
         try
@@ -71,7 +77,7 @@ public class AuthService : IAuthService
                 _cache.Remove(attemptsKey);
 
                 var token = GenerateJwtToken(user);
-                var refreshToken = GenerateRefreshToken();
+                var refreshToken = await IssueRefreshTokenAsync(user.UserId);
 
                 var userDto = new UserDto
                 {
@@ -172,14 +178,66 @@ public class AuthService : IAuthService
         }
     }
 
-    public async Task<ServiceResult<string>> RefreshTokenAsync(string refreshToken)
+    public async Task<ServiceResult<LoginResponse>> RefreshTokenAsync(string refreshToken)
     {
-        // For simplicity, we'll just return a new token
-        // In production, you should store and validate refresh tokens
-        await System.Threading.Tasks.Task.CompletedTask;
-        
-        // TODO: Implement refresh token functionality when needed
-        return ServiceResult<string>.ErrorResult("Refresh token functionality not yet implemented");
+        try
+        {
+            if (string.IsNullOrWhiteSpace(refreshToken))
+                return ServiceResult<LoginResponse>.ErrorResult("Refresh token is required");
+
+            var hash = HashRefreshToken(refreshToken);
+
+            var stored = await _context.RefreshTokens
+                .Include(rt => rt.User)
+                    .ThenInclude(u => u!.Role)
+                .FirstOrDefaultAsync(rt => rt.TokenHash == hash);
+
+            if (stored == null)
+                return ServiceResult<LoginResponse>.ErrorResult("Invalid refresh token");
+
+            // Replay detection: a token that was already rotated or explicitly
+            // revoked is being reused. Revoke the whole family for that user as a
+            // defensive measure and reject.
+            if (stored.RevokedAt != null)
+            {
+                await RevokeAllUserRefreshTokensAsync(stored.UserId);
+                _logger.LogWarning("Refresh token reuse detected for user {UserId}; all tokens revoked", stored.UserId);
+                return ServiceResult<LoginResponse>.ErrorResult("Invalid refresh token");
+            }
+
+            if (DateTime.UtcNow >= stored.ExpiresAt)
+                return ServiceResult<LoginResponse>.ErrorResult("Refresh token has expired");
+
+            var user = stored.User;
+            if (user == null || !user.IsActive)
+                return ServiceResult<LoginResponse>.ErrorResult("User is no longer active");
+
+            // Rotate: issue a fresh token and stamp the consumed row so a replay is
+            // detectable.
+            var newRefreshToken = await IssueRefreshTokenAsync(user.UserId, stored);
+
+            var response = new LoginResponse
+            {
+                Token = GenerateJwtToken(user),
+                RefreshToken = newRefreshToken,
+                User = new UserDto
+                {
+                    UserId = user.UserId,
+                    Username = user.Username,
+                    Email = user.Email,
+                    FullName = user.FullName,
+                    RoleName = user.Role?.RoleName ?? "User",
+                    IsActive = user.IsActive
+                }
+            };
+
+            return ServiceResult<LoginResponse>.SuccessResult(response, "Token refreshed successfully");
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error refreshing token");
+            return ServiceResult<LoginResponse>.ErrorResult("An error occurred while refreshing the token.");
+        }
     }
 
     public async Task<ServiceResult<bool>> LogoutAsync(string token)
@@ -355,8 +413,64 @@ public class AuthService : IAuthService
         return new JwtSecurityTokenHandler().WriteToken(token);
     }
 
-    private string GenerateRefreshToken()
+    /// <summary>
+    /// Generates a cryptographically-random opaque refresh token, persists only its
+    /// SHA-256 hash, and returns the raw value to the caller (shown to the client
+    /// exactly once). When <paramref name="rotatedFrom"/> is supplied the consumed
+    /// token is revoked and linked to the new one, enabling replay detection.
+    /// </summary>
+    private async Task<string> IssueRefreshTokenAsync(Guid userId, RefreshToken? rotatedFrom = null)
     {
-        return Guid.NewGuid().ToString();
+        var rawToken = GenerateSecureToken();
+        var hash = HashRefreshToken(rawToken);
+        var now = DateTime.UtcNow;
+
+        _context.RefreshTokens.Add(new RefreshToken
+        {
+            Id = Guid.NewGuid(),
+            UserId = userId,
+            TokenHash = hash,
+            CreatedAt = now,
+            ExpiresAt = now.Add(RefreshTokenLifetime)
+        });
+
+        if (rotatedFrom != null)
+        {
+            rotatedFrom.RevokedAt = now;
+            rotatedFrom.ReplacedByTokenHash = hash;
+        }
+
+        await _context.SaveChangesAsync();
+        return rawToken;
+    }
+
+    private async Task RevokeAllUserRefreshTokensAsync(Guid userId)
+    {
+        var now = DateTime.UtcNow;
+        var active = await _context.RefreshTokens
+            .Where(rt => rt.UserId == userId && rt.RevokedAt == null)
+            .ToListAsync();
+
+        foreach (var rt in active)
+            rt.RevokedAt = now;
+
+        if (active.Count > 0)
+            await _context.SaveChangesAsync();
+    }
+
+    private static string GenerateSecureToken()
+    {
+        // 32 bytes of CSPRNG entropy, URL-safe Base64.
+        var bytes = RandomNumberGenerator.GetBytes(32);
+        return Convert.ToBase64String(bytes)
+            .Replace('+', '-')
+            .Replace('/', '_')
+            .TrimEnd('=');
+    }
+
+    private static string HashRefreshToken(string rawToken)
+    {
+        var bytes = SHA256.HashData(Encoding.UTF8.GetBytes(rawToken));
+        return Convert.ToBase64String(bytes); // 44 chars, fits TokenHash(64)
     }
 }

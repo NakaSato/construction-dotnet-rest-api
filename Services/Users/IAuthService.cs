@@ -6,7 +6,7 @@ public interface IAuthService
 {
     System.Threading.Tasks.Task<ServiceResult<LoginResponse>> LoginAsync(LoginRequest request);
     System.Threading.Tasks.Task<ServiceResult<UserDto>> RegisterAsync(RegisterRequest request);
-    System.Threading.Tasks.Task<ServiceResult<string>> RefreshTokenAsync(string refreshToken);
+    System.Threading.Tasks.Task<ServiceResult<LoginResponse>> RefreshTokenAsync(string refreshToken);
     System.Threading.Tasks.Task<ServiceResult<bool>> RevokeTokenAsync(string token);
     System.Threading.Tasks.Task<ServiceResult<bool>> ValidateTokenAsync(string token);
     System.Threading.Tasks.Task<ServiceResult<bool>> LogoutAsync(string token);

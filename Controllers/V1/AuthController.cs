@@ -78,7 +78,7 @@ public class AuthController : BaseApiController
     /// Refresh authentication token
     /// </summary>
     [HttpPost("refresh")]
-    public async Task<ActionResult<ApiResponse<string>>> RefreshToken([FromBody] string refreshToken)
+    public async Task<ActionResult<ApiResponse<LoginResponse>>> RefreshToken([FromBody] string refreshToken)
     {
         try
         {
@@ -88,7 +88,7 @@ public class AuthController : BaseApiController
         }
         catch (Exception ex)
         {
-            return HandleException<string>(_logger, ex, "token refresh");
+            return HandleException<LoginResponse>(_logger, ex, "token refresh");
         }
     }
 

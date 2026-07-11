@@ -40,6 +40,7 @@ public class ApplicationDbContext : DbContext
     public DbSet<WeeklyReport> WeeklyReports { get; set; }
     public DbSet<WeeklyWorkRequest> WeeklyWorkRequests { get; set; }
     public DbSet<CalendarEvent> CalendarEvents { get; set; }
+    public DbSet<RefreshToken> RefreshTokens { get; set; }
 
     // WBS (Work Breakdown Structure) DbSets
     public DbSet<WbsTask> WbsTasks { get; set; }
@@ -580,6 +581,31 @@ public class ApplicationDbContext : DbContext
             entity.HasIndex(wra => wra.Level);
             entity.HasIndex(wra => wra.CreatedAt);
             entity.HasIndex(wra => wra.IsActive);
+        });
+
+        // Configure RefreshToken entity
+        modelBuilder.Entity<RefreshToken>(entity =>
+        {
+            entity.HasKey(rt => rt.Id);
+
+            entity.Property(rt => rt.TokenHash)
+                .IsRequired()
+                .HasMaxLength(64);
+
+            entity.Property(rt => rt.ReplacedByTokenHash)
+                .HasMaxLength(64);
+
+            entity.Property(rt => rt.CreatedAt)
+                .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+            entity.HasOne(rt => rt.User)
+                .WithMany()
+                .HasForeignKey(rt => rt.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasIndex(rt => rt.TokenHash).IsUnique();
+            entity.HasIndex(rt => rt.UserId);
+            entity.HasIndex(rt => rt.ExpiresAt);
         });
 
         // Configure WorkRequestNotification entity
