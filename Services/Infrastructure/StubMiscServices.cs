@@ -23,17 +23,6 @@ public interface ICalendarService
     Task<ApiResponse<bool>> DeleteRecurringEventAsync(Guid seriesId, bool deleteAllInstances);
 }
 
-public interface IImageService
-{
-    Task<ServiceResult<object>> GetImagesAsync();
-    Task<ServiceResult<ImageMetadataDto>> UploadImageAsync(IFormFile file, ImageUploadRequest request, Guid uploadedByUserId);
-    Task<ServiceResult<ImageMetadataDto>> GetImageMetadataAsync(Guid imageId);
-    Task<ServiceResult<string>> GetImageUrlAsync(Guid imageId);
-    Task<ServiceResult<PagedResult<ImageMetadataDto>>> GetProjectImagesAsync(Guid projectId, int pageNumber, int pageSize);
-    Task<ServiceResult<EnhancedPagedResult<ImageMetadataDto>>> GetProjectImagesAsync(Guid projectId, ImageQueryParameters parameters);
-    Task<ServiceResult<bool>> DeleteImageAsync(Guid imageId);
-}
-
 /// <summary>
 /// Stub implementation of ICalendarService for development purposes
 /// </summary>
@@ -136,64 +125,3 @@ public class StubCalendarService : ICalendarService
     }
 }
 
-/// <summary>
-/// Stub implementation of IImageService for development purposes
-/// </summary>
-public class StubImageService : IImageService
-{
-    public async Task<ServiceResult<object>> GetImagesAsync()
-    {
-        await Task.CompletedTask;
-        return ServiceResult<object>.ErrorResult("ImageService not implemented yet");
-    }
-
-    public async Task<ServiceResult<ImageMetadataDto>> UploadImageAsync(IFormFile file, ImageUploadRequest request, Guid uploadedByUserId)
-    {
-        await Task.CompletedTask;
-        return ServiceResult<ImageMetadataDto>.ErrorResult("ImageService not implemented yet");
-    }
-
-    public async Task<ServiceResult<ImageMetadataDto>> GetImageMetadataAsync(Guid imageId)
-    {
-        await Task.CompletedTask;
-        return ServiceResult<ImageMetadataDto>.ErrorResult("Image not found");
-    }
-
-    public async Task<ServiceResult<string>> GetImageUrlAsync(Guid imageId)
-    {
-        await Task.CompletedTask;
-        return ServiceResult<string>.ErrorResult("Image not found");
-    }
-
-    public async Task<ServiceResult<PagedResult<ImageMetadataDto>>> GetProjectImagesAsync(Guid projectId, int pageNumber, int pageSize)
-    {
-        await Task.CompletedTask;
-        var result = new PagedResult<ImageMetadataDto>
-        {
-            Items = new List<ImageMetadataDto>(),
-            TotalCount = 0,
-            PageNumber = pageNumber,
-            PageSize = pageSize
-        };
-        return ServiceResult<PagedResult<ImageMetadataDto>>.SuccessResult(result);
-    }
-
-    public async Task<ServiceResult<EnhancedPagedResult<ImageMetadataDto>>> GetProjectImagesAsync(Guid projectId, ImageQueryParameters parameters)
-    {
-        await Task.CompletedTask;
-        var result = new EnhancedPagedResult<ImageMetadataDto>
-        {
-            Items = new List<ImageMetadataDto>(),
-            TotalCount = 0,
-            PageNumber = parameters.PageNumber,
-            PageSize = parameters.PageSize
-        };
-        return ServiceResult<EnhancedPagedResult<ImageMetadataDto>>.SuccessResult(result);
-    }
-
-    public async Task<ServiceResult<bool>> DeleteImageAsync(Guid imageId)
-    {
-        await Task.CompletedTask;
-        return ServiceResult<bool>.ErrorResult("Image not found");
-    }
-}

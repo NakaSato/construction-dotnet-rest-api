@@ -26,7 +26,6 @@ namespace dotnet_rest_api.Controllers.V1;
 [Route("api/v{version:apiVersion}/notifications")]
 [Authorize]
 [Produces("application/json")]
-[Preview("real-time push not wired to hub")]
 public class NotificationsController : BaseApiController
 {
     private readonly INotificationService _notificationService;

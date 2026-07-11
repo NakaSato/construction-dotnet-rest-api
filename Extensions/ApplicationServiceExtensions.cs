@@ -47,11 +47,11 @@ public static class ApplicationServiceExtensions
         services.AddScoped<IMasterPlanService, MasterPlanService>();
 
         // Notifications
-        services.AddScoped<INotificationService, StubNotificationService>();
+        services.AddScoped<INotificationService, NotificationService>();
 
         // Work requests
-        services.AddScoped<IWorkRequestService, StubWorkRequestService>();
-        services.AddScoped<IWorkRequestApprovalService, StubWorkRequestApprovalService>();
+        services.AddScoped<IWorkRequestService, WorkRequestService>();
+        services.AddScoped<IWorkRequestApprovalService, WorkRequestApprovalService>();
 
         // Weekly
         services.AddScoped<IWeeklyReportService, StubWeeklyReportService>();
@@ -59,7 +59,7 @@ public static class ApplicationServiceExtensions
 
         // Misc
         services.AddScoped<ICalendarService, StubCalendarService>();
-        services.AddScoped<IImageService, StubImageService>();
+        services.AddScoped<IImageService, ImageService>();
 
         // Other
         services.AddScoped<IUserService, UserService>();

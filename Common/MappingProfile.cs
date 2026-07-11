@@ -315,7 +315,11 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.Priority, opt => opt.MapFrom(src => src.Priority.ToString()))
             .ForMember(dest => dest.RequestedByName, opt => opt.MapFrom(src => src.RequestedBy != null ? src.RequestedBy.FullName : string.Empty))
             .ForMember(dest => dest.AssignedToName, opt => opt.MapFrom(src => src.AssignedTo != null ? src.AssignedTo.FullName : string.Empty))
-            .ForMember(dest => dest.ProjectName, opt => opt.MapFrom(src => src.Project.ProjectName));
+            .ForMember(dest => dest.ManagerApproverName, opt => opt.MapFrom(src => src.ManagerApprover != null ? src.ManagerApprover.FullName : string.Empty))
+            .ForMember(dest => dest.AdminApproverName, opt => opt.MapFrom(src => src.AdminApprover != null ? src.AdminApprover.FullName : string.Empty))
+            // Project is a required reference that we intentionally do NOT eager-load
+            // (INNER JOIN would drop orphaned rows); WorkRequestService backfills the name.
+            .ForMember(dest => dest.ProjectName, opt => opt.MapFrom(src => src.Project != null ? src.Project.ProjectName : string.Empty));
 
         CreateMap<CreateWorkRequestRequest, WorkRequest>()
             .ForMember(dest => dest.WorkRequestId, opt => opt.Ignore())
@@ -330,6 +334,10 @@ public class MappingProfile : Profile
 
         CreateMap<UpdateWorkRequestRequest, WorkRequest>()
             .ForMember(dest => dest.WorkRequestId, opt => opt.Ignore())
+            // Status is applied manually via Enum.TryParse in the service — the DTO's
+            // regex permits "Pending", which is not a WorkRequestStatus member and
+            // would throw if AutoMapper attempted the string→enum conversion.
+            .ForMember(dest => dest.Status, opt => opt.Ignore())
             .ForMember(dest => dest.ProjectId, opt => opt.Ignore())
             .ForMember(dest => dest.RequestedById, opt => opt.Ignore())
             .ForMember(dest => dest.CreatedAt, opt => opt.Ignore())
@@ -364,6 +372,15 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.CreatedAt, opt => opt.Ignore())
             .ForMember(dest => dest.WorkRequest, opt => opt.Ignore())
             .ForMember(dest => dest.Author, opt => opt.Ignore());
+
+        // Work Request Approval history mappings (enum → string; approver name backfilled)
+        CreateMap<WorkRequestApproval, WorkRequestApprovalDto>()
+            .ForMember(dest => dest.Action, opt => opt.MapFrom(src => src.Action.ToString()))
+            .ForMember(dest => dest.Level, opt => opt.MapFrom(src => src.Level.ToString()))
+            .ForMember(dest => dest.PreviousStatus, opt => opt.MapFrom(src => src.PreviousStatus.ToString()))
+            .ForMember(dest => dest.NewStatus, opt => opt.MapFrom(src => src.NewStatus.ToString()))
+            .ForMember(dest => dest.WorkRequestTitle, opt => opt.MapFrom(src => src.WorkRequest != null ? src.WorkRequest.Title : string.Empty))
+            .ForMember(dest => dest.ApproverName, opt => opt.MapFrom(src => src.Approver != null ? src.Approver.FullName : string.Empty));
 
         // Image Metadata mappings
         CreateMap<ImageMetadata, ImageMetadataDto>()

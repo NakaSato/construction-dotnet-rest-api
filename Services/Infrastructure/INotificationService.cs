@@ -76,4 +76,12 @@ public interface INotificationService
     /// Send WBS task deleted notification
     /// </summary>
     Task SendWbsTaskDeletedNotificationAsync(string wbsId, string taskName, Guid projectId, string userName);
+
+    /// <summary>
+    /// Persist a work-request notification for a recipient and push it (plus the
+    /// refreshed unread count) over SignalR. <paramref name="type"/> must parse to a
+    /// <see cref="Models.NotificationType"/>.
+    /// </summary>
+    Task<ServiceResult<NotificationDto>> CreateWorkRequestNotificationAsync(
+        Guid workRequestId, Guid recipientId, string type, string subject, string message, Guid? senderId = null);
 }

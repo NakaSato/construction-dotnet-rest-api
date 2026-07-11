@@ -21,7 +21,6 @@ namespace dotnet_rest_api.Controllers.V1;
 [ApiVersion("1.0")]
 [Route("api/v{version:apiVersion}/images")]
 [Authorize]
-[Preview("implementation prioritized — Phase 5")]
 public class ImagesController : BaseApiController
 {
     private readonly IImageService _imageService;
@@ -165,7 +164,7 @@ public class ImagesController : BaseApiController
     /// <param name="id">Image ID</param>
     /// <returns>No content if successful</returns>
     [HttpDelete("{id:guid}")]
-    public async Task<ActionResult<object>> DeleteImage(Guid id)
+    public async Task<ActionResult<ApiResponse<bool>>> DeleteImage(Guid id)
     {
         try
         {
@@ -174,7 +173,7 @@ public class ImagesController : BaseApiController
         }
         catch (Exception ex)
         {
-            return HandleException<object>(_logger, ex, $"deleting image {id}");
+            return HandleException<bool>(_logger, ex, $"deleting image {id}");
         }
     }
 
