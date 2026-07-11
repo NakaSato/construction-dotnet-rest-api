@@ -15,12 +15,28 @@ public class AuthService : IAuthService
     private readonly ApplicationDbContext _context;
     private readonly IConfiguration _configuration;
     private readonly IMemoryCache _cache;
+    private readonly ILogger<AuthService> _logger;
 
-    public AuthService(ApplicationDbContext context, IConfiguration configuration, IMemoryCache cache)
+    public AuthService(ApplicationDbContext context, IConfiguration configuration, IMemoryCache cache, ILogger<AuthService> logger)
     {
         _context = context;
         _configuration = configuration;
         _cache = cache;
+        _logger = logger;
+    }
+
+    /// <summary>
+    /// Resolves the JWT signing key from configuration. Program.cs writes the
+    /// authoritative key (env JWT_KEY → appsettings → dev fallback) back into
+    /// configuration at startup, so signing here always matches the validation
+    /// parameters. Throws if unset rather than falling back to a hardcoded secret.
+    /// </summary>
+    private byte[] GetSigningKeyBytes()
+    {
+        var key = _configuration["Jwt:Key"];
+        if (string.IsNullOrEmpty(key))
+            throw new InvalidOperationException("JWT signing key is not configured (set JWT_KEY or Jwt:Key).");
+        return Encoding.UTF8.GetBytes(key);
     }
 
     public async Task<ServiceResult<LoginResponse>> LoginAsync(LoginRequest request)
@@ -61,7 +77,10 @@ public class AuthService : IAuthService
         }
         catch (Exception ex)
         {
-            return ServiceResult<LoginResponse>.ErrorResult($"An error occurred during login: {ex.Message}");
+            // Log the detail server-side; return a generic message so exception
+            // internals are not disclosed to the client.
+            _logger.LogError(ex, "Error during login for {Username}", request.Username);
+            return ServiceResult<LoginResponse>.ErrorResult("An error occurred during login. Please try again.");
         }
     }
 
@@ -181,7 +200,7 @@ public class AuthService : IAuthService
         try
         {
             var tokenHandler = new JwtSecurityTokenHandler();
-            var key = Encoding.UTF8.GetBytes(_configuration["Jwt:Key"] ?? "DefaultSecretKeyForDevelopmentOnlyNotForProduction123456789");
+            var key = GetSigningKeyBytes();
             
             // First validate the token structure and signature
             tokenHandler.ValidateToken(token, new TokenValidationParameters
@@ -290,7 +309,7 @@ public class AuthService : IAuthService
 
     private string GenerateJwtToken(User user)
     {
-        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"] ?? "DefaultSecretKeyForDevelopmentOnlyNotForProduction123456789"));
+        var key = new SymmetricSecurityKey(GetSigningKeyBytes());
         var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
         var claims = new[]

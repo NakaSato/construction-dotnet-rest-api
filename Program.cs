@@ -136,6 +136,12 @@ if (string.IsNullOrEmpty(jwtKey))
     }
 }
 
+// Write the resolved key back into configuration so token *signing* (AuthService)
+// reads the exact same value used here for token *validation*. Without this,
+// AuthService would read Jwt:Key directly and diverge when the key comes from the
+// JWT_KEY env var (which does not bind to the Jwt:Key config path).
+builder.Configuration["Jwt:Key"] = jwtKey;
+
 var jwtIssuer = builder.Configuration["Jwt:Issuer"] ?? "SolarProjectsAPI";
 var jwtAudience = builder.Configuration["Jwt:Audience"] ?? "SolarProjectsClient";
 
