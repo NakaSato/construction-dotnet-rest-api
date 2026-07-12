@@ -18,7 +18,11 @@ dotnet run --urls "http://localhost:5001"      # run locally (Swagger UI at root
 dotnet ef migrations add <Name>                # add EF migration (Migrations/)
 ```
 
-**No unit-test project exists.** `tests/` contains only `.http` REST-client files. Testing is done through:
+**Automated tests exist** under `tests/` (wired into `dotnet-rest-api.sln`); run all with `dotnet test dotnet-rest-api.sln`:
+- `tests/UnitTests/` — xUnit unit tests (`Result<T>`, `BaseApiController` envelope mapping, `AuthService` refresh-token rotation/reuse).
+- `tests/Api.IntegrationTests/` — xUnit + `WebApplicationFactory` (`ApiFactory`) integration tests (boot smoke, authorization, REST semantics, calendar); run against the in-memory DB.
+
+Manual/live-server testing is also available through:
 - `.http` files in `tests/http/`
 - Shell scripts in `scripts/` (e.g. `test-api-endpoints.sh`, `test-auth.sh`, `test-tasks-api.sh`, `test-wbs-api.sh`) — run against a live server.
 - `curl http://localhost:5001/health`

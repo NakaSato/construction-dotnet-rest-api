@@ -10,10 +10,13 @@ public class LoginRequestValidator : AbstractValidator<LoginRequest>
 {
     public LoginRequestValidator()
     {
+        // The identifier may be a username OR an email address (LoginAsync matches on
+        // either), so the cap follows the RFC 5321 email max (254) — matching the
+        // LoginRequest DTO — rather than a username-length cap.
         RuleFor(x => x.Username)
             .NotEmpty().WithMessage("Username is required")
-            .MinimumLength(3).WithMessage("Username must be at least 3 characters")
-            .MaximumLength(50).WithMessage("Username cannot exceed 50 characters");
+            .MinimumLength(3).WithMessage("Username or email must be at least 3 characters")
+            .MaximumLength(254).WithMessage("Username or email cannot exceed 254 characters");
 
         RuleFor(x => x.Password)
             .NotEmpty().WithMessage("Password is required")
