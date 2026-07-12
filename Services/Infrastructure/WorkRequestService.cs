@@ -1,3 +1,4 @@
+using dotnet_rest_api.Common;
 using AutoMapper;
 using dotnet_rest_api.Data;
 using dotnet_rest_api.DTOs;
@@ -8,23 +9,23 @@ namespace dotnet_rest_api.Services.Infrastructure;
 
 public interface IWorkRequestService
 {
-    Task<ServiceResult<EnhancedPagedResult<WorkRequestDto>>> GetWorkRequestsAsync(WorkRequestQueryParameters parameters);
-    Task<ServiceResult<WorkRequestDto>> GetWorkRequestByIdAsync(Guid id);
-    Task<ServiceResult<WorkRequestDto>> CreateWorkRequestAsync(CreateWorkRequestRequest request);
-    Task<ServiceResult<WorkRequestDto>> CreateWorkRequestAsync(CreateWorkRequestRequest request, Guid userId);
-    Task<ServiceResult<WorkRequestDto>> UpdateWorkRequestAsync(Guid id, UpdateWorkRequestRequest request);
-    Task<ServiceResult<bool>> DeleteWorkRequestAsync(Guid id);
-    Task<ServiceResult<bool>> AssignWorkRequestAsync(Guid id, Guid userId);
-    Task<ServiceResult<WorkRequestDto>> CompleteWorkRequestAsync(Guid id);
+    Task<Result<EnhancedPagedResult<WorkRequestDto>>> GetWorkRequestsAsync(WorkRequestQueryParameters parameters);
+    Task<Result<WorkRequestDto>> GetWorkRequestByIdAsync(Guid id);
+    Task<Result<WorkRequestDto>> CreateWorkRequestAsync(CreateWorkRequestRequest request);
+    Task<Result<WorkRequestDto>> CreateWorkRequestAsync(CreateWorkRequestRequest request, Guid userId);
+    Task<Result<WorkRequestDto>> UpdateWorkRequestAsync(Guid id, UpdateWorkRequestRequest request);
+    Task<Result<bool>> DeleteWorkRequestAsync(Guid id);
+    Task<Result<bool>> AssignWorkRequestAsync(Guid id, Guid userId);
+    Task<Result<WorkRequestDto>> CompleteWorkRequestAsync(Guid id);
 }
 
 public interface IWorkRequestApprovalService
 {
-    Task<ServiceResult<bool>> ApproveWorkRequestAsync(Guid id, string approverId);
-    Task<ServiceResult<bool>> RejectWorkRequestAsync(Guid id, string approverId, string reason);
-    Task<ServiceResult<bool>> SubmitForApprovalAsync(Guid id, SubmitForApprovalRequest request, Guid userId);
-    Task<ServiceResult<bool>> ProcessApprovalAsync(Guid id, ApprovalRequest request, Guid userId);
-    Task<ServiceResult<ApprovalWorkflowStatusDto>> GetApprovalStatusAsync(Guid id);
+    Task<Result<bool>> ApproveWorkRequestAsync(Guid id, string approverId);
+    Task<Result<bool>> RejectWorkRequestAsync(Guid id, string approverId, string reason);
+    Task<Result<bool>> SubmitForApprovalAsync(Guid id, SubmitForApprovalRequest request, Guid userId);
+    Task<Result<bool>> ProcessApprovalAsync(Guid id, ApprovalRequest request, Guid userId);
+    Task<Result<ApprovalWorkflowStatusDto>> GetApprovalStatusAsync(Guid id);
 }
 
 /// <summary>
@@ -69,7 +70,7 @@ public class WorkRequestService : IWorkRequestService
         }
     }
 
-    public async Task<ServiceResult<EnhancedPagedResult<WorkRequestDto>>> GetWorkRequestsAsync(WorkRequestQueryParameters parameters)
+    public async Task<Result<EnhancedPagedResult<WorkRequestDto>>> GetWorkRequestsAsync(WorkRequestQueryParameters parameters)
     {
         var query = BuildBaseQuery();
 
@@ -129,30 +130,30 @@ public class WorkRequestService : IWorkRequestService
             SortOrder = parameters.SortOrder
         };
 
-        return ServiceResult<EnhancedPagedResult<WorkRequestDto>>.SuccessResult(result, "Work requests retrieved successfully");
+        return Result<EnhancedPagedResult<WorkRequestDto>>.SuccessResult(result, "Work requests retrieved successfully");
     }
 
-    public async Task<ServiceResult<WorkRequestDto>> GetWorkRequestByIdAsync(Guid id)
+    public async Task<Result<WorkRequestDto>> GetWorkRequestByIdAsync(Guid id)
     {
         var workRequest = await BuildBaseQuery().FirstOrDefaultAsync(w => w.WorkRequestId == id);
         if (workRequest == null)
-            return ServiceResult<WorkRequestDto>.NotFoundResult("Work request not found");
+            return Result<WorkRequestDto>.NotFoundResult("Work request not found");
 
-        return ServiceResult<WorkRequestDto>.SuccessResult(await ToDtoAsync(workRequest), "Work request retrieved successfully");
+        return Result<WorkRequestDto>.SuccessResult(await ToDtoAsync(workRequest), "Work request retrieved successfully");
     }
 
-    public Task<ServiceResult<WorkRequestDto>> CreateWorkRequestAsync(CreateWorkRequestRequest request)
+    public Task<Result<WorkRequestDto>> CreateWorkRequestAsync(CreateWorkRequestRequest request)
         => CreateWorkRequestAsync(request, Guid.Empty);
 
-    public async Task<ServiceResult<WorkRequestDto>> CreateWorkRequestAsync(CreateWorkRequestRequest request, Guid userId)
+    public async Task<Result<WorkRequestDto>> CreateWorkRequestAsync(CreateWorkRequestRequest request, Guid userId)
     {
         var projectExists = await _context.Projects.AnyAsync(p => p.ProjectId == request.ProjectId);
         if (!projectExists)
-            return ServiceResult<WorkRequestDto>.ErrorResult("Project not found");
+            return Result<WorkRequestDto>.ErrorResult("Project not found");
 
         if (request.AssignedToId.HasValue &&
             !await _context.Users.AnyAsync(u => u.UserId == request.AssignedToId.Value))
-            return ServiceResult<WorkRequestDto>.ErrorResult("Assigned user not found");
+            return Result<WorkRequestDto>.ErrorResult("Assigned user not found");
 
         var workRequest = _mapper.Map<WorkRequest>(request);
         workRequest.WorkRequestId = Guid.NewGuid();
@@ -166,19 +167,19 @@ public class WorkRequestService : IWorkRequestService
 
         var created = await BuildBaseQuery().FirstOrDefaultAsync(w => w.WorkRequestId == workRequest.WorkRequestId);
         if (created == null)
-            return ServiceResult<WorkRequestDto>.ErrorResult("Failed to load created work request");
-        return ServiceResult<WorkRequestDto>.SuccessResult(await ToDtoAsync(created), "Work request created successfully");
+            return Result<WorkRequestDto>.ErrorResult("Failed to load created work request");
+        return Result<WorkRequestDto>.SuccessResult(await ToDtoAsync(created), "Work request created successfully");
     }
 
-    public async Task<ServiceResult<WorkRequestDto>> UpdateWorkRequestAsync(Guid id, UpdateWorkRequestRequest request)
+    public async Task<Result<WorkRequestDto>> UpdateWorkRequestAsync(Guid id, UpdateWorkRequestRequest request)
     {
         var workRequest = await _context.WorkRequests.FirstOrDefaultAsync(w => w.WorkRequestId == id);
         if (workRequest == null)
-            return ServiceResult<WorkRequestDto>.NotFoundResult("Work request not found");
+            return Result<WorkRequestDto>.NotFoundResult("Work request not found");
 
         if (request.AssignedToId.HasValue &&
             !await _context.Users.AnyAsync(u => u.UserId == request.AssignedToId.Value))
-            return ServiceResult<WorkRequestDto>.ErrorResult("Assigned user not found");
+            return Result<WorkRequestDto>.ErrorResult("Assigned user not found");
 
         _mapper.Map(request, workRequest);
 
@@ -193,11 +194,11 @@ public class WorkRequestService : IWorkRequestService
 
         var updated = await BuildBaseQuery().FirstOrDefaultAsync(w => w.WorkRequestId == id);
         if (updated == null)
-            return ServiceResult<WorkRequestDto>.ErrorResult("Failed to load updated work request");
-        return ServiceResult<WorkRequestDto>.SuccessResult(await ToDtoAsync(updated), "Work request updated successfully");
+            return Result<WorkRequestDto>.ErrorResult("Failed to load updated work request");
+        return Result<WorkRequestDto>.SuccessResult(await ToDtoAsync(updated), "Work request updated successfully");
     }
 
-    public async Task<ServiceResult<bool>> DeleteWorkRequestAsync(Guid id)
+    public async Task<Result<bool>> DeleteWorkRequestAsync(Guid id)
     {
         var workRequest = await _context.WorkRequests
             .Include(w => w.Tasks)
@@ -206,7 +207,7 @@ public class WorkRequestService : IWorkRequestService
             .Include(w => w.Notifications)
             .FirstOrDefaultAsync(w => w.WorkRequestId == id);
         if (workRequest == null)
-            return ServiceResult<bool>.NotFoundResult("Work request not found");
+            return Result<bool>.NotFoundResult("Work request not found");
 
         _context.WorkRequestTasks.RemoveRange(workRequest.Tasks);
         _context.WorkRequestComments.RemoveRange(workRequest.Comments);
@@ -215,17 +216,17 @@ public class WorkRequestService : IWorkRequestService
         _context.WorkRequests.Remove(workRequest);
         await _context.SaveChangesAsync();
 
-        return ServiceResult<bool>.SuccessResult(true, "Work request deleted successfully");
+        return Result<bool>.SuccessResult(true, "Work request deleted successfully");
     }
 
-    public async Task<ServiceResult<bool>> AssignWorkRequestAsync(Guid id, Guid userId)
+    public async Task<Result<bool>> AssignWorkRequestAsync(Guid id, Guid userId)
     {
         var workRequest = await _context.WorkRequests.FirstOrDefaultAsync(w => w.WorkRequestId == id);
         if (workRequest == null)
-            return ServiceResult<bool>.NotFoundResult("Work request not found");
+            return Result<bool>.NotFoundResult("Work request not found");
 
         if (!await _context.Users.AnyAsync(u => u.UserId == userId))
-            return ServiceResult<bool>.ErrorResult("Assigned user not found");
+            return Result<bool>.ErrorResult("Assigned user not found");
 
         workRequest.AssignedToId = userId;
         // Moving an open request to a person starts it; approved requests likewise.
@@ -240,17 +241,17 @@ public class WorkRequestService : IWorkRequestService
         await SafeNotifyAsync(workRequest.WorkRequestId, userId, nameof(NotificationType.WorkRequestAssigned),
             "Work request assigned", $"You have been assigned work request '{workRequest.Title}'.", null);
 
-        return ServiceResult<bool>.SuccessResult(true, "Work request assigned successfully");
+        return Result<bool>.SuccessResult(true, "Work request assigned successfully");
     }
 
-    public async Task<ServiceResult<WorkRequestDto>> CompleteWorkRequestAsync(Guid id)
+    public async Task<Result<WorkRequestDto>> CompleteWorkRequestAsync(Guid id)
     {
         var workRequest = await _context.WorkRequests.FirstOrDefaultAsync(w => w.WorkRequestId == id);
         if (workRequest == null)
-            return ServiceResult<WorkRequestDto>.NotFoundResult("Work request not found");
+            return Result<WorkRequestDto>.NotFoundResult("Work request not found");
 
         if (workRequest.Status is WorkRequestStatus.Completed or WorkRequestStatus.Cancelled)
-            return ServiceResult<WorkRequestDto>.ErrorResult($"Cannot complete a work request with status '{workRequest.Status}'");
+            return Result<WorkRequestDto>.ErrorResult($"Cannot complete a work request with status '{workRequest.Status}'");
 
         workRequest.Status = WorkRequestStatus.Completed;
         workRequest.CompletedDate = DateTime.UtcNow;
@@ -262,8 +263,8 @@ public class WorkRequestService : IWorkRequestService
 
         var completed = await BuildBaseQuery().FirstOrDefaultAsync(w => w.WorkRequestId == id);
         if (completed == null)
-            return ServiceResult<WorkRequestDto>.ErrorResult("Failed to load completed work request");
-        return ServiceResult<WorkRequestDto>.SuccessResult(await ToDtoAsync(completed), "Work request completed successfully");
+            return Result<WorkRequestDto>.ErrorResult("Failed to load completed work request");
+        return Result<WorkRequestDto>.SuccessResult(await ToDtoAsync(completed), "Work request completed successfully");
     }
 
     // -------------------------------------------------------------- Helpers --
@@ -403,14 +404,14 @@ public class WorkRequestApprovalService : IWorkRequestApprovalService
         }
     }
 
-    public async Task<ServiceResult<bool>> SubmitForApprovalAsync(Guid id, SubmitForApprovalRequest request, Guid userId)
+    public async Task<Result<bool>> SubmitForApprovalAsync(Guid id, SubmitForApprovalRequest request, Guid userId)
     {
         var workRequest = await _context.WorkRequests.FirstOrDefaultAsync(w => w.WorkRequestId == id);
         if (workRequest == null)
-            return ServiceResult<bool>.NotFoundResult("Work request not found");
+            return Result<bool>.NotFoundResult("Work request not found");
 
         if (workRequest.Status is not (WorkRequestStatus.Open or WorkRequestStatus.Rejected or WorkRequestStatus.OnHold))
-            return ServiceResult<bool>.ErrorResult($"Cannot submit a work request with status '{workRequest.Status}' for approval");
+            return Result<bool>.ErrorResult($"Cannot submit a work request with status '{workRequest.Status}' for approval");
 
         if (request.RequiresAdminApproval)
             workRequest.RequiresAdminApproval = true;
@@ -462,17 +463,17 @@ public class WorkRequestApprovalService : IWorkRequestApprovalService
             await SafeNotifyAsync(workRequest.WorkRequestId, workRequest.AdminApproverId, nameof(NotificationType.ApprovalRequired),
                 "Approval required", $"Work request '{workRequest.Title}' is awaiting your approval.", userId);
 
-        return ServiceResult<bool>.SuccessResult(true, "Work request submitted for approval");
+        return Result<bool>.SuccessResult(true, "Work request submitted for approval");
     }
 
-    public async Task<ServiceResult<bool>> ProcessApprovalAsync(Guid id, ApprovalRequest request, Guid userId)
+    public async Task<Result<bool>> ProcessApprovalAsync(Guid id, ApprovalRequest request, Guid userId)
     {
         var workRequest = await _context.WorkRequests.FirstOrDefaultAsync(w => w.WorkRequestId == id);
         if (workRequest == null)
-            return ServiceResult<bool>.NotFoundResult("Work request not found");
+            return Result<bool>.NotFoundResult("Work request not found");
 
         if (workRequest.Status is not (WorkRequestStatus.PendingManagerApproval or WorkRequestStatus.PendingAdminApproval))
-            return ServiceResult<bool>.ErrorResult($"Work request is not pending approval (status '{workRequest.Status}')");
+            return Result<bool>.ErrorResult($"Work request is not pending approval (status '{workRequest.Status}')");
 
         var level = workRequest.Status == WorkRequestStatus.PendingManagerApproval
             ? ApprovalLevel.Manager
@@ -525,7 +526,7 @@ public class WorkRequestApprovalService : IWorkRequestApprovalService
                 break;
 
             default:
-                return ServiceResult<bool>.ErrorResult("Action must be one of: Approve, Reject, Escalate");
+                return Result<bool>.ErrorResult("Action must be one of: Approve, Reject, Escalate");
         }
 
         workRequest.Status = newStatus;
@@ -553,30 +554,30 @@ public class WorkRequestApprovalService : IWorkRequestApprovalService
                 break;
         }
 
-        return ServiceResult<bool>.SuccessResult(true, $"Work request {action}");
+        return Result<bool>.SuccessResult(true, $"Work request {action}");
     }
 
-    public async Task<ServiceResult<bool>> ApproveWorkRequestAsync(Guid id, string approverId)
+    public async Task<Result<bool>> ApproveWorkRequestAsync(Guid id, string approverId)
     {
         if (!Guid.TryParse(approverId, out var userId))
-            return ServiceResult<bool>.ErrorResult("Invalid approver ID");
+            return Result<bool>.ErrorResult("Invalid approver ID");
         return await ProcessApprovalAsync(id, new ApprovalRequest { Action = "Approve" }, userId);
     }
 
-    public async Task<ServiceResult<bool>> RejectWorkRequestAsync(Guid id, string approverId, string reason)
+    public async Task<Result<bool>> RejectWorkRequestAsync(Guid id, string approverId, string reason)
     {
         if (!Guid.TryParse(approverId, out var userId))
-            return ServiceResult<bool>.ErrorResult("Invalid approver ID");
+            return Result<bool>.ErrorResult("Invalid approver ID");
         return await ProcessApprovalAsync(id, new ApprovalRequest { Action = "Reject", RejectionReason = reason }, userId);
     }
 
-    public async Task<ServiceResult<ApprovalWorkflowStatusDto>> GetApprovalStatusAsync(Guid id)
+    public async Task<Result<ApprovalWorkflowStatusDto>> GetApprovalStatusAsync(Guid id)
     {
         var workRequest = await _context.WorkRequests
             .Include(w => w.ApprovalHistory)
             .FirstOrDefaultAsync(w => w.WorkRequestId == id);
         if (workRequest == null)
-            return ServiceResult<ApprovalWorkflowStatusDto>.NotFoundResult("Work request not found");
+            return Result<ApprovalWorkflowStatusDto>.NotFoundResult("Work request not found");
 
         var history = workRequest.ApprovalHistory.OrderBy(h => h.CreatedAt).ToList();
         var approverIds = history.Select(h => h.ApproverId)
@@ -617,7 +618,7 @@ public class WorkRequestApprovalService : IWorkRequestApprovalService
             DaysPendingApproval = WorkRequestApprovalHelpers.DaysPending(workRequest.SubmittedForApprovalDate, workRequest.Status.ToString())
         };
 
-        return ServiceResult<ApprovalWorkflowStatusDto>.SuccessResult(dto, "Approval status retrieved successfully");
+        return Result<ApprovalWorkflowStatusDto>.SuccessResult(dto, "Approval status retrieved successfully");
     }
 
     private void AddHistory(

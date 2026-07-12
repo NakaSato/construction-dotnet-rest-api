@@ -1,3 +1,4 @@
+using dotnet_rest_api.Common;
 using dotnet_rest_api.DTOs;
 
 namespace dotnet_rest_api.Services.Projects;
@@ -7,8 +8,8 @@ namespace dotnet_rest_api.Services.Projects;
 /// </summary>
 public interface IProjectAnalyticsService
 {
-    Task<ServiceResult<ProjectStatistics>> GetProjectAnalyticsAsync();
-    Task<ServiceResult<List<Guid>>> GetAllProjectIdsAsync();
-    Task<ServiceResult<int>> GetTotalProjectCountAsync();
-    Task<ServiceResult<int>> GetProjectCountByStatusAsync(string status);
+    Task<Result<ProjectStatistics>> GetProjectAnalyticsAsync();
+    Task<Result<List<Guid>>> GetAllProjectIdsAsync();
+    Task<Result<int>> GetTotalProjectCountAsync();
+    Task<Result<int>> GetProjectCountByStatusAsync(string status);
 }

@@ -1,3 +1,4 @@
+using dotnet_rest_api.Common;
 using Microsoft.EntityFrameworkCore;
 using AutoMapper;
 using dotnet_rest_api.Data;
@@ -22,7 +23,7 @@ public class UserService : IUserService
         _logger = logger;
     }
 
-    public async Task<ServiceResult<PagedResult<UserDto>>> GetUsersAsync(int pageNumber, int pageSize, string? role)
+    public async Task<Result<PagedResult<UserDto>>> GetUsersAsync(int pageNumber, int pageSize, string? role)
     {
         try
         {
@@ -54,17 +55,17 @@ public class UserService : IUserService
                 PageSize = pageSize
             };
 
-            return ServiceResult<PagedResult<UserDto>>.SuccessResult(result);
+            return Result<PagedResult<UserDto>>.SuccessResult(result);
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error retrieving users with pageNumber: {PageNumber}, pageSize: {PageSize}, role: {Role}", 
                 pageNumber, pageSize, role);
-            return ServiceResult<PagedResult<UserDto>>.ErrorResult($"An error occurred during user retrieval: {ex.Message}");
+            return Result<PagedResult<UserDto>>.ErrorResult($"An error occurred during user retrieval: {ex.Message}");
         }
     }
 
-    public async Task<ServiceResult<EnhancedPagedResult<UserDto>>> GetUsersAsync(UserQueryParameters parameters)
+    public async Task<Result<EnhancedPagedResult<UserDto>>> GetUsersAsync(UserQueryParameters parameters)
     {
         try
         {
@@ -131,16 +132,16 @@ public class UserService : IUserService
                 PageSize = parameters.PageSize
             };
 
-            return ServiceResult<EnhancedPagedResult<UserDto>>.SuccessResult(result);
+            return Result<EnhancedPagedResult<UserDto>>.SuccessResult(result);
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error retrieving users with parameters: {@Parameters}", parameters);
-            return ServiceResult<EnhancedPagedResult<UserDto>>.ErrorResult($"An error occurred during user retrieval: {ex.Message}");
+            return Result<EnhancedPagedResult<UserDto>>.ErrorResult($"An error occurred during user retrieval: {ex.Message}");
         }
     }
 
-    public async Task<ServiceResult<UserDto>> GetUserByIdAsync(Guid id)
+    public async Task<Result<UserDto>> GetUserByIdAsync(Guid id)
     {
         try
         {
@@ -150,20 +151,20 @@ public class UserService : IUserService
 
             if (user == null)
             {
-                return ServiceResult<UserDto>.ErrorResult("User not found");
+                return Result<UserDto>.ErrorResult("User not found");
             }
 
             var userDto = _mapper.Map<UserDto>(user);
-            return ServiceResult<UserDto>.SuccessResult(userDto);
+            return Result<UserDto>.SuccessResult(userDto);
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error retrieving user with ID: {UserId}", id);
-            return ServiceResult<UserDto>.ErrorResult($"An error occurred during user retrieval: {ex.Message}");
+            return Result<UserDto>.ErrorResult($"An error occurred during user retrieval: {ex.Message}");
         }
     }
 
-    public async Task<ServiceResult<UserDto>> GetUserByUsernameAsync(string username)
+    public async Task<Result<UserDto>> GetUserByUsernameAsync(string username)
     {
         try
         {
@@ -173,20 +174,20 @@ public class UserService : IUserService
 
             if (user == null)
             {
-                return ServiceResult<UserDto>.ErrorResult("User not found");
+                return Result<UserDto>.ErrorResult("User not found");
             }
 
             var userDto = _mapper.Map<UserDto>(user);
-            return ServiceResult<UserDto>.SuccessResult(userDto);
+            return Result<UserDto>.SuccessResult(userDto);
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error retrieving user with username: {Username}", username);
-            return ServiceResult<UserDto>.ErrorResult($"An error occurred during user retrieval: {ex.Message}");
+            return Result<UserDto>.ErrorResult($"An error occurred during user retrieval: {ex.Message}");
         }
     }
 
-    public async Task<ServiceResult<UserDto>> CreateUserAsync(CreateUserRequest request)
+    public async Task<Result<UserDto>> CreateUserAsync(CreateUserRequest request)
     {
         try
         {
@@ -196,7 +197,7 @@ public class UserService : IUserService
             
             if (existingUsername)
             {
-                return ServiceResult<UserDto>.ErrorResult("Username already exists");
+                return Result<UserDto>.ErrorResult("Username already exists");
             }
 
             // Check if email already exists
@@ -205,7 +206,7 @@ public class UserService : IUserService
             
             if (existingEmail)
             {
-                return ServiceResult<UserDto>.ErrorResult("Email already exists");
+                return Result<UserDto>.ErrorResult("Email already exists");
             }
 
             // Verify role exists
@@ -214,7 +215,7 @@ public class UserService : IUserService
             
             if (!roleExists)
             {
-                return ServiceResult<UserDto>.ErrorResult("Invalid role specified");
+                return Result<UserDto>.ErrorResult("Invalid role specified");
             }
 
             // Create new user
@@ -239,16 +240,16 @@ public class UserService : IUserService
                 .FirstOrDefaultAsync(u => u.UserId == user.UserId);
 
             var userDto = _mapper.Map<UserDto>(createdUser);
-            return ServiceResult<UserDto>.SuccessResult(userDto);
+            return Result<UserDto>.SuccessResult(userDto);
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error creating user: {@Request}", request);
-            return ServiceResult<UserDto>.ErrorResult($"An error occurred during user creation: {ex.Message}");
+            return Result<UserDto>.ErrorResult($"An error occurred during user creation: {ex.Message}");
         }
     }
 
-    public async Task<ServiceResult<UserDto>> UpdateUserAsync(Guid id, UpdateUserRequest request)
+    public async Task<Result<UserDto>> UpdateUserAsync(Guid id, UpdateUserRequest request)
     {
         try
         {
@@ -258,7 +259,7 @@ public class UserService : IUserService
 
             if (user == null)
             {
-                return ServiceResult<UserDto>.ErrorResult("User not found");
+                return Result<UserDto>.ErrorResult("User not found");
             }
 
             // Check for email conflicts (excluding current user)
@@ -269,7 +270,7 @@ public class UserService : IUserService
                 
                 if (emailExists)
                 {
-                    return ServiceResult<UserDto>.ErrorResult("Email already exists");
+                    return Result<UserDto>.ErrorResult("Email already exists");
                 }
                 user.Email = request.Email;
             }
@@ -289,7 +290,7 @@ public class UserService : IUserService
                 
                 if (role == null)
                 {
-                    return ServiceResult<UserDto>.ErrorResult("Invalid role specified");
+                    return Result<UserDto>.ErrorResult("Invalid role specified");
                 }
                 user.RoleId = role.RoleId;
             }
@@ -304,16 +305,16 @@ public class UserService : IUserService
             // Reload user with role for DTO mapping
             await _context.Entry(user).Reference(u => u.Role).LoadAsync();
             var userDto = _mapper.Map<UserDto>(user);
-            return ServiceResult<UserDto>.SuccessResult(userDto);
+            return Result<UserDto>.SuccessResult(userDto);
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error updating user with ID: {UserId}, Request: {@Request}", id, request);
-            return ServiceResult<UserDto>.ErrorResult($"An error occurred during user update: {ex.Message}");
+            return Result<UserDto>.ErrorResult($"An error occurred during user update: {ex.Message}");
         }
     }
 
-    public async Task<ServiceResult<UserDto>> PatchUserAsync(Guid id, PatchUserRequest request)
+    public async Task<Result<UserDto>> PatchUserAsync(Guid id, PatchUserRequest request)
     {
         try
         {
@@ -323,7 +324,7 @@ public class UserService : IUserService
 
             if (user == null)
             {
-                return ServiceResult<UserDto>.ErrorResult("User not found");
+                return Result<UserDto>.ErrorResult("User not found");
             }
 
             // Apply only the provided fields
@@ -348,7 +349,7 @@ public class UserService : IUserService
                 
                 if (!roleExists)
                 {
-                    return ServiceResult<UserDto>.ErrorResult("Invalid role specified");
+                    return Result<UserDto>.ErrorResult("Invalid role specified");
                 }
                 user.RoleId = request.RoleId.Value;
                 hasChanges = true;
@@ -362,16 +363,16 @@ public class UserService : IUserService
             }
 
             var userDto = _mapper.Map<UserDto>(user);
-            return ServiceResult<UserDto>.SuccessResult(userDto);
+            return Result<UserDto>.SuccessResult(userDto);
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error patching user with ID: {UserId}, Request: {@Request}", id, request);
-            return ServiceResult<UserDto>.ErrorResult($"An error occurred during user patch: {ex.Message}");
+            return Result<UserDto>.ErrorResult($"An error occurred during user patch: {ex.Message}");
         }
     }
 
-    public async Task<ServiceResult<bool>> ActivateUserAsync(Guid id, bool isActive)
+    public async Task<Result<bool>> ActivateUserAsync(Guid id, bool isActive)
     {
         try
         {
@@ -379,22 +380,22 @@ public class UserService : IUserService
 
             if (user == null)
             {
-                return ServiceResult<bool>.ErrorResult("User not found");
+                return Result<bool>.ErrorResult("User not found");
             }
 
             user.IsActive = isActive;
             await _context.SaveChangesAsync();
 
-            return ServiceResult<bool>.SuccessResult(true);
+            return Result<bool>.SuccessResult(true);
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error activating/deactivating user with ID: {UserId}, IsActive: {IsActive}", id, isActive);
-            return ServiceResult<bool>.ErrorResult($"An error occurred during user activation: {ex.Message}");
+            return Result<bool>.ErrorResult($"An error occurred during user activation: {ex.Message}");
         }
     }
 
-    public async Task<ServiceResult<bool>> DeleteUserAsync(Guid id)
+    public async Task<Result<bool>> DeleteUserAsync(Guid id)
     {
         try
         {
@@ -402,7 +403,7 @@ public class UserService : IUserService
 
             if (user == null)
             {
-                return ServiceResult<bool>.ErrorResult("User not found");
+                return Result<bool>.ErrorResult("User not found");
             }
 
             // Check if user is referenced by projects or other entities
@@ -411,18 +412,18 @@ public class UserService : IUserService
 
             if (hasProjects)
             {
-                return ServiceResult<bool>.ErrorResult("Cannot delete user: User is assigned as project manager to one or more projects");
+                return Result<bool>.ErrorResult("Cannot delete user: User is assigned as project manager to one or more projects");
             }
 
             _context.Users.Remove(user);
             await _context.SaveChangesAsync();
 
-            return ServiceResult<bool>.SuccessResult(true);
+            return Result<bool>.SuccessResult(true);
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error deleting user with ID: {UserId}", id);
-            return ServiceResult<bool>.ErrorResult($"An error occurred during user deletion: {ex.Message}");
+            return Result<bool>.ErrorResult($"An error occurred during user deletion: {ex.Message}");
         }
     }
 }

@@ -1,3 +1,4 @@
+using dotnet_rest_api.Common;
 using dotnet_rest_api.DTOs;
 
 namespace dotnet_rest_api.Services.Shared;
@@ -35,5 +36,5 @@ public interface ICacheService
     /// <summary>
     /// Get cache statistics
     /// </summary>
-    Task<ServiceResult<object>> GetCacheStatsAsync();
+    Task<Result<object>> GetCacheStatsAsync();
 }

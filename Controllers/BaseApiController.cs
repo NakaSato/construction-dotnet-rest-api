@@ -1,3 +1,4 @@
+using dotnet_rest_api.Common;
 using Microsoft.AspNetCore.Mvc;
 using dotnet_rest_api.DTOs;
 using dotnet_rest_api.Services.Shared;
@@ -5,7 +6,9 @@ using dotnet_rest_api.Services.Shared;
 namespace dotnet_rest_api.Controllers;
 
 /// <summary>
-/// Base controller for all API controllers with enhanced functionality
+/// Base controller for all API controllers. Owns construction of the
+/// <see cref="ApiResponse{T}"/> envelope so feature services can return plain
+/// <c>Result</c>/<c>ServiceResult</c> values and never touch the response type.
 /// </summary>
 [ApiController]
 [Route("api/v1/[controller]")]
@@ -14,16 +17,13 @@ public abstract class BaseApiController : ControllerBase
 {
     private readonly ILogger<BaseApiController>? _logger;
     protected readonly IUserContextService? _userContextService;
-    protected readonly IResponseBuilderService? _responseBuilderService;
 
     protected BaseApiController(
         ILogger<BaseApiController>? logger = null,
-        IUserContextService? userContextService = null,
-        IResponseBuilderService? responseBuilderService = null)
+        IUserContextService? userContextService = null)
     {
         _logger = logger;
         _userContextService = userContextService;
-        _responseBuilderService = responseBuilderService;
     }
 
     /// <summary>
@@ -59,12 +59,6 @@ public abstract class BaseApiController : ControllerBase
     /// </summary>
     protected ActionResult<ApiResponse<T>> CreateSuccessResponse<T>(T data, string? message = null)
     {
-        if (_responseBuilderService != null)
-        {
-            return Ok(_responseBuilderService.CreateSuccessResponse(data, message));
-        }
-
-        // Fallback to original method
         return Ok(new ApiResponse<T>
         {
             Success = true,
@@ -78,13 +72,6 @@ public abstract class BaseApiController : ControllerBase
     /// </summary>
     protected ActionResult<ApiResponse<T>> CreateErrorResponse<T>(string message, int statusCode = 400)
     {
-        if (_responseBuilderService != null)
-        {
-            var response = _responseBuilderService.CreateErrorResponse<T>(message, statusCode);
-            return StatusCode(statusCode, response);
-        }
-
-        // Fallback to original method
         return StatusCode(statusCode, new ApiResponse<T>
         {
             Success = false,
@@ -98,12 +85,6 @@ public abstract class BaseApiController : ControllerBase
     /// </summary>
     protected ActionResult<ApiResponse<T>> CreateValidationErrorResponse<T>()
     {
-        if (_responseBuilderService != null)
-        {
-            return BadRequest(_responseBuilderService.CreateValidationErrorResponse<T>(ModelState));
-        }
-
-        // Fallback to original method
         var errors = ModelState
             .Where(x => x.Value?.Errors.Count > 0)
             .SelectMany(x => x.Value!.Errors)
@@ -202,9 +183,9 @@ public abstract class BaseApiController : ControllerBase
     /// <typeparam name="T">Response type</typeparam>
     /// <param name="serviceResult">Service result</param>
     /// <returns>API response</returns>
-    protected ActionResult<ApiResponse<T>> ToApiResponse<T>(ServiceResult<T> serviceResult)
+    protected ActionResult<ApiResponse<T>> ToApiResponse<T>(Result<T> serviceResult)
     {
-        if (serviceResult.Success)
+        if (serviceResult.IsSuccess)
         {
             return Ok(new ApiResponse<T>
             {
@@ -228,9 +209,9 @@ public abstract class BaseApiController : ControllerBase
     /// Maps a create result to 201 Created (with an optional Location header) on success,
     /// or the standard 400 error envelope on failure. Use for POST endpoints that create a resource.
     /// </summary>
-    protected ActionResult<ApiResponse<T>> ToCreatedResponse<T>(ServiceResult<T> serviceResult, string? location = null)
+    protected ActionResult<ApiResponse<T>> ToCreatedResponse<T>(Result<T> serviceResult, string? location = null)
     {
-        if (serviceResult.Success)
+        if (serviceResult.IsSuccess)
         {
             var body = new ApiResponse<T>
             {

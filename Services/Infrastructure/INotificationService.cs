@@ -1,3 +1,4 @@
+using dotnet_rest_api.Common;
 using dotnet_rest_api.DTOs;
 
 namespace dotnet_rest_api.Services.Infrastructure;
@@ -40,17 +41,17 @@ public interface INotificationService
     /// <summary>
     /// Get notifications for user
     /// </summary>
-    Task<ServiceResult<IEnumerable<NotificationDto>>> GetUserNotificationsAsync(Guid userId, int skip = 0, int take = 50);
+    Task<Result<IEnumerable<NotificationDto>>> GetUserNotificationsAsync(Guid userId, int skip = 0, int take = 50);
     
     /// <summary>
     /// Mark notification as read
     /// </summary>
-    Task<ServiceResult<bool>> MarkNotificationAsReadAsync(Guid notificationId, Guid userId);
+    Task<Result<bool>> MarkNotificationAsReadAsync(Guid notificationId, Guid userId);
     
     /// <summary>
     /// Mark all notifications as read for user
     /// </summary>
-    Task<ServiceResult<bool>> MarkAllNotificationsAsReadAsync(Guid userId);
+    Task<Result<bool>> MarkAllNotificationsAsReadAsync(Guid userId);
     
     /// <summary>
     /// Send notification count update to user
@@ -82,6 +83,6 @@ public interface INotificationService
     /// refreshed unread count) over SignalR. <paramref name="type"/> must parse to a
     /// <see cref="Models.NotificationType"/>.
     /// </summary>
-    Task<ServiceResult<NotificationDto>> CreateWorkRequestNotificationAsync(
+    Task<Result<NotificationDto>> CreateWorkRequestNotificationAsync(
         Guid workRequestId, Guid recipientId, string type, string subject, string message, Guid? senderId = null);
 }

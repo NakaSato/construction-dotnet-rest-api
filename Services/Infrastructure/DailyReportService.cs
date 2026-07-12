@@ -34,7 +34,7 @@ public class DailyReportService : IDailyReportService
 
     // ---------------------------------------------------------------- CRUD --
 
-    public async Task<ServiceResult<EnhancedPagedResult<DailyReportDto>>> GetDailyReportsAsync(DailyReportQueryParameters parameters)
+    public async Task<Result<EnhancedPagedResult<DailyReportDto>>> GetDailyReportsAsync(DailyReportQueryParameters parameters)
     {
         var query = BuildBaseQuery();
 
@@ -83,23 +83,23 @@ public class DailyReportService : IDailyReportService
             SortOrder = parameters.SortOrder
         };
 
-        return ServiceResult<EnhancedPagedResult<DailyReportDto>>.SuccessResult(result, "Daily reports retrieved successfully");
+        return Result<EnhancedPagedResult<DailyReportDto>>.SuccessResult(result, "Daily reports retrieved successfully");
     }
 
-    public async Task<ServiceResult<DailyReportDto>> GetDailyReportByIdAsync(Guid id)
+    public async Task<Result<DailyReportDto>> GetDailyReportByIdAsync(Guid id)
     {
         var report = await BuildBaseQuery().FirstOrDefaultAsync(r => r.DailyReportId == id);
         if (report == null)
-            return ServiceResult<DailyReportDto>.ErrorResult("Daily report not found");
+            return Result<DailyReportDto>.ErrorResult("Daily report not found");
 
-        return ServiceResult<DailyReportDto>.SuccessResult(await ToDtoAsync(report), "Daily report retrieved successfully");
+        return Result<DailyReportDto>.SuccessResult(await ToDtoAsync(report), "Daily report retrieved successfully");
     }
 
-    public async Task<ServiceResult<DailyReportDto>> CreateDailyReportAsync(CreateDailyReportRequest request, Guid userId)
+    public async Task<Result<DailyReportDto>> CreateDailyReportAsync(CreateDailyReportRequest request, Guid userId)
     {
         var projectExists = await _context.Projects.AnyAsync(p => p.ProjectId == request.ProjectId);
         if (!projectExists)
-            return ServiceResult<DailyReportDto>.ErrorResult("Project not found");
+            return Result<DailyReportDto>.ErrorResult("Project not found");
 
         var report = _mapper.Map<DailyReport>(request);
         report.DailyReportId = Guid.NewGuid();
@@ -112,15 +112,15 @@ public class DailyReportService : IDailyReportService
 
         var created = await BuildBaseQuery().FirstOrDefaultAsync(r => r.DailyReportId == report.DailyReportId);
         if (created == null)
-            return ServiceResult<DailyReportDto>.ErrorResult("Failed to load created daily report");
-        return ServiceResult<DailyReportDto>.SuccessResult(await ToDtoAsync(created), "Daily report created successfully");
+            return Result<DailyReportDto>.ErrorResult("Failed to load created daily report");
+        return Result<DailyReportDto>.SuccessResult(await ToDtoAsync(created), "Daily report created successfully");
     }
 
-    public async Task<ServiceResult<DailyReportDto>> UpdateDailyReportAsync(Guid id, UpdateDailyReportRequest request, Guid userId, string? userRole = null)
+    public async Task<Result<DailyReportDto>> UpdateDailyReportAsync(Guid id, UpdateDailyReportRequest request, Guid userId, string? userRole = null)
     {
         var report = await _context.DailyReports.FirstOrDefaultAsync(r => r.DailyReportId == id);
         if (report == null)
-            return ServiceResult<DailyReportDto>.ErrorResult("Daily report not found");
+            return Result<DailyReportDto>.ErrorResult("Daily report not found");
 
         // Map non-null request fields onto the tracked entity.
         _mapper.Map(request, report);
@@ -130,11 +130,11 @@ public class DailyReportService : IDailyReportService
 
         var updated = await BuildBaseQuery().FirstOrDefaultAsync(r => r.DailyReportId == id);
         if (updated == null)
-            return ServiceResult<DailyReportDto>.ErrorResult("Failed to load updated daily report");
-        return ServiceResult<DailyReportDto>.SuccessResult(await ToDtoAsync(updated), "Daily report updated successfully");
+            return Result<DailyReportDto>.ErrorResult("Failed to load updated daily report");
+        return Result<DailyReportDto>.SuccessResult(await ToDtoAsync(updated), "Daily report updated successfully");
     }
 
-    public async Task<ServiceResult<bool>> DeleteDailyReportAsync(Guid id)
+    public async Task<Result<bool>> DeleteDailyReportAsync(Guid id)
     {
         var report = await _context.DailyReports
             .Include(r => r.WorkProgressItems)
@@ -143,7 +143,7 @@ public class DailyReportService : IDailyReportService
             .Include(r => r.EquipmentLogs)
             .FirstOrDefaultAsync(r => r.DailyReportId == id);
         if (report == null)
-            return ServiceResult<bool>.ErrorResult("Daily report not found");
+            return Result<bool>.ErrorResult("Daily report not found");
 
         var attachments = await _context.DailyReportAttachments.Where(a => a.DailyReportId == id).ToListAsync();
         _context.DailyReportAttachments.RemoveRange(attachments);
@@ -154,19 +154,19 @@ public class DailyReportService : IDailyReportService
         _context.DailyReports.Remove(report);
         await _context.SaveChangesAsync();
 
-        return ServiceResult<bool>.SuccessResult(true, "Daily report deleted successfully");
+        return Result<bool>.SuccessResult(true, "Daily report deleted successfully");
     }
 
     // ---------------------------------------------------------- Attachments --
 
-    public async Task<ServiceResult<DailyReportAttachmentDto>> AddAttachmentAsync(Guid id, IFormFile file, Guid userId)
+    public async Task<Result<DailyReportAttachmentDto>> AddAttachmentAsync(Guid id, IFormFile file, Guid userId)
     {
         var report = await _context.DailyReports.FirstOrDefaultAsync(r => r.DailyReportId == id);
         if (report == null)
-            return ServiceResult<DailyReportAttachmentDto>.ErrorResult("Daily report not found");
+            return Result<DailyReportAttachmentDto>.ErrorResult("Daily report not found");
 
         if (file == null || file.Length == 0)
-            return ServiceResult<DailyReportAttachmentDto>.ErrorResult("No file provided");
+            return Result<DailyReportAttachmentDto>.ErrorResult("No file provided");
 
         var relativeDir = Path.Combine("uploads", "daily-reports", id.ToString());
         var absoluteDir = Path.Combine(Directory.GetCurrentDirectory(), relativeDir);
@@ -215,19 +215,19 @@ public class DailyReportService : IDailyReportService
             CreatedByName = creatorName
         };
 
-        return ServiceResult<DailyReportAttachmentDto>.SuccessResult(dto, "Attachment added successfully");
+        return Result<DailyReportAttachmentDto>.SuccessResult(dto, "Attachment added successfully");
     }
 
     // ------------------------------------------------------------- Workflow --
 
-    public async Task<ServiceResult<DailyReportDto>> SubmitDailyReportAsync(Guid id)
+    public async Task<Result<DailyReportDto>> SubmitDailyReportAsync(Guid id)
     {
         var report = await _context.DailyReports.FirstOrDefaultAsync(r => r.DailyReportId == id);
         if (report == null)
-            return ServiceResult<DailyReportDto>.ErrorResult("Daily report not found");
+            return Result<DailyReportDto>.ErrorResult("Daily report not found");
 
         if (report.Status != DailyReportStatus.Draft && report.Status != DailyReportStatus.RevisionRequested)
-            return ServiceResult<DailyReportDto>.ErrorResult($"Cannot submit a report with status '{report.Status}'");
+            return Result<DailyReportDto>.ErrorResult($"Cannot submit a report with status '{report.Status}'");
 
         report.Status = DailyReportStatus.Submitted;
         report.SubmittedAt = DateTime.UtcNow;
@@ -238,14 +238,14 @@ public class DailyReportService : IDailyReportService
         return await ReloadAndMapAsync(id, "Daily report submitted successfully");
     }
 
-    public async Task<ServiceResult<DailyReportDto>> ApproveDailyReportAsync(Guid id, Guid userId)
+    public async Task<Result<DailyReportDto>> ApproveDailyReportAsync(Guid id, Guid userId)
     {
         var report = await _context.DailyReports.FirstOrDefaultAsync(r => r.DailyReportId == id);
         if (report == null)
-            return ServiceResult<DailyReportDto>.ErrorResult("Daily report not found");
+            return Result<DailyReportDto>.ErrorResult("Daily report not found");
 
         if (report.Status != DailyReportStatus.Submitted)
-            return ServiceResult<DailyReportDto>.ErrorResult($"Cannot approve a report with status '{report.Status}'");
+            return Result<DailyReportDto>.ErrorResult($"Cannot approve a report with status '{report.Status}'");
 
         report.Status = DailyReportStatus.Approved;
         report.ApprovedAt = DateTime.UtcNow;
@@ -255,14 +255,14 @@ public class DailyReportService : IDailyReportService
         return await ReloadAndMapAsync(id, "Daily report approved successfully");
     }
 
-    public async Task<ServiceResult<DailyReportDto>> RejectDailyReportAsync(Guid id, Guid userId, string? rejectionReason = null)
+    public async Task<Result<DailyReportDto>> RejectDailyReportAsync(Guid id, Guid userId, string? rejectionReason = null)
     {
         var report = await _context.DailyReports.FirstOrDefaultAsync(r => r.DailyReportId == id);
         if (report == null)
-            return ServiceResult<DailyReportDto>.ErrorResult("Daily report not found");
+            return Result<DailyReportDto>.ErrorResult("Daily report not found");
 
         if (report.Status != DailyReportStatus.Submitted)
-            return ServiceResult<DailyReportDto>.ErrorResult($"Cannot reject a report with status '{report.Status}'");
+            return Result<DailyReportDto>.ErrorResult($"Cannot reject a report with status '{report.Status}'");
 
         report.Status = DailyReportStatus.Rejected;
         report.RejectionReason = rejectionReason ?? "No reason provided";
@@ -274,11 +274,11 @@ public class DailyReportService : IDailyReportService
 
     // ------------------------------------------------ Work-progress items --
 
-    public async Task<ServiceResult<WorkProgressItemDto>> AddWorkProgressItemAsync(Guid reportId, CreateWorkProgressItemRequest request)
+    public async Task<Result<WorkProgressItemDto>> AddWorkProgressItemAsync(Guid reportId, CreateWorkProgressItemRequest request)
     {
         var reportExists = await _context.DailyReports.AnyAsync(r => r.DailyReportId == reportId);
         if (!reportExists)
-            return ServiceResult<WorkProgressItemDto>.ErrorResult("Daily report not found");
+            return Result<WorkProgressItemDto>.ErrorResult("Daily report not found");
 
         var item = _mapper.Map<WorkProgressItem>(request);
         item.WorkProgressItemId = Guid.NewGuid();
@@ -292,14 +292,14 @@ public class DailyReportService : IDailyReportService
             .Include(w => w.Task)
             .FirstOrDefaultAsync(w => w.WorkProgressItemId == item.WorkProgressItemId) ?? item;
 
-        return ServiceResult<WorkProgressItemDto>.SuccessResult(_mapper.Map<WorkProgressItemDto>(created), "Work progress item added successfully");
+        return Result<WorkProgressItemDto>.SuccessResult(_mapper.Map<WorkProgressItemDto>(created), "Work progress item added successfully");
     }
 
-    public async Task<ServiceResult<WorkProgressItemDto>> UpdateWorkProgressItemAsync(Guid itemId, UpdateWorkProgressItemRequest request)
+    public async Task<Result<WorkProgressItemDto>> UpdateWorkProgressItemAsync(Guid itemId, UpdateWorkProgressItemRequest request)
     {
         var item = await _context.WorkProgressItems.FirstOrDefaultAsync(w => w.WorkProgressItemId == itemId);
         if (item == null)
-            return ServiceResult<WorkProgressItemDto>.ErrorResult("Work progress item not found");
+            return Result<WorkProgressItemDto>.ErrorResult("Work progress item not found");
 
         if (request.Activity != null) item.Activity = request.Activity;
         if (request.Description != null) item.Description = request.Description;
@@ -316,30 +316,30 @@ public class DailyReportService : IDailyReportService
             .Include(w => w.Task)
             .FirstOrDefaultAsync(w => w.WorkProgressItemId == itemId) ?? item;
 
-        return ServiceResult<WorkProgressItemDto>.SuccessResult(_mapper.Map<WorkProgressItemDto>(updated), "Work progress item updated successfully");
+        return Result<WorkProgressItemDto>.SuccessResult(_mapper.Map<WorkProgressItemDto>(updated), "Work progress item updated successfully");
     }
 
-    public async Task<ServiceResult<bool>> DeleteWorkProgressItemAsync(Guid itemId)
+    public async Task<Result<bool>> DeleteWorkProgressItemAsync(Guid itemId)
     {
         var item = await _context.WorkProgressItems.FirstOrDefaultAsync(w => w.WorkProgressItemId == itemId);
         if (item == null)
-            return ServiceResult<bool>.ErrorResult("Work progress item not found");
+            return Result<bool>.ErrorResult("Work progress item not found");
 
         _context.WorkProgressItems.Remove(item);
         await _context.SaveChangesAsync();
 
-        return ServiceResult<bool>.SuccessResult(true, "Work progress item deleted successfully");
+        return Result<bool>.SuccessResult(true, "Work progress item deleted successfully");
     }
 
     // ----------------------------------------------- Enhanced / project ops --
 
-    public async Task<ServiceResult<EnhancedPagedResult<EnhancedDailyReportDto>>> GetProjectDailyReportsAsync(Guid projectId, EnhancedDailyReportQueryParameters parameters)
+    public async Task<Result<EnhancedPagedResult<EnhancedDailyReportDto>>> GetProjectDailyReportsAsync(Guid projectId, EnhancedDailyReportQueryParameters parameters)
     {
         var project = await _context.Projects
             .Include(p => p.ProjectManager)
             .FirstOrDefaultAsync(p => p.ProjectId == projectId);
         if (project == null)
-            return ServiceResult<EnhancedPagedResult<EnhancedDailyReportDto>>.ErrorResult("Project not found");
+            return Result<EnhancedPagedResult<EnhancedDailyReportDto>>.ErrorResult("Project not found");
 
         var query = BuildBaseQuery().Where(r => r.ProjectId == projectId);
 
@@ -424,24 +424,24 @@ public class DailyReportService : IDailyReportService
             SortOrder = parameters.IsSortDescending ? "desc" : "asc"
         };
 
-        return ServiceResult<EnhancedPagedResult<EnhancedDailyReportDto>>.SuccessResult(result, "Project daily reports retrieved successfully");
+        return Result<EnhancedPagedResult<EnhancedDailyReportDto>>.SuccessResult(result, "Project daily reports retrieved successfully");
     }
 
-    public async Task<ServiceResult<bool>> ValidateProjectAccessAsync(Guid projectId, Guid userId)
+    public async Task<Result<bool>> ValidateProjectAccessAsync(Guid projectId, Guid userId)
     {
         var exists = await _context.Projects.AnyAsync(p => p.ProjectId == projectId);
         return exists
-            ? ServiceResult<bool>.SuccessResult(true, "Access validated")
-            : ServiceResult<bool>.ErrorResult("Project not found");
+            ? Result<bool>.SuccessResult(true, "Access validated")
+            : Result<bool>.ErrorResult("Project not found");
     }
 
-    public async Task<ServiceResult<EnhancedDailyReportDto>> CreateEnhancedDailyReportAsync(EnhancedCreateDailyReportRequest request, Guid userId)
+    public async Task<Result<EnhancedDailyReportDto>> CreateEnhancedDailyReportAsync(EnhancedCreateDailyReportRequest request, Guid userId)
     {
         var project = await _context.Projects
             .Include(p => p.ProjectManager)
             .FirstOrDefaultAsync(p => p.ProjectId == request.ProjectId);
         if (project == null)
-            return ServiceResult<EnhancedDailyReportDto>.ErrorResult("Project not found");
+            return Result<EnhancedDailyReportDto>.ErrorResult("Project not found");
 
         var report = new DailyReport
         {
@@ -537,16 +537,16 @@ public class DailyReportService : IDailyReportService
         dto.DailyProgressContribution = request.DailyProgressContribution;
         dto.ApprovalStatus = created.Status.ToString();
 
-        return ServiceResult<EnhancedDailyReportDto>.SuccessResult(dto, "Enhanced daily report created successfully");
+        return Result<EnhancedDailyReportDto>.SuccessResult(dto, "Enhanced daily report created successfully");
     }
 
     // ------------------------------------------------------------ Analytics --
 
-    public async Task<ServiceResult<DailyReportAnalyticsDto>> GetDailyReportAnalyticsAsync(Guid projectId, DateTime startDate, DateTime endDate)
+    public async Task<Result<DailyReportAnalyticsDto>> GetDailyReportAnalyticsAsync(Guid projectId, DateTime startDate, DateTime endDate)
     {
         var project = await _context.Projects.FirstOrDefaultAsync(p => p.ProjectId == projectId);
         if (project == null)
-            return ServiceResult<DailyReportAnalyticsDto>.ErrorResult("Project not found");
+            return Result<DailyReportAnalyticsDto>.ErrorResult("Project not found");
 
         var reports = await _context.DailyReports
             .Where(r => r.ProjectId == projectId && r.ReportDate >= startDate && r.ReportDate <= endDate)
@@ -584,16 +584,16 @@ public class DailyReportService : IDailyReportService
 
         // Safety/Quality scores are not persisted on DailyReport, so those trend
         // series and averages are left at their defaults (empty / 0).
-        return ServiceResult<DailyReportAnalyticsDto>.SuccessResult(analytics, "Analytics generated successfully");
+        return Result<DailyReportAnalyticsDto>.SuccessResult(analytics, "Analytics generated successfully");
     }
 
-    public async Task<ServiceResult<WeeklySummaryDto>> GetWeeklySummaryAsync(Guid projectId, DateTime weekStartDate)
+    public async Task<Result<WeeklySummaryDto>> GetWeeklySummaryAsync(Guid projectId, DateTime weekStartDate)
         => await BuildWeeklySummaryAsync(projectId, weekStartDate);
 
-    public async Task<ServiceResult<WeeklySummaryDto>> GetWeeklyProgressReportAsync(Guid projectId, DateTime weekStart)
+    public async Task<Result<WeeklySummaryDto>> GetWeeklyProgressReportAsync(Guid projectId, DateTime weekStart)
         => await BuildWeeklySummaryAsync(projectId, weekStart);
 
-    private async Task<ServiceResult<WeeklySummaryDto>> BuildWeeklySummaryAsync(Guid projectId, DateTime weekStart)
+    private async Task<Result<WeeklySummaryDto>> BuildWeeklySummaryAsync(Guid projectId, DateTime weekStart)
     {
         var weekEnd = weekStart.AddDays(7);
         var query = BuildBaseQuery().Where(r => r.ReportDate >= weekStart && r.ReportDate < weekEnd);
@@ -622,16 +622,16 @@ public class DailyReportService : IDailyReportService
             Reports = await ToDtosAsync(reports)
         };
 
-        return ServiceResult<WeeklySummaryDto>.SuccessResult(summary, "Weekly summary generated successfully");
+        return Result<WeeklySummaryDto>.SuccessResult(summary, "Weekly summary generated successfully");
     }
 
     // ------------------------------------------------------------- Insights --
 
-    public async Task<ServiceResult<DailyReportInsightsDto>> GetDailyReportInsightsAsync(Guid projectId, Guid? reportId = null)
+    public async Task<Result<DailyReportInsightsDto>> GetDailyReportInsightsAsync(Guid projectId, Guid? reportId = null)
     {
         var project = await _context.Projects.FirstOrDefaultAsync(p => p.ProjectId == projectId);
         if (project == null)
-            return ServiceResult<DailyReportInsightsDto>.ErrorResult("Project not found");
+            return Result<DailyReportInsightsDto>.ErrorResult("Project not found");
 
         var reports = await _context.DailyReports
             .Where(r => r.ProjectId == projectId)
@@ -669,12 +669,12 @@ public class DailyReportService : IDailyReportService
 
         insights.IsOnTrack = issueRatio < 0.25;
 
-        return ServiceResult<DailyReportInsightsDto>.SuccessResult(insights, "Insights generated successfully");
+        return Result<DailyReportInsightsDto>.SuccessResult(insights, "Insights generated successfully");
     }
 
     // ----------------------------------------------------------- Validation --
 
-    public Task<ServiceResult<DailyReportValidationResultDto>> ValidateDailyReportAsync(EnhancedCreateDailyReportRequest request)
+    public Task<Result<DailyReportValidationResultDto>> ValidateDailyReportAsync(EnhancedCreateDailyReportRequest request)
     {
         var result = new DailyReportValidationResultDto { IsValid = true };
 
@@ -718,21 +718,21 @@ public class DailyReportService : IDailyReportService
         if (!string.IsNullOrEmpty(request.SafetyIncidents))
             result.Suggestions.Add("Safety incidents were reported; consider attaching supporting photos.");
 
-        return System.Threading.Tasks.Task.FromResult(ServiceResult<DailyReportValidationResultDto>.SuccessResult(result, "Validation completed"));
+        return System.Threading.Tasks.Task.FromResult(Result<DailyReportValidationResultDto>.SuccessResult(result, "Validation completed"));
     }
 
     // ------------------------------------------------------------ Templates --
 
-    public Task<ServiceResult<List<DailyReportTemplateDto>>> GetDailyReportTemplatesAsync(Guid projectId)
+    public Task<Result<List<DailyReportTemplateDto>>> GetDailyReportTemplatesAsync(Guid projectId)
     {
         // No template table backs this feature yet; return an empty set rather than error.
         var templates = new List<DailyReportTemplateDto>();
-        return System.Threading.Tasks.Task.FromResult(ServiceResult<List<DailyReportTemplateDto>>.SuccessResult(templates, "No templates configured"));
+        return System.Threading.Tasks.Task.FromResult(Result<List<DailyReportTemplateDto>>.SuccessResult(templates, "No templates configured"));
     }
 
     // --------------------------------------------------------- Bulk actions --
 
-    public async Task<ServiceResult<BulkOperationResultDto>> BulkApproveDailyReportsAsync(DailyReportBulkApprovalRequest request, Guid userId)
+    public async Task<Result<BulkOperationResultDto>> BulkApproveDailyReportsAsync(DailyReportBulkApprovalRequest request, Guid userId)
     {
         var result = new BulkOperationResultDto { TotalRequested = request.ReportIds.Count };
 
@@ -762,10 +762,10 @@ public class DailyReportService : IDailyReportService
         result.FailureCount = result.Results.Count(r => !r.Success);
         result.Summary = $"Approved {result.SuccessCount} of {result.TotalRequested} report(s)";
 
-        return ServiceResult<BulkOperationResultDto>.SuccessResult(result, result.Summary);
+        return Result<BulkOperationResultDto>.SuccessResult(result, result.Summary);
     }
 
-    public async Task<ServiceResult<BulkOperationResultDto>> BulkRejectDailyReportsAsync(DailyReportBulkRejectionRequest request, Guid userId)
+    public async Task<Result<BulkOperationResultDto>> BulkRejectDailyReportsAsync(DailyReportBulkRejectionRequest request, Guid userId)
     {
         var result = new BulkOperationResultDto { TotalRequested = request.ReportIds.Count };
 
@@ -795,12 +795,12 @@ public class DailyReportService : IDailyReportService
         result.FailureCount = result.Results.Count(r => !r.Success);
         result.Summary = $"Rejected {result.SuccessCount} of {result.TotalRequested} report(s)";
 
-        return ServiceResult<BulkOperationResultDto>.SuccessResult(result, result.Summary);
+        return Result<BulkOperationResultDto>.SuccessResult(result, result.Summary);
     }
 
     // --------------------------------------------------------------- Export --
 
-    public async Task<ServiceResult<byte[]>> ExportDailyReportsAsync(DailyReportQueryParameters parameters)
+    public async Task<Result<byte[]>> ExportDailyReportsAsync(DailyReportQueryParameters parameters)
     {
         var query = BuildBaseQuery();
         if (parameters.ProjectId.HasValue)
@@ -812,10 +812,10 @@ public class DailyReportService : IDailyReportService
 
         var reports = await query.OrderBy(r => r.ReportDate).ToListAsync();
         var bytes = BuildCsv(reports);
-        return ServiceResult<byte[]>.SuccessResult(bytes, "Export generated successfully");
+        return Result<byte[]>.SuccessResult(bytes, "Export generated successfully");
     }
 
-    public async Task<ServiceResult<byte[]>> ExportEnhancedDailyReportsAsync(DailyReportExportRequest request)
+    public async Task<Result<byte[]>> ExportEnhancedDailyReportsAsync(DailyReportExportRequest request)
     {
         var query = BuildBaseQuery().Where(r => r.ProjectId == request.ProjectId);
         if (request.StartDate.HasValue)
@@ -837,12 +837,12 @@ public class DailyReportService : IDailyReportService
             bytes = BuildCsv(reports);
         }
 
-        return ServiceResult<byte[]>.SuccessResult(bytes, "Export generated successfully");
+        return Result<byte[]>.SuccessResult(bytes, "Export generated successfully");
     }
 
     // --------------------------------------------------- Approvals / history --
 
-    public async Task<ServiceResult<EnhancedPagedResult<DailyReportDto>>> GetPendingApprovalsAsync(Guid? projectId = null, int pageNumber = 1, int pageSize = 20)
+    public async Task<Result<EnhancedPagedResult<DailyReportDto>>> GetPendingApprovalsAsync(Guid? projectId = null, int pageNumber = 1, int pageSize = 20)
     {
         if (pageNumber < 1) pageNumber = 1;
         if (pageSize < 1) pageSize = 20;
@@ -867,14 +867,14 @@ public class DailyReportService : IDailyReportService
             PageSize = pageSize
         };
 
-        return ServiceResult<EnhancedPagedResult<DailyReportDto>>.SuccessResult(result, "Pending approvals retrieved successfully");
+        return Result<EnhancedPagedResult<DailyReportDto>>.SuccessResult(result, "Pending approvals retrieved successfully");
     }
 
-    public async Task<ServiceResult<List<ApprovalHistoryDto>>> GetApprovalHistoryAsync(Guid reportId)
+    public async Task<Result<List<ApprovalHistoryDto>>> GetApprovalHistoryAsync(Guid reportId)
     {
         var report = await _context.DailyReports.FirstOrDefaultAsync(r => r.DailyReportId == reportId);
         if (report == null)
-            return ServiceResult<List<ApprovalHistoryDto>>.ErrorResult("Daily report not found");
+            return Result<List<ApprovalHistoryDto>>.ErrorResult("Daily report not found");
 
         // No dedicated history table exists; synthesize entries from the report's
         // workflow timestamps and current status.
@@ -911,7 +911,7 @@ public class DailyReportService : IDailyReportService
             });
         }
 
-        return ServiceResult<List<ApprovalHistoryDto>>.SuccessResult(
+        return Result<List<ApprovalHistoryDto>>.SuccessResult(
             history.OrderBy(h => h.Timestamp).ToList(),
             "Approval history retrieved successfully");
     }
@@ -934,12 +934,12 @@ public class DailyReportService : IDailyReportService
             .AsQueryable();
     }
 
-    private async Task<ServiceResult<DailyReportDto>> ReloadAndMapAsync(Guid id, string message)
+    private async Task<Result<DailyReportDto>> ReloadAndMapAsync(Guid id, string message)
     {
         var report = await BuildBaseQuery().FirstOrDefaultAsync(r => r.DailyReportId == id);
         if (report == null)
-            return ServiceResult<DailyReportDto>.ErrorResult("Daily report not found");
-        return ServiceResult<DailyReportDto>.SuccessResult(await ToDtoAsync(report), message);
+            return Result<DailyReportDto>.ErrorResult("Daily report not found");
+        return Result<DailyReportDto>.SuccessResult(await ToDtoAsync(report), message);
     }
 
     /// <summary>Maps a single report and backfills Project/Reporter display names.</summary>

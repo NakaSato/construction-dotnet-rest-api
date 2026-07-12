@@ -19,7 +19,7 @@ public class TaskService : ITaskService
         _logger = logger;
     }
 
-    public async Task<ServiceResult<PagedResult<TaskDto>>> GetTasksAsync(int pageNumber, int pageSize, Guid? projectId)
+    public async Task<Result<PagedResult<TaskDto>>> GetTasksAsync(int pageNumber, int pageSize, Guid? projectId)
     {
         try
         {
@@ -52,16 +52,16 @@ public class TaskService : ITaskService
                 PageSize = pageSize
             };
 
-            return ServiceResult<PagedResult<TaskDto>>.SuccessResult(result, "Tasks retrieved successfully");
+            return Result<PagedResult<TaskDto>>.SuccessResult(result, "Tasks retrieved successfully");
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error retrieving tasks");
-            return ServiceResult<PagedResult<TaskDto>>.ErrorResult($"Error retrieving tasks: {ex.Message}");
+            return Result<PagedResult<TaskDto>>.ErrorResult($"Error retrieving tasks: {ex.Message}");
         }
     }
 
-    public async Task<ServiceResult<PagedResult<TaskDto>>> GetTasksAsync(int pageNumber, int pageSize, Guid? projectId, Guid? assigneeId)
+    public async Task<Result<PagedResult<TaskDto>>> GetTasksAsync(int pageNumber, int pageSize, Guid? projectId, Guid? assigneeId)
     {
         try
         {
@@ -97,16 +97,16 @@ public class TaskService : ITaskService
                 PageSize = pageSize
             };
 
-            return ServiceResult<PagedResult<TaskDto>>.SuccessResult(result, "Tasks retrieved successfully");
+            return Result<PagedResult<TaskDto>>.SuccessResult(result, "Tasks retrieved successfully");
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error retrieving tasks");
-            return ServiceResult<PagedResult<TaskDto>>.ErrorResult($"Error retrieving tasks: {ex.Message}");
+            return Result<PagedResult<TaskDto>>.ErrorResult($"Error retrieving tasks: {ex.Message}");
         }
     }
 
-    public async Task<ServiceResult<EnhancedPagedResult<TaskDto>>> GetTasksAsync(TaskQueryParameters parameters)
+    public async Task<Result<EnhancedPagedResult<TaskDto>>> GetTasksAsync(TaskQueryParameters parameters)
     {
         // Basic implementation - return empty enhanced result for now
         var result = new EnhancedPagedResult<TaskDto>
@@ -117,16 +117,16 @@ public class TaskService : ITaskService
             PageSize = parameters.PageSize
         };
 
-        return ServiceResult<EnhancedPagedResult<TaskDto>>.SuccessResult(result, "Tasks retrieved successfully");
+        return Result<EnhancedPagedResult<TaskDto>>.SuccessResult(result, "Tasks retrieved successfully");
     }
 
-    public async Task<ServiceResult<TaskDto>> GetTaskByIdAsync(Guid id)
+    public async Task<Result<TaskDto>> GetTaskByIdAsync(Guid id)
     {
         try
         {
             var task = await _context.ProjectTasks.FindAsync(id);
             if (task == null)
-                return ServiceResult<TaskDto>.ErrorResult("Task not found");
+                return Result<TaskDto>.ErrorResult("Task not found");
 
             var taskDto = new TaskDto
             {
@@ -139,16 +139,16 @@ public class TaskService : ITaskService
                 CreatedAt = task.CreatedAt
             };
 
-            return ServiceResult<TaskDto>.SuccessResult(taskDto, "Task retrieved successfully");
+            return Result<TaskDto>.SuccessResult(taskDto, "Task retrieved successfully");
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error retrieving task {TaskId}", id);
-            return ServiceResult<TaskDto>.ErrorResult($"Error retrieving task: {ex.Message}");
+            return Result<TaskDto>.ErrorResult($"Error retrieving task: {ex.Message}");
         }
     }
 
-    public async Task<ServiceResult<TaskDto>> CreateTaskAsync(CreateTaskRequest request)
+    public async Task<Result<TaskDto>> CreateTaskAsync(CreateTaskRequest request)
     {
         try
         {
@@ -177,16 +177,16 @@ public class TaskService : ITaskService
                 CreatedAt = task.CreatedAt
             };
 
-            return ServiceResult<TaskDto>.SuccessResult(taskDto, "Task created successfully");
+            return Result<TaskDto>.SuccessResult(taskDto, "Task created successfully");
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error creating task");
-            return ServiceResult<TaskDto>.ErrorResult($"Error creating task: {ex.Message}");
+            return Result<TaskDto>.ErrorResult($"Error creating task: {ex.Message}");
         }
     }
 
-    public async Task<ServiceResult<TaskDto>> CreateTaskAsync(Guid projectId, CreateTaskRequest request)
+    public async Task<Result<TaskDto>> CreateTaskAsync(Guid projectId, CreateTaskRequest request)
     {
         try
         {
@@ -216,22 +216,22 @@ public class TaskService : ITaskService
                 CreatedAt = task.CreatedAt
             };
 
-            return ServiceResult<TaskDto>.SuccessResult(taskDto, "Task created successfully");
+            return Result<TaskDto>.SuccessResult(taskDto, "Task created successfully");
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error creating task");
-            return ServiceResult<TaskDto>.ErrorResult($"Error creating task: {ex.Message}");
+            return Result<TaskDto>.ErrorResult($"Error creating task: {ex.Message}");
         }
     }
 
-    public async Task<ServiceResult<TaskDto>> UpdateTaskAsync(Guid id, UpdateTaskRequest request)
+    public async Task<Result<TaskDto>> UpdateTaskAsync(Guid id, UpdateTaskRequest request)
     {
         try
         {
             var task = await _context.ProjectTasks.FindAsync(id);
             if (task == null)
-                return ServiceResult<TaskDto>.ErrorResult("Task not found");
+                return Result<TaskDto>.ErrorResult("Task not found");
 
             task.Title = request.Title;
             task.Description = request.Description;
@@ -254,16 +254,16 @@ public class TaskService : ITaskService
                 CreatedAt = task.CreatedAt
             };
 
-            return ServiceResult<TaskDto>.SuccessResult(taskDto, "Task updated successfully");
+            return Result<TaskDto>.SuccessResult(taskDto, "Task updated successfully");
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error updating task {TaskId}", id);
-            return ServiceResult<TaskDto>.ErrorResult($"Error updating task: {ex.Message}");
+            return Result<TaskDto>.ErrorResult($"Error updating task: {ex.Message}");
         }
     }
 
-    public async Task<ServiceResult<TaskDto>> PatchTaskAsync(Guid id, PatchTaskRequest request)
+    public async Task<Result<TaskDto>> PatchTaskAsync(Guid id, PatchTaskRequest request)
     {
         // Basic implementation - redirect to update for now
         var updateRequest = new UpdateTaskRequest
@@ -278,38 +278,38 @@ public class TaskService : ITaskService
         return await UpdateTaskAsync(id, updateRequest);
     }
 
-    public async Task<ServiceResult<bool>> DeleteTaskAsync(Guid id)
+    public async Task<Result<bool>> DeleteTaskAsync(Guid id)
     {
         try
         {
             var task = await _context.ProjectTasks.FindAsync(id);
             if (task == null)
-                return ServiceResult<bool>.ErrorResult("Task not found");
+                return Result<bool>.ErrorResult("Task not found");
 
             _context.ProjectTasks.Remove(task);
             await _context.SaveChangesAsync();
 
-            return ServiceResult<bool>.SuccessResult(true, "Task deleted successfully");
+            return Result<bool>.SuccessResult(true, "Task deleted successfully");
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error deleting task {TaskId}", id);
-            return ServiceResult<bool>.ErrorResult($"Error deleting task: {ex.Message}");
+            return Result<bool>.ErrorResult($"Error deleting task: {ex.Message}");
         }
     }
 
-    public async Task<ServiceResult<TaskDto>> UpdateTaskStatusAsync(Guid id, int status)
+    public async Task<Result<TaskDto>> UpdateTaskStatusAsync(Guid id, int status)
     {
         return await UpdateTaskStatusAsync(id, (TaskStatus)status);
     }
 
-    public async Task<ServiceResult<TaskDto>> UpdateTaskStatusAsync(Guid id, TaskStatus status)
+    public async Task<Result<TaskDto>> UpdateTaskStatusAsync(Guid id, TaskStatus status)
     {
         try
         {
             var task = await _context.ProjectTasks.FindAsync(id);
             if (task == null)
-                return ServiceResult<TaskDto>.ErrorResult("Task not found");
+                return Result<TaskDto>.ErrorResult("Task not found");
 
             task.Status = status;
             await _context.SaveChangesAsync();
@@ -325,22 +325,22 @@ public class TaskService : ITaskService
                 CreatedAt = task.CreatedAt
             };
 
-            return ServiceResult<TaskDto>.SuccessResult(taskDto, "Task status updated successfully");
+            return Result<TaskDto>.SuccessResult(taskDto, "Task status updated successfully");
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error updating task status {TaskId}", id);
-            return ServiceResult<TaskDto>.ErrorResult($"Error updating task status: {ex.Message}");
+            return Result<TaskDto>.ErrorResult($"Error updating task status: {ex.Message}");
         }
     }
 
-    public async Task<ServiceResult<TaskDto>> UpdateTaskProgressAsync(Guid id, decimal progress)
+    public async Task<Result<TaskDto>> UpdateTaskProgressAsync(Guid id, decimal progress)
     {
         try
         {
             var task = await _context.ProjectTasks.FindAsync(id);
             if (task == null)
-                return ServiceResult<TaskDto>.ErrorResult("Task not found");
+                return Result<TaskDto>.ErrorResult("Task not found");
 
             // Basic implementation - just save the change
             await _context.SaveChangesAsync();
@@ -356,22 +356,22 @@ public class TaskService : ITaskService
                 CreatedAt = task.CreatedAt
             };
 
-            return ServiceResult<TaskDto>.SuccessResult(taskDto, "Task progress updated successfully");
+            return Result<TaskDto>.SuccessResult(taskDto, "Task progress updated successfully");
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error updating task progress {TaskId}", id);
-            return ServiceResult<TaskDto>.ErrorResult($"Error updating task progress: {ex.Message}");
+            return Result<TaskDto>.ErrorResult($"Error updating task progress: {ex.Message}");
         }
     }
 
-    public async Task<ServiceResult<TaskDto>> UpdateTaskPriorityAsync(Guid id, TaskPriority priority)
+    public async Task<Result<TaskDto>> UpdateTaskPriorityAsync(Guid id, TaskPriority priority)
     {
         try
         {
             var task = await _context.ProjectTasks.FindAsync(id);
             if (task == null)
-                return ServiceResult<TaskDto>.ErrorResult("Task not found");
+                return Result<TaskDto>.ErrorResult("Task not found");
 
             // Basic implementation - just save the change
             await _context.SaveChangesAsync();
@@ -387,22 +387,22 @@ public class TaskService : ITaskService
                 CreatedAt = task.CreatedAt
             };
 
-            return ServiceResult<TaskDto>.SuccessResult(taskDto, "Task priority updated successfully");
+            return Result<TaskDto>.SuccessResult(taskDto, "Task priority updated successfully");
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error updating task priority {TaskId}", id);
-            return ServiceResult<TaskDto>.ErrorResult($"Error updating task priority: {ex.Message}");
+            return Result<TaskDto>.ErrorResult($"Error updating task priority: {ex.Message}");
         }
     }
 
-    public async Task<ServiceResult<TaskDto>> UpdateTaskDueDateAsync(Guid id, DateTime dueDate)
+    public async Task<Result<TaskDto>> UpdateTaskDueDateAsync(Guid id, DateTime dueDate)
     {
         try
         {
             var task = await _context.ProjectTasks.FindAsync(id);
             if (task == null)
-                return ServiceResult<TaskDto>.ErrorResult("Task not found");
+                return Result<TaskDto>.ErrorResult("Task not found");
 
             task.DueDate = dueDate;
             await _context.SaveChangesAsync();
@@ -418,22 +418,22 @@ public class TaskService : ITaskService
                 CreatedAt = task.CreatedAt
             };
 
-            return ServiceResult<TaskDto>.SuccessResult(taskDto, "Task due date updated successfully");
+            return Result<TaskDto>.SuccessResult(taskDto, "Task due date updated successfully");
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error updating task due date {TaskId}", id);
-            return ServiceResult<TaskDto>.ErrorResult($"Error updating task due date: {ex.Message}");
+            return Result<TaskDto>.ErrorResult($"Error updating task due date: {ex.Message}");
         }
     }
 
-    public async Task<ServiceResult<TaskDto>> AssignTaskAsync(Guid id, Guid technicianId)
+    public async Task<Result<TaskDto>> AssignTaskAsync(Guid id, Guid technicianId)
     {
         try
         {
             var task = await _context.ProjectTasks.FindAsync(id);
             if (task == null)
-                return ServiceResult<TaskDto>.ErrorResult("Task not found");
+                return Result<TaskDto>.ErrorResult("Task not found");
 
             task.AssignedTechnicianId = technicianId;
             await _context.SaveChangesAsync();
@@ -449,22 +449,22 @@ public class TaskService : ITaskService
                 CreatedAt = task.CreatedAt
             };
 
-            return ServiceResult<TaskDto>.SuccessResult(taskDto, "Task assigned successfully");
+            return Result<TaskDto>.SuccessResult(taskDto, "Task assigned successfully");
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error assigning task {TaskId}", id);
-            return ServiceResult<TaskDto>.ErrorResult($"Error assigning task: {ex.Message}");
+            return Result<TaskDto>.ErrorResult($"Error assigning task: {ex.Message}");
         }
     }
 
-    public async Task<ServiceResult<TaskDto>> UnassignTaskAsync(Guid id)
+    public async Task<Result<TaskDto>> UnassignTaskAsync(Guid id)
     {
         try
         {
             var task = await _context.ProjectTasks.FindAsync(id);
             if (task == null)
-                return ServiceResult<TaskDto>.ErrorResult("Task not found");
+                return Result<TaskDto>.ErrorResult("Task not found");
 
             task.AssignedTechnicianId = null;
             await _context.SaveChangesAsync();
@@ -480,16 +480,16 @@ public class TaskService : ITaskService
                 CreatedAt = task.CreatedAt
             };
 
-            return ServiceResult<TaskDto>.SuccessResult(taskDto, "Task unassigned successfully");
+            return Result<TaskDto>.SuccessResult(taskDto, "Task unassigned successfully");
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error unassigning task {TaskId}", id);
-            return ServiceResult<TaskDto>.ErrorResult($"Error unassigning task: {ex.Message}");
+            return Result<TaskDto>.ErrorResult($"Error unassigning task: {ex.Message}");
         }
     }
 
-    public async Task<ServiceResult<List<TaskDto>>> GetTasksByProjectIdAsync(Guid projectId)
+    public async Task<Result<List<TaskDto>>> GetTasksByProjectIdAsync(Guid projectId)
     {
         try
         {
@@ -507,16 +507,16 @@ public class TaskService : ITaskService
                 })
                 .ToListAsync();
 
-            return ServiceResult<List<TaskDto>>.SuccessResult(tasks, "Tasks retrieved successfully");
+            return Result<List<TaskDto>>.SuccessResult(tasks, "Tasks retrieved successfully");
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error retrieving tasks for project {ProjectId}", projectId);
-            return ServiceResult<List<TaskDto>>.ErrorResult($"Error retrieving tasks: {ex.Message}");
+            return Result<List<TaskDto>>.ErrorResult($"Error retrieving tasks: {ex.Message}");
         }
     }
 
-    public async Task<ServiceResult<List<TaskDto>>> GetTasksByAssigneeAsync(Guid userId)
+    public async Task<Result<List<TaskDto>>> GetTasksByAssigneeAsync(Guid userId)
     {
         try
         {
@@ -534,16 +534,16 @@ public class TaskService : ITaskService
                 })
                 .ToListAsync();
 
-            return ServiceResult<List<TaskDto>>.SuccessResult(tasks, "Tasks retrieved successfully");
+            return Result<List<TaskDto>>.SuccessResult(tasks, "Tasks retrieved successfully");
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error retrieving tasks for user {UserId}", userId);
-            return ServiceResult<List<TaskDto>>.ErrorResult($"Error retrieving tasks: {ex.Message}");
+            return Result<List<TaskDto>>.ErrorResult($"Error retrieving tasks: {ex.Message}");
         }
     }
 
-    public async Task<ServiceResult<PagedResult<TaskProgressReportDto>>> GetTaskProgressReportsAsync(Guid taskId, int pageNumber, int pageSize)
+    public async Task<Result<PagedResult<TaskProgressReportDto>>> GetTaskProgressReportsAsync(Guid taskId, int pageNumber, int pageSize)
     {
         // Basic implementation - return empty result for now
         var result = new PagedResult<TaskProgressReportDto>
@@ -554,10 +554,10 @@ public class TaskService : ITaskService
             PageSize = pageSize
         };
 
-        return ServiceResult<PagedResult<TaskProgressReportDto>>.SuccessResult(result, "Progress reports retrieved successfully");
+        return Result<PagedResult<TaskProgressReportDto>>.SuccessResult(result, "Progress reports retrieved successfully");
     }
 
-    public async Task<ServiceResult<TaskProgressReportDto>> CreateTaskProgressReportAsync(Guid taskId, CreateTaskProgressReportRequest request)
+    public async Task<Result<TaskProgressReportDto>> CreateTaskProgressReportAsync(Guid taskId, CreateTaskProgressReportRequest request)
     {
         // Basic implementation - return empty DTO for now
         var reportDto = new TaskProgressReportDto
@@ -566,16 +566,16 @@ public class TaskService : ITaskService
             CreatedAt = DateTime.UtcNow
         };
 
-        return ServiceResult<TaskProgressReportDto>.SuccessResult(reportDto, "Progress report created successfully");
+        return Result<TaskProgressReportDto>.SuccessResult(reportDto, "Progress report created successfully");
     }
 
-    public async Task<ServiceResult<TaskDto>> AddTaskProgressReportAsync(Guid taskId, CreateTaskProgressReportRequest request)
+    public async Task<Result<TaskDto>> AddTaskProgressReportAsync(Guid taskId, CreateTaskProgressReportRequest request)
     {
         try
         {
             var task = await _context.ProjectTasks.FindAsync(taskId);
             if (task == null)
-                return ServiceResult<TaskDto>.ErrorResult("Task not found");
+                return Result<TaskDto>.ErrorResult("Task not found");
 
             // Basic implementation - just return the task
             var taskDto = new TaskDto
@@ -589,16 +589,16 @@ public class TaskService : ITaskService
                 CreatedAt = task.CreatedAt
             };
 
-            return ServiceResult<TaskDto>.SuccessResult(taskDto, "Progress report added successfully");
+            return Result<TaskDto>.SuccessResult(taskDto, "Progress report added successfully");
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error adding progress report to task {TaskId}", taskId);
-            return ServiceResult<TaskDto>.ErrorResult($"Error adding progress report: {ex.Message}");
+            return Result<TaskDto>.ErrorResult($"Error adding progress report: {ex.Message}");
         }
     }
 
-    public async Task<ServiceResult<PagedResult<TaskDto>>> GetPhaseTasksAsync(Guid phaseId, int pageNumber, int pageSize)
+    public async Task<Result<PagedResult<TaskDto>>> GetPhaseTasksAsync(Guid phaseId, int pageNumber, int pageSize)
     {
         try
         {
@@ -611,12 +611,12 @@ public class TaskService : ITaskService
                 PageSize = pageSize
             };
 
-            return ServiceResult<PagedResult<TaskDto>>.SuccessResult(result, "Phase tasks retrieved successfully");
+            return Result<PagedResult<TaskDto>>.SuccessResult(result, "Phase tasks retrieved successfully");
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error retrieving tasks for phase {PhaseId}", phaseId);
-            return ServiceResult<PagedResult<TaskDto>>.ErrorResult($"Error retrieving phase tasks: {ex.Message}");
+            return Result<PagedResult<TaskDto>>.ErrorResult($"Error retrieving phase tasks: {ex.Message}");
         }
     }
 }

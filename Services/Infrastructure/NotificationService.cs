@@ -1,3 +1,4 @@
+using dotnet_rest_api.Common;
 using dotnet_rest_api.Data;
 using dotnet_rest_api.DTOs;
 using dotnet_rest_api.Hubs;
@@ -116,7 +117,7 @@ public class NotificationService : INotificationService
 
     // --------------------------------------------------- Persisted / DB ops --
 
-    public async Task<ServiceResult<IEnumerable<NotificationDto>>> GetUserNotificationsAsync(Guid userId, int skip = 0, int take = 50)
+    public async Task<Result<IEnumerable<NotificationDto>>> GetUserNotificationsAsync(Guid userId, int skip = 0, int take = 50)
     {
         if (skip < 0) skip = 0;
         if (take is < 1 or > 200) take = 50;
@@ -130,15 +131,15 @@ public class NotificationService : INotificationService
             .ToListAsync();
 
         var notifications = entities.Select(ToDto).ToList();
-        return ServiceResult<IEnumerable<NotificationDto>>.SuccessResult(notifications, "Notifications retrieved successfully");
+        return Result<IEnumerable<NotificationDto>>.SuccessResult(notifications, "Notifications retrieved successfully");
     }
 
-    public async Task<ServiceResult<bool>> MarkNotificationAsReadAsync(Guid notificationId, Guid userId)
+    public async Task<Result<bool>> MarkNotificationAsReadAsync(Guid notificationId, Guid userId)
     {
         var notification = await _context.WorkRequestNotifications
             .FirstOrDefaultAsync(n => n.NotificationId == notificationId && n.RecipientId == userId);
         if (notification == null)
-            return ServiceResult<bool>.ErrorResult("Notification not found");
+            return Result<bool>.ErrorResult("Notification not found");
 
         if (notification.ReadAt == null)
         {
@@ -148,10 +149,10 @@ public class NotificationService : INotificationService
             await SendNotificationCountUpdateAsync(userId);
         }
 
-        return ServiceResult<bool>.SuccessResult(true, "Notification marked as read");
+        return Result<bool>.SuccessResult(true, "Notification marked as read");
     }
 
-    public async Task<ServiceResult<bool>> MarkAllNotificationsAsReadAsync(Guid userId)
+    public async Task<Result<bool>> MarkAllNotificationsAsReadAsync(Guid userId)
     {
         var unread = await _context.WorkRequestNotifications
             .Where(n => n.RecipientId == userId && n.ReadAt == null)
@@ -169,7 +170,7 @@ public class NotificationService : INotificationService
             await SendNotificationCountUpdateAsync(userId);
         }
 
-        return ServiceResult<bool>.SuccessResult(true, "All notifications marked as read");
+        return Result<bool>.SuccessResult(true, "All notifications marked as read");
     }
 
     public async Task SendNotificationCountUpdateAsync(Guid userId)
@@ -179,13 +180,13 @@ public class NotificationService : INotificationService
         await _hub.Clients.Group(UserGroup(userId)).SendAsync("NotificationCountUpdated", count);
     }
 
-    public async Task<ServiceResult<NotificationDto>> CreateWorkRequestNotificationAsync(
+    public async Task<Result<NotificationDto>> CreateWorkRequestNotificationAsync(
         Guid workRequestId, Guid recipientId, string type, string subject, string message, Guid? senderId = null)
     {
         if (recipientId == Guid.Empty)
-            return ServiceResult<NotificationDto>.ErrorResult("Recipient is required");
+            return Result<NotificationDto>.ErrorResult("Recipient is required");
         if (!Enum.TryParse<NotificationType>(type, true, out var notificationType))
-            return ServiceResult<NotificationDto>.ErrorResult($"Invalid notification type '{type}'");
+            return Result<NotificationDto>.ErrorResult($"Invalid notification type '{type}'");
 
         var notification = new WorkRequestNotification
         {
@@ -228,7 +229,7 @@ public class NotificationService : INotificationService
         await _hub.Clients.Group(UserGroup(recipientId)).SendAsync("WorkRequestNotification", dto);
         await SendNotificationCountUpdateAsync(recipientId);
 
-        return ServiceResult<NotificationDto>.SuccessResult(dto, "Notification created");
+        return Result<NotificationDto>.SuccessResult(dto, "Notification created");
     }
 
     // -------------------------------------------------------------- Helpers --

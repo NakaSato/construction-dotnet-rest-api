@@ -1,3 +1,4 @@
+using dotnet_rest_api.Common;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
@@ -54,7 +55,7 @@ public class AuthService : IAuthService
     // refresh. Only their SHA-256 hash is persisted (RefreshTokens table).
     private static readonly TimeSpan RefreshTokenLifetime = TimeSpan.FromDays(7);
 
-    public async Task<ServiceResult<LoginResponse>> LoginAsync(LoginRequest request)
+    public async Task<Result<LoginResponse>> LoginAsync(LoginRequest request)
     {
         try
         {
@@ -62,7 +63,7 @@ public class AuthService : IAuthService
             if (_cache.TryGetValue(attemptsKey, out int failedAttempts) && failedAttempts >= MaxFailedLoginAttempts)
             {
                 _logger.LogWarning("Login blocked for {Username}: too many failed attempts", request.Username);
-                return ServiceResult<LoginResponse>.ErrorResult(
+                return Result<LoginResponse>.ErrorResult(
                     "Account temporarily locked due to repeated failed login attempts. Please try again later.");
             }
 
@@ -96,24 +97,24 @@ public class AuthService : IAuthService
                     User = userDto
                 };
 
-                return ServiceResult<LoginResponse>.SuccessResult(response, "Login successful");
+                return Result<LoginResponse>.SuccessResult(response, "Login successful");
             }
 
             // Failed attempt: increment the counter (absolute expiry resets the
             // lockout window on each miss).
             _cache.Set(attemptsKey, failedAttempts + 1, LockoutDuration);
-            return ServiceResult<LoginResponse>.ErrorResult("Invalid username or password");
+            return Result<LoginResponse>.ErrorResult("Invalid username or password");
         }
         catch (Exception ex)
         {
             // Log the detail server-side; return a generic message so exception
             // internals are not disclosed to the client.
             _logger.LogError(ex, "Error during login for {Username}", request.Username);
-            return ServiceResult<LoginResponse>.ErrorResult("An error occurred during login. Please try again.");
+            return Result<LoginResponse>.ErrorResult("An error occurred during login. Please try again.");
         }
     }
 
-    public async Task<ServiceResult<UserDto>> RegisterAsync(RegisterRequest request)
+    public async Task<Result<UserDto>> RegisterAsync(RegisterRequest request)
     {
         try
         {
@@ -123,7 +124,7 @@ public class AuthService : IAuthService
 
             if (existingUser)
             {
-                return ServiceResult<UserDto>.ErrorResult("Username or email already exists");
+                return Result<UserDto>.ErrorResult("Username or email already exists");
             }
 
             // Validate role exists or use default role
@@ -170,20 +171,20 @@ public class AuthService : IAuthService
                 IsActive = user.IsActive
             };
 
-            return ServiceResult<UserDto>.SuccessResult(userDto, "User registered successfully");
+            return Result<UserDto>.SuccessResult(userDto, "User registered successfully");
         }
         catch (Exception ex)
         {
-            return ServiceResult<UserDto>.ErrorResult($"An error occurred during registration: {ex.Message}");
+            return Result<UserDto>.ErrorResult($"An error occurred during registration: {ex.Message}");
         }
     }
 
-    public async Task<ServiceResult<LoginResponse>> RefreshTokenAsync(string refreshToken)
+    public async Task<Result<LoginResponse>> RefreshTokenAsync(string refreshToken)
     {
         try
         {
             if (string.IsNullOrWhiteSpace(refreshToken))
-                return ServiceResult<LoginResponse>.ErrorResult("Refresh token is required");
+                return Result<LoginResponse>.ErrorResult("Refresh token is required");
 
             var hash = HashRefreshToken(refreshToken);
 
@@ -193,7 +194,7 @@ public class AuthService : IAuthService
                 .FirstOrDefaultAsync(rt => rt.TokenHash == hash);
 
             if (stored == null)
-                return ServiceResult<LoginResponse>.ErrorResult("Invalid refresh token");
+                return Result<LoginResponse>.ErrorResult("Invalid refresh token");
 
             // Replay detection: a token that was already rotated or explicitly
             // revoked is being reused. Revoke the whole family for that user as a
@@ -202,15 +203,15 @@ public class AuthService : IAuthService
             {
                 await RevokeAllUserRefreshTokensAsync(stored.UserId);
                 _logger.LogWarning("Refresh token reuse detected for user {UserId}; all tokens revoked", stored.UserId);
-                return ServiceResult<LoginResponse>.ErrorResult("Invalid refresh token");
+                return Result<LoginResponse>.ErrorResult("Invalid refresh token");
             }
 
             if (DateTime.UtcNow >= stored.ExpiresAt)
-                return ServiceResult<LoginResponse>.ErrorResult("Refresh token has expired");
+                return Result<LoginResponse>.ErrorResult("Refresh token has expired");
 
             var user = stored.User;
             if (user == null || !user.IsActive)
-                return ServiceResult<LoginResponse>.ErrorResult("User is no longer active");
+                return Result<LoginResponse>.ErrorResult("User is no longer active");
 
             // Rotate: issue a fresh token and stamp the consumed row so a replay is
             // detectable.
@@ -231,22 +232,22 @@ public class AuthService : IAuthService
                 }
             };
 
-            return ServiceResult<LoginResponse>.SuccessResult(response, "Token refreshed successfully");
+            return Result<LoginResponse>.SuccessResult(response, "Token refreshed successfully");
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error refreshing token");
-            return ServiceResult<LoginResponse>.ErrorResult("An error occurred while refreshing the token.");
+            return Result<LoginResponse>.ErrorResult("An error occurred while refreshing the token.");
         }
     }
 
-    public async Task<ServiceResult<bool>> LogoutAsync(string token)
+    public async Task<Result<bool>> LogoutAsync(string token)
     {
         try
         {
             if (string.IsNullOrEmpty(token))
             {
-                return ServiceResult<bool>.ErrorResult("Token is required");
+                return Result<bool>.ErrorResult("Token is required");
             }
 
             // Extract token ID for blacklisting
@@ -254,7 +255,7 @@ public class AuthService : IAuthService
             
             if (!tokenHandler.CanReadToken(token))
             {
-                return ServiceResult<bool>.ErrorResult("Invalid token format");
+                return Result<bool>.ErrorResult("Invalid token format");
             }
 
             var jwtToken = tokenHandler.ReadJwtToken(token);
@@ -268,15 +269,15 @@ public class AuthService : IAuthService
 
             await System.Threading.Tasks.Task.CompletedTask; // Ensure async compliance
             
-            return ServiceResult<bool>.SuccessResult(true, "Logout successful");
+            return Result<bool>.SuccessResult(true, "Logout successful");
         }
         catch (Exception ex)
         {
-            return ServiceResult<bool>.ErrorResult($"An error occurred during logout: {ex.Message}");
+            return Result<bool>.ErrorResult($"An error occurred during logout: {ex.Message}");
         }
     }
 
-    public async Task<ServiceResult<bool>> ValidateTokenAsync(string token)
+    public async Task<Result<bool>> ValidateTokenAsync(string token)
     {
         try
         {
@@ -303,19 +304,19 @@ public class AuthService : IAuthService
             
             if (_cache.TryGetValue(cacheKey, out _))
             {
-                return ServiceResult<bool>.ErrorResult("Token is blacklisted");
+                return Result<bool>.ErrorResult("Token is blacklisted");
             }
 
             await System.Threading.Tasks.Task.CompletedTask; // Ensure async compliance
-            return ServiceResult<bool>.SuccessResult(true, "Token is valid");
+            return Result<bool>.SuccessResult(true, "Token is valid");
         }
         catch (Exception ex)
         {
-            return ServiceResult<bool>.ErrorResult($"Token validation failed: {ex.Message}");
+            return Result<bool>.ErrorResult($"Token validation failed: {ex.Message}");
         }
     }
 
-    public async Task<ServiceResult<bool>> RevokeTokenAsync(string token)
+    public async Task<Result<bool>> RevokeTokenAsync(string token)
     {
         try
         {
@@ -332,15 +333,15 @@ public class AuthService : IAuthService
             }
 
             await System.Threading.Tasks.Task.CompletedTask; // Ensure async compliance
-            return ServiceResult<bool>.SuccessResult(true, "Token revoked successfully");
+            return Result<bool>.SuccessResult(true, "Token revoked successfully");
         }
         catch (Exception ex)
         {
-            return ServiceResult<bool>.ErrorResult($"Token revocation failed: {ex.Message}");
+            return Result<bool>.ErrorResult($"Token revocation failed: {ex.Message}");
         }
     }
 
-    public async Task<ServiceResult<bool>> IsTokenBlacklistedAsync(string token)
+    public async Task<Result<bool>> IsTokenBlacklistedAsync(string token)
     {
         try
         {
@@ -352,11 +353,11 @@ public class AuthService : IAuthService
             var isBlacklisted = _cache.TryGetValue(cacheKey, out _);
 
             await System.Threading.Tasks.Task.CompletedTask; // Ensure async compliance
-            return ServiceResult<bool>.SuccessResult(isBlacklisted, isBlacklisted ? "Token is blacklisted" : "Token is not blacklisted");
+            return Result<bool>.SuccessResult(isBlacklisted, isBlacklisted ? "Token is blacklisted" : "Token is not blacklisted");
         }
         catch (Exception ex)
         {
-            return ServiceResult<bool>.ErrorResult($"Error checking token blacklist status: {ex.Message}");
+            return Result<bool>.ErrorResult($"Error checking token blacklist status: {ex.Message}");
         }
     }
 

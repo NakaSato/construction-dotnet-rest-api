@@ -1,3 +1,4 @@
+using dotnet_rest_api.Common;
 using dotnet_rest_api.DTOs;
 using dotnet_rest_api.Data;
 using dotnet_rest_api.Models;
@@ -20,7 +21,7 @@ public class ProjectAnalyticsService : IProjectAnalyticsService
         _logger = logger;
     }
 
-    public async Task<ServiceResult<ProjectStatistics>> GetProjectAnalyticsAsync()
+    public async Task<Result<ProjectStatistics>> GetProjectAnalyticsAsync()
     {
         try
         {
@@ -47,16 +48,16 @@ public class ProjectAnalyticsService : IProjectAnalyticsService
             };
 
             _logger.LogInformation("Project analytics retrieved successfully: {TotalProjects} total projects", projectStats.TotalProjects);
-            return ServiceResult<ProjectStatistics>.SuccessResult(projectStats, "Project analytics retrieved successfully");
+            return Result<ProjectStatistics>.SuccessResult(projectStats, "Project analytics retrieved successfully");
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error retrieving project analytics");
-            return ServiceResult<ProjectStatistics>.ErrorResult($"Error retrieving project analytics: {ex.Message}");
+            return Result<ProjectStatistics>.ErrorResult($"Error retrieving project analytics: {ex.Message}");
         }
     }
 
-    public async Task<ServiceResult<List<Guid>>> GetAllProjectIdsAsync()
+    public async Task<Result<List<Guid>>> GetAllProjectIdsAsync()
     {
         try
         {
@@ -67,45 +68,45 @@ public class ProjectAnalyticsService : IProjectAnalyticsService
                 .ToListAsync();
 
             _logger.LogInformation("Retrieved {Count} project IDs", projectIds.Count);
-            return ServiceResult<List<Guid>>.SuccessResult(projectIds, $"Retrieved {projectIds.Count} project IDs successfully");
+            return Result<List<Guid>>.SuccessResult(projectIds, $"Retrieved {projectIds.Count} project IDs successfully");
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error retrieving project IDs");
-            return ServiceResult<List<Guid>>.ErrorResult($"Error retrieving project IDs: {ex.Message}");
+            return Result<List<Guid>>.ErrorResult($"Error retrieving project IDs: {ex.Message}");
         }
     }
 
-    public async Task<ServiceResult<int>> GetTotalProjectCountAsync()
+    public async Task<Result<int>> GetTotalProjectCountAsync()
     {
         try
         {
             var count = await _context.Projects.CountAsync();
-            return ServiceResult<int>.SuccessResult(count, $"Total project count: {count}");
+            return Result<int>.SuccessResult(count, $"Total project count: {count}");
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error getting total project count");
-            return ServiceResult<int>.ErrorResult($"Error getting total project count: {ex.Message}");
+            return Result<int>.ErrorResult($"Error getting total project count: {ex.Message}");
         }
     }
 
-    public async Task<ServiceResult<int>> GetProjectCountByStatusAsync(string status)
+    public async Task<Result<int>> GetProjectCountByStatusAsync(string status)
     {
         try
         {
             if (!Enum.TryParse<ProjectStatus>(status, true, out var statusEnum))
             {
-                return ServiceResult<int>.ErrorResult($"Invalid status: {status}");
+                return Result<int>.ErrorResult($"Invalid status: {status}");
             }
 
             var count = await _context.Projects.CountAsync(p => p.Status == statusEnum);
-            return ServiceResult<int>.SuccessResult(count, $"Projects with status '{status}': {count}");
+            return Result<int>.SuccessResult(count, $"Projects with status '{status}': {count}");
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error getting project count by status {Status}", status);
-            return ServiceResult<int>.ErrorResult($"Error getting project count by status: {ex.Message}");
+            return Result<int>.ErrorResult($"Error getting project count by status: {ex.Message}");
         }
     }
 }

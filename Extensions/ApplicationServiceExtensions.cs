@@ -32,7 +32,6 @@ public static class ApplicationServiceExtensions
 
         // Core / shared abstractions
         services.AddScoped<IUserContextService, UserContextService>();
-        services.AddScoped<IResponseBuilderService, ResponseBuilderService>();
         services.AddScoped<IValidationHelperService, ValidationHelperService>();
 
         // Service implementations
@@ -76,6 +75,11 @@ public static class ApplicationServiceExtensions
 
         // Periodic purge of expired refresh tokens
         services.AddHostedService<RefreshTokenCleanupService>();
+
+        // Notification background processor: singleton so controllers (e.g. Dashboard)
+        // can enqueue work, and a hosted service so the queue is actually drained.
+        services.AddSingleton<NotificationBackgroundService>();
+        services.AddHostedService(sp => sp.GetRequiredService<NotificationBackgroundService>());
 
         return services;
     }

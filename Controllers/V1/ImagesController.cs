@@ -232,7 +232,7 @@ public class ImagesController : BaseApiController
                 try
                 {
                     var result = await _imageService.UploadImageAsync(file, request, uploadedByUserId);
-                    if (result.Success && result.Data != null)
+                    if (result.IsSuccess && result.Data != null)
                     {
                         results.Add(result.Data);
                     }
@@ -358,7 +358,7 @@ public class ImagesController : BaseApiController
             };
 
             var serviceResult = await _imageService.GetProjectImagesAsync(projectId, parameters);
-            if (!serviceResult.Success)
+            if (!serviceResult.IsSuccess)
                 return BadRequest(new ApiResponseWithPagination<ImageMetadataDto> 
                 { 
                     Success = false, 

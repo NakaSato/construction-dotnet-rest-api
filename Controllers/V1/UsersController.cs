@@ -124,7 +124,7 @@ public class UsersController : BaseApiController
 
             var result = await _userService.CreateUserAsync(createUserRequest);
             
-            if (result.Success)
+            if (result.IsSuccess)
             {
                 return Created($"/api/v1/users/{result.Data?.UserId}", new ApiResponse<UserDto>
                 {

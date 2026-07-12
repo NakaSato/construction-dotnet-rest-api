@@ -99,7 +99,7 @@ public class WorkRequestsController : BaseApiController
             }
 
             var result = await _workRequestService.CreateWorkRequestAsync(request, userId);
-            var location = result.Success && result.Data != null
+            var location = result.IsSuccess && result.Data != null
                 ? Url.Action(nameof(GetWorkRequest), new { id = result.Data.WorkRequestId })
                 : null;
             return ToCreatedResponse(result, location);

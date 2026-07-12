@@ -111,7 +111,7 @@ public class NotificationsController : BaseApiController
                 TotalCount = totalCount
             };
 
-            return ToApiResponse(ServiceResult<EnhancedPagedResult<NotificationDto>>.SuccessResult(result));
+            return ToApiResponse(Result<EnhancedPagedResult<NotificationDto>>.SuccessResult(result));
         }
         catch (Exception ex)
         {
@@ -137,7 +137,7 @@ public class NotificationsController : BaseApiController
                 .Where(n => n.RecipientId == userId && n.ReadAt == null)
                 .CountAsync();
 
-            return ToApiResponse(ServiceResult<int>.SuccessResult(count));
+            return ToApiResponse(Result<int>.SuccessResult(count));
         }
         catch (Exception ex)
         {
@@ -161,7 +161,7 @@ public class NotificationsController : BaseApiController
 
             await _notificationService.MarkNotificationAsReadAsync(notificationId, userId);
 
-            return ToApiResponse(ServiceResult<bool>.SuccessResult(true));
+            return ToApiResponse(Result<bool>.SuccessResult(true));
         }
         catch (Exception ex)
         {
@@ -199,7 +199,7 @@ public class NotificationsController : BaseApiController
             // Send updated count via SignalR
             await _notificationService.SendNotificationCountUpdateAsync(userId);
 
-            return ToApiResponse(ServiceResult<int>.SuccessResult(unreadNotifications.Count));
+            return ToApiResponse(Result<int>.SuccessResult(unreadNotifications.Count));
         }
         catch (Exception ex)
         {
@@ -225,7 +225,7 @@ public class NotificationsController : BaseApiController
                 request.Message, 
                 request.Priority);
 
-            return ToApiResponse(ServiceResult<bool>.SuccessResult(true));
+            return ToApiResponse(Result<bool>.SuccessResult(true));
         }
         catch (Exception ex)
         {
@@ -274,7 +274,7 @@ public class NotificationsController : BaseApiController
                 PeriodEnd = end
             };
 
-            return ToApiResponse(ServiceResult<NotificationStatisticsDto>.SuccessResult(statistics));
+            return ToApiResponse(Result<NotificationStatisticsDto>.SuccessResult(statistics));
         }
         catch (Exception ex)
         {

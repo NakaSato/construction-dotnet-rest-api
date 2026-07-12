@@ -1,3 +1,4 @@
+using dotnet_rest_api.Common;
 using System.Text.Json;
 using AutoMapper;
 using dotnet_rest_api.Data;
@@ -10,24 +11,24 @@ namespace dotnet_rest_api.Services.Infrastructure;
 
 public interface IWeeklyReportService
 {
-    Task<ServiceResult<EnhancedPagedResult<WeeklyReportDto>>> GetWeeklyReportsAsync(WeeklyReportQueryParameters parameters);
-    Task<ServiceResult<WeeklyReportDto>> GetWeeklyReportByIdAsync(Guid id);
-    Task<ServiceResult<WeeklyReportDto>> CreateWeeklyReportAsync(CreateWeeklyReportDto request);
-    Task<ServiceResult<WeeklyReportDto>> UpdateWeeklyReportAsync(Guid id, UpdateWeeklyReportDto request);
-    Task<ServiceResult<bool>> DeleteWeeklyReportAsync(Guid id);
-    Task<ServiceResult<EnhancedPagedResult<WeeklyReportDto>>> GetProjectWeeklyReportsAsync(Guid projectId, WeeklyReportQueryParameters parameters);
-    Task<ServiceResult<WeeklyReportDto>> UpdateWeeklyReportStatusAsync(Guid id, WeeklyReportStatus status);
+    Task<Result<EnhancedPagedResult<WeeklyReportDto>>> GetWeeklyReportsAsync(WeeklyReportQueryParameters parameters);
+    Task<Result<WeeklyReportDto>> GetWeeklyReportByIdAsync(Guid id);
+    Task<Result<WeeklyReportDto>> CreateWeeklyReportAsync(CreateWeeklyReportDto request);
+    Task<Result<WeeklyReportDto>> UpdateWeeklyReportAsync(Guid id, UpdateWeeklyReportDto request);
+    Task<Result<bool>> DeleteWeeklyReportAsync(Guid id);
+    Task<Result<EnhancedPagedResult<WeeklyReportDto>>> GetProjectWeeklyReportsAsync(Guid projectId, WeeklyReportQueryParameters parameters);
+    Task<Result<WeeklyReportDto>> UpdateWeeklyReportStatusAsync(Guid id, WeeklyReportStatus status);
 }
 
 public interface IWeeklyWorkRequestService
 {
-    Task<ServiceResult<EnhancedPagedResult<WeeklyWorkRequestDto>>> GetWeeklyWorkRequestsAsync(WeeklyWorkRequestQueryParameters parameters);
-    Task<ServiceResult<WeeklyWorkRequestDto>> GetWeeklyWorkRequestByIdAsync(Guid id);
-    Task<ServiceResult<WeeklyWorkRequestDto>> CreateWeeklyWorkRequestAsync(CreateWeeklyWorkRequestDto request);
-    Task<ServiceResult<WeeklyWorkRequestDto>> UpdateWeeklyWorkRequestAsync(Guid id, UpdateWeeklyWorkRequestDto request);
-    Task<ServiceResult<bool>> DeleteWeeklyWorkRequestAsync(Guid id);
-    Task<ServiceResult<EnhancedPagedResult<WeeklyWorkRequestDto>>> GetProjectWeeklyWorkRequestsAsync(Guid projectId, WeeklyWorkRequestQueryParameters parameters);
-    Task<ServiceResult<WeeklyWorkRequestDto>> UpdateWeeklyWorkRequestStatusAsync(Guid id, WeeklyRequestStatus status);
+    Task<Result<EnhancedPagedResult<WeeklyWorkRequestDto>>> GetWeeklyWorkRequestsAsync(WeeklyWorkRequestQueryParameters parameters);
+    Task<Result<WeeklyWorkRequestDto>> GetWeeklyWorkRequestByIdAsync(Guid id);
+    Task<Result<WeeklyWorkRequestDto>> CreateWeeklyWorkRequestAsync(CreateWeeklyWorkRequestDto request);
+    Task<Result<WeeklyWorkRequestDto>> UpdateWeeklyWorkRequestAsync(Guid id, UpdateWeeklyWorkRequestDto request);
+    Task<Result<bool>> DeleteWeeklyWorkRequestAsync(Guid id);
+    Task<Result<EnhancedPagedResult<WeeklyWorkRequestDto>>> GetProjectWeeklyWorkRequestsAsync(Guid projectId, WeeklyWorkRequestQueryParameters parameters);
+    Task<Result<WeeklyWorkRequestDto>> UpdateWeeklyWorkRequestStatusAsync(Guid id, WeeklyRequestStatus status);
 }
 
 /// <summary>
@@ -49,13 +50,13 @@ public class WeeklyReportService : IWeeklyReportService
         _logger = logger;
     }
 
-    public async Task<ServiceResult<EnhancedPagedResult<WeeklyReportDto>>> GetWeeklyReportsAsync(WeeklyReportQueryParameters parameters)
+    public async Task<Result<EnhancedPagedResult<WeeklyReportDto>>> GetWeeklyReportsAsync(WeeklyReportQueryParameters parameters)
         => await QueryAsync(parameters, null);
 
-    public async Task<ServiceResult<EnhancedPagedResult<WeeklyReportDto>>> GetProjectWeeklyReportsAsync(Guid projectId, WeeklyReportQueryParameters parameters)
+    public async Task<Result<EnhancedPagedResult<WeeklyReportDto>>> GetProjectWeeklyReportsAsync(Guid projectId, WeeklyReportQueryParameters parameters)
         => await QueryAsync(parameters, projectId);
 
-    private async Task<ServiceResult<EnhancedPagedResult<WeeklyReportDto>>> QueryAsync(WeeklyReportQueryParameters parameters, Guid? projectId)
+    private async Task<Result<EnhancedPagedResult<WeeklyReportDto>>> QueryAsync(WeeklyReportQueryParameters parameters, Guid? projectId)
     {
         var query = BuildBaseQuery();
 
@@ -107,23 +108,23 @@ public class WeeklyReportService : IWeeklyReportService
             SortBy = parameters.SortBy,
             SortOrder = parameters.SortOrder
         };
-        return ServiceResult<EnhancedPagedResult<WeeklyReportDto>>.SuccessResult(result, "Weekly reports retrieved successfully");
+        return Result<EnhancedPagedResult<WeeklyReportDto>>.SuccessResult(result, "Weekly reports retrieved successfully");
     }
 
-    public async Task<ServiceResult<WeeklyReportDto>> GetWeeklyReportByIdAsync(Guid id)
+    public async Task<Result<WeeklyReportDto>> GetWeeklyReportByIdAsync(Guid id)
     {
         var report = await BuildBaseQuery().FirstOrDefaultAsync(r => r.WeeklyReportId == id);
         if (report == null)
-            return ServiceResult<WeeklyReportDto>.ErrorResult("Weekly report not found");
-        return ServiceResult<WeeklyReportDto>.SuccessResult(_mapper.Map<WeeklyReportDto>(report), "Weekly report retrieved successfully");
+            return Result<WeeklyReportDto>.ErrorResult("Weekly report not found");
+        return Result<WeeklyReportDto>.SuccessResult(_mapper.Map<WeeklyReportDto>(report), "Weekly report retrieved successfully");
     }
 
-    public async Task<ServiceResult<WeeklyReportDto>> CreateWeeklyReportAsync(CreateWeeklyReportDto request)
+    public async Task<Result<WeeklyReportDto>> CreateWeeklyReportAsync(CreateWeeklyReportDto request)
     {
         if (!await _context.Projects.AnyAsync(p => p.ProjectId == request.ProjectId))
-            return ServiceResult<WeeklyReportDto>.ErrorResult("Project not found");
+            return Result<WeeklyReportDto>.ErrorResult("Project not found");
         if (!await _context.Users.AnyAsync(u => u.UserId == request.SubmittedById))
-            return ServiceResult<WeeklyReportDto>.ErrorResult("Submitting user not found");
+            return Result<WeeklyReportDto>.ErrorResult("Submitting user not found");
 
         var report = _mapper.Map<WeeklyReport>(request);
         report.WeeklyReportId = Guid.NewGuid();
@@ -146,11 +147,11 @@ public class WeeklyReportService : IWeeklyReportService
         return await ReloadAndMapAsync(report.WeeklyReportId, "Weekly report created successfully");
     }
 
-    public async Task<ServiceResult<WeeklyReportDto>> UpdateWeeklyReportAsync(Guid id, UpdateWeeklyReportDto request)
+    public async Task<Result<WeeklyReportDto>> UpdateWeeklyReportAsync(Guid id, UpdateWeeklyReportDto request)
     {
         var report = await _context.WeeklyReports.FirstOrDefaultAsync(r => r.WeeklyReportId == id);
         if (report == null)
-            return ServiceResult<WeeklyReportDto>.ErrorResult("Weekly report not found");
+            return Result<WeeklyReportDto>.ErrorResult("Weekly report not found");
 
         report.WeekStartDate = request.WeekStartDate;
         report.SummaryOfProgress = request.SummaryOfProgress;
@@ -175,22 +176,22 @@ public class WeeklyReportService : IWeeklyReportService
         return await ReloadAndMapAsync(id, "Weekly report updated successfully");
     }
 
-    public async Task<ServiceResult<bool>> DeleteWeeklyReportAsync(Guid id)
+    public async Task<Result<bool>> DeleteWeeklyReportAsync(Guid id)
     {
         var report = await _context.WeeklyReports.FirstOrDefaultAsync(r => r.WeeklyReportId == id);
         if (report == null)
-            return ServiceResult<bool>.ErrorResult("Weekly report not found");
+            return Result<bool>.ErrorResult("Weekly report not found");
 
         _context.WeeklyReports.Remove(report);
         await _context.SaveChangesAsync();
-        return ServiceResult<bool>.SuccessResult(true, "Weekly report deleted successfully");
+        return Result<bool>.SuccessResult(true, "Weekly report deleted successfully");
     }
 
-    public async Task<ServiceResult<WeeklyReportDto>> UpdateWeeklyReportStatusAsync(Guid id, WeeklyReportStatus status)
+    public async Task<Result<WeeklyReportDto>> UpdateWeeklyReportStatusAsync(Guid id, WeeklyReportStatus status)
     {
         var report = await _context.WeeklyReports.FirstOrDefaultAsync(r => r.WeeklyReportId == id);
         if (report == null)
-            return ServiceResult<WeeklyReportDto>.ErrorResult("Weekly report not found");
+            return Result<WeeklyReportDto>.ErrorResult("Weekly report not found");
 
         report.Status = status;
         if (status == WeeklyReportStatus.Approved)
@@ -208,12 +209,12 @@ public class WeeklyReportService : IWeeklyReportService
             .Include(r => r.ApprovedByUser)
             .AsQueryable();
 
-    private async Task<ServiceResult<WeeklyReportDto>> ReloadAndMapAsync(Guid id, string message)
+    private async Task<Result<WeeklyReportDto>> ReloadAndMapAsync(Guid id, string message)
     {
         var report = await BuildBaseQuery().FirstOrDefaultAsync(r => r.WeeklyReportId == id);
         if (report == null)
-            return ServiceResult<WeeklyReportDto>.ErrorResult("Weekly report not found");
-        return ServiceResult<WeeklyReportDto>.SuccessResult(_mapper.Map<WeeklyReportDto>(report), message);
+            return Result<WeeklyReportDto>.ErrorResult("Weekly report not found");
+        return Result<WeeklyReportDto>.SuccessResult(_mapper.Map<WeeklyReportDto>(report), message);
     }
 }
 
@@ -234,13 +235,13 @@ public class WeeklyWorkRequestService : IWeeklyWorkRequestService
         _logger = logger;
     }
 
-    public async Task<ServiceResult<EnhancedPagedResult<WeeklyWorkRequestDto>>> GetWeeklyWorkRequestsAsync(WeeklyWorkRequestQueryParameters parameters)
+    public async Task<Result<EnhancedPagedResult<WeeklyWorkRequestDto>>> GetWeeklyWorkRequestsAsync(WeeklyWorkRequestQueryParameters parameters)
         => await QueryAsync(parameters, null);
 
-    public async Task<ServiceResult<EnhancedPagedResult<WeeklyWorkRequestDto>>> GetProjectWeeklyWorkRequestsAsync(Guid projectId, WeeklyWorkRequestQueryParameters parameters)
+    public async Task<Result<EnhancedPagedResult<WeeklyWorkRequestDto>>> GetProjectWeeklyWorkRequestsAsync(Guid projectId, WeeklyWorkRequestQueryParameters parameters)
         => await QueryAsync(parameters, projectId);
 
-    private async Task<ServiceResult<EnhancedPagedResult<WeeklyWorkRequestDto>>> QueryAsync(WeeklyWorkRequestQueryParameters parameters, Guid? projectId)
+    private async Task<Result<EnhancedPagedResult<WeeklyWorkRequestDto>>> QueryAsync(WeeklyWorkRequestQueryParameters parameters, Guid? projectId)
     {
         var query = BuildBaseQuery();
 
@@ -291,23 +292,23 @@ public class WeeklyWorkRequestService : IWeeklyWorkRequestService
             SortBy = parameters.SortBy,
             SortOrder = parameters.SortOrder
         };
-        return ServiceResult<EnhancedPagedResult<WeeklyWorkRequestDto>>.SuccessResult(result, "Weekly work requests retrieved successfully");
+        return Result<EnhancedPagedResult<WeeklyWorkRequestDto>>.SuccessResult(result, "Weekly work requests retrieved successfully");
     }
 
-    public async Task<ServiceResult<WeeklyWorkRequestDto>> GetWeeklyWorkRequestByIdAsync(Guid id)
+    public async Task<Result<WeeklyWorkRequestDto>> GetWeeklyWorkRequestByIdAsync(Guid id)
     {
         var request = await BuildBaseQuery().FirstOrDefaultAsync(r => r.WeeklyRequestId == id);
         if (request == null)
-            return ServiceResult<WeeklyWorkRequestDto>.ErrorResult("Weekly work request not found");
-        return ServiceResult<WeeklyWorkRequestDto>.SuccessResult(_mapper.Map<WeeklyWorkRequestDto>(request), "Weekly work request retrieved successfully");
+            return Result<WeeklyWorkRequestDto>.ErrorResult("Weekly work request not found");
+        return Result<WeeklyWorkRequestDto>.SuccessResult(_mapper.Map<WeeklyWorkRequestDto>(request), "Weekly work request retrieved successfully");
     }
 
-    public async Task<ServiceResult<WeeklyWorkRequestDto>> CreateWeeklyWorkRequestAsync(CreateWeeklyWorkRequestDto request)
+    public async Task<Result<WeeklyWorkRequestDto>> CreateWeeklyWorkRequestAsync(CreateWeeklyWorkRequestDto request)
     {
         if (!await _context.Projects.AnyAsync(p => p.ProjectId == request.ProjectId))
-            return ServiceResult<WeeklyWorkRequestDto>.ErrorResult("Project not found");
+            return Result<WeeklyWorkRequestDto>.ErrorResult("Project not found");
         if (!await _context.Users.AnyAsync(u => u.UserId == request.RequestedById))
-            return ServiceResult<WeeklyWorkRequestDto>.ErrorResult("Requesting user not found");
+            return Result<WeeklyWorkRequestDto>.ErrorResult("Requesting user not found");
 
         var entity = _mapper.Map<WeeklyWorkRequest>(request);
         entity.WeeklyRequestId = Guid.NewGuid();
@@ -324,11 +325,11 @@ public class WeeklyWorkRequestService : IWeeklyWorkRequestService
         return await ReloadAndMapAsync(entity.WeeklyRequestId, "Weekly work request created successfully");
     }
 
-    public async Task<ServiceResult<WeeklyWorkRequestDto>> UpdateWeeklyWorkRequestAsync(Guid id, UpdateWeeklyWorkRequestDto request)
+    public async Task<Result<WeeklyWorkRequestDto>> UpdateWeeklyWorkRequestAsync(Guid id, UpdateWeeklyWorkRequestDto request)
     {
         var entity = await _context.WeeklyWorkRequests.FirstOrDefaultAsync(r => r.WeeklyRequestId == id);
         if (entity == null)
-            return ServiceResult<WeeklyWorkRequestDto>.ErrorResult("Weekly work request not found");
+            return Result<WeeklyWorkRequestDto>.ErrorResult("Weekly work request not found");
 
         entity.WeekStartDate = request.WeekStartDate;
         entity.OverallGoals = request.OverallGoals;
@@ -354,22 +355,22 @@ public class WeeklyWorkRequestService : IWeeklyWorkRequestService
         return await ReloadAndMapAsync(id, "Weekly work request updated successfully");
     }
 
-    public async Task<ServiceResult<bool>> DeleteWeeklyWorkRequestAsync(Guid id)
+    public async Task<Result<bool>> DeleteWeeklyWorkRequestAsync(Guid id)
     {
         var entity = await _context.WeeklyWorkRequests.FirstOrDefaultAsync(r => r.WeeklyRequestId == id);
         if (entity == null)
-            return ServiceResult<bool>.ErrorResult("Weekly work request not found");
+            return Result<bool>.ErrorResult("Weekly work request not found");
 
         _context.WeeklyWorkRequests.Remove(entity);
         await _context.SaveChangesAsync();
-        return ServiceResult<bool>.SuccessResult(true, "Weekly work request deleted successfully");
+        return Result<bool>.SuccessResult(true, "Weekly work request deleted successfully");
     }
 
-    public async Task<ServiceResult<WeeklyWorkRequestDto>> UpdateWeeklyWorkRequestStatusAsync(Guid id, WeeklyRequestStatus status)
+    public async Task<Result<WeeklyWorkRequestDto>> UpdateWeeklyWorkRequestStatusAsync(Guid id, WeeklyRequestStatus status)
     {
         var entity = await _context.WeeklyWorkRequests.FirstOrDefaultAsync(r => r.WeeklyRequestId == id);
         if (entity == null)
-            return ServiceResult<WeeklyWorkRequestDto>.ErrorResult("Weekly work request not found");
+            return Result<WeeklyWorkRequestDto>.ErrorResult("Weekly work request not found");
 
         entity.Status = status;
         if (status == WeeklyRequestStatus.Approved)
@@ -387,11 +388,11 @@ public class WeeklyWorkRequestService : IWeeklyWorkRequestService
             .Include(r => r.ApprovedByUser)
             .AsQueryable();
 
-    private async Task<ServiceResult<WeeklyWorkRequestDto>> ReloadAndMapAsync(Guid id, string message)
+    private async Task<Result<WeeklyWorkRequestDto>> ReloadAndMapAsync(Guid id, string message)
     {
         var entity = await BuildBaseQuery().FirstOrDefaultAsync(r => r.WeeklyRequestId == id);
         if (entity == null)
-            return ServiceResult<WeeklyWorkRequestDto>.ErrorResult("Weekly work request not found");
-        return ServiceResult<WeeklyWorkRequestDto>.SuccessResult(_mapper.Map<WeeklyWorkRequestDto>(entity), message);
+            return Result<WeeklyWorkRequestDto>.ErrorResult("Weekly work request not found");
+        return Result<WeeklyWorkRequestDto>.SuccessResult(_mapper.Map<WeeklyWorkRequestDto>(entity), message);
     }
 }

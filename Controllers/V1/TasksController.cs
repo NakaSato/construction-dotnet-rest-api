@@ -258,7 +258,7 @@ public class TasksController : BaseApiController
 
             // Get data using existing service
             var serviceResult = await _taskService.GetTasksAsync(parameters);
-            if (!serviceResult.Success)
+            if (!serviceResult.IsSuccess)
                 return CreateErrorResponse<EnhancedPagedResult<TaskDto>>(serviceResult.Message ?? "Operation failed", 400);
 
             // Build base URL for HATEOAS links

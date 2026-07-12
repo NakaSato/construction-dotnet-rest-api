@@ -1,3 +1,4 @@
+using dotnet_rest_api.Common;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
 using dotnet_rest_api.DTOs;

@@ -15,6 +15,14 @@ public class Result<T>
     public List<ValidationError> ValidationErrors { get; private set; } = new();
     public ResultErrorType ErrorType { get; private set; } = ResultErrorType.None;
 
+    /// <summary>
+    /// Optional HTTP status hint for failures, consumed by
+    /// <c>BaseApiController.ToApiResponse</c>. Null =&gt; the controller defaults to 400.
+    /// Set to 404 for "resource addressed by the URL does not exist".
+    /// (Merged in from the former <c>DTOs.ServiceResult</c>.)
+    /// </summary>
+    public int? StatusCode { get; private set; }
+
     protected Result(bool isSuccess, T? data, string message, List<string>? errors = null, 
                   List<ValidationError>? validationErrors = null, ResultErrorType errorType = ResultErrorType.None)
     {
@@ -98,6 +106,38 @@ public class Result<T>
     {
         var message = $"Too many requests. You have exceeded the rate limit of {limit} requests. Please try again later.";
         return new Result<T>(false, default(T), message, new List<string> { message }, null, ResultErrorType.RateLimit);
+    }
+
+    // --- Compatibility factories merged from the former DTOs.ServiceResult<T> ---
+    // These mirror the ServiceResult naming so its call sites migrate to Result<T>
+    // unchanged. Prefer Success/Failure/NotFound above for new code.
+
+    /// <summary>Success result carrying data (ServiceResult-style alias for <see cref="Success(T,string)"/>).</summary>
+    public static Result<T> SuccessResult(T data, string? message = null)
+    {
+        return new Result<T>(true, data, message ?? "Operation completed successfully");
+    }
+
+    /// <summary>General failure with a single error message (ServiceResult-style alias).</summary>
+    public static Result<T> ErrorResult(string error)
+    {
+        return new Result<T>(false, default(T), error, new List<string> { error }, null, ResultErrorType.BusinessLogic);
+    }
+
+    /// <summary>General failure with several error messages (ServiceResult-style alias).</summary>
+    public static Result<T> ErrorResult(List<string> errors)
+    {
+        var message = errors.FirstOrDefault() ?? "Operation failed";
+        return new Result<T>(false, default(T), message, errors, null, ResultErrorType.BusinessLogic);
+    }
+
+    /// <summary>Failure representing a missing resource — carries a 404 status hint.</summary>
+    public static Result<T> NotFoundResult(string error)
+    {
+        return new Result<T>(false, default(T), error, new List<string> { error }, null, ResultErrorType.NotFound)
+        {
+            StatusCode = 404
+        };
     }
 }
 

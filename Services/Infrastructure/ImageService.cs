@@ -1,3 +1,4 @@
+using dotnet_rest_api.Common;
 using AutoMapper;
 using dotnet_rest_api.Data;
 using dotnet_rest_api.DTOs;
@@ -9,13 +10,13 @@ namespace dotnet_rest_api.Services.Infrastructure;
 
 public interface IImageService
 {
-    Task<ServiceResult<object>> GetImagesAsync();
-    Task<ServiceResult<ImageMetadataDto>> UploadImageAsync(IFormFile file, ImageUploadRequest request, Guid uploadedByUserId);
-    Task<ServiceResult<ImageMetadataDto>> GetImageMetadataAsync(Guid imageId);
-    Task<ServiceResult<string>> GetImageUrlAsync(Guid imageId);
-    Task<ServiceResult<PagedResult<ImageMetadataDto>>> GetProjectImagesAsync(Guid projectId, int pageNumber, int pageSize);
-    Task<ServiceResult<EnhancedPagedResult<ImageMetadataDto>>> GetProjectImagesAsync(Guid projectId, ImageQueryParameters parameters);
-    Task<ServiceResult<bool>> DeleteImageAsync(Guid imageId);
+    Task<Result<object>> GetImagesAsync();
+    Task<Result<ImageMetadataDto>> UploadImageAsync(IFormFile file, ImageUploadRequest request, Guid uploadedByUserId);
+    Task<Result<ImageMetadataDto>> GetImageMetadataAsync(Guid imageId);
+    Task<Result<string>> GetImageUrlAsync(Guid imageId);
+    Task<Result<PagedResult<ImageMetadataDto>>> GetProjectImagesAsync(Guid projectId, int pageNumber, int pageSize);
+    Task<Result<EnhancedPagedResult<ImageMetadataDto>>> GetProjectImagesAsync(Guid projectId, ImageQueryParameters parameters);
+    Task<Result<bool>> DeleteImageAsync(Guid imageId);
 }
 
 /// <summary>
@@ -44,27 +45,27 @@ public class ImageService : IImageService
         _logger = logger;
     }
 
-    public async Task<ServiceResult<object>> GetImagesAsync()
+    public async Task<Result<object>> GetImagesAsync()
     {
         var images = await BuildBaseQuery()
             .OrderByDescending(i => i.UploadTimestamp)
             .Take(100)
             .ToListAsync();
-        return ServiceResult<object>.SuccessResult(ToDtos(images), "Images retrieved successfully");
+        return Result<object>.SuccessResult(ToDtos(images), "Images retrieved successfully");
     }
 
-    public async Task<ServiceResult<ImageMetadataDto>> UploadImageAsync(IFormFile file, ImageUploadRequest request, Guid uploadedByUserId)
+    public async Task<Result<ImageMetadataDto>> UploadImageAsync(IFormFile file, ImageUploadRequest request, Guid uploadedByUserId)
     {
         if (file == null || file.Length == 0)
-            return ServiceResult<ImageMetadataDto>.ErrorResult("No file provided");
+            return Result<ImageMetadataDto>.ErrorResult("No file provided");
         if (file.Length > MaxFileSizeBytes)
-            return ServiceResult<ImageMetadataDto>.ErrorResult($"File exceeds the {MaxFileSizeBytes / (1024 * 1024)}MB limit");
+            return Result<ImageMetadataDto>.ErrorResult($"File exceeds the {MaxFileSizeBytes / (1024 * 1024)}MB limit");
 
         if (!await _context.Projects.AnyAsync(p => p.ProjectId == request.ProjectId))
-            return ServiceResult<ImageMetadataDto>.ErrorResult("Project not found");
+            return Result<ImageMetadataDto>.ErrorResult("Project not found");
         if (request.TaskId.HasValue &&
             !await _context.ProjectTasks.AnyAsync(t => t.TaskId == request.TaskId.Value))
-            return ServiceResult<ImageMetadataDto>.ErrorResult("Task not found");
+            return Result<ImageMetadataDto>.ErrorResult("Task not found");
 
         var relativeDir = Path.Combine("uploads", "images", request.ProjectId.ToString());
         var absoluteDir = Path.Combine(Directory.GetCurrentDirectory(), relativeDir);
@@ -105,29 +106,29 @@ public class ImageService : IImageService
         await _context.SaveChangesAsync();
 
         var created = await BuildBaseQuery().FirstOrDefaultAsync(i => i.ImageId == image.ImageId) ?? image;
-        return ServiceResult<ImageMetadataDto>.SuccessResult(ToDto(created), "Image uploaded successfully");
+        return Result<ImageMetadataDto>.SuccessResult(ToDto(created), "Image uploaded successfully");
     }
 
-    public async Task<ServiceResult<ImageMetadataDto>> GetImageMetadataAsync(Guid imageId)
+    public async Task<Result<ImageMetadataDto>> GetImageMetadataAsync(Guid imageId)
     {
         var image = await BuildBaseQuery().FirstOrDefaultAsync(i => i.ImageId == imageId);
         if (image == null)
-            return ServiceResult<ImageMetadataDto>.ErrorResult("Image not found");
-        return ServiceResult<ImageMetadataDto>.SuccessResult(ToDto(image), "Image retrieved successfully");
+            return Result<ImageMetadataDto>.ErrorResult("Image not found");
+        return Result<ImageMetadataDto>.SuccessResult(ToDto(image), "Image retrieved successfully");
     }
 
-    public async Task<ServiceResult<string>> GetImageUrlAsync(Guid imageId)
+    public async Task<Result<string>> GetImageUrlAsync(Guid imageId)
     {
         var key = await _context.Images
             .Where(i => i.ImageId == imageId)
             .Select(i => i.CloudStorageKey)
             .FirstOrDefaultAsync();
         if (key == null)
-            return ServiceResult<string>.ErrorResult("Image not found");
-        return ServiceResult<string>.SuccessResult(BuildUrl(key), "Image URL retrieved successfully");
+            return Result<string>.ErrorResult("Image not found");
+        return Result<string>.SuccessResult(BuildUrl(key), "Image URL retrieved successfully");
     }
 
-    public async Task<ServiceResult<PagedResult<ImageMetadataDto>>> GetProjectImagesAsync(Guid projectId, int pageNumber, int pageSize)
+    public async Task<Result<PagedResult<ImageMetadataDto>>> GetProjectImagesAsync(Guid projectId, int pageNumber, int pageSize)
     {
         if (pageNumber < 1) pageNumber = 1;
         if (pageSize is < 1 or > 100) pageSize = 10;
@@ -147,10 +148,10 @@ public class ImageService : IImageService
             PageNumber = pageNumber,
             PageSize = pageSize
         };
-        return ServiceResult<PagedResult<ImageMetadataDto>>.SuccessResult(result, "Project images retrieved successfully");
+        return Result<PagedResult<ImageMetadataDto>>.SuccessResult(result, "Project images retrieved successfully");
     }
 
-    public async Task<ServiceResult<EnhancedPagedResult<ImageMetadataDto>>> GetProjectImagesAsync(Guid projectId, ImageQueryParameters parameters)
+    public async Task<Result<EnhancedPagedResult<ImageMetadataDto>>> GetProjectImagesAsync(Guid projectId, ImageQueryParameters parameters)
     {
         var query = BuildBaseQuery().Where(i => i.ProjectId == projectId);
 
@@ -192,14 +193,14 @@ public class ImageService : IImageService
             SortBy = parameters.SortBy,
             SortOrder = parameters.SortOrder
         };
-        return ServiceResult<EnhancedPagedResult<ImageMetadataDto>>.SuccessResult(result, "Project images retrieved successfully");
+        return Result<EnhancedPagedResult<ImageMetadataDto>>.SuccessResult(result, "Project images retrieved successfully");
     }
 
-    public async Task<ServiceResult<bool>> DeleteImageAsync(Guid imageId)
+    public async Task<Result<bool>> DeleteImageAsync(Guid imageId)
     {
         var image = await _context.Images.FirstOrDefaultAsync(i => i.ImageId == imageId);
         if (image == null)
-            return ServiceResult<bool>.ErrorResult("Image not found");
+            return Result<bool>.ErrorResult("Image not found");
 
         // Best-effort removal of the backing file; a missing file must not block the
         // metadata delete.
@@ -216,7 +217,7 @@ public class ImageService : IImageService
 
         _context.Images.Remove(image);
         await _context.SaveChangesAsync();
-        return ServiceResult<bool>.SuccessResult(true, "Image deleted successfully");
+        return Result<bool>.SuccessResult(true, "Image deleted successfully");
     }
 
     // -------------------------------------------------------------- Helpers --

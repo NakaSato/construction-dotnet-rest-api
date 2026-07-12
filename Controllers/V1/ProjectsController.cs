@@ -237,7 +237,7 @@ public class ProjectsController : BaseApiController
                 SortOrder = sortOrder
             };
             var serviceResult = await _projectService.GetProjectsAsync(parameters);
-            if (!serviceResult.Success)
+            if (!serviceResult.IsSuccess)
                 return BadRequest(new ApiResponseWithPagination<ProjectDto> { Success = false, Message = serviceResult.Message });
 
             // Create base URL for HATEOAS links

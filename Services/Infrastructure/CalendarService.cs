@@ -1,3 +1,4 @@
+using dotnet_rest_api.Common;
 using dotnet_rest_api.Data;
 using dotnet_rest_api.DTOs;
 using dotnet_rest_api.Models;
@@ -8,22 +9,22 @@ namespace dotnet_rest_api.Services.Infrastructure;
 
 public interface ICalendarService
 {
-    Task<ServiceResult<object>> GetCalendarEventsAsync();
-    Task<ServiceResult<object>> CreateCalendarEventAsync(object request);
-    Task<ApiResponse<PaginatedCalendarEventsDto>> GetEventsAsync(CalendarQueryDto query);
-    Task<ApiResponse<CalendarEventResponseDto>> GetEventByIdAsync(Guid id);
-    Task<ApiResponse<CalendarEventResponseDto>> CreateEventAsync(CreateCalendarEventDto request, Guid createdByUserId);
-    Task<ServiceResult<CalendarEventResponseDto>> UpdateEventAsync(Guid id, UpdateCalendarEventDto request);
-    Task<ApiResponse<bool>> DeleteEventAsync(Guid id);
-    Task<ApiResponse<PagedResult<CalendarEventSummaryDto>>> GetProjectEventsAsync(Guid projectId, int pageNumber, int pageSize);
-    Task<ApiResponse<PagedResult<CalendarEventSummaryDto>>> GetTaskEventsAsync(Guid taskId, int pageNumber, int pageSize);
-    Task<ApiResponse<PagedResult<CalendarEventSummaryDto>>> GetUserEventsAsync(Guid userId, int pageNumber, int pageSize);
-    Task<ApiResponse<IEnumerable<CalendarEventSummaryDto>>> GetUpcomingEventsAsync(int days, Guid? userId);
-    Task<ApiResponse<ConflictCheckResult>> CheckConflictsAsync(DateTime startDateTime, DateTime endDateTime, Guid userId, Guid? excludeEventId);
-    Task<ApiResponse<IEnumerable<CalendarEventSummaryDto>>> GetRecurringEventsAsync();
-    Task<ApiResponse<CalendarEventResponseDto>> CreateRecurringEventAsync(CreateCalendarEventDto request, Guid createdByUserId);
-    Task<ApiResponse<bool>> UpdateRecurringEventAsync(Guid seriesId, UpdateCalendarEventDto request, bool updateAllInstances);
-    Task<ApiResponse<bool>> DeleteRecurringEventAsync(Guid seriesId, bool deleteAllInstances);
+    Task<Result<object>> GetCalendarEventsAsync();
+    Task<Result<object>> CreateCalendarEventAsync(object request);
+    Task<Result<PaginatedCalendarEventsDto>> GetEventsAsync(CalendarQueryDto query);
+    Task<Result<CalendarEventResponseDto>> GetEventByIdAsync(Guid id);
+    Task<Result<CalendarEventResponseDto>> CreateEventAsync(CreateCalendarEventDto request, Guid createdByUserId);
+    Task<Result<CalendarEventResponseDto>> UpdateEventAsync(Guid id, UpdateCalendarEventDto request);
+    Task<Result<bool>> DeleteEventAsync(Guid id);
+    Task<Result<PagedResult<CalendarEventSummaryDto>>> GetProjectEventsAsync(Guid projectId, int pageNumber, int pageSize);
+    Task<Result<PagedResult<CalendarEventSummaryDto>>> GetTaskEventsAsync(Guid taskId, int pageNumber, int pageSize);
+    Task<Result<PagedResult<CalendarEventSummaryDto>>> GetUserEventsAsync(Guid userId, int pageNumber, int pageSize);
+    Task<Result<IEnumerable<CalendarEventSummaryDto>>> GetUpcomingEventsAsync(int days, Guid? userId);
+    Task<Result<ConflictCheckResult>> CheckConflictsAsync(DateTime startDateTime, DateTime endDateTime, Guid userId, Guid? excludeEventId);
+    Task<Result<IEnumerable<CalendarEventSummaryDto>>> GetRecurringEventsAsync();
+    Task<Result<CalendarEventResponseDto>> CreateRecurringEventAsync(CreateCalendarEventDto request, Guid createdByUserId);
+    Task<Result<bool>> UpdateRecurringEventAsync(Guid seriesId, UpdateCalendarEventDto request, bool updateAllInstances);
+    Task<Result<bool>> DeleteRecurringEventAsync(Guid seriesId, bool deleteAllInstances);
 }
 
 /// <summary>
@@ -45,19 +46,19 @@ public class CalendarService : ICalendarService
         _logger = logger;
     }
 
-    public async Task<ServiceResult<object>> GetCalendarEventsAsync()
+    public async Task<Result<object>> GetCalendarEventsAsync()
     {
         var events = await BuildBaseQuery()
             .OrderBy(e => e.StartDateTime)
             .Take(100)
             .ToListAsync();
-        return ServiceResult<object>.SuccessResult(events.Select(ToSummary).ToList(), "Calendar events retrieved successfully");
+        return Result<object>.SuccessResult(events.Select(ToSummary).ToList(), "Calendar events retrieved successfully");
     }
 
-    public Task<ServiceResult<object>> CreateCalendarEventAsync(object request)
-        => Task.FromResult(ServiceResult<object>.ErrorResult("Use CreateEventAsync with a CreateCalendarEventDto"));
+    public Task<Result<object>> CreateCalendarEventAsync(object request)
+        => Task.FromResult(Result<object>.ErrorResult("Use CreateEventAsync with a CreateCalendarEventDto"));
 
-    public async Task<ApiResponse<PaginatedCalendarEventsDto>> GetEventsAsync(CalendarQueryDto query)
+    public async Task<Result<PaginatedCalendarEventsDto>> GetEventsAsync(CalendarQueryDto query)
     {
         var q = BuildBaseQuery();
 
@@ -109,22 +110,22 @@ public class CalendarService : ICalendarService
             HasNextPage = query.Page < totalPages,
             HasPreviousPage = query.Page > 1
         };
-        return ApiResponse<PaginatedCalendarEventsDto>.SuccessResponse(dto, "Calendar events retrieved successfully");
+        return Result<PaginatedCalendarEventsDto>.SuccessResult(dto, "Calendar events retrieved successfully");
     }
 
-    public async Task<ApiResponse<CalendarEventResponseDto>> GetEventByIdAsync(Guid id)
+    public async Task<Result<CalendarEventResponseDto>> GetEventByIdAsync(Guid id)
     {
         var ev = await BuildBaseQuery().FirstOrDefaultAsync(e => e.EventId == id);
         if (ev == null)
-            return ApiResponse<CalendarEventResponseDto>.ErrorResponse("Calendar event not found");
-        return ApiResponse<CalendarEventResponseDto>.SuccessResponse(ToResponse(ev), "Calendar event retrieved successfully");
+            return Result<CalendarEventResponseDto>.NotFoundResult("Calendar event not found");
+        return Result<CalendarEventResponseDto>.SuccessResult(ToResponse(ev), "Calendar event retrieved successfully");
     }
 
-    public async Task<ApiResponse<CalendarEventResponseDto>> CreateEventAsync(CreateCalendarEventDto request, Guid createdByUserId)
+    public async Task<Result<CalendarEventResponseDto>> CreateEventAsync(CreateCalendarEventDto request, Guid createdByUserId)
     {
         var validation = await ValidateEventAsync(request.StartDateTime, request.EndDateTime, request.ProjectId, request.TaskId, request.AssignedToUserId);
         if (validation != null)
-            return ApiResponse<CalendarEventResponseDto>.ErrorResponse(validation);
+            return Result<CalendarEventResponseDto>.ErrorResult(validation);
 
         var ev = new CalendarEvent
         {
@@ -157,14 +158,14 @@ public class CalendarService : ICalendarService
         await _context.SaveChangesAsync();
 
         var created = await BuildBaseQuery().FirstOrDefaultAsync(e => e.EventId == ev.EventId) ?? ev;
-        return ApiResponse<CalendarEventResponseDto>.SuccessResponse(ToResponse(created), "Calendar event created successfully");
+        return Result<CalendarEventResponseDto>.SuccessResult(ToResponse(created), "Calendar event created successfully");
     }
 
-    public async Task<ServiceResult<CalendarEventResponseDto>> UpdateEventAsync(Guid id, UpdateCalendarEventDto request)
+    public async Task<Result<CalendarEventResponseDto>> UpdateEventAsync(Guid id, UpdateCalendarEventDto request)
     {
         var ev = await _context.CalendarEvents.FirstOrDefaultAsync(e => e.EventId == id);
         if (ev == null)
-            return ServiceResult<CalendarEventResponseDto>.ErrorResult("Calendar event not found");
+            return Result<CalendarEventResponseDto>.NotFoundResult("Calendar event not found");
 
         if (request.Title != null) ev.Title = request.Title;
         if (request.Description != null) ev.Description = request.Description;
@@ -188,36 +189,36 @@ public class CalendarService : ICalendarService
         if (request.Notes != null) ev.Notes = request.Notes;
 
         if (ev.EndDateTime <= ev.StartDateTime)
-            return ServiceResult<CalendarEventResponseDto>.ErrorResult("End time must be after start time");
+            return Result<CalendarEventResponseDto>.ErrorResult("End time must be after start time");
 
         ev.UpdatedAt = DateTime.UtcNow;
         await _context.SaveChangesAsync();
 
         var updated = await BuildBaseQuery().FirstOrDefaultAsync(e => e.EventId == id) ?? ev;
-        return ServiceResult<CalendarEventResponseDto>.SuccessResult(ToResponse(updated), "Calendar event updated successfully");
+        return Result<CalendarEventResponseDto>.SuccessResult(ToResponse(updated), "Calendar event updated successfully");
     }
 
-    public async Task<ApiResponse<bool>> DeleteEventAsync(Guid id)
+    public async Task<Result<bool>> DeleteEventAsync(Guid id)
     {
         var ev = await _context.CalendarEvents.FirstOrDefaultAsync(e => e.EventId == id);
         if (ev == null)
-            return ApiResponse<bool>.ErrorResponse("Calendar event not found");
+            return Result<bool>.NotFoundResult("Calendar event not found");
 
         _context.CalendarEvents.Remove(ev);
         await _context.SaveChangesAsync();
-        return ApiResponse<bool>.SuccessResponse(true, "Calendar event deleted successfully");
+        return Result<bool>.SuccessResult(true, "Calendar event deleted successfully");
     }
 
-    public Task<ApiResponse<PagedResult<CalendarEventSummaryDto>>> GetProjectEventsAsync(Guid projectId, int pageNumber, int pageSize)
+    public Task<Result<PagedResult<CalendarEventSummaryDto>>> GetProjectEventsAsync(Guid projectId, int pageNumber, int pageSize)
         => PagedSummariesAsync(e => e.ProjectId == projectId, pageNumber, pageSize, "Project events retrieved successfully");
 
-    public Task<ApiResponse<PagedResult<CalendarEventSummaryDto>>> GetTaskEventsAsync(Guid taskId, int pageNumber, int pageSize)
+    public Task<Result<PagedResult<CalendarEventSummaryDto>>> GetTaskEventsAsync(Guid taskId, int pageNumber, int pageSize)
         => PagedSummariesAsync(e => e.TaskId == taskId, pageNumber, pageSize, "Task events retrieved successfully");
 
-    public Task<ApiResponse<PagedResult<CalendarEventSummaryDto>>> GetUserEventsAsync(Guid userId, int pageNumber, int pageSize)
+    public Task<Result<PagedResult<CalendarEventSummaryDto>>> GetUserEventsAsync(Guid userId, int pageNumber, int pageSize)
         => PagedSummariesAsync(e => e.CreatedByUserId == userId || e.AssignedToUserId == userId, pageNumber, pageSize, "User events retrieved successfully");
 
-    public async Task<ApiResponse<IEnumerable<CalendarEventSummaryDto>>> GetUpcomingEventsAsync(int days, Guid? userId)
+    public async Task<Result<IEnumerable<CalendarEventSummaryDto>>> GetUpcomingEventsAsync(int days, Guid? userId)
     {
         var now = DateTime.UtcNow;
         var until = now.AddDays(days);
@@ -226,11 +227,11 @@ public class CalendarService : ICalendarService
             q = q.Where(e => e.CreatedByUserId == userId.Value || e.AssignedToUserId == userId.Value);
 
         var events = await q.OrderBy(e => e.StartDateTime).ToListAsync();
-        return ApiResponse<IEnumerable<CalendarEventSummaryDto>>.SuccessResponse(
+        return Result<IEnumerable<CalendarEventSummaryDto>>.SuccessResult(
             events.Select(ToSummary).ToList(), "Upcoming events retrieved successfully");
     }
 
-    public async Task<ApiResponse<ConflictCheckResult>> CheckConflictsAsync(DateTime startDateTime, DateTime endDateTime, Guid userId, Guid? excludeEventId)
+    public async Task<Result<ConflictCheckResult>> CheckConflictsAsync(DateTime startDateTime, DateTime endDateTime, Guid userId, Guid? excludeEventId)
     {
         // Overlap: existing.Start < requested.End AND existing.End > requested.Start.
         var q = BuildBaseQuery().Where(e =>
@@ -249,39 +250,39 @@ public class CalendarService : ICalendarService
             HasConflicts = conflicts.Count > 0,
             ConflictingEvents = conflicts.Select(ToSummary).ToList()
         };
-        return ApiResponse<ConflictCheckResult>.SuccessResponse(result,
+        return Result<ConflictCheckResult>.SuccessResult(result,
             result.HasConflicts ? $"{conflicts.Count} conflicting event(s) found" : "No conflicts found");
     }
 
-    public async Task<ApiResponse<IEnumerable<CalendarEventSummaryDto>>> GetRecurringEventsAsync()
+    public async Task<Result<IEnumerable<CalendarEventSummaryDto>>> GetRecurringEventsAsync()
     {
         var events = await BuildBaseQuery()
             .Where(e => e.IsRecurring)
             .OrderBy(e => e.StartDateTime)
             .ToListAsync();
-        return ApiResponse<IEnumerable<CalendarEventSummaryDto>>.SuccessResponse(
+        return Result<IEnumerable<CalendarEventSummaryDto>>.SuccessResult(
             events.Select(ToSummary).ToList(), "Recurring events retrieved successfully");
     }
 
-    public async Task<ApiResponse<CalendarEventResponseDto>> CreateRecurringEventAsync(CreateCalendarEventDto request, Guid createdByUserId)
+    public async Task<Result<CalendarEventResponseDto>> CreateRecurringEventAsync(CreateCalendarEventDto request, Guid createdByUserId)
     {
         // Persist as a single master occurrence flagged recurring.
         request.IsRecurring = true;
         if (string.IsNullOrWhiteSpace(request.RecurrencePattern))
-            return ApiResponse<CalendarEventResponseDto>.ErrorResponse("RecurrencePattern is required for a recurring event");
+            return Result<CalendarEventResponseDto>.ErrorResult("RecurrencePattern is required for a recurring event");
         return await CreateEventAsync(request, createdByUserId);
     }
 
-    public async Task<ApiResponse<bool>> UpdateRecurringEventAsync(Guid seriesId, UpdateCalendarEventDto request, bool updateAllInstances)
+    public async Task<Result<bool>> UpdateRecurringEventAsync(Guid seriesId, UpdateCalendarEventDto request, bool updateAllInstances)
     {
         // Single master row model: the series id is the event id.
         var result = await UpdateEventAsync(seriesId, request);
-        return result.Success
-            ? ApiResponse<bool>.SuccessResponse(true, "Recurring event updated successfully")
-            : ApiResponse<bool>.ErrorResponse(result.Message ?? "Recurring event not found");
+        return result.IsSuccess
+            ? Result<bool>.SuccessResult(true, "Recurring event updated successfully")
+            : Result<bool>.ErrorResult(result.Message ?? "Recurring event not found");
     }
 
-    public async Task<ApiResponse<bool>> DeleteRecurringEventAsync(Guid seriesId, bool deleteAllInstances)
+    public async Task<Result<bool>> DeleteRecurringEventAsync(Guid seriesId, bool deleteAllInstances)
         => await DeleteEventAsync(seriesId);
 
     // -------------------------------------------------------------- Helpers --
@@ -294,7 +295,7 @@ public class CalendarService : ICalendarService
             .Include(e => e.AssignedTo)
             .AsQueryable();
 
-    private async Task<ApiResponse<PagedResult<CalendarEventSummaryDto>>> PagedSummariesAsync(
+    private async Task<Result<PagedResult<CalendarEventSummaryDto>>> PagedSummariesAsync(
         System.Linq.Expressions.Expression<Func<CalendarEvent, bool>> predicate, int pageNumber, int pageSize, string message)
     {
         if (pageNumber < 1) pageNumber = 1;
@@ -315,7 +316,7 @@ public class CalendarService : ICalendarService
             PageNumber = pageNumber,
             PageSize = pageSize
         };
-        return ApiResponse<PagedResult<CalendarEventSummaryDto>>.SuccessResponse(result, message);
+        return Result<PagedResult<CalendarEventSummaryDto>>.SuccessResult(result, message);
     }
 
     /// <summary>Validates time ordering and optional foreign keys. Returns an error message or null.</summary>
