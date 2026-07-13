@@ -11,16 +11,16 @@ Basis for "implementable now" = backing EF model **and** `DbSet` already exist (
 
 | Stub service | Endpoints | Model | DbSet | Extra deps | Behavior today |
 |---|---|---|---|---|---|
-| `StubDailyReportService` | 26 | ✅ `DailyReport` (+Attachment, WorkProgressItem, EquipmentLog, PersonnelLog, MaterialUsage) | ✅ all | — | mostly `ErrorResult("not implemented")`; list endpoints return empty page |
-| `StubWorkRequestService` | 8 | ✅ `WorkRequest` (+Comment, Task) | ✅ | — | list empty; rest error |
-| `StubWorkRequestApprovalService` | (in 10 WR) | ✅ `WorkRequestApproval`, `WorkRequestNotification` | ✅ | — | all error |
-| `StubNotificationService` | 10 | ✖ (DTO only) | ✖ | needs `IHubContext<NotificationHub>` | sends = no-op; reads return empty |
-| `StubImageService` | 8 | ✅ `ImageMetadata` | ✖ | file storage (`uploads/` wired) | list empty; rest error/"not found" |
-| `StubWeeklyReportService` | 9 (shared) | ✅ `WeeklyReport` | ✖ | migration | list empty; rest error |
-| `StubWeeklyWorkRequestService` | 9 (shared) | ✅ `WeeklyWorkRequest` | ✖ | migration | list empty; rest error |
-| `StubCalendarService` | 14 | ✅ `CalendarEvent` | ✖ | migration + recurrence logic | project/task/user lists return empty (look real!); rest error |
-| `StubResourceService` | 5 | ✖ | ✖ | full model + migration | list empty; rest error |
-| `StubDocumentService` | 5 | ✖ | ✖ | full model + storage | (in `Services/Shared/IDocumentService.cs`) |
+| `StubDailyReportService` | 26 | Y `DailyReport` (+Attachment, WorkProgressItem, EquipmentLog, PersonnelLog, MaterialUsage) | Y all | — | mostly `ErrorResult("not implemented")`; list endpoints return empty page |
+| `StubWorkRequestService` | 8 | Y `WorkRequest` (+Comment, Task) | Y | — | list empty; rest error |
+| `StubWorkRequestApprovalService` | (in 10 WR) | Y `WorkRequestApproval`, `WorkRequestNotification` | Y | — | all error |
+| `StubNotificationService` | 10 | N (DTO only) | N | needs `IHubContext<NotificationHub>` | sends = no-op; reads return empty |
+| `StubImageService` | 8 | Y `ImageMetadata` | N | file storage (`uploads/` wired) | list empty; rest error/"not found" |
+| `StubWeeklyReportService` | 9 (shared) | Y `WeeklyReport` | N | migration | list empty; rest error |
+| `StubWeeklyWorkRequestService` | 9 (shared) | Y `WeeklyWorkRequest` | N | migration | list empty; rest error |
+| `StubCalendarService` | 14 | Y `CalendarEvent` | N | migration + recurrence logic | project/task/user lists return empty (look real!); rest error |
+| `StubResourceService` | 5 | N | N | full model + migration | list empty; rest error |
+| `StubDocumentService` | 5 | N | N | full model + storage | (in `Services/Shared/IDocumentService.cs`) |
 
 **Danger note:** Calendar/DailyReport/Weekly/Image list endpoints return `Success=true` + empty page — Swagger + clients see a working, empty feature, not a stub. These are the misleading ones.
 
@@ -38,8 +38,8 @@ Ordered by ROI (schema-ready + biggest surface + workflow already designed first
 | 4 | **Images** | **IMPLEMENT (verify mobile use)** | `ImageMetadata` model + `uploads/` static serving exist; needs DbSet + save pipeline. Likely needed (construction site photos on daily reports). Confirm Flutter client uploads. |
 | 5 | **WeeklyReports / WeeklyWorkRequests** | **HIDE** now, implement after DailyReports | models exist but need DbSet+migration; lower priority than daily. Tagged `[Preview]`. |
 | 6 | **Calendar** | **HIDE** | 14 endpoints, needs DbSet + recurrence engine (largest effort, unclear mobile demand). Tagged `[Preview]`; revisit as product decision. |
-| 7 | **Resources** | **DELETED** ✅ | no model/schema. Controller + stub + DTOs removed (commit-ready). |
-| 8 | **Documents** | **DELETED** ✅ | no model/storage; overlaps with Images. Controller + stub + DTOs removed. |
+| 7 | **Resources** | **DELETED** | no model/schema. Controller + stub + DTOs removed (commit-ready). |
+| 8 | **Documents** | **DELETED** | no model/storage; overlaps with Images. Controller + stub + DTOs removed. |
 
 ### Decisions taken (2026-07-11, user)
 - **Resources & Documents → DELETED.** Removed `ResourcesController`, `DocumentsController`, `StubResourceService`, `StubDocumentService`/`IDocumentService`, their DI registrations, and the Document*/Resource* DTOs + `DocumentCategory`/`DocumentStatus`/`ResourceStatus` enums. Kept `DailyReportAttachmentDto`/`WeeklySummaryDto` (used by DailyReports) and `ResourceType` (shared with MasterPlans).

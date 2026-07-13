@@ -76,7 +76,7 @@ Role strings used in controllers vs reality:
 | `Administrator,ProjectManager,Executive` | 1 | **never** |
 | `Admin,Manager,Supervisor` | 3 | `Admin`, `Manager` only |
 | `Admin,ProjectManager` | 2 | `Admin` only |
-| `Admin` / `Admin,Manager` | 18 | ✅ valid |
+| `Admin` / `Admin,Manager` | 18 | valid |
 
 **Impact:** ~45 endpoints (every write path in DailyReports, MasterPlans, Documents, WeeklyReports, WeeklyWorkRequests, WorkRequests, Resources, Notifications admin actions) return **403 for every user including admin**. The API's approval workflows are unusable.
 
