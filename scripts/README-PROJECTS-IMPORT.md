@@ -1,40 +1,40 @@
-# 🚀 Solar Projects Bulk Creation Scripts
+# Solar Projects Bulk Creation Scripts
 
 This directory contains scripts for bulk creating solar projects from JSON data using the REST API.
 
-## 📁 Scripts Overview
+## Scripts Overview
 
 ### Main Scripts
 
 #### `create-projects-from-json.sh`
-**Purpose**: Creates projects from a JSON file using the REST API  
-**Usage**: `./create-projects-from-json.sh [json_file] [api_base_url]`  
+**Purpose**: Creates projects from a JSON file using the REST API
+**Usage**: `./create-projects-from-json.sh [json_file] [api_base_url]`
 **Features**:
-- ✅ JWT authentication with admin credentials
-- ✅ Comprehensive error handling and logging
-- ✅ Progress tracking with colorized output
-- ✅ Automatic response format detection
-- ✅ Rate limiting with 0.5s delays between requests
-- ✅ Detailed success/failure reporting
+- JWT authentication with admin credentials
+- Comprehensive error handling and logging
+- Progress tracking with colorized output
+- Automatic response format detection
+- Rate limiting with 0.5s delays between requests
+- Detailed success/failure reporting
 
 #### `test-create-projects.sh`
-**Purpose**: Test script that creates only the first 3 projects  
-**Usage**: `./test-create-projects.sh`  
+**Purpose**: Test script that creates only the first 3 projects
+**Usage**: `./test-create-projects.sh`
 **Features**:
-- ✅ Safe testing with limited scope
-- ✅ Automatic test file creation and cleanup
-- ✅ Preview of projects to be created
+- Safe testing with limited scope
+- Automatic test file creation and cleanup
+- Preview of projects to be created
 
 #### `verify-projects.sh`
-**Purpose**: Verifies existing projects in the API  
-**Usage**: `./verify-projects.sh [api_base_url]`  
+**Purpose**: Verifies existing projects in the API
+**Usage**: `./verify-projects.sh [api_base_url]`
 **Features**:
-- ✅ Lists all projects with names and IDs
-- ✅ Project count and status summary
-- ✅ Equipment and capacity totals
-- ✅ Grouped statistics by status
+- Lists all projects with names and IDs
+- Project count and status summary
+- Equipment and capacity totals
+- Grouped statistics by status
 
-## 📊 Data Files
+## Data Files
 
 ### `projects.json`
 - **Contains**: 25 Thai solar installation projects
@@ -42,21 +42,21 @@ This directory contains scripts for bulk creating solar projects from JSON data 
 - **Fields**: Project names, locations, equipment details, capacities, timelines
 - **Encoding**: UTF-8 with Thai language support
 
-## 🔧 Prerequisites
+## Prerequisites
 
 ### Required Tools
 ```bash
 # Install jq for JSON processing
-brew install jq  # macOS
-apt-get install jq  # Ubuntu/Debian
+brew install jq # macOS
+apt-get install jq # Ubuntu/Debian
 ```
 
 ### Required Services
-- ✅ .NET API server running on `http://localhost:5001`
-- ✅ Valid admin credentials: `admin@example.com` / `Admin123!`
-- ✅ Database with proper migrations applied
+- .NET API server running on `http://localhost:5001`
+- Valid admin credentials: `admin@example.com` / `Admin123!`
+- Database with proper migrations applied
 
-## 📋 Usage Examples
+## Usage Examples
 
 ### Create All Projects
 ```bash
@@ -89,45 +89,45 @@ jq '.[0:5]' projects.json > test-subset.json
 ./verify-projects.sh http://localhost:8080
 ```
 
-## 🎯 JSON Data Format
+## JSON Data Format
 
 The JSON file should contain an array of project objects with this structure:
 
 ```json
 [
-  {
-    "projectId": "107",
-    "projectName": "สำนักงานประปาเขต 9",
-    "address": null,
-    "clientInfo": "107 กปภ.เขต 9",
-    "status": "Planning",
-    "startDate": "2025-06-09T00:00:00Z",
-    "estimatedEndDate": "2025-08-08T00:00:00Z",
-    "actualEndDate": null,
-    "team": "Solar Team Alpha",
-    "connectionType": "MV",
-    "connectionNotes": "ระบบจำหน่ายแรงสูง",
-    "totalCapacityKw": 125.4,
-    "pvModuleCount": 220,
-    "equipmentDetails": {
-      "inverter125kw": 1,
-      "inverter80kw": 0,
-      "inverter60kw": 4,
-      "inverter40kw": 1
-    },
-    "ftsValue": 0,
-    "revenueValue": 0,
-    "pqmValue": 0,
-    "locationCoordinates": {
-      "latitude": 0.0,
-      "longitude": 0.0
-    },
-    "createdAt": "2025-07-05T17:15:00Z"
-  }
+ {
+ "projectId": "107",
+ "projectName": "สำนักงานประปาเขต 9",
+ "address": null,
+ "clientInfo": "107 กปภ.เขต 9",
+ "status": "Planning",
+ "startDate": "2025-06-09T00:00:00Z",
+ "estimatedEndDate": "2025-08-08T00:00:00Z",
+ "actualEndDate": null,
+ "team": "Solar Team Alpha",
+ "connectionType": "MV",
+ "connectionNotes": "ระบบจำหน่ายแรงสูง",
+ "totalCapacityKw": 125.4,
+ "pvModuleCount": 220,
+ "equipmentDetails": {
+ "inverter125kw": 1,
+ "inverter80kw": 0,
+ "inverter60kw": 4,
+ "inverter40kw": 1
+ },
+ "ftsValue": 0,
+ "revenueValue": 0,
+ "pqmValue": 0,
+ "locationCoordinates": {
+ "latitude": 0.0,
+ "longitude": 0.0
+ },
+ "createdAt": "2025-07-05T17:15:00Z"
+ }
 ]
 ```
 
-## ⚙️ Configuration
+## Configuration
 
 ### API Endpoints
 - **Login**: `POST /api/v1/auth/login`
@@ -144,42 +144,42 @@ The script automatically maps JSON fields to API request format:
 - `address` → `"Address not specified"` (if null)
 - All equipment and location data preserved
 
-## 🔍 Troubleshooting
+## Troubleshooting
 
 ### Common Issues
 
 #### "Project manager not found"
-**Cause**: ProjectManagerId in JSON doesn't exist in database  
+**Cause**: ProjectManagerId in JSON doesn't exist in database
 **Solution**: Script sets `projectManagerId: null` to avoid this
 
 #### "Invalid JSON syntax"
-**Cause**: Malformed JSON file  
+**Cause**: Malformed JSON file
 **Solution**: Validate JSON with `jq empty filename.json`
 
 #### "Login failed"
-**Cause**: API not running or wrong credentials  
-**Solution**: 
+**Cause**: API not running or wrong credentials
+**Solution**:
 - Check API is running: `curl http://localhost:5001/api/v1/projects`
 - Verify credentials in script
 
 #### "No response from API"
-**Cause**: Network or server issues  
+**Cause**: Network or server issues
 **Solution**: Check API logs and network connectivity
 
 ### Response Format Handling
 The script handles multiple API response formats:
-- ✅ Standard ApiResponse: `{"success": true, "data": {...}}`
-- ✅ Result format: `{"result": {}, "value": null}`
-- ✅ Error responses with proper error messages
+- Standard ApiResponse: `{"success": true, "data": {...}}`
+- Result format: `{"result": {}, "value": null}`
+- Error responses with proper error messages
 
-## 📈 Success Metrics
+## Success Metrics
 
 ### Completed Execution (July 5, 2025)
-- ✅ **Total Projects Created**: 25 Thai solar projects
-- ✅ **Success Rate**: 100% (25/25 projects)
-- ✅ **Data Integrity**: All equipment, capacity, and timeline data preserved
-- ✅ **Performance**: ~0.5s per project with rate limiting
-- ✅ **Error Handling**: Robust error detection and reporting
+- **Total Projects Created**: 25 Thai solar projects
+- **Success Rate**: 100% (25/25 projects)
+- **Data Integrity**: All equipment, capacity, and timeline data preserved
+- **Performance**: ~0.5s per project with rate limiting
+- **Error Handling**: Robust error detection and reporting
 
 ### Project Coverage
 - **Regions**: Northern Thailand (Chiang Mai, Lamphun, Lampang, etc.)
@@ -188,18 +188,18 @@ The script handles multiple API response formats:
 - **Connection Types**: MV (Medium Voltage) and LV (Low Voltage)
 - **Equipment**: 125kW, 80kW, 60kW, and 40kW inverters
 
-## 🔄 Integration
+## Integration
 
 These scripts integrate with:
-- ✅ **JWT Authentication System**: Role-based access control
-- ✅ **Project Management API**: CRUD operations with validation
-- ✅ **Database Migrations**: EF Core with PostgreSQL
-- ✅ **Equipment Tracking**: Detailed inverter and capacity data
-- ✅ **Timeline Management**: Start/end dates with proper formatting
+- **JWT Authentication System**: Role-based access control
+- **Project Management API**: CRUD operations with validation
+- **Database Migrations**: EF Core with PostgreSQL
+- **Equipment Tracking**: Detailed inverter and capacity data
+- **Timeline Management**: Start/end dates with proper formatting
 
 ---
 
-**Last Updated**: July 5, 2025  
-**Status**: Production Ready ✅  
-**Total Projects**: 60 (25 from JSON import + existing)  
+**Last Updated**: July 5, 2025
+**Status**: Production Ready
+**Total Projects**: 60 (25 from JSON import + existing)
 **Next Steps**: Ready for daily reports and task management integration

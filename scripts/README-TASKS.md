@@ -1,25 +1,25 @@
-# 📋 Solar Projects Tasks API Scripts
+# Solar Projects Tasks API Scripts
 
 This directory contains comprehensive bash scripts for interacting with the Solar Projects Task Management API. The scripts provide role-based access testing and easy task management operations.
 
-## 🚀 Quick Start
+## Quick Start
 
 1. **Ensure the API server is running:**
-   ```bash
-   dotnet run --urls "http://localhost:5001"
-   ```
+ ```bash
+ dotnet run --urls "http://localhost:5001"
+ ```
 
 2. **Make scripts executable:**
-   ```bash
-   chmod +x scripts/test-tasks-api.sh scripts/quick-tasks.sh scripts/test-tasks-permissions.sh
-   ```
+ ```bash
+ chmod +x scripts/test-tasks-api.sh scripts/quick-tasks.sh scripts/test-tasks-permissions.sh
+ ```
 
 3. **Start with the quick operations script:**
-   ```bash
-   ./scripts/quick-tasks.sh help
-   ```
+ ```bash
+ ./scripts/quick-tasks.sh help
+ ```
 
-## 📁 Available Scripts
+## Available Scripts
 
 ### 1. `quick-tasks.sh` - Interactive Task Operations
 
@@ -68,12 +68,12 @@ This directory contains comprehensive bash scripts for interacting with the Sola
 ```
 
 **Features:**
-- ✅ Tests all CRUD operations
-- ✅ Tests different user role permissions
-- ✅ Tests task assignment and status updates
-- ✅ Tests progress report functionality
-- ✅ Tests advanced search and filtering
-- ✅ Generates detailed logs and summary reports
+- Tests all CRUD operations
+- Tests different user role permissions
+- Tests task assignment and status updates
+- Tests progress report functionality
+- Tests advanced search and filtering
+- Generates detailed logs and summary reports
 
 **What it tests:**
 - Task creation (Admin/Manager)
@@ -99,20 +99,20 @@ This directory contains comprehensive bash scripts for interacting with the Sola
 
 | Role | Create | View | Update | Assign | Delete | Status Update |
 |------|--------|------|--------|--------|--------|---------------|
-| **Admin** | ✅ All | ✅ All | ✅ All | ✅ All | ✅ All | ✅ All |
-| **Manager** | ✅ All | ✅ All | ✅ All | ✅ All | ✅ All | ✅ All |
-| **Supervisor** | ✅ Managed | ✅ Managed | ✅ Managed | ✅ Managed | ❌ None | ✅ Managed |
-| **Technician** | ❌ None | ✅ Assigned | ❌ None | ❌ None | ❌ None | ✅ Assigned |
-| **General User** | ❌ None | ✅ Accessible | ❌ None | ❌ None | ❌ None | ❌ None |
+| **Admin** | All | All | All | All | All | All |
+| **Manager** | All | All | All | All | All | All |
+| **Supervisor** | Managed | Managed | Managed | Managed | None | Managed |
+| **Technician** | None | Assigned | None | None | None | Assigned |
+| **General User** | None | Accessible | None | None | None | None |
 
 **Features:**
-- ✅ Tests each role's permissions individually
-- ✅ Validates expected success/failure responses
-- ✅ Generates pass/fail report for each test
-- ✅ Documents expected vs actual behavior
-- ✅ Saves detailed logs for debugging
+- Tests each role's permissions individually
+- Validates expected success/failure responses
+- Generates pass/fail report for each test
+- Documents expected vs actual behavior
+- Saves detailed logs for debugging
 
-## 🔧 API Endpoints Tested
+## API Endpoints Tested
 
 All scripts interact with these Task Management API endpoints:
 
@@ -132,7 +132,7 @@ All scripts interact with these Task Management API endpoints:
 - `POST /api/v1/tasks/{id}/progress-reports` - Create progress report
 - `GET /api/v1/tasks/{id}/progress-reports` - Get progress reports
 
-## 🎯 Task Status Values
+## Task Status Values
 
 The API supports these task statuses:
 
@@ -144,7 +144,7 @@ The API supports these task statuses:
 | `OnHold` | Temporarily paused | Waiting for resources |
 | `Cancelled` | Task was cancelled | No longer needed |
 
-## 🔐 Authentication
+## Authentication
 
 All scripts use the following authentication:
 
@@ -154,7 +154,7 @@ All scripts use the following authentication:
 
 In production, each role would have separate credentials.
 
-## 📊 Example Workflow
+## Example Workflow
 
 ### 1. Basic Task Management
 ```bash
@@ -194,12 +194,12 @@ ls scripts/test-logs/
 
 # Create multiple tasks for the project
 for i in {1..3}; do
-    echo -e "Task $i\nDescription for task $i\n2025-08-$(printf "%02d" $((15+i)))T10:00:00Z\n" | \
-    ./scripts/quick-tasks.sh create $PROJECT_ID
+ echo -e "Task $i\nDescription for task $i\n2025-08-$(printf "%02d" $((15+i)))T10:00:00Z\n" | \
+ ./scripts/quick-tasks.sh create $PROJECT_ID
 done
 ```
 
-## 📝 Log Files
+## Log Files
 
 All scripts generate detailed logs in the `scripts/test-logs/` directory:
 
@@ -207,7 +207,7 @@ All scripts generate detailed logs in the `scripts/test-logs/` directory:
 - `tasks_permissions_YYYYMMDD_HHMMSS.log` - Permission test logs
 - Individual operation logs for troubleshooting
 
-## 🚨 Error Handling
+## Error Handling
 
 The scripts handle common scenarios:
 
@@ -217,7 +217,7 @@ The scripts handle common scenarios:
 - **Permission Denied:** Expected behavior for unauthorized operations
 - **Malformed JSON:** Robust parsing with fallback error display
 
-## 🔧 Customization
+## Customization
 
 ### Adding New Operations
 
@@ -243,31 +243,31 @@ To add new roles to `test-tasks-permissions.sh`:
 2. Create test functions for role-specific scenarios
 3. Update the test report generation
 
-## 📋 Requirements
+## Requirements
 
 - **bash** - Shell environment
 - **curl** - HTTP client for API calls
 - **jq** - JSON processor for parsing responses
 - **Solar Projects API** - Running on http://localhost:5001
 
-## 🎉 Success Examples
+## Success Examples
 
 When everything works correctly, you should see:
 
 ```bash
 $ ./scripts/quick-tasks.sh list
-ℹ Authenticating as admin...
-✓ Authenticated successfully
-ℹ Fetching all tasks...
+ Authenticating as admin...
+ Authenticated successfully
+ Fetching all tasks...
 ID: cf8939ad-b21c-4c36-8cf9-a4f6a8cccd3d | Install Solar Panels | Status: InProgress | Project: Admin Created Project
-✓ Found 1 tasks
+ Found 1 tasks
 
 $ ./scripts/test-tasks-permissions.sh
-🔐 ROLE-BASED PERMISSIONS TEST
-✓ PASS - Create Task (Admin)
-✓ PASS - View All Tasks (Admin)
-✓ PASS - Update Task (Admin)
-🎉 All permission tests passed!
+ ROLE-BASED PERMISSIONS TEST
+ PASS - Create Task (Admin)
+ PASS - View All Tasks (Admin)
+ PASS - Update Task (Admin)
+ All permission tests passed!
 ```
 
 ---
