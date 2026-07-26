@@ -31,6 +31,9 @@ services:
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
       - ASPNETCORE_URLS=http://+:8080
+      # The image defaults to the in-memory provider for hosts with no attached
+      # database; compose provides a real PostgreSQL, so opt back in to it.
+      - USE_IN_MEMORY_DB=false
       - ConnectionStrings__DefaultConnection=Host=postgres;Database=${POSTGRES_DB};Username=${POSTGRES_USER};Password=${POSTGRES_PASSWORD};Port=5432
       - JwtSettings__SecretKey=SolarProjects2024-SuperSecretKey-ForJWT-Authentication-Security-32Plus-Characters!
       - JwtSettings__Issuer=http://localhost:5001

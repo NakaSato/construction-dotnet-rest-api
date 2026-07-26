@@ -43,6 +43,9 @@ services:
     container_name: solar-projects-api-dev
     environment:
       - ASPNETCORE_ENVIRONMENT=Docker
+      # The image defaults to the in-memory provider for hosts with no attached
+      # database; compose provides a real PostgreSQL, so opt back in to it.
+      - USE_IN_MEMORY_DB=false
     ports:
       - "5001:8080"
     depends_on:
