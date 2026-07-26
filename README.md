@@ -1,128 +1,209 @@
 # Solar Projects API
 
-ASP.NET Core Web API (`net10.0`) for solar construction project management. Serves a Flutter mobile app and web clients over REST + SignalR real-time.
+REST + real-time backend for solar construction project management. ASP.NET Core Web API on **.NET 10**, serving a Flutter mobile app and web clients.
 
-## Tech Stack
+Manages projects, work-breakdown structures, tasks, daily/weekly reports, work requests with approvals, calendar scheduling, image uploads, and live notifications.
 
-- **.NET 10.0** (ASP.NET Core Web API)
-- **EF Core** — PostgreSQL (Npgsql); in-memory provider for tests/Docker
-- **JWT** auth with role-based access + refresh-token rotation
-- **SignalR** for real-time notifications
-- **AutoMapper**, **FluentValidation**
-- **Redis**-backed rate limiting (optional)
+---
+
+## Stack
+
+| Concern | Choice |
+|---|---|
+| Runtime | .NET 10 (`net10.0`), ASP.NET Core Web API |
+| Data | EF Core 10 + PostgreSQL (Npgsql); in-memory provider for tests/Docker |
+| Auth | JWT bearer + BCrypt hashing, role-based, refresh-token rotation |
+| Real-time | SignalR (`NotificationHub`) |
+| Mapping / validation | AutoMapper 16, FluentValidation 11 |
+| Versioning | `Asp.Versioning.Mvc` (v1 default) |
+| Rate limiting | Redis-backed, optional |
+| Storage | Local `uploads/` served at `/files`; AWS S3 SDK available |
+| Docs | Swagger / Swashbuckle (Development + Docker only) |
 
 ## Prerequisites
 
-- .NET SDK 10.0 (`10.0.301`)
-- PostgreSQL (or set `USE_IN_MEMORY_DB=true`)
-- Redis (optional — only if rate limiting enabled)
+- .NET SDK **10.0.301**
+- PostgreSQL — or skip it with `USE_IN_MEMORY_DB=true`
+- Redis — only if `RateLimit:Enabled` is true
 
-## Quick Start
+> `dotnet` may not be on PATH. On this machine use the full path: `/usr/local/share/dotnet/dotnet`.
+
+## Quick start
 
 ```bash
-# Build
+cp .env.example .env          # set JWT_KEY (32+ chars) and the connection string
 dotnet build
-
-# Run locally (Swagger UI at root)
 dotnet run --urls "http://localhost:5001"
-# -> http://localhost:5001
 ```
 
-> `dotnet` not on PATH in some environments — use the full SDK path, e.g. `/usr/local/share/dotnet/dotnet`.
+Swagger UI is served at the **root**: <http://localhost:5001>
 
-### Default Admin Account
+No database handy? Run fully in memory:
 
-Seeded by `Services/Infrastructure/DataSeeder.cs`:
+```bash
+USE_IN_MEMORY_DB=true dotnet run --urls "http://localhost:5001"
+```
 
-- **Username**: `admin@example.com`
-- **Password**: `Admin123!`
+### Docker
+
+```bash
+docker compose up --build      # API on :5001, PostgreSQL on :5432
+docker compose -f docker-compose.dev.yml up   # dev profile
+```
+
+The image itself defaults to `USE_IN_MEMORY_DB=true` so it boots on hosts with no
+attached database. Both compose files override it to `false` and use their PostgreSQL
+service; set `CONNECTIONSTRINGS__DEFAULT` and `USE_IN_MEMORY_DB=false` to do the same
+anywhere else. It also sets `DOTNET_USE_POLLING_FILE_WATCHER=true` — hosts with a low
+inotify limit crash on startup otherwise.
+
+Deploy helpers: `scripts/deploy-docker.sh`, `scripts/docker-deploy-test.sh`. Azure configs live in `azure/`.
+
+### Seeded admin
+
+`Services/Infrastructure/DataSeeder.cs` creates:
+
+- **admin@example.com** / `Admin123!`
+
+Roles are seeded in `Data/ApplicationDbContext.cs`: `1 Admin`, `2 Manager`, `3 User`, `4 Viewer`.
 
 ## Authentication
 
 ```bash
-# Login
+# Login -> access token + refresh token
 curl -X POST http://localhost:5001/api/v1/auth/login \
   -H "Content-Type: application/json" \
   -d '{"username":"admin@example.com","password":"Admin123!"}'
 
-# Register
-curl -X POST http://localhost:5001/api/v1/auth/register \
-  -H "Content-Type: application/json" \
-  -d '{"username":"newuser","email":"user@example.com","password":"SecurePass123!","fullName":"New User","roleId":3}'
+# Authenticated call
+curl http://localhost:5001/api/v1/projects -H "Authorization: Bearer $TOKEN"
 ```
 
-## API Endpoints
+`POST /api/v1/auth/refresh` rotates the refresh token; reuse of a rotated token is detected and rejected. `POST /api/v1/auth/logout` blacklists the access token (`JwtBlacklistMiddleware`).
 
-Versioned under `/api/v1/...`. Version resolves from URL segment, `?version=` query, or `X-Version` header (default v1).
+## Response envelope
 
-### Authentication
-- `POST /api/v1/auth/login` — user login
-- `POST /api/v1/auth/register` — user registration
-- `POST /api/v1/auth/refresh` — rotate refresh token
+Every controller response is wrapped in `ApiResponse<T>` (`DTOs/ApiResponse.cs`):
 
-### Core Resources
-- `GET /api/v1/projects` — list projects
-- `POST /api/v1/projects` — create project
-- `GET /api/v1/tasks` — list tasks
-- `POST /api/v1/daily-reports` — submit daily report
-- `GET /api/v1/users` — list users
+```json
+{
+  "success": true,
+  "message": "Success",
+  "data": { },
+  "errors": [],
+  "error": null
+}
+```
 
-### Notifications
-- `GET /api/v1/notifications` — list user notifications
-- `PATCH /api/v1/notifications/{id}/read` — mark as read
-- `GET /api/v1/notifications/preferences` — get preferences
-- `PUT /api/v1/notifications/preferences` — update preferences
-- `/notificationHub` — SignalR hub (JWT via `?access_token=` query string)
+Services return `Result<T>` / `ServiceResult<T>` instead of throwing; `BaseApiController` maps them to the envelope and the right HTTP status.
 
-See [Notifications API Documentation](./docs/api/NOTIFICATIONS_API.md).
+## API surface
 
-### Mobile (Flutter) Support
-- `GET /api/v1/projects/mobile` — lightweight project list
-- `GET /api/v1/projects/mobile/{id}` — optimized project details
-- `GET /api/v1/projects/mobile/dashboard` — dashboard data
+Routes are versioned: `/api/v1/...`. The version resolves from the URL segment, a `?version=` query param, or an `X-Version` header (default v1).
 
-See [Flutter API Support Documentation](./docs/FLUTTER_API_SUPPORT.md).
+| Area | Base route |
+|---|---|
+| Auth | `/api/v1/auth` — login, register, refresh, logout |
+| Projects | `/api/v1/projects` — CRUD, `/me`, `/rich`, `/analytics`, `/{id}/status`, `/{id}/performance`, `/{id}/milestones` |
+| Mobile (Flutter) | `/api/v1/projects/mobile`, `/mobile/{id}`, `/mobile/dashboard` |
+| Tasks | `/api/v1/tasks` — CRUD, `/advanced`, `/{id}/status`, `/{id}/progress-reports` |
+| WBS | `/api/v1/wbs` |
+| Phases | `/api/v1/phases` |
+| Daily reports | `/api/v1/daily-reports` |
+| Weekly reports | `/api/v1/weekly-reports`, `/api/v1/projects/{projectId}/weekly-reports` |
+| Work requests | `/api/v1/work-requests` (with approval workflow) |
+| Weekly work requests | `/api/v1/weekly-requests`, `/api/v1/projects/{projectId}/weekly-requests` |
+| Calendar | `/api/v1/calendar` — events, `/project/{id}`, `/task/{id}`, `/upcoming`, `/conflicts`, `/recurring` |
+| Dashboard | `/api/v1/dashboard` — `/overview`, `/statistics`, `/live-activity`, `/project-progress` |
+| Images | `/api/v1/images` — upload/metadata; files served from `/files` |
+| Notifications | `/api/v1/notifications` — list, mark read, preferences |
+| Users | `/api/v1/users` |
+
+### Real-time
+
+SignalR hub at **`/notificationHub`**. Browsers/WebSocket clients cannot set headers on the handshake, so the JWT is passed as a query string — `/notificationHub?access_token=<jwt>` (handled in `JwtBearerEvents.OnMessageReceived`).
 
 ### Health
-- `GET /health` — API health status
+
+| Endpoint | Purpose |
+|---|---|
+| `GET /health` | Basic status, version, environment |
+| `GET /health/detailed` | Adds DB connectivity + memory stats (503 when unhealthy) |
+| `GET /healthz` | Liveness probe |
+| `GET /ready` | Readiness probe (includes DB health check) |
 
 ## Configuration
 
-Config priority: env var -> appsettings -> hardcoded fallback. `.env` loaded at startup (DotNetEnv).
+Priority: **environment variable → appsettings → hardcoded fallback**. `.env` is loaded at startup via DotNetEnv.
 
 | Variable | Purpose |
-|----------|---------|
+|---|---|
 | `CONNECTIONSTRINGS__DEFAULT` | PostgreSQL connection string |
-| `JWT_KEY` | JWT signing key (required in non-Development) |
-| `USE_IN_MEMORY_DB` | `true` -> in-memory EF provider |
-| `RateLimit:Enabled` | toggle Redis-backed rate limiting |
+| `JWT_KEY` | JWT signing key — **required** outside Development (32+ chars); Development falls back to a dev key with a warning |
+| `USE_IN_MEMORY_DB` | `true` → in-memory EF provider (also automatic when environment is `Test`/`Testing`) |
+| `RateLimit:Enabled` | Toggle the Redis-backed rate limiter |
+| `ASPNETCORE_ENVIRONMENT` | `Development` / `Docker` / `Production` |
+| `ForceHttpsRedirection` | Force HTTPS redirect in Development |
 
-Profiles: `appsettings.json` / `.Development.json` / `.Docker.json`.
+Profiles: `appsettings.json`, `appsettings.Development.json`, `appsettings.Docker.json`.
 
 ## Architecture
 
-Layering: `Controllers/V1/*` -> feature service (`Services/<Feature>/`) -> `Data/ApplicationDbContext.cs` (EF Core).
-
-- Services return `Result<T>` / `ServiceResult<T>` (no throwing on failure).
-- Controllers extend `BaseApiController`, which maps results to the `ApiResponse<T>` envelope.
-- AutoMapper mappings in `Common/MappingProfile.cs`; FluentValidation validators auto-register.
-- DB init uses `EnsureCreatedAsync()` (migrations in `Migrations/` are bypassed at startup).
-
-## Testing
-
-```bash
-# All automated tests (xUnit)
-dotnet test dotnet-rest-api.sln
-
-# Health check against a live server
-curl http://localhost:5001/health
+```
+Controllers/V1/*  ->  Services/<Feature>/  ->  Data/ApplicationDbContext.cs (EF Core)
 ```
 
-- `tests/UnitTests/` — unit tests (`Result<T>`, envelope mapping, auth refresh-token rotation).
-- `tests/Api.IntegrationTests/` — `WebApplicationFactory` integration tests (in-memory DB).
-- `tests/http/` — `.http` request files for manual/live testing.
-- `scripts/*.sh` — shell test/utility scripts against a live server.
+- **Thin controllers.** All business logic lives in feature services (`Projects`, `Tasks`, `Users`, `MasterPlans`, `WBS`, `Infrastructure`, `Shared`).
+- **No exceptions for flow control.** Services return `Result<T>` (`Common/Result.cs`); `BaseApiController` converts results to `ApiResponse<T>` and centralizes error handling, current-user lookup, and pagination validation.
+- **Mapping** is centralized in `Common/MappingProfile.cs`; **validators** in `Validators/` auto-register from the assembly.
+- **CQRS** (`ICommand`/`IQuery` + handlers in `Services/Handlers/`) is used by MasterPlans; other features use plain service classes.
+- **Background work** goes through `IBackgroundTaskQueue` + `QueuedHostedService`.
 
-## Deployment
+Middleware pipeline order (`Program.cs`):
 
-Docker via `Dockerfile` + `docker-compose.yml` (`.dev.yml` for dev). Scripts: `scripts/deploy-docker.sh`, `scripts/docker-deploy-test.sh`. Azure configs under `azure/`.
+```
+GlobalExceptionMiddleware -> CORS -> RateLimitMiddleware -> static files (/files)
+  -> authentication -> JwtBlacklistMiddleware -> authorization
+```
+
+### Gotcha: schema comes from the model, not migrations
+
+Startup calls **`EnsureCreatedAsync()`**, not `MigrateAsync()`. Files in `Migrations/` exist but are bypassed at boot so seed data applies without generating new migration files. A fresh database is created from the current EF model.
+
+```bash
+dotnet ef migrations add <Name>   # still available if you need one
+```
+
+## Tests
+
+```bash
+dotnet test dotnet-rest-api.sln
+```
+
+- `tests/UnitTests/` — xUnit: `Result<T>`, `BaseApiController` envelope mapping, `AuthService` refresh-token rotation/reuse, `ProjectService`, `TaskService`, validators.
+- `tests/Api.IntegrationTests/` — xUnit + `WebApplicationFactory` (`ApiFactory`): boot smoke, authorization, REST semantics, calendar. Runs against the in-memory DB.
+
+Manual / live-server testing:
+
+- `tests/http/*.http` — request files for VS Code REST Client or Rider
+- `scripts/*.sh` — e.g. `test-api-endpoints.sh`, `test-auth.sh`, `test-tasks-api.sh`, `test-wbs-api.sh`
+- `curl http://localhost:5001/health`
+
+## Repository layout
+
+```
+Controllers/       V1 endpoints + BaseApiController + HealthController
+Services/          Feature-folder services (Projects, Tasks, WBS, MasterPlans, ...)
+Data/              ApplicationDbContext, seed data
+Models/            EF entities
+DTOs/              Request/response contracts + ApiResponse envelope
+Common/            Result<T>, MappingProfile
+Validators/        FluentValidation validators
+Middleware/        Exception handling, rate limiting, JWT blacklist
+Hubs/              SignalR NotificationHub
+Migrations/        EF migrations (bypassed at startup)
+tests/             UnitTests, Api.IntegrationTests, http/
+scripts/           Shell utilities, deploy + live API test scripts
+docs/              API design review, phase inventories
+azure/             Azure deployment configs
+```
